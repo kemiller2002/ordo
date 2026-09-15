@@ -27,7 +27,13 @@ let payloadDirectory =
             "distribution/dist is not built; run `npm run build` in distribution/ before the test suite (pretest does this automatically)"
 
 let repositoryRoot =
-    DirectoryInfo(payloadDirectory).Parent.Parent.FullName
+    // distribution/dist -> distribution -> the repository root.
+    let parentOf (directory: DirectoryInfo) =
+        match Option.ofObj directory.Parent with
+        | Some parent -> parent
+        | None -> failwithf "%s has no parent directory" directory.FullName
+
+    (DirectoryInfo payloadDirectory |> parentOf |> parentOf).FullName
 
 /// Tests drive the CLI in-process, where the executable is the test host and
 /// the "two levels up from the executable" layout of the published package
@@ -111,7 +117,7 @@ let snapshot (root: string) =
 
     let rec walk (directory: string) (prefix: string) =
         for entry in Directory.GetFileSystemEntries directory |> Array.sort do
-            let name = Path.GetFileName entry
+            let name = Paths.fileName entry
             let relPath = if prefix = "" then name else prefix + "/" + name
 
             if Directory.Exists entry then
@@ -129,7 +135,7 @@ let snapshotWithTimestamps (root: string) =
 
     let rec walk (directory: string) (prefix: string) =
         for entry in Directory.GetFileSystemEntries directory |> Array.sort do
-            let name = Path.GetFileName entry
+            let name = Paths.fileName entry
             let relPath = if prefix = "" then name else prefix + "/" + name
 
             if Directory.Exists entry then

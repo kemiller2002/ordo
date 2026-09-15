@@ -65,9 +65,9 @@ let listManagedFiles (dir: string) : Result<string list, string> =
         | Ok() -> Ok(results |> List.ofSeq |> List.sortWith (fun a b -> String.CompareOrdinal(a, b)))
 
 let ensureParentDirectory (path: string) =
-    let parent = Path.GetDirectoryName path
+    let parent = Paths.directoryName path
 
-    if not (String.IsNullOrEmpty parent) then
+    if parent <> "" then
         Directory.CreateDirectory parent |> ignore
 
 let copyFileInto (source: string) (destination: string) =

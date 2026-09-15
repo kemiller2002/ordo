@@ -427,7 +427,7 @@ let ``a user-owned file survives an upgrade untouched`` () =
         File.WriteAllText(userConfig, userConfigContent)
 
         let userSource = Path.Combine(project, "src", "app.ts")
-        Directory.CreateDirectory(Path.GetDirectoryName userSource) |> ignore
+        Directory.CreateDirectory(Paths.directoryName userSource) |> ignore
         File.WriteAllText(userSource, "export const x = 1\n")
 
         let report = performUpgrade project payload false
@@ -445,7 +445,7 @@ let ``another Echelon tool's installation record survives an upgrade untouched``
         installHistoricalVersion "0.0.1" project
 
         let otherRecord = Path.Combine(project, Ownership.echelonRootName, "ros.json")
-        Directory.CreateDirectory(Path.GetDirectoryName otherRecord) |> ignore
+        Directory.CreateDirectory(Paths.directoryName otherRecord) |> ignore
         let otherContent = """{ "tool": "ros", "installedVersion": "1.2.1" }"""
         File.WriteAllText(otherRecord, otherContent)
 
@@ -463,7 +463,7 @@ let ``upgrade refuses when a migration precondition fails and writes nothing`` (
         // migration's precondition guards: overwriting it would destroy the
         // evidence needed to diagnose it.
         let recordPath = InstallationRecord.recordPath project
-        Directory.CreateDirectory(Path.GetDirectoryName recordPath) |> ignore
+        Directory.CreateDirectory(Paths.directoryName recordPath) |> ignore
         File.WriteAllText(recordPath, "{ not json")
         let before = snapshot project
 

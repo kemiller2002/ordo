@@ -128,11 +128,14 @@ let readSourceRevision (repoRoot: string) : string option =
             startInfo.RedirectStandardError <- true
             startInfo.UseShellExecute <- false
 
-            use process' = Process.Start startInfo
-            let output = process'.StandardOutput.ReadToEnd()
-            process'.WaitForExit()
+            match Process.Start startInfo |> Option.ofObj with
+            | None -> None
+            | Some started ->
+                use process' = started
+                let output = process'.StandardOutput.ReadToEnd()
+                process'.WaitForExit()
 
-            if process'.ExitCode = 0 then Some(output.Trim()) else None
+                if process'.ExitCode = 0 then Some(output.Trim()) else None
         with _ ->
             None
 
@@ -246,7 +249,7 @@ let rewriteDistributedMarkdownLinks
         let ups = Array.create (fromSegments.Length - common) ".."
         let downs = targetSegments.[common..]
         let joined = Array.append ups downs |> String.concat "/"
-        if joined = "" then Path.GetFileName target else joined
+        if joined = "" then Paths.fileName target else joined
 
     Regex.Replace(
         text,
@@ -331,7 +334,7 @@ let build (inputs: BuildInputs) : Result<BuildResult, string> =
 
             if entry.Authored then
                 let authoredPath =
-                    Path.Combine(inputs.DistributionDirectory, "authored", Path.GetFileName entry.Destination)
+                    Path.Combine(inputs.DistributionDirectory, "authored", Paths.fileName entry.Destination)
 
                 FileSystem.copyFileInto authoredPath destinationPath
             else

@@ -214,8 +214,8 @@ let private listOtherEchelonRecords (projectRoot: string) =
     else
         try
             Directory.GetFiles echelonDir
-            |> Array.map Path.GetFileName
-            |> Array.filter (fun name -> name <> InstallationRecord.toolName + ".json")
+            |> Array.map Paths.fileName
+            |> Array.filter (fun name -> name <> "" && name <> InstallationRecord.toolName + ".json")
             |> Array.sortWith (fun a b -> System.String.CompareOrdinal(a, b))
             |> List.ofArray
         with _ ->

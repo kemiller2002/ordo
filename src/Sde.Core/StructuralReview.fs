@@ -289,7 +289,7 @@ let private listSourceFiles (projectRoot: string) (config: Config) =
             elif entry :? DirectoryInfo then
                 if not (excludedNames.Contains entry.Name) then
                     walk entry.FullName relativePath
-            elif extensions.Contains(Path.GetExtension(entry.Name).ToLowerInvariant()) then
+            elif extensions.Contains((Paths.extension entry.Name).ToLowerInvariant()) then
                 results.Add relativePath
 
     walk projectRoot ""

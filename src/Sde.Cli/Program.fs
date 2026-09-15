@@ -62,7 +62,10 @@ let locatePayloadDirectory () : Result<string, string> =
     | None ->
 
     let executableDirectory =
-        Path.GetDirectoryName(Environment.ProcessPath |> Option.ofObj |> Option.defaultValue (Assembly.GetExecutingAssembly().Location))
+        Environment.ProcessPath
+        |> Option.ofObj
+        |> Option.defaultValue (Assembly.GetExecutingAssembly().Location)
+        |> Paths.directoryName
 
     let candidates =
         [ Path.Combine(executableDirectory, "..", "..", Packaging.payloadDirectoryName)
