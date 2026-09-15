@@ -132,6 +132,16 @@ including init, a second init, status, verify, doctor, upgrade, every JSON
 mode, every dry-run mode, damaged installations and a historical-version
 upgrade.
 
+To exercise a tarball that has already been built rather than packing a new
+one, point `SDE_TEST_TARBALL` at it:
+
+```bash
+SDE_TEST_TARBALL=../packed-artifact/echelon-foundry-sde-1.2.0.tgz npm run test:package
+```
+
+CI uses this so that Linux, Windows and macOS all exercise the one artifact
+that would actually be published, instead of each rebuilding its own.
+
 ## Running the CLI from a checkout
 
 The published layout puts the executable at `runtimes/<rid>/sde` and the

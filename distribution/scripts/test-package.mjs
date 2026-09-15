@@ -5,9 +5,10 @@
 // whether the published tarball contains the right files, whether the bin
 // mapping resolves, whether the launcher finds its executable from the
 // installed layout, or whether the documented commands work for someone who
-// ran `npx @echelon-foundry/sde`. That is what this script checks: it packs
-// the package, installs the tarball into a throwaway project, and drives the
-// installed `sde` executable against clean temporary repositories.
+// ran `npx @echelon-foundry/sde`. That is what this script checks: it takes a
+// tarball — packing one, or the artifact named by SDE_TEST_TARBALL — installs
+// it into a throwaway project, and drives the installed `sde` executable
+// against clean temporary repositories.
 
 import { spawnSync } from "node:child_process";
 import assert from "node:assert/strict";
@@ -72,23 +73,38 @@ function snapshot(root) {
 
 section("Packing");
 
-const packDir = tempDir("sde-pack-");
+// SDE_TEST_TARBALL points at an already-packed artifact. CI uses it so that
+// every platform exercises the one tarball that would actually be published,
+// rather than each rebuilding its own — testing the exact artifact is the
+// whole point of this script.
+const suppliedTarball = process.env.SDE_TEST_TARBALL;
+const packDir = suppliedTarball ? null : tempDir("sde-pack-");
+let tarball;
 
-const dryRun = run("npm", ["pack", "--dry-run", "--json"], { cwd: DISTRIBUTION_DIR });
-if (dryRun.status !== 0) {
-  console.error("npm pack --dry-run failed:\n" + dryRun.stderr);
-  process.exit(1);
+if (suppliedTarball) {
+  if (!fs.existsSync(suppliedTarball)) {
+    console.error(`SDE_TEST_TARBALL is set to ${suppliedTarball} but no such file exists.`);
+    process.exit(1);
+  }
+  tarball = path.resolve(suppliedTarball);
+  console.log(`  using ${path.basename(tarball)} (${(fs.statSync(tarball).size / (1024 * 1024)).toFixed(1)} MB)`);
+} else {
+  const dryRun = run("npm", ["pack", "--dry-run", "--json"], { cwd: DISTRIBUTION_DIR });
+  if (dryRun.status !== 0) {
+    console.error("npm pack --dry-run failed:\n" + dryRun.stderr);
+    process.exit(1);
+  }
+
+  const packed = run("npm", ["pack", "--pack-destination", packDir, "--json"], { cwd: DISTRIBUTION_DIR });
+  if (packed.status !== 0) {
+    console.error("npm pack failed:\n" + packed.stderr);
+    process.exit(1);
+  }
+
+  const packedName = JSON.parse(packed.stdout)[0].filename;
+  tarball = path.join(packDir, packedName);
+  console.log(`  packed ${packedName} (${(fs.statSync(tarball).size / (1024 * 1024)).toFixed(1)} MB)`);
 }
-
-const packed = run("npm", ["pack", "--pack-destination", packDir, "--json"], { cwd: DISTRIBUTION_DIR });
-if (packed.status !== 0) {
-  console.error("npm pack failed:\n" + packed.stderr);
-  process.exit(1);
-}
-
-const packedName = JSON.parse(packed.stdout)[0].filename;
-const tarball = path.join(packDir, packedName);
-console.log(`  packed ${packedName} (${(fs.statSync(tarball).size / (1024 * 1024)).toFixed(1)} MB)`);
 
 const contents = run("tar", ["-tzf", tarball]).stdout.split("\n").filter(Boolean).map((line) => line.replace(/^package\//, ""));
 
@@ -140,7 +156,8 @@ if (install.status !== 0) {
   process.exit(1);
 }
 
-const sdeBin = path.join(consumer, "node_modules", ".bin", process.platform === "win32" ? "sde.cmd" : "sde");
+const isWindows = process.platform === "win32";
+const sdeBin = path.join(consumer, "node_modules", ".bin", isWindows ? "sde.cmd" : "sde");
 
 check("the bin mapping produced an executable", () => assert.ok(fs.existsSync(sdeBin), `${sdeBin} does not exist`));
 
@@ -149,7 +166,14 @@ check("npm install did not create an installation in the consumer", () => {
   assert.ok(!fs.existsSync(path.join(consumer, ".echelon")), "npm install must not mutate the consuming repository");
 });
 
-const sde = (args, cwd) => run(sdeBin, args, { cwd });
+// npm's Windows bin shim is a .cmd file, and since the fix for
+// CVE-2024-27980 Node refuses to spawn one without a shell. Quoting the path
+// keeps that safe; every argument this script passes is a literal flag or
+// command name.
+const sde = (args, cwd) =>
+  isWindows
+    ? run(`"${sdeBin}"`, args, { cwd, shell: true })
+    : run(sdeBin, args, { cwd });
 
 // ---------------------------------------------------------------------------
 
@@ -394,7 +418,7 @@ check("the legacy bin/sde.mjs entry point still works", () => {
 
 // ---------------------------------------------------------------------------
 
-fs.rmSync(packDir, { recursive: true, force: true });
+if (packDir) fs.rmSync(packDir, { recursive: true, force: true });
 fs.rmSync(consumer, { recursive: true, force: true });
 fs.rmSync(project, { recursive: true, force: true });
 fs.rmSync(damaged, { recursive: true, force: true });

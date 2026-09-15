@@ -33,6 +33,9 @@ tests/**/bin/
 tests/**/obj/
 *.tgz
 
+# Where CI downloads the packed tarball to exercise it.
+packed-artifact/
+
 # Generated transient work
 work/staging/*
 work/review/*

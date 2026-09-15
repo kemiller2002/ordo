@@ -72,8 +72,11 @@ jobs:
         run: npm pack --dry-run
         working-directory: distribution
 
+      # npm pack does not create its --pack-destination directory.
       - name: Pack
-        run: npm pack --pack-destination "$RUNNER_TEMP/pack"
+        run: |
+          mkdir -p "$RUNNER_TEMP/pack"
+          npm pack --pack-destination "$RUNNER_TEMP/pack"
         working-directory: distribution
 
       - uses: actions/upload-artifact@v4
@@ -101,23 +104,27 @@ jobs:
             node: "20"
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "8.0.x"
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
 
-      - name: Build the payload this platform's tests install
-        run: npm run build:payload
-        working-directory: distribution
+      # The tarball built by the `pack` job is the artifact that would be
+      # published. Every platform exercises that exact file rather than
+      # rebuilding its own, so these jobs need no .NET SDK at all.
+      # Downloaded into the workspace rather than RUNNER_TEMP: on Windows
+      # RUNNER_TEMP is a backslash path, which a bash glob does not handle
+      # reliably. A workspace-relative path works identically on all three.
+      - uses: actions/download-artifact@v4
+        with:
+          name: sde-tarball
+          path: packed-artifact
 
-      - name: Build this platform's executable
-        run: npm run build:runtimes
-        working-directory: distribution
-
-      - name: Pack and exercise the real tarball
-        run: npm run test:package
+      - name: Exercise the packed tarball
+        shell: bash
+        run: |
+          tarball="$(ls ../packed-artifact/*.tgz | head -n 1)"
+          echo "Testing $tarball"
+          SDE_TEST_TARBALL="$tarball" npm run test:package
         working-directory: distribution
 
   quick-start:
@@ -138,6 +145,7 @@ jobs:
       - name: Build and pack
         run: |
           npm run build
+          mkdir -p "$RUNNER_TEMP/pack"
           npm pack --pack-destination "$RUNNER_TEMP/pack"
         working-directory: distribution
 
