@@ -16,6 +16,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import zlib from "node:zlib";
 import { fileURLToPath } from "node:url";
 
 const DISTRIBUTION_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -44,13 +45,63 @@ function tempDir(prefix) {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 }
 
+const isWindows = process.platform === "win32";
+
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, { encoding: "utf8", ...options });
   return {
     status: result.status,
     stdout: result.stdout ?? "",
-    stderr: result.stderr ?? "",
+    // A spawn that never started reports its reason in `error` with no
+    // stderr at all. Folding it in here means a failure is always
+    // diagnosable from the output rather than showing up as silence.
+    stderr: (result.stderr ?? "") + (result.error ? `spawn ${command} failed: ${result.error.message}` : ""),
   };
+}
+
+// npm's Windows entry point is npm.cmd, and since the fix for
+// CVE-2024-27980 Node refuses to spawn a .cmd without a shell. Arguments are
+// quoted because a runner temp path can contain characters the shell would
+// otherwise split on.
+function runNpm(args, cwd) {
+  if (!isWindows) return run("npm", args, { cwd });
+  return run("npm.cmd", args.map((arg) => `"${arg}"`), { cwd, shell: true });
+}
+
+// Lists the regular files in a .tgz without shelling out to `tar`.
+//
+// Calling `tar` meant depending on an external binary being on PATH, which
+// silently produced an empty listing on Windows and turned every
+// "nothing unexpected is published" check into a false pass. Node has gzip
+// built in and a tar header is a fixed 512-byte record, so reading the
+// archive directly is both shorter and platform-independent.
+function listTarballEntries(tgzPath) {
+  const buffer = zlib.gunzipSync(fs.readFileSync(tgzPath));
+  const entries = [];
+  let offset = 0;
+
+  while (offset + 512 <= buffer.length) {
+    const header = buffer.subarray(offset, offset + 512);
+    if (header.every((byte) => byte === 0)) break;
+
+    const field = (start, length) =>
+      header.subarray(start, start + length).toString("utf8").replace(/\0.*$/s, "").trim();
+
+    const name = field(0, 100);
+    const prefix = field(345, 155);
+    const typeFlag = String.fromCharCode(header[156]);
+    const size = parseInt(field(124, 12) || "0", 8);
+
+    // '0' and NUL both mean a regular file; directories and metadata records
+    // are not part of what gets published.
+    if (typeFlag === "0" || typeFlag === "\0") {
+      entries.push(prefix ? `${prefix}/${name}` : name);
+    }
+
+    offset += 512 + Math.ceil(size / 512) * 512;
+  }
+
+  return entries;
 }
 
 // A repository snapshot: every file's path and content hash. Two snapshots
@@ -89,13 +140,13 @@ if (suppliedTarball) {
   tarball = path.resolve(suppliedTarball);
   console.log(`  using ${path.basename(tarball)} (${(fs.statSync(tarball).size / (1024 * 1024)).toFixed(1)} MB)`);
 } else {
-  const dryRun = run("npm", ["pack", "--dry-run", "--json"], { cwd: DISTRIBUTION_DIR });
+  const dryRun = runNpm(["pack", "--dry-run", "--json"], DISTRIBUTION_DIR);
   if (dryRun.status !== 0) {
     console.error("npm pack --dry-run failed:\n" + dryRun.stderr);
     process.exit(1);
   }
 
-  const packed = run("npm", ["pack", "--pack-destination", packDir, "--json"], { cwd: DISTRIBUTION_DIR });
+  const packed = runNpm(["pack", "--pack-destination", packDir, "--json"], DISTRIBUTION_DIR);
   if (packed.status !== 0) {
     console.error("npm pack failed:\n" + packed.stderr);
     process.exit(1);
@@ -106,9 +157,14 @@ if (suppliedTarball) {
   console.log(`  packed ${packedName} (${(fs.statSync(tarball).size / (1024 * 1024)).toFixed(1)} MB)`);
 }
 
-const contents = run("tar", ["-tzf", tarball]).stdout.split("\n").filter(Boolean).map((line) => line.replace(/^package\//, ""));
+const contents = listTarballEntries(tarball).map((entry) => entry.replace(/^package\//, ""));
 
 section("Package contents");
+
+// Without this, an empty listing would make every "nothing unexpected is
+// published" assertion below pass vacuously.
+check("the tarball listing is readable", () =>
+  assert.ok(contents.length > 0, `no entries could be read from ${tarball}`));
 
 check("the launcher is published", () => assert.ok(contents.includes("bin/sde.js")));
 check("the legacy entry point is published", () => assert.ok(contents.includes("bin/sde.mjs")));
@@ -150,13 +206,12 @@ section("Installing the packed artifact");
 const consumer = tempDir("sde-consumer-");
 fs.writeFileSync(path.join(consumer, "package.json"), JSON.stringify({ name: "consumer", version: "1.0.0", private: true }, null, 2));
 
-const install = run("npm", ["install", "--no-audit", "--no-fund", tarball], { cwd: consumer });
+const install = runNpm(["install", "--no-audit", "--no-fund", tarball], consumer);
 if (install.status !== 0) {
   console.error("installing the tarball failed:\n" + install.stdout + install.stderr);
   process.exit(1);
 }
 
-const isWindows = process.platform === "win32";
 const sdeBin = path.join(consumer, "node_modules", ".bin", isWindows ? "sde.cmd" : "sde");
 
 check("the bin mapping produced an executable", () => assert.ok(fs.existsSync(sdeBin), `${sdeBin} does not exist`));
@@ -166,10 +221,8 @@ check("npm install did not create an installation in the consumer", () => {
   assert.ok(!fs.existsSync(path.join(consumer, ".echelon")), "npm install must not mutate the consuming repository");
 });
 
-// npm's Windows bin shim is a .cmd file, and since the fix for
-// CVE-2024-27980 Node refuses to spawn one without a shell. Quoting the path
-// keeps that safe; every argument this script passes is a literal flag or
-// command name.
+// The bin shim is a .cmd on Windows, so it needs the same shell treatment
+// as npm itself.
 const sde = (args, cwd) =>
   isWindows
     ? run(`"${sdeBin}"`, args, { cwd, shell: true })
