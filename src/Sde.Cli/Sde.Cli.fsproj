@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!--
+      The produced executable is named `sde` on every platform, which is the
+      name the npm bin mapping exposes and the name the Node launcher looks
+      for under runtimes/RID/.
+    -->
+    <AssemblyName>sde</AssemblyName>
+    <RootNamespace>Sde.Cli</RootNamespace>
+    <IsPackable>false</IsPackable>
+
+    <!--
+      Distribution model: a self-contained, trimmed, single-file executable
+      per supported platform. A consuming repository then needs no .NET
+      runtime and no global install of anything; npx fetches the package and
+      the launcher runs the binary for the host platform.
+
+      The publish settings below apply only when a RuntimeIdentifier is
+      given, so `dotnet build` stays an ordinary fast framework-dependent
+      build for development and tests, while `dotnet publish -r RID`
+      produces the shipped artifact.
+    -->
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>full</TrimMode>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <!--
+      Trim warnings are errors: this tool builds JSON by hand rather than by
+      reflection precisely so that trimming is safe, and a warning here would
+      mean something reintroduced a reflection path that trimming could
+      silently break at runtime on a user's machine.
+    -->
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+    <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
+    <EventSourceSupport>false</EventSourceSupport>
+    <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Args.fs" />
+    <Compile Include="Help.fs" />
+    <Compile Include="Render.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Sde.Core/Sde.Core.fsproj" />
+  </ItemGroup>
+
+</Project>

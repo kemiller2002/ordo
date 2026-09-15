@@ -30,4 +30,5 @@
 | WI-0025 | Fix npm trusted-publishing package metadata | complete | distribution, release, ci | high |
 | WI-0026 | Reconcile structural locality and agent navigation research into SDE | complete | method, architecture, agents, verification | high |
 | WI-0027 | Review tools/ros_cli.mjs responsibility boundaries | captured | structure, verification, follow-up | low |
-| WI-0028 | Review research notes and finalize SDE context/structure integration | ready | method, architecture, verification, telemetry | high |
+| WI-0028 | Review research notes and finalize SDE context/structure integration | complete | method, architecture, verification, telemetry | high |
+| WI-0029 | Convert @echelon-foundry/sde to an F#-owned, npm-distributed Echelon Foundry lifecycle tool | captured | distribution, cli, fsharp, packaging | high |

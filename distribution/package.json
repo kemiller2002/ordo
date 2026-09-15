@@ -1,35 +1,51 @@
 {
   "name": "@echelon-foundry/sde",
-  "version": "1.1.1",
-  "description": "State-Directed Engineering (SDE) execution package installer: init/status/verify/update a versioned .sde/ methodology directory in any repository.",
+  "version": "1.2.0",
+  "description": "Echelon Foundry State-Directed Engineering repository initialization, verification, diagnostics, and upgrade tooling.",
   "license": "UNLICENSED",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kemiller2002/state-directed-engineering.git",
     "directory": "distribution"
   },
+  "homepage": "https://github.com/kemiller2002/state-directed-engineering#readme",
+  "bugs": {
+    "url": "https://github.com/kemiller2002/state-directed-engineering/issues"
+  },
   "publishConfig": {
     "access": "public"
   },
-  "type": "module",
   "engines": {
     "node": ">=18"
   },
   "bin": {
-    "sde": "bin/sde.mjs"
+    "sde": "bin/sde.js"
   },
   "files": [
     "bin",
-    "src",
     "dist",
-    "authored",
+    "runtimes",
     "DISTRIBUTION-MAP.json",
     "README.md"
   ],
+  "keywords": [
+    "echelon-foundry",
+    "sde",
+    "state-directed-engineering",
+    "repository-tooling",
+    "cli",
+    "initialization",
+    "verification",
+    "migration",
+    "engineering"
+  ],
   "scripts": {
-    "build": "node src/build.mjs",
-    "pretest": "node src/build.mjs",
-    "test": "node --test \"test/**/*.test.mjs\""
+    "build": "npm run build:payload && npm run build:runtimes",
+    "build:payload": "dotnet run --project ../src/Sde.PackageBuilder/Sde.PackageBuilder.fsproj -c Release --nologo -v quiet",
+    "build:runtimes": "node scripts/publish-runtimes.mjs",
+    "pretest": "npm run build:payload",
+    "test": "dotnet test ../tests/Sde.Core.Tests/Sde.Core.Tests.fsproj --nologo",
+    "test:package": "node scripts/test-package.mjs"
   },
   "dependencies": {},
   "devDependencies": {}
