@@ -4,7 +4,7 @@
   "repository": "state-directed-engineering",
   "actor": "ros-bootstrap",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-09-15T16:15:40.405Z",
+  "updatedAt": "2026-09-15T16:25:53.390Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -383,10 +383,36 @@
     {
       "id": "WI-0029",
       "type": "task",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-09-15T16:15:40.405Z"
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Sde.Core/Lifecycle.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Sde.Cli/Program.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "distribution/bin/sde.js"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Sde.Core.Tests/LifecycleTests.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Sde.Core.Tests/ContractTests.fs"
+        },
+        {
+          "type": "tests",
+          "path": "distribution/scripts/test-package.mjs"
+        }
+      ],
+      "updatedAt": "2026-09-15T16:25:53.390Z",
+      "completedAt": "2026-09-15T16:25:53.390Z"
     }
   ]
 }
