@@ -18,6 +18,35 @@ The current construction method is
 [`method/CONSTRUCTION-METHOD-v0.2.md`](method/CONSTRUCTION-METHOD-v0.2.md).
 Version 0.1 remains frozen as the prior method and historical trial target.
 
+## Using SDE in your own repository
+
+This repository is the canonical source of the methodology. To *apply* SDE to
+a project, install the published package rather than cloning this repository:
+
+```bash
+npx @echelon-foundry/sde init      # bring the repository into a valid installed state
+npx @echelon-foundry/sde status    # what is installed
+npx @echelon-foundry/sde verify    # validate the installation
+npx @echelon-foundry/sde upgrade   # move to a newer release
+npx @echelon-foundry/sde doctor    # diagnose problems and how to fix them
+```
+
+That is the canonical public interface. The package installs a curated,
+versioned subset of `doctrine/`, `method/` and `templates/sde/` into `.sde/`,
+so an engineer or agent can apply SDE without reading the research that
+produced it.
+
+- [`distribution/README.md`](distribution/README.md) — the package overview
+  (this is the npm package page)
+- [`docs/installation.md`](docs/installation.md) — detailed installation behaviour
+- [`docs/cli.md`](docs/cli.md) — full command reference, JSON schemas, exit codes
+- [`docs/upgrading.md`](docs/upgrading.md) — migration behaviour and compatibility policy
+- [`docs/development.md`](docs/development.md) — building and testing the tool
+- [`docs/releasing.md`](docs/releasing.md) — the release and publish process
+
+The tool's lifecycle logic is implemented in F# under `src/Sde.Core` and
+`src/Sde.Cli`; Node exists only as the npm launcher.
+
 ## Local operating commands
 
 ```bash

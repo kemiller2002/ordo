@@ -1,38 +1,164 @@
 name: SDE distribution
 
+# Validates @echelon-foundry/sde from source through to the artifact that
+# would actually be published. `dotnet test` alone is not sufficient evidence
+# that npm distribution works, so the packed tarball is exercised on every
+# supported operating system before anything is considered green.
+
 on:
   pull_request:
     paths:
       - "distribution/**"
+      - "src/**"
+      - "tests/**"
+      - "Directory.Build.props"
       - "doctrine/**"
       - "method/**"
       - "templates/sde/**"
+      - ".github/workflows/sde-distribution.yml"
   push:
     paths:
       - "distribution/**"
+      - "src/**"
+      - "tests/**"
+      - "Directory.Build.props"
       - "doctrine/**"
       - "method/**"
       - "templates/sde/**"
+      - ".github/workflows/sde-distribution.yml"
 
 permissions:
   contents: read
 
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+
 jobs:
-  build-and-test:
+  unit-tests:
+    name: F# build and tests
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: distribution
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Build the execution package
+        run: npm run build:payload
+        working-directory: distribution
+      - name: Run the F# test suite
+        run: dotnet test tests/Sde.Core.Tests/Sde.Core.Tests.fsproj --nologo
+
+  pack:
+    name: Build all runtimes and pack
+    runs-on: ubuntu-latest
+    # Every supported platform's executable cross-compiles from this one
+    # Linux job, so the published tarball is produced once and the matrix
+    # below tests that exact artifact rather than a per-OS rebuild.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: npm test
-      - run: npm run build
-      - name: verify a fresh install of the just-built package in an isolated directory
+
+      - name: Build payload and all platform executables
+        run: npm run build
+        working-directory: distribution
+
+      - name: Review what would be published
+        run: npm pack --dry-run
+        working-directory: distribution
+
+      - name: Pack
+        run: npm pack --pack-destination "$RUNNER_TEMP/pack"
+        working-directory: distribution
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sde-tarball
+          path: ${{ runner.temp }}/pack/*.tgz
+          retention-days: 7
+
+  package-tests:
+    name: Packed artifact (${{ matrix.os }}, Node ${{ matrix.node }})
+    needs: pack
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Node 18 is the minimum the package's `engines` field claims, so it
+        # is tested rather than assumed. Windows and macOS runners prove the
+        # launcher picks the right executable on each platform.
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: ["22"]
+        include:
+          - os: ubuntu-latest
+            node: "18"
+          - os: ubuntu-latest
+            node: "20"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Build the payload this platform's tests install
+        run: npm run build:payload
+        working-directory: distribution
+
+      - name: Build this platform's executable
+        run: npm run build:runtimes
+        working-directory: distribution
+
+      - name: Pack and exercise the real tarball
+        run: npm run test:package
+        working-directory: distribution
+
+  quick-start:
+    name: Documented quick start works from the packed artifact
+    needs: pack
+    runs-on: ubuntu-latest
+    # The commands in README.md's quick start are executed here exactly as
+    # documented, so a README example cannot drift from what the package does.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Build and pack
         run: |
-          tmp="$(mktemp -d)"
-          cd "$tmp"
-          node "$GITHUB_WORKSPACE/distribution/bin/sde.mjs" init
-          node "$GITHUB_WORKSPACE/distribution/bin/sde.mjs" verify
+          npm run build
+          npm pack --pack-destination "$RUNNER_TEMP/pack"
+        working-directory: distribution
+
+      - name: Install the tarball globally and run the documented commands
+        run: |
+          npm install -g "$RUNNER_TEMP"/pack/*.tgz
+          project="$(mktemp -d)"
+          cd "$project"
+
+          sde --version
+          sde --help
+
+          sde init
+          sde status
+          sde verify
+          sde verify --strict
+          sde doctor
+          sde upgrade
+
+          sde status --json   | node -e "JSON.parse(require('fs').readFileSync(0,'utf8'))"
+          sde verify --json   | node -e "JSON.parse(require('fs').readFileSync(0,'utf8'))"
+          sde doctor --json   | node -e "JSON.parse(require('fs').readFileSync(0,'utf8'))"
+          sde init --dry-run --json | node -e "JSON.parse(require('fs').readFileSync(0,'utf8'))"
+          sde upgrade --dry-run --json | node -e "JSON.parse(require('fs').readFileSync(0,'utf8'))"

@@ -25,9 +25,12 @@ distribution/dist/
 # Build output, never committed: a release builds them from source in CI.
 distribution/runtimes/
 
-# .NET build output
-bin/
-obj/
+# .NET build output. Scoped to the F# project trees on purpose: a bare `bin/`
+# would also ignore distribution/bin/, which holds the published Node launcher.
+src/**/bin/
+src/**/obj/
+tests/**/bin/
+tests/**/obj/
 *.tgz
 
 # Generated transient work
