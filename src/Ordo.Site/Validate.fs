@@ -189,6 +189,7 @@ let private checkHygiene (outputs: Output list) : Validation<unit> =
 
 let requiredFiles =
     [ "index.html"
+      "results/index.html"
       "evidence/index.html"
       "research/index.html"
       "glossary/index.html"

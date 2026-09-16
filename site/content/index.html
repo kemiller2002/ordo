@@ -1,90 +1,192 @@
 ---
 path: /
 title: Ordo | State-Directed Engineering
-description: Ordo is Echelon Foundry's State-Directed Engineering methodology: building software through explicit state, constrained transitions, structural locality, evidence, and mechanical verification.
+description: AI writes plausible code faster than teams can absorb it. Ordo makes state, legal actions, ownership and verification explicit, so correctness stops depending on what a human or an agent infers.
 section: Home
 order: 1
-summary: What Ordo is, why it exists, and what the current evidence does and does not support.
+summary: What Ordo does, the problem it addresses, and what was measured.
 ---
 <section class="hero">
   <p class="eyebrow">Echelon Foundry</p>
-  <h1>Software built out of states, not out of hope.</h1>
+  <h1>Your agents aren't the bottleneck. Absorbing what they produce is.</h1>
   <p class="lead">
-    Ordo is a State-Directed Engineering methodology. A system built under it says out loud
-    what states it can be in, which changes between them are legal, what an actor is allowed
-    to do next, and what is still owed. What the model does not permit is not a bug waiting
-    to be caught — it is something the system does not offer.
+    Ordo is a State-Directed Engineering methodology. It turns the things a codebase
+    normally leaves implicit — what states exist, which changes are legal, who owns a rule,
+    what counts as done — into structures a compiler and a test suite can act on. The point is
+    not to make agents write better code. It is to stop correctness depending on what anyone,
+    human or model, has to infer.
   </p>
   <div class="actions">
-    <a class="button primary" href="{{link:/method/}}">How it works</a>
-    <a class="button ghost" href="{{link:/evidence/}}">See the evidence</a>
+    <a class="button primary" href="{{link:/how-it-works/}}">How it works</a>
+    <a class="button ghost" href="{{link:/results/}}">What we measured</a>
   </div>
 </section>
 
 <section>
-  <h2>The one-minute version</h2>
+  <h2>The problem is now well measured, and it is not code generation</h2>
   <p>
-    Most systems represent what is true with a pile of booleans, nullable fields and status
-    strings, and then defend that pile with tests. The combinations that should never occur
-    are representable, so somebody has to remember to check for them — at every place that
-    touches the data, forever.
+    Generation got solved. Absorption did not. Three independent findings, none of them ours:
   </p>
+  <div class="grid grid-three">
+    <div class="card">
+      <p class="card-kicker">{{ref:R-DORA-2025}}</p>
+      <h3>Throughput up, stability down</h3>
+      <p>
+        Higher AI adoption now correlates with <em>both</em> faster delivery and more delivery
+        instability — more change failures, more rework, longer recovery. DORA's own reading:
+        change volume is outrunning the control systems meant to absorb it.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">{{ref:R-METR-RCT}}</p>
+      <h3>19% slower, and they couldn't tell</h3>
+      <p>
+        Sixteen experienced maintainers, 246 real issues, repositories they knew well. They were
+        19% slower with AI. They had forecast 24% faster, and afterwards still believed they had
+        been 20% faster.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">{{ref:R-METR-HOLISTIC}}</p>
+      <h3>Tests pass. Not mergeable.</h3>
+      <p>
+        Across eighteen real tasks in mature repositories, agent solutions passed the reference
+        tests and still failed merge-readiness review. A green suite stopped being evidence that
+        the work was done.
+      </p>
+    </div>
+  </div>
   <p>
-    Ordo starts one step earlier. Name the states. Declare which transitions between them are
-    legal. Derive what an actor may do next from the same rules the transitions enforce, so
-    the two can never drift apart. Make the crossing points to the outside world explicit,
-    because that is where this research keeps finding the defects. Then verify with several
-    mechanisms whose blind spots differ, because — as the evidence below shows — no single one
-    of them is enough.
+    A framework paper synthesising telemetry from more than ten thousand developers puts a number
+    on the shape of it — {{ref:R-PRP}} reports 98% more pull requests, 91% longer review times,
+    and flat delivery — and draws the conclusion Ordo is built on:
+    <strong>the bottleneck moves from generation to specification clarity.</strong>
   </p>
-  <div class="note">
-    <p>
-      <strong>Ordo and SDE are the same methodology.</strong> Ordo is the name it carries in
-      public. The research record that produced it, and every artifact cited on this site,
-      calls it State-Directed Engineering. Historical names are not rewritten, because those
-      names are part of the experimental record.
-      <a href="{{link:/about/}}">The full explanation is here.</a>
-    </p>
+</section>
+
+<section>
+  <h2>What Ordo changes</h2>
+  <p>
+    Every mechanism below exists because something specific goes wrong without it. Each one
+    trades a small, one-time declaration for a permanent reduction in what has to be inferred.
+  </p>
+  <div class="grid">
+    <div class="card">
+      <p class="card-kicker">Mechanism</p>
+      <h3>State is named, not inferred</h3>
+      <p>
+        An entry is <em>Recorded</em>, <em>Voided</em> or <em>Superseded</em> — not a combination
+        of four optional fields a reader has to decode. Data belonging to one state is only
+        constructible in that state.
+      </p>
+      <p class="outcome-line">
+        Consequence: whole categories of defensive branching stop being necessary, because the
+        condition they guard against cannot be written down.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Mechanism</p>
+      <h3>Only legal transitions exist</h3>
+      <p>
+        Change happens through named transitions the model declares. Reviving a superseded
+        record isn't rejected at runtime — there is no route to take.
+      </p>
+      <p class="outcome-line">
+        Consequence: an agent choosing from the legal set cannot construct an illegal request.
+        The action space shrinks instead of the rulebook growing.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Mechanism</p>
+      <h3>One authority per rule</h3>
+      <p>
+        What an actor may do next is computed from the same predicates the transitions enforce —
+        never a second copy maintained beside them.
+      </p>
+      <p class="outcome-line">
+        Consequence: the interface and the enforcement cannot drift, because there is only one
+        of them to drift from.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Mechanism</p>
+      <h3>Verification that fails differently</h3>
+      <p>
+        Type checks, architecture checks, behavioural tests, integration against a real
+        boundary, and independent review — chosen because their blind spots don't overlap.
+      </p>
+      <p class="outcome-line">
+        Consequence: a passing suite stops being the only signal, which matters because a
+        passing suite demonstrably isn't one.
+      </p>
+    </div>
+  </div>
+  <p><a href="{{link:/how-it-works/}}">The full mechanism, step by step →</a></p>
+</section>
+
+<section>
+  <h2>What we measured</h2>
+  <p>
+    Eleven recorded trials across four codebases. Three results that survived adversarial review:
+  </p>
+  {{metrics:M-GF2B-OVERLAP,M-TE-JS-LANGUAGE,M-GF2A-AC}}
+  <p>
+    The first is the one to dwell on. A fresh reviewer examined a finished build that had already
+    passed a 90-test suite, a strict type check, a dependency audit, an architecture check, and an
+    adversarial self-review including mutation tests. It found five things. None of them had been
+    caught by any of that — the same gap METR found independently, in someone else's repositories.
+  </p>
+  <div class="actions">
+    <a class="button primary" href="{{link:/results/}}">See all the results</a>
+    <a class="button ghost" href="{{link:/comparison/}}">Ordo vs. conventional</a>
   </div>
 </section>
 
 <section>
-  <h2>What the evidence actually shows</h2>
+  <h2>Where a conventional codebase goes quiet</h2>
   <p>
-    Seven experiments across four codebases. Here are four results, chosen because two of them
-    are inconvenient.
+    A unit-of-measure change, applied to the same domain built two ways. This is the clearest
+    single illustration in our evidence base, and it is drawn from a build written under a
+    deliberately ordinary persona — not a strawman.
   </p>
-  {{metrics:M-GF2B-OVERLAP,M-HN2-BCA,M-HN1-MDR,M-HN3-COST}}
-  <p>
-    The second and fourth are not oversights. Boundary hardening was expected to reduce how
-    much boundary work a change requires; measured three times across two architectures, it did
-    not. And the single most quotable figure this programme produced — a 68% token reduction —
-    is published here as <em>not established</em>, because the run that produced it was
-    interrupted and its telemetry covers only part of the work.
-  </p>
-  <p><a href="{{link:/research/}}">Every proposition, including the refuted ones →</a></p>
+  <div class="grid">
+    <div class="card">
+      <p class="card-kicker">Conventional</p>
+      <h3>Green build, wrong meaning</h3>
+      <p>
+        Renaming the duration field caught eight call sites in the compiler. Roughly
+        {{metric:M-TE-CS-SILENT}} more passed duration as a bare positional integer, where
+        identical source text now meant something six times different. The build was clean and
+        thirty tests passed while that was in flight. Two sites came out correct
+        {{metric:M-TE-CS-COINCIDENCE}}.
+      </p>
+    </div>
+    <div class="card callout">
+      <p class="card-kicker">Ordo</p>
+      <h3>The sentence won't compile</h3>
+      <p>
+        <code>TimeOfDay</code> and <code>DurationMinutes</code> are distinct nominal types, kept
+        apart specifically so a caller cannot pass a duration where a time-of-day is expected and
+        have it compile. This is not a measured tendency. It is a property of the code, and you
+        can read it.
+      </p>
+    </div>
+  </div>
+  <p><a href="{{link:/comparison/}}">The full comparison, including where it does not hold →</a></p>
 </section>
 
-<section>
-  <h2>The shape of a change</h2>
-  {{diagram:transition}}
-</section>
-
-<section>
-  <h2>Where to go next</h2>
-  {{section:Start here}}
-</section>
-
-<section class="callout">
-  <h2>What this site will not do</h2>
+<section class="note">
+  <h2>What we will not tell you</h2>
   <p>
-    It will not tell you Ordo makes teams faster. Nothing here measures that. It will not give
-    you an industry-wide percentage, because three experiments in one organisation cannot
-    produce one. Where a number exists, you can open the artifact it came from and check it.
-    Where a number does not exist, the page says so instead of estimating.
+    That Ordo produces fewer defects than conventional development. We tested the nearest thing to
+    that claim under controlled conditions and it did not hold: on field renames, explicit domain
+    types made <a href="{{link:/results/}}#no-difference">no measurable difference</a>, and on
+    arithmetic business rules no type system helped at all. That experiment is on this site
+    because it is true.
   </p>
   <p>
-    That restraint is not modesty. A methodology whose central claim is that systems should
-    make their own uncertainty explicit has no business hiding its own.
+    What the evidence supports is narrower and more useful: Ordo changes <em>which mechanism</em>
+    catches a mistake, and whether anything catches it. That is the claim, and
+    <a href="{{link:/results/}}">here is what stands behind it</a>.
   </p>
 </section>

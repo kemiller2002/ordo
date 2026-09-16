@@ -1,0 +1,256 @@
+---
+path: /results/
+title: Results
+description: What actually happened when Ordo was used — organised by conclusion rather than by experiment, including the result that contradicted our own hypothesis.
+section: Start here
+order: 30
+summary: Eleven trials across four codebases, organised by what they concluded.
+---
+<section class="page-intro">
+  <p class="eyebrow">Results</p>
+  <h1>What happened when we measured it</h1>
+  <p class="lead">
+    Eleven recorded trials across four codebases. This page is organised by conclusion, not by
+    chronology, and it includes the trial that refuted the hypothesis it was built to test.
+  </p>
+</section>
+
+<section>
+  <h2 id="verification">A passing test suite is not evidence the work is done</h2>
+  <p>
+    This is the strongest conclusion on the site, it is supported from two independent
+    directions, and it is the one with the clearest operational consequence.
+  </p>
+  {{metrics:M-GF2B-OVERLAP,M-GF2B-DEFECTS,M-GF2A-DEFECTS}}
+  <p>
+    A fresh agent, with no knowledge of how a build had been constructed, reviewed a finished
+    implementation that had already passed a 90-test suite, a strict type check with
+    <code>noUncheckedIndexedAccess</code> and <code>exactOptionalPropertyTypes</code>, a
+    dependency audit, an architecture check, and an adversarial self-review that included three
+    mutation tests deliberately breaking shared guards to confirm they were load-bearing.
+  </p>
+  <p>
+    It found five defects. <strong>None had been caught by any of that.</strong> One was a result
+    case declared in a type that no code path could construct — the type checker was satisfied,
+    ninety tests were satisfied, and the contract was incomplete.
+  </p>
+  <p>
+    Independently, {{ref:R-METR-HOLISTIC}} found the same shape in someone else's repositories:
+    agent solutions passing reference tests and still failing merge-readiness review. Two research
+    programmes, different codebases, same finding.
+  </p>
+  <div class="note">
+    <p>
+      <strong>Why this matters operationally.</strong> If a green suite is your merge signal, and
+      a green suite does not distinguish merge-ready work from work that merely passes, then
+      raising test counts does not buy you what you think it buys. The fix is not more tests of
+      the kind you have. It is at least one mechanism whose blind spot differs from theirs.
+    </p>
+  </div>
+  <p><strong>Limit.</strong> One verification pass on one codebase. It shows these mechanisms missed
+  what that reviewer found; it does not quantify how much any mechanism generally misses. Every
+  agent involved came from one model family, so a shared blind spot cannot be ruled out.</p>
+</section>
+
+<section>
+  <h2 id="silence">Conventional code goes quiet exactly where it matters most</h2>
+  <p>
+    The same domain was rebuilt under a deliberately ordinary persona — a competent professional
+    developer reaching for mutable classes and bare primitives by default. Not a strawman, and
+    the distinction matters: the finding is about type design, not carelessness.
+  </p>
+  {{metrics:M-TE-CS-SILENT,M-TE-CS-COINCIDENCE,M-TE-JS-LANGUAGE}}
+  <p>
+    When the unit of measure changed, renaming the duration field caught eight call sites in the
+    compiler. Around fourteen more passed duration as a bare positional integer — where the
+    literal <code>10</code> had meant ten six-minute units, sixty minutes, and now meant ten
+    minutes. <strong>Identical source text, six times the duration, no compile error.</strong> The
+    build was clean and all thirty tests passed while that was unresolved.
+  </p>
+  <p>
+    In the JavaScript rebuild, the language caught nothing at all, at any point, for any reason.
+    A property rename across two production files produced zero errors, zero warnings and zero
+    crashes. The program ran.
+  </p>
+  <p>
+    Against that, the state-structured builds: every ripple location surfaced
+    {{metric:M-TE-CSSTATE-RIPPLE}}, and in the F# trial {{metric:M-TE-FSSTATE-RIPPLE}} across two
+    root causes — each root cause showing every affected call site at once. Zero required a manual
+    search.
+  </p>
+  <p><strong>Limit.</strong> Comparing the state trials against the conventional rebuilds is partly
+  a comparison of persona, and the state trials' own reports say so. What is <em>not</em> a persona
+  effect is the structural point below.</p>
+</section>
+
+<section>
+  <h2 id="structural">Some things are not measured — they are guaranteed</h2>
+  <p>
+    These are properties of the code, verifiable by reading it. They carry no confidence interval
+    because they are not statistical claims.
+  </p>
+  <div class="grid">
+    <div class="card">
+      <h3>A duration cannot be passed as a time</h3>
+      <p>
+        <code>TimeOfDay</code> and <code>DurationMinutes</code> are separate nominal types, with
+        the source comment stating the reason: so a caller "cannot pass a duration where a
+        time-of-day is expected and have it compile." The failure mode from the section above is
+        not unlikely here. It is unsayable.
+      </p>
+    </div>
+    <div class="card">
+      <h3>A missing case is a build error</h3>
+      <p>
+        The entry lifecycle is a closed set with exhaustiveness checking elevated to a build
+        error. Adding a state does not risk a forgotten branch; it produces a failing build at
+        every site that must now decide what the new state means.
+      </p>
+    </div>
+    <div class="card">
+      <h3>No half-transitioned value is observable</h3>
+      <p>
+        Every command produces a new immutable value rather than mutating one in place. There is
+        no public setter, so a caller holding a reference from before a command ran sees the
+        pre-transition value — never a partially updated one.
+      </p>
+    </div>
+    <div class="card">
+      <h3>A terminal state is tested, not assumed</h3>
+      <p>
+        Nothing leaves <em>Superseded</em>. Every guard refuses it and two acceptance criteria
+        assert the refusal — so the constraint is verified rather than merely absent from the
+        code, which is indistinguishable from an oversight.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2 id="specification">Specification clarity is reachable, and it is the new bottleneck</h2>
+  <p>
+    {{ref:R-PRP}} concludes that under specification governance the constraint on velocity moves
+    from generation to specification clarity. Two independent builds of the same frozen
+    requirements tested whether that clarity is actually achievable by an agent.
+  </p>
+  {{metrics:M-GF2A-AC,M-GF2B-SCOPE,M-GF2B-CONVERGE}}
+  <p>
+    Both builds implemented all 12 product requirements, all 20 business rules and all 58
+    acceptance criteria, with an ID-by-ID mapping from each criterion to the test covering it.
+    Both preserved all nine open questions as unresolved rather than guessing past them. Neither
+    had seen the other's work.
+  </p>
+  <p>
+    They converged on the same seven entities, the same three state machines, the same transition
+    set, a mathematically identical overlap formula and an identical billing formula — and
+    independently arrived at the same architecture for deriving capabilities from the predicates
+    the transitions enforce, documenting the reason in nearly the same words. Across 41
+    requirement-level decisions they differed on one, and that one was a scope question about what
+    to build rather than a disagreement about a rule.
+  </p>
+  <p>
+    Cold-start reconstruction was also tested directly: {{metric:M-TE-CSSTATE-COLDSTART}} —
+    what the application does, where authoritative state lives, which transitions are legal, where
+    each workflow is implemented and how it is tested, all answerable from the generated documents
+    without opening a source file.
+  </p>
+  <p><strong>Limit.</strong> Two builds are a replication, not a sample, and both came from the
+  same model family — convergence between similar systems is weaker evidence than convergence
+  between different ones. The cold-start figure was self-assessed after a documentation gap had
+  been closed, not tested on an actual fresh reader.</p>
+</section>
+
+<section>
+  <h2 id="construction">Requirements-first construction held up</h2>
+  {{metrics:M-TE-CSSTATE-DEFECTS,M-TE-CSSTATE-REWORK,M-TE-CSSTATE-SEARCH,M-TE-CSSTATE-CONTEXT}}
+  <p>
+    Recovering the requirements, modelling the states, and only then implementing produced a first
+    pass with no runtime domain defects and nothing rewritten because earlier work was wrong. All
+    sixteen domain files touched contained semantic decisions; none contained only mechanical
+    propagation. Eighteen searches across the entire trial, with no occasion where in-hand context
+    proved insufficient.
+  </p>
+  <p><strong>Limit, and it is a real one.</strong> This was a single uninterrupted pass with no
+  later requirement change to force rework. The trial's own report is explicit that Semantic
+  Change Coverage is therefore <em>not applicable</em> rather than zero, and that a fair claim
+  about reduced rework would need a follow-up change-task trial it did not run. We are not making
+  that claim.</p>
+</section>
+
+<section class="contradictions">
+  <h2 id="no-difference">What we tested and did not find</h2>
+  <p>
+    The most tightly controlled experiment in this evidence base was built to test whether
+    explicit domain types reduce the cost of propagating a change. It held feature scope, code
+    quality, the change itself and the agent constant, varying only the presence of opaque types,
+    with falsification criteria set in advance.
+  </p>
+  <p>It refuted the hypothesis in its stronger form.</p>
+  {{metrics:M-TE-BASELINE-RENAME,M-TE-BASELINE-ARITH,M-TE-BASELINE-MISSED}}
+  <p>
+    On field renames, both the conventional and the explicitly-typed implementation caught every
+    call site automatically — no measurable difference. On arithmetic business rules embedded in
+    expressions, neither type system helped: a wrong divisor compiles cleanly in both, because the
+    value is a bare number until it crosses a smart constructor.
+  </p>
+  <p>
+    The one asymmetry observed was a <em>discovery</em> failure, not a type failure — a pattern
+    search missed a site where the same rounding was written as a division by 360 rather than by 6.
+    And the report traces even that to architecture rather than language: the explicitly-typed
+    domain routed arithmetic through named accessors, so there were fewer raw sites to miss. That
+    discipline is achievable in either language.
+  </p>
+  <p>
+    The hypothesis record remains open rather than supported. We publish this because an evidence
+    base that only contains its own confirmations is not an evidence base.
+  </p>
+</section>
+
+<section class="limitations">
+  <h2 id="limits">What none of this establishes</h2>
+  <ul>
+    <li>
+      <strong>Nothing about cost or schedule.</strong> Token and cost telemetry was unavailable for
+      most trials, and the one experiment that produced cost figures for a paired comparison was
+      interrupted mid-run, leaving its treatment condition a documented lower bound rather than a
+      total.
+    </li>
+    <li>
+      <strong>Nothing about repeated change.</strong> No change-task trial has been run against a
+      state-structured codebase, so the argument that Ordo's advantage compounds across successive
+      changes has no data behind it. It is plausible and it is unmeasured.
+    </li>
+    <li>
+      <strong>Nothing about teams.</strong> Every trial was executed by a single agent or a single
+      supervised session.
+    </li>
+    <li>
+      <strong>Nothing about experts in familiar code.</strong> {{ref:R-EXPERTISE-REVERSAL}}
+      predicts that structure which helps a newcomer can add load for someone who already holds
+      the model. Ordo asks for declarations up front; for an expert in a codebase they know well,
+      that is a cost we have not measured.
+    </li>
+    <li>
+      <strong>Nothing beyond four languages.</strong> F#, TypeScript, C# and JavaScript. No claim
+      about Java, Go, Rust, Python or anything else.
+    </li>
+    <li>
+      <strong>No comparison against unconstrained development of the same requirements.</strong>
+      None of the trials has a counterfactual arm.
+    </li>
+  </ul>
+</section>
+
+<section>
+  <h2>The research behind it</h2>
+  <p>
+    Independent work establishing the problem, with what each source does and does not support:
+  </p>
+  {{references}}
+  <p>
+    Our own trials, with objective, method, findings, refutations, anomalies and limits recorded
+    per experiment: <a href="{{link:/evidence/}}">the experiment records →</a> and
+    <a href="{{link:/research/}}">the full map of what is supported, provisional, contradicted and
+    open →</a>
+  </p>
+</section>

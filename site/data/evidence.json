@@ -423,42 +423,148 @@
       ]
     },
     {
-      "id": "time-entry-effort",
-      "slug": "time-entry-effort",
-      "title": "Effort experiment — the same domain rebuilt twice in conventional styles",
+      "id": "te-csharp-state",
+      "slug": "te-csharp-state",
+      "title": "C# state-system trial — the same domain, structured explicitly",
       "status": "Complete",
-      "summary": "The same requirement set built three ways — an explicit-state F# domain, and two deliberately ordinary rebuilds in C# and JavaScript — with every mistake recorded as it happened and classified by what caught it.",
       "repository": "time-entry",
       "branch": "main",
       "endingSha": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
-      "agent": "A single session, building each rebuild live under a stated persona and a no-look-ahead rule.",
-      "objective": "Find out not whether one language produces fewer mistakes, but what kind of mistake each approach allows to exist, and what mechanism has to catch it.",
-      "hypothesis": "An explicit-state domain converts classes of mistake that a conventional codebase can only catch by disciplined manual review into mistakes a compiler catches automatically.",
-      "method": "Each requirement was implemented in the order the requirements document lists it, with no reading ahead and nothing generalised in anticipation of a later requirement. Whatever rework a later requirement forced on earlier code was the data point. Files touched, line deltas, build attempts, test runs to green, rework and mistakes were recorded per requirement as each one landed, with mistakes distinguished from ordinary iteration.",
+      "agent": "Claude Code (Sonnet 5), single continuous session, .NET SDK 10, C# latest.",
+      "summary": "The full time-entry domain built in C# against an explicit state model, reaching a first clean pass with no domain defects and no rework.",
+      "objective": "Recover the complete current requirement set, model it explicitly as states and legal transitions, then implement it in C# — and record what the compiler could and could not find along the way.",
+      "hypothesis": "Explicitly modelling state before implementing concentrates the work in semantic decisions and lets mechanical checks find the propagation.",
+      "method": "Requirements were recovered from the repository into a 398-line specification, modelled as a state machine with a 14-row legal-transition table, and only then implemented. Every phase boundary was timestamped, every discovery classified as compiler-found or search-found, and an adversarial state-system test run against the result.",
       "findings": [
-        "The raw mistake counts came out close: six in the F# domain across about 1,600 changed lines, six rework-driving mistakes in the 1,645-line C# rebuild.",
-        "What differed was the mechanism that caught them. In the C# rebuild the compiler caught four, and every one of the sharpest bugs — swapped string arguments, a stale revision captured in a loop, a signature change hidden behind var — was something the compiler was structurally unable to catch even in principle. Each was found only by a person deliberately re-reading a diff before running it.",
-        "In the JavaScript rebuild, the language caught nothing at all, at any point, for any reason. Renaming a property across two production files produced zero errors, zero warnings and zero crashes; the program ran.",
-        "The F# mistake rate fell across increments, from five to one to zero.",
-        "Building the C# correction path surfaced a genuine error in the reconstructed requirements themselves, which were corrected in place rather than left wrong."
+        "Zero runtime domain defects and a rework ratio of 0%: no completed work was replaced because earlier work was wrong.",
+        "Every ripple location was found by the compiler. A genuine naming ambiguity surfaced at both affected call sites in a single build, with exact file and line, and none of the trial's ripple locations required a manual search.",
+        "All sixteen domain files touched contained semantic decisions; none contained only mechanical propagation.",
+        "All ten cold-start questions — what the application does, where authoritative state lives, which transitions are legal, where each workflow is implemented, how it is tested — were answerable from the four generated documents without opening a single source file.",
+        "Sixty-five tests, five build attempts, three repair loops, none of them a domain-logic error.",
+        "Eighteen search operations across the whole trial, with zero context expansions beyond the planned reading list."
       ],
       "contradictions": [
-        "Read naively, the JavaScript rebuild looks best: two rework-driving mistakes against C#'s six, at comparable size. The log refuses that reading and explains why. This trial had already built the identical requirement set once, and that advantage shows up precisely in the two places where a failure mode from the earlier trial was consciously checked for and avoided. Adding those near-misses back brings the counts close to even.",
-        "The falling F# mistake rate is recorded as a threat to validity rather than as a result: it is at least partly a learning-curve effect, and the final increment was also the most structurally isolated change of the three.",
-        "The honest conclusion the log supports is explicitly narrower than 'F# had fewer mistakes'."
+        "The clean first pass is not evidence that the architecture reduces rework. The trial's own report states this plainly: with no later requirement change to force one, Semantic Change Coverage is NOT APPLICABLE rather than zero, and a fair claim would need a follow-up change-task trial that this experiment did not run."
       ],
       "anomalies": [
-        "The F# baseline already existed before the session began, so there is no F# from-scratch effort data to compare against the rebuilds' baseline builds. Only the incremental extensions are directly comparable.",
-        "The C# rebuild's tracking table under-counted the actual requirement list twice, causing two requirements to be built out of order. This is a property of the experiment's own bookkeeping, not of the code.",
-        "Two mistakes in the JavaScript rebuild were deliberately avoided by hindsight rather than by tooling, and are recorded as non-events rather than counted as successes."
+        "Two of the three repair loops were C#-specific language and tooling constraints unrelated to domain modelling. The third was a test that wrongly assumed record equality deep-compares a collection member — a gap no compiler warning exists for in any configuration, caught only by running the test.",
+        "The agent escalated once, to a human, over a governing document that was missing from the repository.",
+        "Timing figures come from phase-boundary timestamps the agent chose to record, not from independent instrumentation. The report attaches that caveat rather than overstating precision.",
+        "Token, cost and total-token figures are NOT AVAILABLE — not exposed to the agent."
       ],
       "limitations": [
-        "One person, one session, one domain. Style was varied under a stated persona rather than by recruiting developers who actually work that way.",
-        "The rebuilds were written by someone who already knew the answer, which is a named threat to validity in the record itself and the reason the persona and no-look-ahead rules exist at all.",
-        "Mistake counts across trials are not comparable without accounting for order: each rebuild benefited from everything the previous one learned.",
-        "Nothing here measures cost, time or defect escape rate in production. It measures what caught each mistake before anything shipped."
+        "A single uninterrupted implementation pass by one agent. No later requirement change forced rework, which is precisely where the two conventional trials produced their most informative findings.",
+        "Comparing this trial against the conventional rebuilds is a comparison of persona as much as of architecture: this trial deliberately reached for the strongest available C# patterns, and those trials deliberately reached for ordinary ones.",
+        "Not evidence about C# versus F#: no F# implementation of this same state-guided design existed when the trial ran.",
+        "Adversarial testing found what it found in the time available. Absence of a further finding is not proof there is none."
       ],
       "sources": [
+        {
+          "repository": "time-entry",
+          "path": "effort-experiment/c-sharp-state/EXPERIMENT-REPORT.md",
+          "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81"
+        },
+        {
+          "repository": "time-entry",
+          "path": "effort-experiment/c-sharp-state/STATE-MODEL.md",
+          "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81"
+        },
+        {
+          "repository": "time-entry",
+          "path": "effort-experiment/c-sharp-state/EXECUTION-MAP.md",
+          "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81"
+        },
+        {
+          "repository": "time-entry",
+          "path": "effort-experiment/c-sharp-state/STATE-SYSTEM-TEST-REPORT.md",
+          "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81"
+        }
+      ]
+    },
+    {
+      "id": "te-fsharp-state",
+      "slug": "te-fsharp-state",
+      "title": "F# state-system trial — same requirements, same model, different language",
+      "status": "Complete",
+      "repository": "time-entry",
+      "branch": "main",
+      "endingSha": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+      "agent": "Claude Code (Sonnet 5), same session as the C# trial, .NET SDK 10, F# 10.",
+      "summary": "The C# trial's requirements and state model reused verbatim and implemented in F#, holding the specification fixed so the comparison isolates language.",
+      "objective": "Hold requirements and the semantic model constant and vary only the implementation language, to see what changes.",
+      "hypothesis": "With the model fixed, differences between the two implementations are attributable to language rather than to design.",
+      "method": "The requirement specification and state model were reused verbatim — a deliberate, recorded methodological choice — with no independent requirement recovery or modelling. Implementation, testing and an adversarial state-system test followed the same protocol as the C# trial.",
+      "findings": [
+        "Zero runtime domain defects, and a rework ratio of 0%.",
+        "Seventeen ripple locations across two root causes, and every one of them surfaced at every affected call site in a single build. None required a manual search.",
+        "Sixty-three tests, four build attempts, two repair loops, both compiler-driven and both resolved on the first retry.",
+        "With the specification already in hand, the domain reached a first clean build in five minutes and the whole trial took under seventeen."
+      ],
+      "contradictions": [
+        "The dramatic timing difference from the C# trial is not a language result. This trial skipped requirement recovery and modelling entirely by reusing them, which is the single largest methodological difference between the two and shapes every timing metric."
+      ],
+      "anomalies": [
+        "Both failed builds were in the test project rather than the domain, each one root cause surfacing at many call sites at once.",
+        "Token and cost figures were not exposed to the agent."
+      ],
+      "limitations": [
+        "Requirements and model were reused rather than independently derived, so this trial measures implementation, not the full engineering task.",
+        "One agent, one session, one domain. Two implementations are a pair, not a sample.",
+        "Nothing here compares either language against an unconstrained implementation of the same model."
+      ],
+      "sources": [
+        {
+          "repository": "time-entry",
+          "path": "effort-experiment/f-sharp-state/EXPERIMENT-REPORT.md",
+          "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81"
+        },
+        {
+          "repository": "time-entry",
+          "path": "effort-experiment/f-sharp-state/STATE-SYSTEM-TEST-REPORT.md",
+          "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81"
+        }
+      ]
+    },
+    {
+      "id": "te-conventional-csharp",
+      "slug": "te-conventional-csharp",
+      "title": "Conventional C# rebuild — ordinary practice, requirement by requirement",
+      "status": "Complete",
+      "repository": "time-entry",
+      "branch": "main",
+      "endingSha": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+      "agent": "A single session building under a stated persona and a no-look-ahead rule.",
+      "summary": "The same domain rebuilt the way a great deal of production C# is actually written, with every mistake recorded live and classified by what caught it.",
+      "objective": "Find out what kind of mistake ordinary C# practice allows to exist, and which mechanism has to catch it.",
+      "hypothesis": "An explicit-state domain converts classes of mistake that conventional code can only catch by disciplined manual review into mistakes a compiler catches automatically.",
+      "method": "Built under an explicit persona — a competent professional C# developer who has never worked in a functional language, reaching for mutable classes and bare primitives by default. Deliberately not a strawman. Each requirement was implemented in the order the specification lists it, with no reading ahead and nothing generalised in anticipation. Whatever rework a later requirement forced was the data point.",
+      "findings": [
+        "The unit-of-measure change is the finding. Renaming a duration field caught eight call sites in the compiler — and left roughly fourteen more where duration was passed as a bare positional integer, so identical source text silently changed meaning by a factor of six.",
+        "Those fourteen sites had to be found by hand and each one's intent re-read to decide what it had meant. Two were left unchanged not because they were verified but because they happened to remain valid by coincidence.",
+        "The build was clean and all thirty tests passed while that ambiguity was in flight. Nothing mechanical distinguished a correctly-migrated call site from a silently wrong one.",
+        "Of six rework-driving mistakes, the compiler caught four. Every one of the sharpest — two swapped same-typed string arguments, a stale revision captured in a loop, a signature change hidden behind an inferred local — was structurally beyond what a compiler can catch, and was found only by a person re-reading a diff before running it.",
+        "Building the correction path surfaced a real error in the reconstructed requirements themselves, which were corrected rather than left wrong."
+      ],
+      "contradictions": [
+        "On the tracked metric this requirement looks better here than in the explicitly-typed codebase: one build attempt, one test run, zero mistakes that survived. The log records that headline as true but incomplete, and is explicit that the metric alone is misleading for a rename-shaped change under a primitive-typed design."
+      ],
+      "anomalies": [
+        "The trial's own tracking table under-counted the requirement list twice, causing two requirements to be built out of order — a property of the bookkeeping, not the code.",
+        "The re-reading discipline that caught the sharpest bugs held for the entire build by design. The persona being simulated — a competent professional under deadline — is the group least likely to apply it consistently."
+      ],
+      "limitations": [
+        "One person, one session, one domain, style varied under a stated persona rather than by recruiting developers who work that way.",
+        "Written by someone who already knew the answer. This is a named threat to validity in the record, and the reason the persona and no-look-ahead rules exist.",
+        "Mistake counts are not comparable across trials without accounting for order: each rebuild benefited from what the previous one learned.",
+        "Nothing here measures cost, schedule, or defect escape in production."
+      ],
+      "sources": [
+        {
+          "repository": "time-entry",
+          "path": "effort-experiment/EFFORT-LOG.md",
+          "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+          "section": "Totals — the complete hodgepodge build"
+        },
         {
           "repository": "time-entry",
           "path": "effort-experiment/README.md",
@@ -466,17 +572,111 @@
         },
         {
           "repository": "time-entry",
-          "path": "effort-experiment/EFFORT-LOG.md",
+          "path": "research/experiments/EX-TE-2026-0002--hodgepodge-csharp-full-rebuild.md",
           "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81"
+        }
+      ]
+    },
+    {
+      "id": "te-conventional-js",
+      "slug": "te-conventional-js",
+      "title": "Conventional JavaScript rebuild — the same domain with no type checker at all",
+      "status": "Complete",
+      "repository": "time-entry",
+      "branch": "main",
+      "endingSha": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+      "agent": "The same session and persona protocol as the conventional C# rebuild.",
+      "summary": "The identical requirement set built a third time in JavaScript, to see what changes when the language offers no static checking whatsoever.",
+      "objective": "Separate what the architecture contributes from what the language contributes, by removing static checking entirely.",
+      "hypothesis": "The mechanism that catches a mistake matters more than the number of mistakes, and it should be visible when the language contributes nothing.",
+      "method": "Same persona, same no-look-ahead rule, same requirement order as the C# rebuild.",
+      "findings": [
+        "Nothing was caught by the language, at any point, for any reason. Renaming a property across two production files produced zero errors, zero warnings and zero crashes. The program ran.",
+        "Every defect that did not ship was caught by a test asserting a concrete value, or by a person deliberately re-reading code — never once by the tool doing the running.",
+        "Eight of twenty-one existing tests did fail after the unit-of-measure change, all from one root cause, which is a real safety net and is recorded as one.",
+        "One defect — five dead references left from an earlier requirement — was found only by a suspicion-driven search, after the identical failure shape had already been documented once."
+      ],
+      "contradictions": [
+        "Read on raw count this trial wins: two rework-driving mistakes against the C# rebuild's six, at comparable size. The log refuses that reading and explains why — this trial had already built the identical requirement set once, and the advantage shows up precisely in the two places where a failure mode from the earlier trial was consciously checked for and avoided.",
+        "Adding those two hindsight-avoided near-misses back brings the counts close to even, which is why the count is not the result."
+      ],
+      "anomalies": [
+        "Two mistakes were avoided by hindsight rather than by tooling, and are recorded as non-events rather than counted as successes.",
+        "Every one of nineteen run attempts was clean on the first try — because there is no build step or type checker for a configuration or signature error to fail against before the tests run."
+      ],
+      "limitations": [
+        "Third build of the same requirements by the same session: the strongest ordering confound in the series.",
+        "A single configuration. Zero language-caught mistakes is a property of JavaScript without a type checker, not a claim about JavaScript projects that use one.",
+        "One person, one domain, one session."
+      ],
+      "sources": [
+        {
+          "repository": "time-entry",
+          "path": "effort-experiment/EFFORT-LOG.md",
+          "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+          "section": "Totals — the complete hodgepodge JavaScript build"
         },
         {
           "repository": "time-entry",
-          "path": "research/experiments/EX-TE-2026-0002--hodgepodge-csharp-full-rebuild.md",
+          "path": "effort-experiment/JavaScript/README.md",
           "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81"
         },
         {
           "repository": "time-entry",
           "path": "research/experiments/EX-TE-2026-0003--hodgepodge-javascript-full-rebuild.md",
+          "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81"
+        }
+      ]
+    },
+    {
+      "id": "te-controlled-baseline",
+      "slug": "te-controlled-baseline",
+      "title": "Controlled baseline — everything held constant except explicit domain types",
+      "status": "Complete — and it refuted the hypothesis it was built to test",
+      "repository": "time-entry",
+      "branch": "main",
+      "endingSha": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+      "agent": "One session, which had already designed and implemented the change once in F# before the trial began.",
+      "summary": "The most tightly controlled comparison in this evidence base, and the one that contradicts the easy conclusion. It is published because it did.",
+      "objective": "For the same conceptual change, compare a codebase with explicit domain types against an otherwise-competent conventional implementation — holding feature scope, code quality, the change itself, and the agent constant.",
+      "hypothesis": "Explicit domain types reduce the cost of propagating a change. Falsification was preregistered: if the conventional baseline needed equal or fewer edits and surfaced equal or fewer stale-call-site defects, the hypothesis would not be supported.",
+      "method": "A conventional TypeScript baseline was written to reflect competent practice — shared validation, immutable updates, a discriminated result type, real tests — with the single removed ingredient being opaque domain types for the value that changes meaning. The identical conceptual change was then applied to it and compared against the same change already made to the explicitly-typed F# domain.",
+      "findings": [
+        "On field renames there was no measurable difference. Both the structural and the nominal type system caught every call site automatically and completely.",
+        "On arithmetic business rules embedded in expressions, neither type system helped at all. A wrong divisor compiles cleanly in both, because the value is a bare number until it crosses a smart constructor.",
+        "The one real asymmetry was a discovery failure, not a type failure: a grep for the conversion pattern missed a seventh site where the same rounding was written as a division by 360 rather than by 6. It was found only by a second, suspicion-driven search.",
+        "That asymmetry traces to architecture rather than language — the explicitly-typed domain routed duration arithmetic through named accessors instead of inlining the conversion, so there were fewer raw sites to miss."
+      ],
+      "contradictions": [
+        "This experiment contradicts the stronger form of its own hypothesis. Explicit domain types do not reduce ripple cost as a blanket claim: for arithmetic-embedded business rules they do not reduce it at all.",
+        "The hypothesis record remains open rather than supported, with this trial recorded as contradicting evidence.",
+        "The advantage that was observed is achievable without changing the type system — centralising a conversion is a discipline, not a language feature, and the report says it arguably should have been applied to the baseline too."
+      ],
+      "anomalies": [
+        "The change had already been designed and implemented once before the trial, so both writing the baseline and applying the change benefited from knowing the target precisely.",
+        "The same agent that values explicit domain types wrote the competently-conventional baseline it then measured against.",
+        "No blinding."
+      ],
+      "limitations": [
+        "One change, one baseline, one agent, one language pairing. A single trial is a data point, not a finding.",
+        "It measures the cost of propagating a known, well-understood change through each architecture, not the cost of designing the change.",
+        "It compares F# against TypeScript rather than a typed against a primitive-typed version of one language, so language and type-system variables are not fully separated.",
+        "An independently written baseline would be more convincing than one written by the same author."
+      ],
+      "sources": [
+        {
+          "repository": "time-entry",
+          "path": "research/experiments/EX-TE-2026-0001--conventional-baseline-comparison.md",
+          "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81"
+        },
+        {
+          "repository": "time-entry",
+          "path": "research/hypotheses/HY-TE-2026-0001--explicit-domain-types-reduce-ripple-cost.md",
+          "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81"
+        },
+        {
+          "repository": "time-entry",
+          "path": "research/experiments/EX-TE-2026-0001-conventional-baseline/baseline.ts",
           "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81"
         }
       ]
@@ -1003,27 +1203,12 @@
       }
     },
     {
-      "id": "M-TE-FS",
-      "label": "Mistakes in the explicit-state F# domain",
-      "value": "6",
-      "definition": "Real wrong decisions across about 1,600 lines of new and changed code in three increments — a bug introduced, or a requirement re-implemented because the first attempt was wrong — counted separately from ordinary build-fix iteration.",
-      "measurement": "Recorded live per increment as each mistake occurred, with what caught it.",
-      "experiment": "time-entry-effort",
-      "provenance": "self-reported",
-      "limitation": "The rate fell from five to one to zero across increments. The log records this as at least partly a learning-curve effect, not evidence the architecture got safer.",
-      "source": {
-        "repository": "time-entry",
-        "path": "effort-experiment/EFFORT-LOG.md",
-        "section": "F# totals across all three increments"
-      }
-    },
-    {
       "id": "M-TE-CS",
       "label": "Mistakes in the conventional C# rebuild",
       "value": "6",
       "definition": "Rework-driving mistakes across a 1,645-line rebuild, built requirement by requirement with no reading ahead.",
       "measurement": "Recorded live per requirement, with build attempts, test runs to green, rework and the mechanism that caught each mistake.",
-      "experiment": "time-entry-effort",
+      "experiment": "te-conventional-csharp",
       "provenance": "self-reported",
       "limitation": "The raw count matching the F# domain's is the least interesting thing about this number. What differs is which mechanism caught each one.",
       "source": {
@@ -1038,7 +1223,7 @@
       "value": "4 of 6",
       "definition": "How many of the conventional C# rebuild's mistakes the compiler caught by itself.",
       "measurement": "Classified per mistake as it was found.",
-      "experiment": "time-entry-effort",
+      "experiment": "te-conventional-csharp",
       "provenance": "self-reported",
       "limitation": "Every one of the sharpest bugs — swapped string arguments, a stale revision in a loop, a signature change hidden behind var — was outside what the compiler could catch even in principle, and was found only by a person re-reading a diff.",
       "source": {
@@ -1048,14 +1233,14 @@
       }
     },
     {
-      "id": "M-TE-JS-TOOLING",
-      "label": "JavaScript mistakes caught by the language",
-      "value": "0",
-      "definition": "How many mistakes in the 1,540-line JavaScript rebuild were caught by the language or its tooling.",
-      "measurement": "Classified per mistake. Renaming a property across two production files produced zero errors, zero warnings and zero crashes; the program ran.",
-      "experiment": "time-entry-effort",
-      "provenance": "instrumented",
-      "limitation": "Zero here is a property of the configuration — no compiler and no static type checker — not a claim about JavaScript projects that use one.",
+      "id": "M-TE-JS",
+      "label": "Rework-driving mistakes in the JavaScript rebuild",
+      "value": "2",
+      "definition": "Substantive mistakes across the 1,540-line JavaScript rebuild of the same requirement set.",
+      "measurement": "Recorded live per requirement under the same rules as the C# rebuild.",
+      "experiment": "te-conventional-js",
+      "provenance": "self-reported",
+      "limitation": "Read naively this beats the C# rebuild's six, which is the opposite of what the same trial's other findings predict. The log attributes it to having already built the identical requirement set once, and names the two places where that hindsight prevented a repeat of an earlier failure.",
       "source": {
         "repository": "time-entry",
         "path": "effort-experiment/EFFORT-LOG.md",
@@ -1063,18 +1248,227 @@
       }
     },
     {
-      "id": "M-TE-JS",
-      "label": "Rework-driving mistakes in the JavaScript rebuild",
-      "value": "2",
-      "definition": "Substantive mistakes across the 1,540-line JavaScript rebuild of the same requirement set.",
-      "measurement": "Recorded live per requirement under the same rules as the C# rebuild.",
-      "experiment": "time-entry-effort",
+      "id": "M-TE-CS-SILENT",
+      "label": "Call sites where a rename silently changed meaning",
+      "value": "~14",
+      "definition": "Sites in the conventional C# rebuild where duration was passed as a bare positional integer, so the same source text meant something six times different after the unit change.",
+      "measurement": "Counted by hand during the change, because no mechanism surfaced them. The compiler caught eight direct member accesses and none of these.",
+      "experiment": "te-conventional-csharp",
       "provenance": "self-reported",
-      "limitation": "Read naively this beats the C# rebuild's six, which is the opposite of what the same trial's other findings predict. The log attributes it to having already built the identical requirement set once, and names the two places where that hindsight prevented a repeat of an earlier failure.",
+      "limitation": "An approximate count of sites requiring manual re-interpretation, not a defect count. Every one was correctly migrated in this trial — the finding is that nothing mechanical distinguished a correct migration from a wrong one, not that wrong ones shipped.",
       "source": {
         "repository": "time-entry",
         "path": "effort-experiment/EFFORT-LOG.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "F1 — exact-minute recording + derived billing"
+      }
+    },
+    {
+      "id": "M-TE-CS-COINCIDENCE",
+      "label": "Values that survived the change correct by coincidence",
+      "value": "2",
+      "definition": "Call sites left unchanged not because they were verified but because their literal happened to remain valid under the new unit.",
+      "measurement": "Identified by reading each site's intent during the manual migration pass.",
+      "experiment": "te-conventional-csharp",
+      "provenance": "self-reported",
+      "limitation": "Two sites in one change in one codebase. It illustrates the failure mode rather than measuring its frequency.",
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "F1 — exact-minute recording + derived billing"
+      }
+    },
+    {
+      "id": "M-TE-JS-LANGUAGE",
+      "label": "Mistakes caught by the language",
+      "value": "0",
+      "definition": "Mistakes in the conventional JavaScript rebuild caught by the language or its tooling rather than by a test or a person.",
+      "measurement": "Classified per mistake as it was found. A property rename across two production files produced zero errors, zero warnings and zero crashes.",
+      "experiment": "te-conventional-js",
+      "provenance": "instrumented",
+      "limitation": "A property of JavaScript with no type checker configured, not a claim about JavaScript projects that use one.",
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
         "section": "Totals — the complete hodgepodge JavaScript build"
+      }
+    },
+    {
+      "id": "M-TE-CSSTATE-RIPPLE",
+      "label": "Ripple sites found by the compiler rather than by searching",
+      "value": "all of them",
+      "definition": "Locations needing change as a consequence of another change, and whether each was reported by the compiler or found by a manual search.",
+      "measurement": "Classified per location during the trial. Every ripple location was compiler-discovered; the manual-search count was zero.",
+      "experiment": "te-csharp-state",
+      "provenance": "self-reported",
+      "limitation": "One trial with one ripple-producing change. It shows the compiler covered this trial's ripple, not that it covers ripple in general — the controlled baseline trial found arithmetic changes that no type system catches.",
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/c-sharp-state/EXPERIMENT-REPORT.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "I. Compiler Ripple Analysis"
+      }
+    },
+    {
+      "id": "M-TE-CSSTATE-DEFECTS",
+      "label": "Runtime domain defects",
+      "value": "0",
+      "definition": "Defects in domain logic reaching a run, as distinct from test-authoring or language-tooling errors.",
+      "measurement": "Counted across the whole trial, with all three repair loops classified and none of them a domain-logic error.",
+      "experiment": "te-csharp-state",
+      "provenance": "self-reported",
+      "limitation": "A single uninterrupted first pass with no later requirement change to force rework. The trial's own report declines to read this as evidence that the architecture reduces rework.",
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/c-sharp-state/EXPERIMENT-REPORT.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "G. Metrics"
+      }
+    },
+    {
+      "id": "M-TE-CSSTATE-REWORK",
+      "label": "Rework ratio",
+      "value": "0%",
+      "definition": "Proportion of completed work replaced because earlier work turned out to be wrong.",
+      "measurement": "Derived from the per-file classification: no file was rewritten, and no semantic decision was revised.",
+      "experiment": "te-csharp-state",
+      "provenance": "derived",
+      "limitation": "No later requirement arrived to force rework during this trial, so this is the absence of a cause, not evidence of resistance to one.",
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/c-sharp-state/EXPERIMENT-REPORT.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "G. Metrics"
+      }
+    },
+    {
+      "id": "M-TE-CSSTATE-COLDSTART",
+      "label": "Cold-start questions answerable without opening source",
+      "value": "10 of 10",
+      "definition": "Whether a fresh engineer could answer what the application does, where authoritative state lives, which transitions are legal, where each workflow is implemented and how it is tested — from the generated documents alone.",
+      "measurement": "Evaluated question by question against the requirement specification, state model, execution map and state-system test report, holding source code in reserve.",
+      "experiment": "te-csharp-state",
+      "provenance": "self-reported",
+      "limitation": "Evaluated after a documentation gap found by the trial's own adversarial test had been closed, so it reflects the corrected state rather than the first pass. It was also self-assessed, not tested on an actual fresh reader.",
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/c-sharp-state/EXPERIMENT-REPORT.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "M. Cold-Start Reconstruction"
+      }
+    },
+    {
+      "id": "M-TE-CSSTATE-SEARCH",
+      "label": "Repository searches across the whole trial",
+      "value": "18",
+      "definition": "Find and grep operations performed during requirement recovery, modelling, implementation and verification combined.",
+      "measurement": "Recounted from the session transcript, superseding an earlier lower estimate.",
+      "experiment": "te-csharp-state",
+      "provenance": "instrumented",
+      "limitation": "Not comparable to the conventional trials, which did not record search counts the same way. It is a figure about this trial, not a measured reduction.",
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/c-sharp-state/EXPERIMENT-REPORT.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "G. Metrics"
+      }
+    },
+    {
+      "id": "M-TE-CSSTATE-CONTEXT",
+      "label": "Context expansions beyond the planned reading list",
+      "value": "0",
+      "definition": "Occasions where in-hand context proved insufficient and the agent had to widen its search to proceed.",
+      "measurement": "Counted during the trial.",
+      "experiment": "te-csharp-state",
+      "provenance": "self-reported",
+      "limitation": "One agent working from a specification it had itself just produced, which is a favourable condition. It does not measure what a fresh agent would need.",
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/c-sharp-state/EXPERIMENT-REPORT.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "G. Metrics"
+      }
+    },
+    {
+      "id": "M-TE-FSSTATE-RIPPLE",
+      "label": "Ripple sites surfaced in a single build",
+      "value": "17",
+      "definition": "Affected call sites across two root causes, and how many builds were needed to see them all.",
+      "measurement": "Counted per build. Each root cause surfaced at every affected call site at once; none required a manual search.",
+      "experiment": "te-fsharp-state",
+      "provenance": "instrumented",
+      "limitation": "These were test-project call sites, not domain logic. The figure shows completeness of compiler reporting, not severity.",
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/f-sharp-state/EXPERIMENT-REPORT.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "G. Metrics"
+      }
+    },
+    {
+      "id": "M-TE-FSSTATE-DEFECTS",
+      "label": "Runtime domain defects",
+      "value": "0",
+      "definition": "Defects in domain logic reaching a run.",
+      "measurement": "Counted across the trial, which reused the C# trial's requirements and model verbatim.",
+      "experiment": "te-fsharp-state",
+      "provenance": "self-reported",
+      "limitation": "Implementation only: requirement recovery and modelling were reused, not repeated, so this trial covers a smaller task than the C# one.",
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/f-sharp-state/EXPERIMENT-REPORT.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "G. Metrics"
+      }
+    },
+    {
+      "id": "M-TE-BASELINE-RENAME",
+      "label": "Difference between type systems on field renames",
+      "value": "none measurable",
+      "definition": "Whether an explicitly-typed domain propagated a field rename more completely than a competent conventional baseline.",
+      "measurement": "The identical change was applied to both and every call site counted. Both caught every site automatically.",
+      "experiment": "te-controlled-baseline",
+      "provenance": "instrumented",
+      "limitation": "This is a null result, published because the experiment was designed to be falsifiable. It does not mean types are useless; it means this particular change class does not distinguish them.",
+      "source": {
+        "repository": "time-entry",
+        "path": "research/experiments/EX-TE-2026-0001--conventional-baseline-comparison.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "Analysis"
+      }
+    },
+    {
+      "id": "M-TE-BASELINE-ARITH",
+      "label": "Help from either type system on arithmetic business rules",
+      "value": "none",
+      "definition": "Whether a wrong unit conversion embedded in an expression was caught by either implementation's type system.",
+      "measurement": "The same change was applied to both. A wrong divisor compiles cleanly in both, because the value is a bare number until it crosses a smart constructor.",
+      "experiment": "te-controlled-baseline",
+      "provenance": "instrumented",
+      "limitation": "This directly contradicts the stronger form of the hypothesis the experiment tested. It is on this site because it is true, not because it helps.",
+      "source": {
+        "repository": "time-entry",
+        "path": "research/experiments/EX-TE-2026-0001--conventional-baseline-comparison.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "Analysis"
+      }
+    },
+    {
+      "id": "M-TE-BASELINE-MISSED",
+      "label": "Conversion sites a pattern search missed",
+      "value": "1 of 7",
+      "definition": "Sites needing change that a grep for the conversion pattern failed to find, because the same rounding was written as a division by 360 rather than by 6.",
+      "measurement": "Found only by a second, deliberate search prompted by suspicion that the first pass was not exhaustive.",
+      "experiment": "te-controlled-baseline",
+      "provenance": "instrumented",
+      "limitation": "The report traces this to inlined conversions rather than to the type system, and notes the centralising discipline that avoided it is achievable in either language.",
+      "source": {
+        "repository": "time-entry",
+        "path": "research/experiments/EX-TE-2026-0001--conventional-baseline-comparison.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "Results"
       }
     }
   ],
@@ -1737,6 +2131,89 @@
         "repository": "sde",
         "path": "AGENTS.md"
       }
+    }
+  ],
+  "references": [
+    {
+      "id": "R-METR-RCT",
+      "title": "Measuring the Impact of Early-2025 AI on Experienced Open-Source Developer Productivity",
+      "author": "METR (Becker, Rush, Barnes, Rein)",
+      "year": "2025",
+      "url": "https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/",
+      "finding": "Sixteen experienced maintainers completed 246 real issues in repositories they knew well and were 19% slower with AI available, having forecast a 24% speedup and still believing afterwards they had been 20% faster.",
+      "limitation": "Sixteen developers, selected open-source projects, early-2025 tooling and self-reported time. The authors later judged a follow-up estimate unreliable because developers unwilling to work without AI declined to participate."
+    },
+    {
+      "id": "R-DORA-2025",
+      "title": "State of AI-assisted Software Development (2025 DORA report)",
+      "author": "DORA / Google Cloud",
+      "year": "2025",
+      "url": "https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report",
+      "finding": "Higher AI adoption now correlates with higher delivery throughput and, at the same time, with higher delivery instability — more change failures, more rework and longer recovery. DORA attributes the instability to change volume outrunning the control systems meant to absorb it.",
+      "limitation": "Survey-based observational associations, not causal measurement. It describes a correlation across organisations, not an effect any single team should expect."
+    },
+    {
+      "id": "R-DORA-2024",
+      "title": "Impact of Generative AI in Software Development (2024 DORA report)",
+      "author": "DORA",
+      "year": "2024",
+      "url": "https://dora.dev/ai/gen-ai-report/report/",
+      "finding": "Every 25% rise in AI adoption was associated with roughly a 1.5% fall in delivery throughput and a 7.2% fall in delivery stability, while individual satisfaction and self-reported productivity rose.",
+      "limitation": "Superseded in part: the 2025 report found the throughput relationship had reversed. Only the instability direction persisted. Cited here for the divergence between individual perception and system outcome, not for its throughput figure."
+    },
+    {
+      "id": "R-METR-HOLISTIC",
+      "title": "Holistic review of agent solutions on real repository tasks",
+      "author": "METR",
+      "year": "2025",
+      "url": "https://metr.org/research/",
+      "finding": "Across eighteen real tasks in two mature repositories, agent solutions could pass reference tests and still fail a holistic merge-readiness review on testing, documentation, formatting, typing or general quality.",
+      "limitation": "Eighteen tasks in two repositories, with merge-readiness judged by manual review rather than by an objective standard."
+    },
+    {
+      "id": "R-PRP",
+      "title": "The Productivity-Reliability Paradox: Specification-Driven Governance for AI-Augmented Software Development",
+      "author": "arXiv 2605.01160",
+      "year": "2026",
+      "url": "https://arxiv.org/abs/2605.01160",
+      "finding": "Telemetry across more than ten thousand developers showed 98% more pull requests, 91% longer review times and flat delivery metrics. The authors reconcile the contradictory productivity literature through task abstraction, codebase maturity and developer experience, and argue that under specification governance the bottleneck moves from generation to specification clarity.",
+      "limitation": "A framework paper synthesising other people's measurements. It proposes a governance model rather than reporting a controlled trial of one."
+    },
+    {
+      "id": "R-COPILOT",
+      "title": "Randomized controlled task: Copilot on a bounded HTTP-server implementation",
+      "author": "GitHub",
+      "year": "2022",
+      "url": "https://github.blog/news-insights/research/research-quantifying-github-copilots-impact-on-developer-productivity-and-happiness/",
+      "finding": "Ninety-five professional developers completed a bounded, automatically scored greenfield JavaScript task 55% faster with AI assistance, with a 78% completion rate against 70% for the control group.",
+      "limitation": "Run and published by the tool vendor, on a bounded greenfield task with automatic scoring. It demonstrates that speedup is possible in that setting, not that it generalises to maintenance work."
+    },
+    {
+      "id": "R-EXPERTISE-REVERSAL",
+      "title": "Expertise reversal: guidance effects depend on prior knowledge",
+      "author": "Educational-psychology randomized experiment",
+      "year": "2026",
+      "url": "https://en.wikipedia.org/wiki/Expertise_reversal_effect",
+      "finding": "Instructional guidance and redundancy that help a newcomer can add extraneous cognitive load for an expert, so a fixed template can simultaneously over-support one reader and under-support another.",
+      "limitation": "Established in instructional settings rather than in software engineering. It is a reason to expect a cost, not a measurement of that cost in a codebase."
+    },
+    {
+      "id": "R-RESUMPTION",
+      "title": "Contextual resumption cues and task-completion success",
+      "author": "Survey of 371 programmers with a controlled follow-up study",
+      "year": "2026",
+      "url": "https://dl.acm.org/",
+      "finding": "Automated contextual cues produced roughly twice the task-completion success of note-taking alone when programmers resumed interrupted work.",
+      "limitation": "A laboratory result with older tooling. It supports the idea of state-reconstruction aids without establishing that any particular aid works in production."
+    },
+    {
+      "id": "R-SPACE",
+      "title": "The SPACE of Developer Productivity",
+      "author": "Forsgren, Storey, Maddila, Zimmermann, Houck, Butler",
+      "year": "2021",
+      "url": "https://queue.acm.org/detail.cfm?id=3454124",
+      "finding": "Developer productivity spans satisfaction, performance, activity, communication and efficiency, and cannot be reduced to any single metric without distorting what it measures.",
+      "limitation": "A framework rather than a measurement. It tells you which dimensions to cover, not what good looks like on any of them."
     }
   ]
 }

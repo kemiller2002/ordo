@@ -176,6 +176,62 @@ let claimsTable (context: Context) (claims: Claim list) : string =
                   element "tbody" [] (claims |> List.map row |> concat) ]))
 
 // ---------------------------------------------------------------------------
+// External research
+// ---------------------------------------------------------------------------
+
+/// An inline citation of independent work: author and year, linked out, with
+/// the finding in the title attribute. Deliberately lighter than `citation`,
+/// which carries a repository path — this is someone else's study, not our
+/// artifact, and it should read like a citation rather than a provenance trail.
+let referenceInline (reference: Reference) : string =
+    element
+        "a"
+        [ "class", "ref"
+          "href", reference.Url
+          "rel", "noopener"
+          "title", reference.Title + " — " + reference.Finding ]
+        (escape (reference.Author + " " + reference.Year))
+
+/// Independent research, with what each study does and does not establish.
+let referenceTable (context: Context) : string =
+    let row (reference: Reference) =
+        element
+            "tr"
+            [ "id", reference.Id ]
+            (concat
+                [ element
+                      "th"
+                      [ "scope", "row" ]
+                      (element
+                          "a"
+                          [ "href", reference.Url; "rel", "noopener" ]
+                          (escape reference.Title))
+                  text "td" [] (reference.Author + ", " + reference.Year)
+                  text "td" [] reference.Finding
+                  text "td" [ "class", "misses" ] reference.Limitation ])
+
+    let head =
+        element
+            "tr"
+            []
+            (concat
+                [ text "th" [ "scope", "col" ] "Study"
+                  text "th" [ "scope", "col" ] "Source"
+                  text "th" [ "scope", "col" ] "Finding"
+                  text "th" [ "scope", "col" ] "Does not establish" ])
+
+    element
+        "div"
+        [ "class", "table-scroll" ]
+        (element
+            "table"
+            [ "class", "matrix matrix-refs" ]
+            (concat
+                [ text "caption" [] "Independent research this site relies on"
+                  element "thead" [] head
+                  element "tbody" [] (context.Manifest.References |> List.map row |> concat) ]))
+
+// ---------------------------------------------------------------------------
 // Experiments
 // ---------------------------------------------------------------------------
 
@@ -419,6 +475,15 @@ let resolveToken (context: Context) (token: string) : Validation<string> =
             error ("no claim matched '" + argument + "'")
         else
             ok (claimsTable context claims)
+    | "ref" ->
+        (match tryFindReference context.Manifest argument with
+         | Some reference -> ok (referenceInline reference)
+         | None -> error ("unknown reference id '" + argument + "'"))
+    | "references" ->
+        if List.isEmpty context.Manifest.References then
+            error "'references' was used but the manifest holds none"
+        else
+            ok (referenceTable context)
     | "experiments" -> ok (experimentIndex context)
     | "repositories" -> ok (repositoryTable context)
     | "glossary" -> ok (glossaryList context)

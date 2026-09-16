@@ -27,6 +27,7 @@ that lives elsewhere:
 | Evidence and metrics | `research/evidence/`, and the experiment repositories | `site/data/evidence.json` |
 | Proposition confidence | `doctrine/EVIDENCE-TO-ENGINEERING-MAP.md` | The `claims` array of `site/data/evidence.json` |
 | Defined terms | `doctrine/GLOSSARY.md` | The `glossary` array of `site/data/evidence.json` |
+| Independent research | External publications | The `references` array of `site/data/evidence.json` |
 
 If doctrine changes, the site does not follow automatically. That is a
 deliberate gap, not an oversight: an automatic copy would make the site a
@@ -38,7 +39,8 @@ second authority whose disagreement with the first nobody would notice. Update
 ```
 site/
   data/site.json        site name, description, canonical URL, path prefix, navigation
-  data/evidence.json    repositories, experiments, metrics, claims, glossary
+  data/evidence.json    repositories, experiments, metrics, claims, references, glossary
+  data/claim-sources.json  generated internal claim-to-source map (never published)
   content/**.html       authored pages: front matter + semantic HTML fragment
   narratives/<slug>.html  optional interpretation section for one experiment page
   assets/               stylesheet and favicon, copied verbatim to the site root
@@ -128,8 +130,49 @@ an id does not exist, which is the whole mechanism: a stale reference cannot be
 published, and neither can an invented one.
 
 Other tokens: `{{claims}}`, `{{claims:CL-001,CL-002}}`, `{{experiments}}`,
-`{{repositories}}`, `{{glossary}}`, `{{section:Name}}`,
-`{{diagram:transition|engineering|verification|lifecycle}}`, `{{link:/path/}}`.
+`{{repositories}}`, `{{glossary}}`, `{{references}}`, `{{ref:R-ID}}`,
+`{{section:Name}}`, `{{diagram:transition|engineering|verification|lifecycle}}`,
+`{{link:/path/}}`.
+
+`{{ref:R-ID}}` cites independent, external research inline; `{{references}}`
+renders the whole table with each study's finding and its stated limits. These
+are deliberately a different type from a metric's `source`: a source points into
+a repository this organisation controls, a reference points at work it does not,
+and the renderer styles them differently so a reader can tell at a glance which
+kind of authority a claim is resting on. An external study needs a `limitation`
+for the same reason a metric does — cited without its boundary it is being used
+as authority rather than as evidence.
+
+## Editorial posture
+
+The site leads with outcome and mechanism, not with experiment chronology. Two
+rules from `kemiller2002/communication-engineering` govern the prose and are
+worth restating because they are easy to lose under marketing pressure:
+
+1. **An example is not a warrant.** An analogy or a code sample can make a
+   relation imaginable without establishing it. Warrant comes from the evidence
+   manifest or from a cited study, never from the vividness of an illustration.
+2. **No holding voice.** We do not have adjudicative authority over the
+   question of whether Ordo works. Pages use invitation and evidence rather
+   than the grammar of a settled verdict.
+
+Page architecture follows the function each page performs: the home page and
+`/why/` build a case from familiar ground through objections; `/results/`
+narrows a question, concedes its limit, connects the effect and states what
+follows; `/adoption/` is task-linear; `/comparison/` is a dimension table.
+
+## Internal claim-source map
+
+`site/data/claim-sources.json` maps every published metric to its artifact,
+experiment, provenance class and stated limitation, plus every external
+reference. It is **not published** — the generator does not copy `site/data/`
+— and it exists so a maintainer or auditor can check any figure without the
+public pages carrying a citation on every number. Regenerate it whenever the
+manifest changes:
+
+```sh
+python3 scripts/claim-sources.py
+```
 Use `{{link:…}}` for internal links so the deployment path prefix stays in one
 place.
 

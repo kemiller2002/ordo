@@ -1,0 +1,37 @@
+<h2 id="interpretation">Interpretation</h2>
+<p>
+  The headline numbers are clean — no runtime domain defects, nothing rewritten, every ripple site
+  reported by the compiler — and the report's own limitations section is the reason to trust them
+  rather than the reason to discount them.
+</p>
+<p>
+  What this trial demonstrates is that requirements-first construction is achievable and produces a
+  navigable result. Forty-six minutes recovering requirements into a 398-line specification, sixteen
+  minutes modelling states and a fourteen-row legal-transition table, and only then an hour
+  implementing. The structural consequence is visible in the metrics: all sixteen domain files
+  touched contained semantic decisions and none contained only mechanical propagation, because the
+  decisions had already been made before any code was written.
+</p>
+<p>
+  The cold-start result is the one with the clearest practical value. Ten out of ten questions a
+  fresh engineer would need answered — what the application does, where authoritative state lives,
+  which transitions are legal, where each workflow is implemented, how it is tested — were
+  answerable from the four generated documents without opening a source file. The report is
+  scrupulous that this reflects the documentation state <em>after</em> a gap its own adversarial
+  test had found was closed, and that the assessment was made by the agent rather than by an actual
+  fresh reader.
+</p>
+<p>
+  What this trial explicitly does <strong>not</strong> demonstrate is the thing it would be most
+  commercially useful to claim. There was no later requirement change, so there was no ripple to
+  measure, so Semantic Change Coverage is recorded as <em>not applicable</em> rather than as zero.
+  The report says outright that a fair claim about reduced rework needs a follow-up change-task
+  trial against this codebase, and that inferring it from a clean first pass is not the same thing.
+  We have not run that trial, and we are not making that claim.
+</p>
+<p>
+  One detail is worth keeping for its own sake. The trial's third repair loop was a test that
+  assumed C#'s record equality deep-compares a collection member. It does not. No compiler warning
+  exists for that in any configuration — the only way to find it was to run the test and watch it
+  fail. A methodology that leans on mechanical checking needs that example in its own record.
+</p>

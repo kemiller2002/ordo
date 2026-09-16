@@ -257,6 +257,28 @@ let private readClaim (value: JsonValue) : Validation<Claim> =
     <*> requiredString "limitation" value
     <*> readSourceField "source" value
 
+let private makeReference id title author year url finding limitation : Reference =
+    { Id = id
+      Title = title
+      Author = author
+      Year = year
+      Url = url
+      Finding = finding
+      Limitation = limitation }
+
+/// `limitation` is required here for the same reason it is on a metric: an
+/// external study cited without its own boundary is being used as authority
+/// rather than as evidence.
+let private readReference (value: JsonValue) : Validation<Reference> =
+    ok makeReference
+    <*> requiredString "id" value
+    <*> requiredString "title" value
+    <*> requiredString "author" value
+    <*> requiredString "year" value
+    <*> requiredString "url" value
+    <*> requiredString "finding" value
+    <*> requiredString "limitation" value
+
 let private makeGlossaryEntry term definition origin source : GlossaryEntry =
     { Term = term
       Definition = definition
@@ -338,12 +360,13 @@ let private checkReferences (manifest: Manifest) : Validation<unit> =
     |> sequence
     |> map ignore
 
-let private makeManifest schemaVersion repositories experiments metrics claims glossary : Manifest =
+let private makeManifest schemaVersion repositories experiments metrics claims references glossary : Manifest =
     { SchemaVersion = schemaVersion
       Repositories = repositories
       Experiments = experiments
       Metrics = metrics
       Claims = claims
+      References = references
       Glossary = glossary }
 
 let private readManifest (value: JsonValue) : Validation<Manifest> =
@@ -357,6 +380,8 @@ let private readManifest (value: JsonValue) : Validation<Manifest> =
         <*> (objects "metrics" value
              |> bind (traverse (fun item -> readMetric item |> withContext "metric")))
         <*> (objects "claims" value |> bind (traverse (fun item -> readClaim item |> withContext "claim")))
+        <*> (objects "references" value
+             |> bind (traverse (fun item -> readReference item |> withContext "reference")))
         <*> (objects "glossary" value
              |> bind (traverse (fun item -> readGlossaryEntry item |> withContext "glossary")))
 
@@ -368,6 +393,7 @@ let private readManifest (value: JsonValue) : Validation<Manifest> =
               checkUnique "experiment slug" (manifest.Experiments |> List.map (fun e -> e.Slug))
               checkUnique "metric" (manifest.Metrics |> List.map (fun m -> m.Id))
               checkUnique "claim" (manifest.Claims |> List.map (fun c -> c.Id))
+              checkUnique "reference" (manifest.References |> List.map (fun r -> r.Id))
               checkUnique "glossary term" (manifest.Glossary |> List.map (fun g -> g.Term)) ]
             |> sequence
             |> map ignore

@@ -35,4 +35,5 @@
 | WI-0030 | Attribute the F# distribution rewrite to its work item (CI attribution repair) | complete | mechanical, ci-fix | high |
 | WI-0031 | Make the publish trigger safe across a default-branch rename to main | complete | ci, release | high |
 | WI-0032 | Build and publish the Ordo public website (Echelon Foundry State-Directed Engineering methodology) as an F#-generated, evidence-traceable static site deployed via GitHub Pages | complete |  | medium |
-| WI-0033 | Correct the Ordo site's deployment target: the custom domain ordo.echelonfoundry.com serves from the root, not a project-page path prefix | ready |  | medium |
+| WI-0033 | Correct the Ordo site's deployment target: the custom domain ordo.echelonfoundry.com serves from the root, not a project-page path prefix | complete |  | medium |
+| WI-0034 | Reposition the Ordo website as an outcome-led marketing site grounded in independent AI-engineering research and the five time-entry implementation trials | ready |  | medium |

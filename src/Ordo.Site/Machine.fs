@@ -107,6 +107,16 @@ let private repositoryJson (repository: Repository) : JsonValue =
           "visibility", JString repository.Visibility
           "role", JString repository.Role ]
 
+let private referenceJson (reference: Reference) : JsonValue =
+    JObject
+        [ "id", JString reference.Id
+          "title", JString reference.Title
+          "author", JString reference.Author
+          "year", JString reference.Year
+          "url", JString reference.Url
+          "finding", JString reference.Finding
+          "limitation", JString reference.Limitation ]
+
 let private glossaryJson (entry: GlossaryEntry) : JsonValue =
     JObject(
         [ "term", JString entry.Term
@@ -128,7 +138,8 @@ let evidenceDocument (config: Config) (manifest: Manifest) : string =
           "repositories", JArray(manifest.Repositories |> List.map repositoryJson)
           "experiments", JArray(manifest.Experiments |> List.map (experimentJson basePath manifest))
           "metrics", JArray(manifest.Metrics |> List.map (metricJson basePath manifest))
-          "claims", JArray(manifest.Claims |> List.map claimJson) ]
+          "claims", JArray(manifest.Claims |> List.map claimJson)
+          "references", JArray(manifest.References |> List.map referenceJson) ]
     |> renderDocument
 
 let glossaryDocument (manifest: Manifest) : string =

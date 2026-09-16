@@ -1,46 +1,38 @@
 {
   "name": "Ordo",
   "tagline": "State-Directed Engineering — Echelon Foundry",
-  "description": "Ordo is Echelon Foundry's State-Directed Engineering methodology: building software through explicit state, constrained transitions, structural locality, evidence, and mechanical verification. Every quantitative claim here is traceable to the artifact it came from.",
+  "description": "AI writes plausible code faster than teams can absorb it. Ordo is Echelon Foundry's State-Directed Engineering methodology: it makes state, legal actions, ownership and verification explicit, so correctness stops depending on what a human or an agent infers.",
   "baseUrl": "https://ordo.echelonfoundry.com",
   "pathPrefix": "",
   "customDomain": "ordo.echelonfoundry.com",
   "sourceRepository": "kemiller2002/state-directed-engineering",
   "sourceUrl": "https://github.com/kemiller2002/state-directed-engineering",
-  "footerNote": "Ordo is under active research. This site publishes what has been measured, what has been refuted, and what is still unknown, with equal prominence.",
+  "footerNote": "Ordo is Echelon Foundry's State-Directed Engineering methodology. Every number on this site comes from a recorded measurement, and every limit on those measurements is published alongside them.",
   "copyright": "© Echelon Foundry",
   "nav": [
     {
-      "label": "Why",
+      "label": "Why Ordo",
       "path": "/why/"
     },
     {
-      "label": "Method",
-      "path": "/method/"
+      "label": "How It Works",
+      "path": "/how-it-works/"
     },
     {
-      "label": "Concepts",
-      "path": "/concepts/"
+      "label": "Results",
+      "path": "/results/"
     },
     {
       "label": "Examples",
       "path": "/examples/"
     },
     {
-      "label": "Evidence",
-      "path": "/evidence/"
-    },
-    {
-      "label": "Research",
-      "path": "/research/"
-    },
-    {
       "label": "Adoption",
       "path": "/adoption/"
     },
     {
-      "label": "Glossary",
-      "path": "/glossary/"
+      "label": "About",
+      "path": "/about/"
     }
   ]
 }
