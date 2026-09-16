@@ -6,7 +6,6 @@
 /// half-replaced.
 module Ordo.Site.Build
 
-open System
 open System.IO
 open Ordo.Site.Validation
 open Ordo.Site.Content
@@ -138,22 +137,25 @@ let assemble (layout: Layout) : Validation<Output list * (string * string) list>
 
             Validate.run config outputs assetPaths |> map (fun _ -> (outputs, assets))))
 
+/// `Path.GetDirectoryName` returns null for a rootless path, so the result is
+/// narrowed through an option rather than tested for emptiness — the compiler
+/// then knows the directory is a real one at the point it is created.
+let private ensureParentDirectory (destination: string) : unit =
+    match Option.ofObj (Path.GetDirectoryName destination) with
+    | Some directory when directory.Length > 0 -> Directory.CreateDirectory directory |> ignore
+    | _ -> ()
+
+let private destinationFor (root: string) (relative: string) : string =
+    Path.Combine(root, relative.Replace('/', Path.DirectorySeparatorChar))
+
 let private writeText (root: string) (output: Output) =
-    let destination = Path.Combine(root, output.Path.Replace('/', Path.DirectorySeparatorChar))
-    let directory = Path.GetDirectoryName destination
-
-    if not (String.IsNullOrEmpty directory) then
-        Directory.CreateDirectory directory |> ignore
-
+    let destination = destinationFor root output.Path
+    ensureParentDirectory destination
     File.WriteAllText(destination, output.Text)
 
 let private copyAsset (root: string) (relative: string, sourceFile: string) =
-    let destination = Path.Combine(root, relative.Replace('/', Path.DirectorySeparatorChar))
-    let directory = Path.GetDirectoryName destination
-
-    if not (String.IsNullOrEmpty directory) then
-        Directory.CreateDirectory directory |> ignore
-
+    let destination = destinationFor root relative
+    ensureParentDirectory destination
     File.Copy(sourceFile, destination, true)
 
 /// Writes a validated site. `.nojekyll` is written because GitHub Pages
