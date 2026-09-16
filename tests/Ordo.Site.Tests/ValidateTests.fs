@@ -41,6 +41,7 @@ let private page (heading: string) (body: string) =
 /// A site that passes every check, used as the baseline each test breaks.
 let private publishableSite () =
     [ { Path = "index.html"; Text = page "Ordo" "<p>Hello.</p>" }
+      { Path = "results/index.html"; Text = page "Results" "<p>Results.</p>" }
       { Path = "evidence/index.html"; Text = page "Evidence" "<p>Evidence.</p>" }
       { Path = "research/index.html"; Text = page "Research" "<p>Research.</p>" }
       { Path = "glossary/index.html"; Text = page "Glossary" "<p>Glossary.</p>" }
