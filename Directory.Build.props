@@ -1,0 +1,32 @@
+<Project>
+
+  <!--
+    The single authoritative version source for everything this repository
+    distributes is distribution/package.json's "version". The npm package
+    version, the version the CLI reports, and the sdeVersion recorded in
+    an installed .sde/MANIFEST.json all derive from it, so a release bump is
+    one edit in one file and the three can never drift apart.
+  -->
+  <PropertyGroup>
+    <SdePackageJsonPath>$(MSBuildThisFileDirectory)distribution/package.json</SdePackageJsonPath>
+    <SdeReleaseVersion>$([System.Text.RegularExpressions.Regex]::Match($([System.IO.File]::ReadAllText($(SdePackageJsonPath))), `"version"\s*:\s*"([^"]*)"`).Groups.get_Item(1).Value)</SdeReleaseVersion>
+    <Version>$(SdeReleaseVersion)</Version>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!--
+      Incomplete pattern matches (FS0025) stay errors on purpose: the whole
+      point of modelling installation state and planned changes as unions is
+      that a new case cannot be added without every decision site being
+      forced to say what it means.
+    -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+</Project>

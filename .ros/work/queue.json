@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "repository": "state-directed-engineering",
-  "nextSeq": 29,
+  "nextSeq": 31,
   "items": [
     {
       "id": "WI-0001",
@@ -490,6 +490,42 @@
       "attachments": [],
       "createdAt": "2026-09-06T02:17:18.647Z",
       "updatedAt": "2026-09-06T02:17:25.867Z",
+      "createdBy": "unknown",
+      "source": "manual",
+      "sourceReference": null
+    },
+    {
+      "id": "WI-0029",
+      "title": "Convert @echelon-foundry/sde to an F#-owned, npm-distributed Echelon Foundry lifecycle tool",
+      "description": "Replace the JavaScript lifecycle implementation with an F# core and thin CLI adapter, add the standardized init/status/verify/upgrade/doctor contract with --json, --dry-run, --check, --strict and --verbose, adopt the shared .echelon/ installation record behind an explicit configuration migration, and distribute self-contained per-platform executables through a minimal Node launcher. No consumer-visible behaviour is removed: update remains an alias for upgrade, bin/sde.mjs remains a working entry point, MANIFEST.json schema 1 is unchanged, and the built payload is byte-identical to the previous builder's output.",
+      "tags": [
+        "distribution",
+        "cli",
+        "fsharp",
+        "packaging"
+      ],
+      "priority": "high",
+      "status": "captured",
+      "attachments": [],
+      "createdAt": "2026-09-15T16:15:38.327Z",
+      "updatedAt": "2026-09-15T16:15:38.327Z",
+      "createdBy": "unknown",
+      "source": "manual",
+      "sourceReference": null
+    },
+    {
+      "id": "WI-0030",
+      "title": "Attribute the F# distribution rewrite to its work item (CI attribution repair)",
+      "description": "ROS's dirty-path attribution check, enforced in CI via ROS_BASE_REF rather than by local ./ros validate, found that completing WI-0029 after committing its changes meant the completion event recorded no paths. This mechanical work item re-attributes the full diff against the PR base so CI's attribution check passes. It changes no doctrine, method, research, or implementation content.",
+      "tags": [
+        "mechanical",
+        "ci-fix"
+      ],
+      "priority": "high",
+      "status": "captured",
+      "attachments": [],
+      "createdAt": "2026-09-15T16:40:46.777Z",
+      "updatedAt": "2026-09-15T16:40:46.777Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null

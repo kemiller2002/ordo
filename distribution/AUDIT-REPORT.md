@@ -10,6 +10,21 @@ tags: [audit, distribution]
 
 # SDE Distribution and Project Bootstrap — Independent Audit
 
+> **HISTORICAL RECORD.** This audit was performed in September 2026 against
+> the JavaScript implementation of `@echelon-foundry/sde` that shipped in
+> releases 1.0.0 through 1.1.1. That implementation was replaced in 1.2.0 by
+> the F# implementation under `src/Sde.Core` and `src/Sde.Cli`, and the
+> `distribution/src/` and `distribution/test/` trees this report examines no
+> longer exist.
+>
+> The report is retained because its findings, and the reasoning behind the
+> defects it fixed, still describe why the current implementation behaves as
+> it does — the F# port preserves every behaviour this audit established, and
+> produces a byte-identical execution package. It is **not** a description of
+> the current code layout. For how the tool works now, see
+> [`docs/development.md`](../docs/development.md); for the command contract,
+> see [`docs/cli.md`](../docs/cli.md).
+
 ## Executive result
 
 **PASS AFTER REMEDIATION.**

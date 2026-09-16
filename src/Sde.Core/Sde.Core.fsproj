@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <AssemblyName>Sde.Core</AssemblyName>
+    <RootNamespace>Sde.Core</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!--
+    Compile order is the dependency order. Modules are listed from the most
+    primitive upward, so a module can only use what is above it and a cycle
+    is impossible to express.
+  -->
+  <ItemGroup>
+    <Compile Include="Json.fs" />
+    <Compile Include="Paths.fs" />
+    <Compile Include="SemVer.fs" />
+    <Compile Include="FileSystem.fs" />
+    <Compile Include="Ownership.fs" />
+    <Compile Include="Packaging.fs" />
+    <Compile Include="Manifest.fs" />
+    <Compile Include="InstallationRecord.fs" />
+    <Compile Include="StructuralReview.fs" />
+    <Compile Include="Inspection.fs" />
+    <Compile Include="Migrations.fs" />
+    <Compile Include="Planning.fs" />
+    <Compile Include="Execution.fs" />
+    <Compile Include="Diagnostics.fs" />
+    <Compile Include="Lifecycle.fs" />
+    <Compile Include="Output.fs" />
+    <Compile Include="PackageBuild.fs" />
+  </ItemGroup>
+
+</Project>
