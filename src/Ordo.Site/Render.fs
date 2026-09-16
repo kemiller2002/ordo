@@ -447,6 +447,48 @@ let private sectionIndex (context: Context) (section: string) : string =
     | [] -> ""
     | pages -> element "div" [ "class", "grid" ] (pages |> List.map card |> concat)
 
+/// Spells a small count as a word, because the surrounding prose is prose. Past
+/// twenty a numeral reads better than a word, so the words stop there.
+let private spell (value: int) : string =
+    let words =
+        [ "zero"; "one"; "two"; "three"; "four"; "five"; "six"; "seven"
+          "eight"; "nine"; "ten"; "eleven"; "twelve"; "thirteen"; "fourteen"
+          "fifteen"; "sixteen"; "seventeen"; "eighteen"; "nineteen"; "twenty" ]
+
+    if value >= 0 && value < List.length words then
+        List.item value words
+    else
+        string value
+
+/// Counts a collection the manifest already holds.
+///
+/// A sentence that says how many experiments exist is a second copy of a fact
+/// the manifest states first, and a copy that nothing checks is precisely the
+/// defect class this site documents. This site had one: the evidence index read
+/// "seven experiments" after the manifest grew to eleven, and every mechanism
+/// here passed it, because each half was internally valid and nothing compared
+/// them. Counting through a token removes the copy rather than checking it.
+let private countOf (manifest: Manifest) (entity: string) : Validation<int> =
+    match entity with
+    | "experiments" -> ok (List.length manifest.Experiments)
+    | "codebases" ->
+        manifest.Experiments
+        |> List.map (fun experiment -> experiment.Repository)
+        |> List.distinct
+        |> List.length
+        |> ok
+    | "metrics" -> ok (List.length manifest.Metrics)
+    | "claims" -> ok (List.length manifest.Claims)
+    | "repositories" -> ok (List.length manifest.Repositories)
+    | "references" -> ok (List.length manifest.References)
+    | "glossary" -> ok (List.length manifest.Glossary)
+    | "contradicted" ->
+        manifest.Claims
+        |> List.filter (fun claim -> claim.State = Contradicted)
+        |> List.length
+        |> ok
+    | other -> error ("'count' does not know how to count '" + other + "'")
+
 /// Resolves one `{{token}}`. An unknown token name, or a known name with an
 /// unknown argument, fails the build.
 let resolveToken (context: Context) (token: string) : Validation<string> =
@@ -484,6 +526,7 @@ let resolveToken (context: Context) (token: string) : Validation<string> =
             error "'references' was used but the manifest holds none"
         else
             ok (referenceTable context)
+    | "count" -> countOf context.Manifest argument |> map spell
     | "experiments" -> ok (experimentIndex context)
     | "repositories" -> ok (repositoryTable context)
     | "glossary" -> ok (glossaryList context)

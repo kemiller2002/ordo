@@ -131,8 +131,26 @@ published, and neither can an invented one.
 
 Other tokens: `{{claims}}`, `{{claims:CL-001,CL-002}}`, `{{experiments}}`,
 `{{repositories}}`, `{{glossary}}`, `{{references}}`, `{{ref:R-ID}}`,
-`{{section:Name}}`, `{{diagram:transition|engineering|verification|lifecycle}}`,
-`{{link:/path/}}`.
+`{{count:subject}}`, `{{section:Name}}`,
+`{{diagram:transition|engineering|verification|lifecycle}}`, `{{link:/path/}}`.
+
+**Never write a count of anything in this manifest as a literal.** Use
+`{{count:experiments}}`, `{{count:codebases}}`, `{{count:metrics}}`,
+`{{count:claims}}`, `{{count:repositories}}`, `{{count:references}}`,
+`{{count:glossary}}` or `{{count:contradicted}}`, which render the number as a
+word up to twenty and a numeral above it. A literal count is a second copy of a
+fact the manifest states first, and a copy nothing checks is the defect class
+this site exists to describe: the evidence index read "seven experiments" for a
+while after the manifest reached eleven, and every mechanism here passed it,
+because each half was internally valid and nothing compared them.
+
+Two consequences for authoring. Front matter is not token-expanded, so a
+`summary` or `description` must not state a count at all — write around it.
+And a count that names a *subset* must be written so it cannot be read as a
+total: "three of the experiments", not "three experiments". A test rejects a
+statement that opens with a count of experiments disagreeing with the manifest,
+and it matches the opening position precisely so that transcribed evidence text
+saying "across three experiments" is left alone.
 
 `{{ref:R-ID}}` cites independent, external research inline; `{{references}}`
 renders the whole table with each study's finding and its stated limits. These
