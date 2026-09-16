@@ -12,9 +12,20 @@ the local version against what is on npm and publishes only when they differ,
 so an unrelated edit to `package.json` does not cause a re-publish attempt.
 
 The workflow's `on.push.branches` list is the only place a branch name is tied
-to releasing. If the default branch is ever renamed, add the new name there
-*before* the rename and remove the old one afterwards; a stale single name
-stops publishing silently rather than failing.
+to releasing, and that coupling fails quietly: point it at a branch that is no
+longer the default and the workflow simply never fires again. No job fails, no
+check goes red, and the first symptom is a version bump that never reaches npm.
+
+`.github/workflows/release-trigger-guard.yml` turns that silent failure into a
+loud one. It reads the default branch from the event payload — so it assumes no
+name and needs no edit of its own — and fails if that branch is not in
+`publish.yml`'s push trigger list. A rename therefore shows up as a red check
+on the next pull request, naming the file and the line to change.
+
+To rename the release branch: add the new name to `on.push.branches` alongside
+the old one, rename the branch, then remove the old name. The guard passes
+throughout, because both names are listed while the rename is in flight, and it
+is the thing that will tell you if you skip the first step.
 
 ## The version bump
 
