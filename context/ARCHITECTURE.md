@@ -13,6 +13,7 @@ root README links here rather than creating a competing `SDE-MAP.md`.
 | SDE method | construction, navigation, verification, agent procedure, metrics | `method/` | `method/CONSTRUCTION-METHOD-v0.2.md` |
 | Reusable project artifacts | work/execution/trial/map/manifest templates | `templates/sde/` | this table; templates are individually named |
 | Distribution package | generated execution package and installer/verifier | `distribution/` | `distribution/DISTRIBUTION-MAP.json` and `distribution/README.md` |
+| Public website | the Ordo site: content, evidence manifest, generator, validator | `site/`, `src/Ordo.Site/`, `tests/Ordo.Site.Tests/` | `site/README.md` |
 
 This repository contains methodology domains rather than application
 features. Separate feature manifests would duplicate the indexes above and are

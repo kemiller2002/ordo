@@ -44,6 +44,12 @@ method is
 [`method/CONSTRUCTION-METHOD-v0.2.md`](method/CONSTRUCTION-METHOD-v0.2.md);
 v0.1 is a frozen prior treatment, not the default for new work.
 
+For the public website under `site/`, read `site/README.md` first: it is the
+maintenance contract for content, the evidence manifest, and what the build
+refuses to publish. Ordo is that site's public name for the methodology this
+repository develops as State-Directed Engineering; see
+`research/decisions/DF-SDE-2026-0005` before renaming anything.
+
 For engineering or methodology changes, follow the task protocol in
 [`method/AGENT-EXECUTION-RULES.md`](method/AGENT-EXECUTION-RULES.md) and the
 navigation/escalation contract it links. Repository- or feature-local agent

@@ -52,3 +52,7 @@ logs/*
 !.env.example
 *.pem
 *.key
+
+# Generated Ordo site output. Rebuilt deterministically from site/ by
+# `dotnet run --project src/Ordo.Site -- build`; never committed.
+/dist/

@@ -1,0 +1,118 @@
+---
+path: /concepts/navigation/
+title: Navigation and context
+description: Finding the right place to change without reading the whole codebase, and measuring when discovery expands beyond what was expected.
+section: Concepts
+order: 70
+summary: Deterministic routing to the right semantic area, and honest diagnostics when that fails.
+---
+<section class="page-intro">
+  <p class="eyebrow">Concept 7</p>
+  <h1>Navigation and context</h1>
+  <p class="lead">
+    Finding where to make a change should be routing, not exploration. This is the part of Ordo
+    with the most ambition and the least evidence, and this page says which is which.
+  </p>
+</section>
+
+<section>
+  <h2>In plain language</h2>
+  <p>
+    An engineer or an agent who does not know where a decision lives reads until they find it.
+    That cost is real, it scales with the codebase rather than with the change, and it is
+    invisible in every measure of output.
+  </p>
+  <p>
+    Ordo's answer is two small navigation artifacts: a repository-level map from semantic areas
+    to their locations, and per-feature manifests declaring what a feature owns, what it depends
+    on, and where its tests live. Neither is authority. Both are routing.
+  </p>
+</section>
+
+<section>
+  <h2>Why the distinction matters</h2>
+  <p>
+    A manifest that starts deciding rules becomes a second source of truth that nothing keeps in
+    agreement with the first. Ordo is explicit that a manifest declares by reference only — it
+    points at the authority; it does not restate it.
+  </p>
+  <div class="note">
+    <p>
+      <strong>Status:</strong> adopted as an execution contract, with effectiveness recorded as
+      EXPERIMENTAL (<a href="{{link:/research/}}#CL-015">CL-015</a>). There is no outcome trial.
+      Manifest maintenance and staleness may offset the benefit entirely, and a small repository
+      may not need per-feature manifests at all. This repository does not have them: its
+      architecture document says so and explains that separate manifests would only duplicate
+      indexes that already exist.
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2>What was measured, and what it showed</h2>
+  <p>
+    The one experiment that measured navigation cost measured it as search operations, and found
+    {{metric:M-HN3-SEARCH}} between the baseline and hardened architectures — a 63% reduction.
+  </p>
+  <p>
+    Two things stop that from being the clean result it looks like. The two conditions were run
+    by agents with materially different strategies: one worked in a tight edit-then-compile loop,
+    the other invested more in reading before editing. And unique files inspected did
+    <em>not</em> drop the way search operations did — roughly 27 against 30.
+  </p>
+  <p>
+    So: fewer searches, not obviously less reading. The proposition is classified
+    provisional for exactly that reason (<a href="{{link:/research/}}#CL-005">CL-005</a>).
+  </p>
+</section>
+
+<section>
+  <h2>Diagnostics, not scores</h2>
+  <p>
+    Ordo proposes three measures for this area — Context Surface, the Context Expansion Ratio
+    between declared and actual context, and Discovery Expansion for files read outside a
+    declared boundary. All three are proposed and unvalidated
+    (<a href="{{link:/research/}}#CL-018">CL-018</a>).
+  </p>
+  <p>
+    Two rules attach to them, and both are about resisting a natural temptation. The counting
+    unit must be fixed before measuring, or the number means whatever the measurer wants. And
+    conformance must never be gated on them, because cross-cutting changes legitimately expand
+    context, and a team scored on a ratio will optimise the ratio.
+  </p>
+</section>
+
+<section class="note">
+  <h2>What an agent should do differently</h2>
+  <ul>
+    <li>
+      Read the repository map first. Route to the semantic area, then to its authority. Do not
+      start with a repository-wide search.
+    </li>
+    <li>
+      Prefer a mechanical signal over a search where one exists. A compiler error naming a site
+      beats a grep guessing at one — in the tiers the architecture actually guards.
+    </li>
+    <li>
+      When a change reaches outside its declared boundary, record it. That is a finding about the
+      manifest or the architecture, and it is the only way either gets corrected.
+    </li>
+  </ul>
+</section>
+
+<section class="contradictions">
+  <h2>How this is most often got wrong</h2>
+  <p>
+    <strong>Manifests that drift.</strong> A manifest nobody updates is worse than none, because
+    it is confidently wrong and a reader trusts it.
+  </p>
+  <p>
+    <strong>Navigation metadata that starts deciding.</strong> The moment a manifest lists rules
+    rather than pointing at them, it is an authority nobody declared.
+  </p>
+  <p>
+    <strong>Treating a discovery diagnostic as a target.</strong> Explicitly warned against in
+    the method, because the failure mode is obvious: the cheapest way to improve the ratio is to
+    declare more, not to need less.
+  </p>
+</section>

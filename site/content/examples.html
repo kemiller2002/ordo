@@ -1,0 +1,230 @@
+---
+path: /examples/
+title: Examples
+description: Concrete examples of Ordo applied — illegal states, transitions, constrained agent action, boundary defects, and semantic no-ops — drawn from the experiment repositories.
+section: Examples
+order: 1
+summary: Worked examples, each drawn from a real experiment rather than invented to illustrate.
+---
+<section class="page-intro">
+  <p class="eyebrow">Examples</p>
+  <h1>Examples</h1>
+  <p class="lead">
+    Every example below comes from a repository cited on this site. Where an example is
+    simplified for reading, it says so.
+  </p>
+</section>
+
+<section>
+  <h2>1. An illegal state, and its removal</h2>
+  <p>
+    A conventional time entry. The states are implied by which fields are set:
+  </p>
+  <pre><code>type TimeEntry = {
+  id: string
+  active: boolean
+  voidedAt: string | null
+  supersededBy: string[] | null
+  splitFrom: string | null
+}</code></pre>
+  <p>
+    Four fields, sixteen combinations, three of which mean anything. Nothing prevents
+    <code>{ active: true, voidedAt: "...", supersededBy: ["..."] }</code>, and every function
+    reading this record has to decide what that would mean.
+  </p>
+  <p>
+    The same domain with the state named, as one of the two independent builds modelled it:
+  </p>
+  <pre><code>type TimeEntry =
+  | Recorded   of Common
+  | Voided     of Common * voidedAt: Instant
+  | Superseded of Common * supersededBy: EntryId list</code></pre>
+  <p>
+    <code>supersededBy</code> now type-exists only where it means something. The illegal
+    combination is not rejected at runtime; it cannot be written down.
+  </p>
+  <p class="muted">
+    Rendered here in a neutral syntax. The build this is drawn from is TypeScript and uses a
+    discriminated union keyed on <code>status</code>; the other independent build of the same
+    requirements chose the flat shape above and prevented the combination with construction
+    discipline plus a load-time validator instead. Both are covered on
+    <a href="{{link:/concepts/state/}}">the state page</a>.
+  </p>
+</section>
+
+<section>
+  <h2>2. A transition, end to end</h2>
+  {{diagram:transition}}
+  <p>
+    Applied to splitting a time entry, as the measured build implements it:
+  </p>
+  <pre><code>Current state       Recorded
+Requested action    split at minute 43
+Capability check    is split legal from Recorded?         yes
+                    (same predicate the transition uses as a precondition)
+Evidence check      is minute 43 strictly inside the interval?
+Policy check        is the resulting duration above the minimum?
+                    is the referenced project still active?
+                    is the referenced person still active?
+Legal transition    Recorded -> Superseded
+New state           the original entry, Superseded, with supersededBy set
+                    two new entries, each Recorded
+Obligations         the day's attestation, if any, is no longer current
+Effects             one write to the record store, returned as data</code></pre>
+  <p>
+    Each check refuses with a named reason. A split at an interval endpoint is refused with a
+    specific diagnostic — and both independent builds produced semantically identical refusals
+    for that case, under different names, confirmed by running both systems.
+  </p>
+</section>
+
+<section>
+  <h2>3. What constrained agent action means</h2>
+  <p>
+    The difference is not politeness. It is the size of the space the agent is choosing from.
+  </p>
+  <div class="grid">
+    <div class="card">
+      <p class="card-kicker">Unconstrained</p>
+      <h3>"Fix the entry for Tuesday"</h3>
+      <p>
+        The action space is every file in the repository and every field on the record. The agent
+        must infer what "fix" means, find where entries are written, and decide which write is
+        appropriate. Nothing tells it that some of those writes produce a state the domain
+        considers impossible.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Constrained</p>
+      <h3>"Request a capability legal in this state"</h3>
+      <p>
+        The domain reports which actions are legal for this entry right now. The agent chooses
+        one of those. An action absent from the report is not an action it can attempt badly —
+        there is no function to call.
+      </p>
+    </div>
+  </div>
+  <p>
+    The measured build reports capabilities per entry and per project, computed from the same
+    predicates the transitions enforce. An agent that asks the domain what is legal cannot
+    construct an illegal request, because the illegal request is not in the answer.
+  </p>
+  <div class="note">
+    <p>
+      <strong>What this does not do.</strong> It constrains the action space; it does not make
+      the chosen action correct. In the paired trial, both agents implemented a change that
+      passed every mechanical check on both architectures and did the wrong thing. Constraint and
+      correctness are different problems.
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2>4. Finding the change surface without reading the codebase</h2>
+  <p>
+    A request arrives: the minimum splittable duration changes. Under Ordo the route is
+    deterministic — repository map to semantic area, semantic area to authority, authority to the
+    single predicate that decides it. The predicate is named, it is called by the transition as a
+    precondition and by the capability projection as a report, and changing it changes both.
+  </p>
+  <p>
+    The measured alternative is what happens without that route. In the baseline condition of the
+    paired trial, finding the sites for one change took {{metric:M-HN3-SEARCH}} repository search
+    operations, against 14 in the hardened condition.
+  </p>
+  <p class="muted">
+    One paired trial, two agents whose investigation strategies differed. Unique files inspected
+    did not drop the way search operations did. Classified provisional
+    (<a href="{{link:/research/}}#CL-005">CL-005</a>).
+  </p>
+</section>
+
+<section>
+  <h2>5. A boundary defect, reproduced deliberately</h2>
+  <p>
+    A new case is added to a closed set of observation kinds. The domain type gains a case, and
+    the compiler names the sites that must handle it — eight of twelve. The other four are
+    outside its reach:
+  </p>
+  <pre><code>domain     type ObservedValue = ... | VitalSignObserved of ...   compiler names it
+database   CHECK (kind IN ('lab','imaging','procedure'))        silence
+wire       "kind": "vital_sign"                                  silence
+fixtures   sampleFor : ObservedValue -> Sample                   silence until enumerated</code></pre>
+  <p>
+    Each silent site is a copy of the same fact with nothing checking that the copies agree.
+    Experiment 1 measured one such fact duplicated four times and another twice. The hardening
+    built in Experiment 2 closed each of these individually — a constraint-agreement test for the
+    first, a single-source discriminator for the second, a fixture forced to a compile error for
+    the fourth.
+  </p>
+  {{metrics:M-HN1-MDR,M-HN2-MDR}}
+</section>
+
+<section>
+  <h2>6. The semantic no-op</h2>
+  <p>
+    The failure this programme has never managed to catch mechanically, in any trial.
+  </p>
+  <pre><code>let fanOut observation =
+    match observation with
+    | Lab value       -> writeLab value
+    | Imaging value   -> writeImaging value
+    | VitalSign _     -> ()        // the arm exists. it does nothing.</code></pre>
+  <p>
+    The compiler is satisfied: the arm is present, exhaustiveness holds. The architecture check
+    passes. The contract tests pass. The candidate is durably recorded as accepted, and the fact
+    it represents is never written anywhere retrievable.
+  </p>
+  <p>
+    Experiment 1 removed such an arm on purpose: {{metric:M-HN1-SILENT}} objected. Experiment 2
+    built five mechanisms and re-created the shape against them: {{metric:M-HN2-NOOP}} caught it.
+    Experiment 3 saw the identical outcome in both of its conditions. In every case, only a live
+    integration test found it.
+  </p>
+  <p>
+    This is the single strongest argument on this site for
+    <a href="{{link:/concepts/verification/}}">heterogeneous verification</a>, and it is an
+    argument made entirely out of things that did not work.
+  </p>
+</section>
+
+<section>
+  <h2>7. A declared outcome that could not happen</h2>
+  <p>
+    A reconciliation result declaring four outcomes, of which the code could construct three:
+  </p>
+  <pre><code>type ReconciliationOutcome =
+    | Applied
+    | NotApplied
+    | StillUnknown
+    | Conflict        // declared. no code path constructs it.</code></pre>
+  <p>
+    Every caller handles four cases. One of them will never arrive, and every reader downstream
+    believes the conflict case is covered.
+  </p>
+  <p>
+    A 90-test suite did not find this. An adversarial self-review including three mutation tests
+    did not find this. A fresh agent reviewing the finished build found it in one pass, along
+    with four other things, of which {{metric:M-GF2B-OVERLAP}} were already covered.
+  </p>
+</section>
+
+<section>
+  <h2>8. What the effort experiment found, by language</h2>
+  <p>
+    The same requirement set built three ways, with every mistake classified by what caught it:
+  </p>
+  {{metrics:M-TE-FS,M-TE-CS,M-TE-CS-TOOLING,M-TE-JS,M-TE-JS-TOOLING}}
+  <p>
+    Read naively, the JavaScript rebuild wins on raw count. The log that produced these numbers
+    refuses that reading and explains why: that trial had already built the identical requirement
+    set once, and the advantage shows up precisely in the two places where a failure mode from
+    the earlier trial was consciously checked for and avoided.
+  </p>
+  <p>
+    The number the log considers important is not the total. It is that zero of the JavaScript
+    trial's mistakes, real or narrowly avoided, were ever caught by the language itself — where
+    the C# rebuild's compiler caught four. What differs is not how many mistakes happen. It is
+    which ones require a person to notice.
+  </p>
+</section>

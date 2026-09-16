@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>ordo-site</AssemblyName>
+    <RootNamespace>Ordo.Site</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <!--
+      The generator is a build tool, not part of the distributed package. It is
+      excluded from distribution/ packaging entirely; nothing under src/Sde.*
+      references it.
+    -->
+  </PropertyGroup>
+
+  <!--
+    Compile order is dependency order, matching the convention in
+    src/Sde.Core: a module can only use what is listed above it, so a cycle
+    cannot be expressed.
+  -->
+  <ItemGroup>
+    <Compile Include="Validation.fs" />
+    <Compile Include="Model.fs" />
+    <Compile Include="SiteConfig.fs" />
+    <Compile Include="Manifest.fs" />
+    <Compile Include="Html.fs" />
+    <Compile Include="Content.fs" />
+    <Compile Include="Diagrams.fs" />
+    <Compile Include="Render.fs" />
+    <Compile Include="Machine.fs" />
+    <Compile Include="Validate.fs" />
+    <Compile Include="Build.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Reuses the repository's existing trim-safe JSON reader/writer rather than
+      adding a second one. Sde.Core.Json is the only dependency taken on the
+      distribution tool, and it is taken in one direction only.
+    -->
+    <ProjectReference Include="../Sde.Core/Sde.Core.fsproj" />
+  </ItemGroup>
+
+</Project>

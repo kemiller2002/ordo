@@ -1,0 +1,135 @@
+---
+path: /research/
+title: Research status
+description: Every engineering proposition Ordo rests on, its confidence class, its current evidence state, and what must not be concluded from it.
+section: Research
+order: 1
+summary: The full map of propositions — supported, provisional, contradicted and open.
+---
+<section class="page-intro">
+  <p class="eyebrow">Research</p>
+  <h1>Research status</h1>
+  <p class="lead">
+    Ordo is a methodology under active research, not a validated discipline. This page is the
+    whole map: what is supported, what is provisional, what has been refuted, and what is
+    simply unknown.
+  </p>
+</section>
+
+<section>
+  <h2>Two labels, never merged</h2>
+  <p>
+    A rule can be required by the methodology while the benefit it predicts remains unproven.
+    Those are different statements and Ordo keeps them apart with two vocabularies.
+  </p>
+  <div class="grid">
+    <div class="card">
+      <p class="card-kicker">Confidence class</p>
+      <h3>How strongly the rule is held</h3>
+      <p>
+        <strong>REQUIRED</strong> — strong enough and fundamental enough that the methodology
+        depends on it.<br />
+        <strong>RECOMMENDED</strong> — evidence-backed or strongly justified, with contextual
+        exceptions.<br />
+        <strong>EXPERIMENTAL</strong> — promising, needs validation.<br />
+        <strong>RESEARCH ONLY</strong> — not yet suitable as normal guidance.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Evidence state</p>
+      <h3>What the evidence currently says</h3>
+      <p>
+        <strong>Supported</strong> — evidence establishes it within its stated scope.<br />
+        <strong>Provisional</strong> — some evidence, or an adopted contract whose predicted
+        benefit is untested.<br />
+        <strong>Contradicted</strong> — measurement refuted it. Kept permanently.<br />
+        <strong>Open</strong> — asked, not answered.
+      </p>
+    </div>
+  </div>
+  <p>
+    An adopted decision can make a contract REQUIRED. It cannot make the outcome that contract
+    predicts Supported. Several rows below are exactly that pairing, and they are the rows most
+    likely to be misread.
+  </p>
+</section>
+
+<section>
+  <h2>The map</h2>
+  {{claims}}
+</section>
+
+<section class="contradictions">
+  <h2>Why the refuted rows stay</h2>
+  <p>
+    Five propositions here are classified Contradicted. They are not deleted, and they are not
+    moved to a footnote. They stay in the map permanently, cross-linked to the record that
+    refuted them, so that a future engineer or agent cannot silently re-propose them without
+    first seeing why they were rejected.
+  </p>
+  <p>
+    Two of them are the sort of thing a methodology would normally quietly stop mentioning.
+    Boundary hardening was expected to reduce how much boundary work a change requires; measured
+    three times across two architectures, it did not. A higher mechanical discovery rate was
+    expected to mean lower cost; in one paired trial the two moved in opposite directions.
+  </p>
+</section>
+
+<section>
+  <h2>The least evidenced thing here</h2>
+  <p>
+    Ordo's unifying idea — that bounding how much must be inferred at once to make a safe change
+    is what produces the benefit — is classified <strong>RESEARCH ONLY</strong> with an evidence
+    state of <strong>Open</strong> (<a href="#CL-016">CL-016</a>).
+  </p>
+  <p>
+    There is no causal comparison behind it. Task, model, tooling, familiarity and verification
+    differences may dominate any effect entirely. It is the organising principle of the whole
+    methodology and it is the weakest claim on this site, and putting those two sentences next to
+    each other is the point of this page.
+  </p>
+</section>
+
+<section>
+  <h2>Open questions</h2>
+  <ul>
+    <li>
+      <strong>Does explicit state reduce agent cost?</strong> Unknown. The one trial that measured
+      it was interrupted, and its treatment-condition telemetry covers a partial run
+      (<a href="#CL-010">CL-010</a>).
+    </li>
+    <li>
+      <strong>Can the HTTP and API tier be mechanically guarded?</strong> A candidate mechanism is
+      sketched in one source report. It has not been built or tested
+      (<a href="#CL-009">CL-009</a>).
+    </li>
+    <li>
+      <strong>Does the construction ordering work as a sequence?</strong> Its individual steps are
+      supported; the ordering has never been trial-tested as one workflow on a real project
+      (<a href="#CL-013">CL-013</a>).
+    </li>
+    <li>
+      <strong>Do navigation artifacts pay for their maintenance?</strong> No outcome trial exists,
+      and staleness may offset the benefit entirely (<a href="#CL-015">CL-015</a>).
+    </li>
+    <li>
+      <strong>Is agreement between two agents evidence, or a shared blind spot?</strong> Every
+      agent in every experiment here came from one model family. Two systems that fail the same
+      way are not two mechanisms, and this evidence base cannot currently tell those cases apart.
+    </li>
+    <li>
+      <strong>Does any of this transfer?</strong> Four languages, one organisation, no team-scale
+      observation, no counterfactual arm.
+    </li>
+  </ul>
+</section>
+
+<section class="callout">
+  <h2>The standing rule</h2>
+  <p>
+    The repository that develops this methodology carries its own warning, and it applies to this
+    site too: do not infer that State-Directed Engineering is a validated discipline, method or
+    product merely because the process around it is rigorous. A careful process is evidence about
+    the process.
+  </p>
+</section>

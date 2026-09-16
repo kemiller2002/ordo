@@ -1,0 +1,148 @@
+---
+path: /why/
+title: Why Ordo exists
+description: The failure modes that motivated State-Directed Engineering, and what the experiments found when they went looking for each one.
+section: Start here
+order: 10
+summary: The specific, reproduced failures this methodology was built in response to.
+---
+<section class="page-intro">
+  <p class="eyebrow">Motivation</p>
+  <h1>Why Ordo exists</h1>
+  <p class="lead">
+    Every rule in Ordo is a response to something that actually went wrong, in a codebase, in
+    a way that was reproduced deliberately afterwards. This page lists those failures and
+    points at the experiment that found each one.
+  </p>
+</section>
+
+<section>
+  <h2>A change compiles, passes every check, and does nothing</h2>
+  <p>
+    This is the failure that shaped the methodology more than any other. A boundary arm exists.
+    It type-checks. The architecture check passes. The contract tests pass. The arm does no
+    work, and nothing objects.
+  </p>
+  <p>
+    The first experiment removed a required fan-out arm on purpose and ran the build, the test
+    suite and a direct database query. {{metric:M-HN1-SILENT}} produced any signal. The record
+    was durably marked accepted while the fact it represented was never written anywhere
+    retrievable.
+  </p>
+  <p>
+    The second experiment built five mechanisms specifically to close the first experiment's
+    blind spots, then re-created the same failure shape against them.
+    {{metric:M-HN2-NOOP}} caught it. Exhaustiveness checking guarantees the arm <em>exists</em>;
+    it says nothing about whether the arm does anything. Only a live integration test found it.
+  </p>
+  <p>
+    The third experiment ran the same class of mission on both architectures with two
+    independent agents. The identical semantic no-op appeared in both conditions and was
+    caught, in both, by integration tests only.
+  </p>
+</section>
+
+<section>
+  <h2>Illegal combinations are representable, so someone has to remember</h2>
+  <p>
+    When a record carries a status string and three optional fields, nothing stops
+    <code>{status: "Recorded", supersededBy: [...]}</code> from being constructed. It is
+    meaningless, and it is legal to write.
+  </p>
+  <p>
+    Two independent builds of the same requirements handled this differently, and the
+    difference is instructive. One modelled the entry as a discriminated union keyed by
+    status, so a superseded-only field cannot be supplied on a recorded entry — enforced by
+    the compiler at every construction site. The other used one flat record with optional
+    fields and prevented the combination by discipline plus a load-time validator, and said so
+    in its own self-review, unprompted, as the most honest limitation it had found in itself.
+  </p>
+  <p>
+    Both are defensible. The point is that one of them requires nobody to remember anything.
+  </p>
+</section>
+
+<section>
+  <h2>Boundaries lose meaning quietly</h2>
+  <p>
+    A closed set of named alternatives becomes a string when it crosses into the database, or
+    onto the wire, or into another service. Nothing fails. The set is now open, and the
+    agreement between what the domain permits and what the boundary admits is maintained by
+    hand, in several places, with no mechanism that notices when they disagree.
+  </p>
+  <p>
+    Experiment 1 found exactly this: the one fact the compiler protects had zero duplication;
+    the two facts outside its reach were duplicated four times and twice, with no automated
+    agreement check between the copies. A separate investigation reproduced something sharper
+    still — a single shared type, inside one process, producing three different wire behaviours
+    depending on which call path reached it.
+  </p>
+  <p>
+    Whatever a shared type does for you, it does not do this.
+  </p>
+</section>
+
+<section>
+  <h2>Discovering what to change costs more than changing it</h2>
+  <p>
+    An agent or an engineer who does not know where a semantic decision lives reads broadly to
+    find out. In the paired trial, the baseline condition performed
+    {{metric:M-HN3-SEARCH}} — a 63% reduction under the hardened architecture, in one paired
+    trial with two agents whose investigation strategies differed.
+  </p>
+  <p>
+    This is worth stating carefully, because the same trial refuted the obvious interpretation
+    of it. See the next section.
+  </p>
+</section>
+
+<section class="contradictions">
+  <h2>Things this research expected and did not find</h2>
+  <p>
+    A motivation page that lists only confirmed problems is a sales page. Three expectations
+    this programme held, and measured, and gave up:
+  </p>
+  <ul>
+    <li>
+      <strong>That hardening would reduce how much boundary work a change requires.</strong>
+      It did not. {{metric:M-HN2-BCA}} — measured three times, across three domain cases and
+      two architectures, identically. Hardening changed how the work was found, not how much of
+      it there was.
+    </li>
+    <li>
+      <strong>That a higher mechanical discovery rate means lower cost.</strong> In the paired
+      trial the hardened condition scored {{metric:M-HN3-MDR}} on as-experienced discovery
+      while simultaneously spending less on search and repair. The two proxies moved in
+      opposite directions, in the same trial, on the same mission.
+    </li>
+    <li>
+      <strong>That explicit state reduces agent token cost.</strong> Unknown.
+      {{metric:M-HN3-COST}} — the one trial that measured it was interrupted mid-run and its
+      treatment-condition telemetry covers a partial run only. The question is open.
+    </li>
+  </ul>
+  <p>
+    All three stay in <a href="{{link:/research/}}">the research map</a> permanently, so that
+    nobody can propose them again without first reading why they were rejected.
+  </p>
+</section>
+
+<section>
+  <h2>And one thing it did not expect to find</h2>
+  <p>
+    In the replication trial, a fresh agent with no knowledge of the construction reviewed a
+    finished, self-reviewed, mutation-tested build. Of its five findings,
+    {{metric:M-GF2B-OVERLAP}} were already covered by the builder's own 90-test suite or its
+    own adversarial self-review.
+  </p>
+  <p>
+    One of them was a declared outcome that could never be constructed: a result case that
+    existed in the type and that no code path could produce. The type checker was satisfied.
+    The tests were satisfied. The contract was incomplete.
+  </p>
+  <p>
+    That is the strongest single argument this site can make for
+    <a href="{{link:/concepts/verification/}}">heterogeneous verification</a>, and it is still
+    one pass on one codebase.
+  </p>
+</section>

@@ -1,0 +1,48 @@
+<h2 id="interpretation">Interpretation</h2>
+<p>
+  This experiment set out to answer "does explicit state produce fewer mistakes?" and ended up
+  answering a better question instead.
+</p>
+<p>
+  The raw counts refuse to cooperate. Six mistakes in the explicit-state F# domain across about
+  1,600 changed lines. Six in the 1,645-line conventional C# rebuild. Two in the 1,540-line
+  JavaScript rebuild — the language offering the least protection of the three, producing the
+  lowest count.
+</p>
+<p>
+  The log does not take the win. It attributes the JavaScript result to having already built the
+  identical requirement set once, and names the two specific places where a failure mode from the
+  earlier trial was consciously checked for and avoided. Add those back as the near-misses they
+  would have been, and the counts converge.
+</p>
+<p>
+  What survives the reconciliation is the classification, not the count. In the C# rebuild the
+  compiler caught four mistakes — renames, arity changes, a signature drift. Every one of the
+  sharpest bugs was outside what a compiler can catch even in principle: two swapped string
+  arguments of the same type, a stale revision captured in a loop, a signature change hidden
+  behind an inferred local. Each was found by a person deliberately re-reading a diff before
+  running it.
+</p>
+<p>
+  In the JavaScript rebuild, the language caught nothing at all, at any point, for any reason.
+  Renaming a property across two production files produced zero errors, zero warnings, and a
+  program that ran.
+</p>
+<p>
+  So the honest conclusion the log lands on is narrower than "F# had fewer mistakes" and more
+  useful: an explicit-state domain converts several classes of mistake that a conventional
+  codebase can only catch by disciplined manual review into mistakes a compiler catches
+  automatically — regardless of who is writing the code, or how much time pressure they are
+  under.
+</p>
+<p>
+  That last clause is the argument. The re-reading discipline held perfectly for this entire
+  build, by design. The persona it was simulating — a competent professional under deadline — is
+  exactly the group least likely to apply it consistently.
+</p>
+<p>
+  One other thing happened that is easy to miss. Building the correction path surfaced a genuine
+  error in the reconstructed requirements themselves: they claimed an exemption that the real
+  implementation does not grant, and whose own rejection message contradicts the code around it.
+  The requirements were corrected in place rather than left wrong.
+</p>

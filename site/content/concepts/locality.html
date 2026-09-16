@@ -1,0 +1,121 @@
+---
+path: /concepts/locality/
+title: Structural locality
+description: Keeping a feature's state, behaviour, contracts and tests coherently bounded, and keeping its semantic authority singular even when it spans files.
+section: Concepts
+order: 60
+summary: A feature's parts stay together; the authority that decides its rules stays singular.
+---
+<section class="page-intro">
+  <p class="eyebrow">Concept 6</p>
+  <h1>Structural locality</h1>
+  <p class="lead">
+    A semantic area can span many files. Its semantic authority cannot.
+  </p>
+</section>
+
+<section>
+  <h2>In plain language</h2>
+  <p>
+    Structural locality is the idea that everything a feature owns — its state, its behaviour,
+    its contracts, its tests — should be findable together, and that the single place deciding
+    each of its rules should be obvious.
+  </p>
+  <p>
+    That is two claims, and separating them matters. A feature spread across thirteen files can
+    still have exactly one place that decides whether an entry may be split. A feature packed
+    into one 900-line file can easily have three.
+  </p>
+</section>
+
+<section>
+  <h2>Precisely</h2>
+  <ul>
+    <li>
+      A <strong>semantic area</strong> is a coherent feature or concern whose behaviour belongs
+      together. It may span several files.
+    </li>
+    <li>
+      A <strong>semantic authority</strong> is the single representation that decides a fact or
+      rule. One per fact.
+    </li>
+    <li>
+      A <strong>responsibility cluster</strong> is a human-scale grouping inside an area —
+      transitions, validation, capabilities, projections. A cluster is not automatically an
+      authority.
+    </li>
+  </ul>
+  <div class="note">
+    <p>
+      <strong>Status:</strong> this is an adopted contract, classified REQUIRED as a contract —
+      and its predicted benefits are explicitly EXPERIMENTAL
+      (<a href="{{link:/research/}}#CL-014">CL-014</a>). No controlled comparison of a monolithic
+      against a decomposed treatment exists. Physical splitting can make navigation worse and can
+      duplicate rules. This site does not claim otherwise.
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2>What two independent builds actually did</h2>
+  <p>
+    Two agents, same requirements, no contact. Both produced
+    {{metric:M-GF2B-CONVERGE}} — an identical count, which is the least meaningful part of the
+    comparison, and the comparison document says so explicitly.
+  </p>
+  <p>
+    Underneath that identical number, the file organisation genuinely differs. One build split
+    its application layer into five files by semantic area; the other used two. One had three
+    port files where the other had one. One threaded a pre-computed timestamp through function
+    parameters; the other threaded a clock port object. Both achieved pure, testable domain
+    functions by two different shapes of dependency injection.
+  </p>
+  <p>
+    Both builds also produced exactly 1,421 lines of test code, from six files and twelve files
+    respectively. The comparison reports that as almost certainly coincidence and explicitly
+    declines to use it as evidence for anything — which is the right call, and worth noticing as
+    a piece of research conduct rather than a result.
+  </p>
+</section>
+
+<section>
+  <h2>Line count is a signal, not a truth</h2>
+  <p>
+    Ordo treats file size as a configurable review prompt rather than a rule
+    (<a href="{{link:/research/}}#CL-017">CL-017</a>). The reason is precise: line count cannot
+    detect duplicated authority, which is the thing it is usually used as a proxy for. A large
+    file with one authority is fine. Three small files each deciding the same rule are not, and
+    no line-count threshold will tell you which you have.
+  </p>
+</section>
+
+<section class="note">
+  <h2>What an agent should do differently</h2>
+  <ul>
+    <li>
+      Before adding a rule, find where that rule is already decided. Add it there, or establish
+      that no authority exists and create one.
+    </li>
+    <li>
+      Do not split a file merely because it is long. Split it when it holds two things that
+      change for different reasons.
+    </li>
+    <li>
+      When a change requires touching several areas, say so. An unexpectedly wide change is
+      information about the architecture, not just about the task.
+    </li>
+  </ul>
+</section>
+
+<section class="contradictions">
+  <h2>How this is most often got wrong</h2>
+  <p>
+    <strong>Locality read as file-count minimalism.</strong> Consolidating everything into one
+    module is not locality; it is the absence of structure, which happens to look tidy.
+  </p>
+  <p>
+    <strong>Treating a cluster as an authority.</strong> Splitting validation into its own file
+    and then letting it decide a rule the transition also decides creates exactly the duplication
+    the split was supposed to prevent.
+  </p>
+</section>

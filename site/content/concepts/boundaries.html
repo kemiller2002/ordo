@@ -1,0 +1,124 @@
+---
+path: /concepts/boundaries/
+title: Boundaries and authority
+description: Where meaning is lost crossing between responsibilities, what it costs, and what hardening the crossings did and did not change.
+section: Concepts
+order: 50
+summary: Where a constrained value becomes an open one, and what three experiments measured there.
+---
+<section class="page-intro">
+  <p class="eyebrow">Concept 5</p>
+  <h1>Boundaries and authority</h1>
+  <p class="lead">
+    A boundary is where a value leaves the place that understands it. This is where this
+    research programme found most of its defects, every time it looked.
+  </p>
+</section>
+
+<section>
+  <h2>Two failure shapes</h2>
+  <div class="grid">
+    <div class="card">
+      <p class="card-kicker">Representation collapse</p>
+      <h3>A closed value becomes open</h3>
+      <p>
+        A named alternative crosses a boundary and arrives as an arbitrary string. The domain
+        permits four things; the boundary admits anything. Nothing fails at the crossing — it
+        fails later, somewhere that cannot tell it was ever constrained.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Uncoordinated duplication</p>
+      <h3>One fact, several copies, no agreement check</h3>
+      <p>
+        The same vocabulary maintained in the domain, in the persistence schema and in the wire
+        format, by hand. Adding a case updates one of them and produces silence at the others.
+      </p>
+    </div>
+  </div>
+  <p>
+    Experiment 1 measured both in one codebase. The single fact the compiler protects had zero
+    duplication. The two facts outside its reach were duplicated four times and twice, with no
+    automated check that the copies agreed.
+  </p>
+</section>
+
+<section>
+  <h2>What a shared type does not buy you</h2>
+  <p>
+    The intuition that two components in one language sharing one type are therefore safe at
+    their boundary was tested directly, and refuted. The identical shared type produced three
+    different wire behaviours depending on which call path reached it — inside a single process.
+  </p>
+  <p>
+    A type is a promise about values in memory. It is not a promise about what a serialiser
+    emits. That is a different artifact, and Ordo asks for it to be specified deliberately rather
+    than inherited from whatever a library does by default.
+  </p>
+</section>
+
+<section>
+  <h2>What hardening the boundaries changed</h2>
+  <p>
+    Experiment 2 built five mechanisms against Experiment 1's specific blind spots: a
+    constraint-agreement test between the database and the domain, a single-source wire
+    discriminator, exhaustive dispatch replacing string dispatch, a field-vocabulary agreement
+    test, and a fixture forced to a compile error when a case is missing.
+  </p>
+  {{metrics:M-HN1-MDR,M-HN2-MDR}}
+  <p>
+    One of those mechanisms did something better than mechanising discovery. Making the wire
+    discriminator single-sourced removed the site entirely — there was no longer anything there
+    to find. That distinction, between making a change easier to find and making it unnecessary,
+    is worth more than the discovery-rate improvement.
+  </p>
+</section>
+
+<section class="contradictions">
+  <h2>What hardening did not change</h2>
+  {{metrics:M-HN2-BCA,M-HN3-BCA}}
+  <p>
+    Four boundary files per semantic decision, measured three times, across three domain cases
+    and two architectures, identically. Hardening changed how required boundary work was
+    <em>found</em>. It did not change how much of it there was.
+  </p>
+  <p>
+    This is recorded permanently as a contradicted proposition
+    (<a href="{{link:/research/}}#CL-006">CL-006</a>) so that nobody proposes it again without
+    seeing why it was rejected. If somebody tells you that making boundaries explicit reduces
+    the number of places a change touches, the only measurements here say otherwise.
+  </p>
+</section>
+
+<section>
+  <h2>And one tier nothing guarded at all</h2>
+  <p>
+    In the paired trial, 7 of 19 required sites fell in the HTTP tier, which had
+    <em>zero</em> mechanical guard on either architecture. That is the single biggest reason the
+    hardened condition's discovery rate came in below its own preregistered prediction.
+  </p>
+  <p>
+    A candidate mechanism for that tier is sketched in the source report. It has not been built
+    and it has not been tested, and this site does not claim it works
+    (<a href="{{link:/research/}}#CL-009">CL-009</a>).
+  </p>
+</section>
+
+<section class="note">
+  <h2>What an agent should do differently</h2>
+  <ul>
+    <li>
+      When adding a case to a closed set, ask where that set is restated — persistence
+      constraints, wire formats, validation lists, test fixtures. Compiler silence at those
+      places is not agreement.
+    </li>
+    <li>
+      Do not treat a shared type as a boundary contract. Specify the wire representation, and
+      check it.
+    </li>
+    <li>
+      Where duplication cannot be removed, add a mechanical agreement check. A comment saying
+      "keep in sync" is not one.
+    </li>
+  </ul>
+</section>

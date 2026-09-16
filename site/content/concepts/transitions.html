@@ -1,0 +1,97 @@
+---
+path: /concepts/transitions/
+title: Legal transitions
+description: Declaring which changes between states are permitted, so that the ones that are not permitted are not offered.
+section: Concepts
+order: 20
+summary: Which changes the model permits, declared once, enforced everywhere.
+---
+<section class="page-intro">
+  <p class="eyebrow">Concept 2</p>
+  <h1>Legal transitions</h1>
+  <p class="lead">
+    Naming the states is half of it. The other half is saying which moves between them exist.
+  </p>
+</section>
+
+<section>
+  <h2>In plain language</h2>
+  <p>
+    A record does not simply "change". It moves from one named state to another by a named
+    action, and only along a route the model declares. Restoring a voided entry is a route.
+    Reviving a superseded one is not — not because someone remembered to add a check, but
+    because there is no route to take.
+  </p>
+</section>
+
+<section>
+  <h2>Precisely</h2>
+  <p>
+    A legal transition is a change the model explicitly permits, from a specific state, under a
+    specific action, subject to the guards that action requires. A transition function is the
+    only thing that constructs a new state value. Anything that writes state without going
+    through one is a second, unpoliced route to the same place.
+  </p>
+</section>
+
+<section>
+  <h2>The full path of a requested action</h2>
+  {{diagram:transition}}
+  <p>
+    Each gate refuses with a named reason. In the measured build, there are
+    {{metric:M-GF1-DIAGNOSTICS}} — so a refusal tells the caller which rule refused and why,
+    rather than returning a boolean or throwing.
+  </p>
+</section>
+
+<section>
+  <h2>In real code</h2>
+  <p>
+    The measured time-entry build declares {{metric:M-GF1-TRANSITIONS}}: create into Recorded,
+    void, restore, and supersede — reached by either splitting or merging, two distinct triggers
+    onto one target state.
+  </p>
+  <p>
+    Superseded is terminal. What matters is <em>how</em> it is terminal. Every guard returns
+    false for it, and two acceptance criteria assert the refusal directly. The illegal
+    transition is explicitly represented and tested, not merely absent from the code — the
+    difference being that absence is indistinguishable from an oversight, and a failing test is
+    not.
+  </p>
+</section>
+
+<section class="note">
+  <h2>What an agent should do differently</h2>
+  <ul>
+    <li>
+      Never write a state field directly. Find the transition function for the action, or
+      establish that the action is not legal from the current state and report that instead.
+    </li>
+    <li>
+      When a requested change has no transition, do not add a field to work around it. Either
+      the transition should exist — a semantic change, decided at the authority — or the request
+      should be refused.
+    </li>
+    <li>
+      When adding a transition, ask what becomes reachable that was not before, and check the
+      invariants that assumed it was not.
+    </li>
+  </ul>
+</section>
+
+<section class="contradictions">
+  <h2>How this is most often got wrong</h2>
+  <p>
+    <strong>A declared outcome nothing can produce.</strong> The sharpest instance in this
+    evidence base: a reconciliation function whose result type declared four outcomes, one of
+    which no code path could construct. The type checker was satisfied. Ninety tests were
+    satisfied. The contract was incomplete, and it took a fresh reviewer with no knowledge of
+    the construction to notice — one of five findings, of which
+    {{metric:M-GF2B-OVERLAP}} were already covered by the existing checks.
+  </p>
+  <p>
+    <strong>The bypass route.</strong> One transition function, plus one repository method that
+    writes the same field for a "special case". There are now two models and only one of them is
+    documented.
+  </p>
+</section>

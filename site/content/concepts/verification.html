@@ -1,0 +1,126 @@
+---
+path: /concepts/verification/
+title: Heterogeneous verification
+description: Using several verification mechanisms whose blind spots differ, rather than more of the mechanism you already have.
+section: Concepts
+order: 80
+summary: Several mechanisms that fail differently, because no single one covers the failure set.
+---
+<section class="page-intro">
+  <p class="eyebrow">Concept 8</p>
+  <h1>Heterogeneous verification</h1>
+  <p class="lead">
+    The best-evidenced idea on this site, and the one that most often gets read as "write more
+    tests". It is not that.
+  </p>
+</section>
+
+<section>
+  <h2>In plain language</h2>
+  <p>
+    Each way of checking software is blind to something. A type checker cannot see wrong
+    behaviour. A test suite cannot see what its author did not think to assert. Neither can see a
+    declared outcome that no code path produces.
+  </p>
+  <p>
+    Heterogeneous verification means deliberately assembling mechanisms whose blind spots do not
+    overlap — and noticing that adding more of a mechanism you already have moves nothing.
+  </p>
+</section>
+
+<section>
+  <h2>The mechanisms and what each cannot refuse</h2>
+  {{diagram:verification}}
+</section>
+
+<section>
+  <h2>The evidence</h2>
+  <p>
+    Four independent observations, in three codebases, all pointing the same way.
+  </p>
+  {{metrics:M-HN1-SILENT,M-HN2-NOOP,M-GF2A-DEFECTS,M-GF2B-OVERLAP}}
+  <p>
+    The last of those is the sharpest. A fresh agent, with no knowledge of the construction,
+    reviewed a build that had already passed a 90-test suite, a strict type check, a dependency
+    audit, an architecture check, and an adversarial self-review that included three mutation
+    tests deliberately breaking shared guards to confirm they were load-bearing.
+  </p>
+  <p>
+    It found five things. None of them had been caught by any of that.
+  </p>
+  <p>
+    {{metric:M-GF2B-DEFECTS}} of that build's recorded defects exist only because the extra pass
+    was run. Its counterpart build, which had no equivalent phase, was then checked directly —
+    and one of the same defect classes was found sitting in it, unaddressed.
+  </p>
+</section>
+
+<section class="note">
+  <h2>The honest reading of the defect counts</h2>
+  <p>
+    One build recorded seven defects and the other two. That is not a quality comparison, and
+    the comparison document refuses to present it as one. It is largely a measure of how many
+    independent verification passes each build received. Stop the seven-defect build at the
+    point the two-defect build stopped, and it recorded three.
+  </p>
+  <p>
+    A defect count without its discovery protocol attached is not a measurement of anything.
+  </p>
+</section>
+
+<section>
+  <h2>What this is evidence for, precisely</h2>
+  <p>
+    That these mechanisms missed what that reviewer found, on that codebase. It is one pass, on
+    one build, and a different reviewer would have found a different set. It does not quantify
+    how much any mechanism generally misses.
+  </p>
+  <p>
+    There is also a shared-blind-spot caveat that cannot be ruled out: every agent in every
+    experiment here came from the same model family. Two systems that fail the same way are not
+    two mechanisms, however independently they are run — and this evidence base cannot currently
+    distinguish those cases. The proposition is classified RECOMMENDED and supported
+    (<a href="{{link:/research/}}#CL-020">CL-020</a>) with that caveat attached to it.
+  </p>
+</section>
+
+<section class="note">
+  <h2>What an agent should do differently</h2>
+  <ul>
+    <li>
+      Before declaring work verified, name the mechanisms that ran and what each one cannot
+      catch. If they all have the same blind spot, one of them ran.
+    </li>
+    <li>
+      Prove a shared predicate is shared: break it on purpose and confirm that everything
+      depending on it breaks too. If only one caller fails, the sharing was nominal.
+    </li>
+    <li>
+      Check that every outcome your types declare has a code path that constructs it. An
+      unreachable outcome is a contract you do not implement.
+    </li>
+    <li>
+      Run at least one check against the real boundary. The semantic no-op has evaded every
+      mechanical check in every trial in this programme, and integration testing has caught it
+      in every one.
+    </li>
+  </ul>
+</section>
+
+<section class="contradictions">
+  <h2>How this is most often got wrong</h2>
+  <p>
+    <strong>Coverage read as assurance.</strong> One build's 87 tests all passed on first run and
+    found zero new defects. They were valuable — as specification, and as regression protection.
+    They were not what found the bugs.
+  </p>
+  <p>
+    <strong>Self-review counted as an independent mechanism.</strong> It is a good mechanism and
+    it found real defects in both builds here. It is not independent, and the zero-overlap result
+    is what that costs.
+  </p>
+  <p>
+    <strong>More tests as the answer to a missed defect.</strong> Sometimes correct. But if the
+    defect was of a shape tests cannot express, the next one of that shape will also be missed.
+  </p>
+</section>

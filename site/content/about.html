@@ -1,0 +1,136 @@
+---
+path: /about/
+title: Ordo, SDE, ROS and what is not here
+description: How the name Ordo relates to State-Directed Engineering, how both relate to the Repository Operating System, and what this site deliberately makes no claim about.
+section: Start here
+order: 30
+summary: Naming, scope, and an explicit account of what was looked for and not found.
+---
+<section class="page-intro">
+  <p class="eyebrow">Scope</p>
+  <h1>Ordo, SDE, and what is not here</h1>
+  <p class="lead">
+    Two names, one methodology, and one component this site declines to describe because
+    nothing was found to describe it from.
+  </p>
+</section>
+
+<section>
+  <h2>Ordo is State-Directed Engineering</h2>
+  <p>
+    They are the same thing. <strong>Ordo</strong> is the name the methodology carries in
+    public. <strong>State-Directed Engineering</strong>, usually abbreviated SDE, is the name it
+    carries in the research record — in the doctrine documents, in the accepted evidence and
+    hypothesis records, in the decision log, and in the published tooling package.
+  </p>
+  <p>
+    Every citation on this site resolves to an SDE-named artifact. That is deliberate, and it is
+    recorded as a decision rather than left as an inconsistency: experimental artifacts keep the
+    names they were created under, because a rename would break the provenance chain from every
+    published number back to the record that produced it. The reasoning, the alternatives
+    considered, and the consequences are in
+    <code>research/decisions/DF-SDE-2026-0005</code>.
+  </p>
+  <div class="note">
+    <p>
+      Reading older material, you will also find <em>state programming</em>,
+      <em>state system</em> and <em>state-system architecture</em>. Those are not synonyms for
+      Ordo. State Programming is the <em>paradigm</em> — the constraints. Ordo is the
+      <em>methodology</em> — how to work within them. Keeping the two apart is itself a recorded
+      decision, made so that revising one does not implicitly relitigate the other.
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2>The layers, as they actually exist</h2>
+  <div class="grid">
+    <div class="card">
+      <p class="card-kicker">Paradigm</p>
+      <h3>State Programming</h3>
+      <p>
+        The constraints: explicit semantic states, legal transitions, invariants, evidence,
+        capabilities, obligations, effects, uncertainty, boundary preservation. A codebase can
+        satisfy these and say nothing about how anyone should work in it.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Methodology</p>
+      <h3>Ordo / SDE</h3>
+      <p>
+        How to work within those constraints: how a change is classified, where implementation
+        starts, when a search substitutes for a mechanism that should exist instead, how
+        verification is ordered, when work stops.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Operations</p>
+      <h3>ROS</h3>
+      <p>
+        The Repository Operating System: work items, research artifact lifecycle, evidence
+        records and validation. Ordo defines the method content; ROS is the process used to
+        produce and record it. It is what makes the citations on this site resolvable at all.
+      </p>
+    </div>
+  </div>
+  <p>
+    The separation between the first two is load-bearing, and one experiment is the reason.
+    Two conditions in the paired trial ran on architectures that were <em>identical</em> in the
+    respect being studied, and produced different outcomes because of how each agent chose to
+    work. That is a methodology question, not an architecture question — which is precisely why
+    the methodology has to exist as something separate from the paradigm.
+  </p>
+</section>
+
+<section class="limitations">
+  <h2>What this site makes no claim about</h2>
+  <p>
+    <strong>Limen.</strong> Ordo is sometimes described alongside a browser and application
+    boundary architecture by that name. No artifact, configuration, or documentation for it was
+    found in the methodology repository or in any of the five evidence repositories inspected
+    while this site was built. Rather than describe something unexamined, this site says only
+    that it was looked for and not found. Nothing here depends on it, and nothing here should be
+    read as a statement about what it is.
+  </p>
+  <p>
+    <strong>Any language or ecosystem not listed below.</strong> The evidence base covers F#,
+    TypeScript, C# and JavaScript. It contains nothing about Java, Go, Rust, Python, or any
+    other ecosystem, and this site makes no claim about them.
+  </p>
+  <p>
+    <strong>Teams.</strong> Every experiment on this site was executed by a single agent or a
+    single supervised session. Nothing here measures what happens when several people apply
+    Ordo to one codebase, and nothing here should be read as evidence about that.
+  </p>
+</section>
+
+<section>
+  <h2>Repositories this site cites</h2>
+  {{repositories}}
+  <p class="muted">
+    Several are private. A citation into one of them is labelled before you click it, so a
+    reader knows in advance whether the artifact is open to them.
+  </p>
+</section>
+
+<section>
+  <h2>How this site is built</h2>
+  <p>
+    The site is static HTML and CSS with no client-side JavaScript. It is generated by a small
+    F# program in the same repository that holds the methodology, from two data files and a set
+    of content fragments.
+  </p>
+  <p>
+    Every number in the prose is a token that resolves against a typed evidence manifest at
+    build time. A reference to a metric that does not exist fails the build. A metric that
+    states no limitation, or that names no source artifact, cannot be represented in the
+    manifest at all. Before anything is written to disk, the whole site is assembled in memory
+    and checked: every internal link resolves, every citation fragment points at an element that
+    exists, every generated JSON document parses, no unfinished draft marker survives, and nothing
+    shaped like a credential is present.
+  </p>
+  <p>
+    That is not incidental. A site arguing that illegal states should be unrepresentable would
+    be a poor advertisement for itself if an unsourced number were representable in it.
+  </p>
+</section>

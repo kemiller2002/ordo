@@ -33,4 +33,5 @@
 | WI-0028 | Review research notes and finalize SDE context/structure integration | complete | method, architecture, verification, telemetry | high |
 | WI-0029 | Convert @echelon-foundry/sde to an F#-owned, npm-distributed Echelon Foundry lifecycle tool | complete | distribution, cli, fsharp, packaging | high |
 | WI-0030 | Attribute the F# distribution rewrite to its work item (CI attribution repair) | complete | mechanical, ci-fix | high |
-| WI-0031 | Make the publish trigger safe across a default-branch rename to main | captured | ci, release | high |
+| WI-0031 | Make the publish trigger safe across a default-branch rename to main | complete | ci, release | high |
+| WI-0032 | Build and publish the Ordo public website (Echelon Foundry State-Directed Engineering methodology) as an F#-generated, evidence-traceable static site deployed via GitHub Pages | ready |  | medium |
