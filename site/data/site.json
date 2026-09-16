@@ -2,20 +2,45 @@
   "name": "Ordo",
   "tagline": "State-Directed Engineering — Echelon Foundry",
   "description": "Ordo is Echelon Foundry's State-Directed Engineering methodology: building software through explicit state, constrained transitions, structural locality, evidence, and mechanical verification. Every quantitative claim here is traceable to the artifact it came from.",
-  "baseUrl": "https://kemiller2002.github.io",
-  "pathPrefix": "/state-directed-engineering",
+  "baseUrl": "https://ordo.echelonfoundry.com",
+  "pathPrefix": "",
+  "customDomain": "ordo.echelonfoundry.com",
   "sourceRepository": "kemiller2002/state-directed-engineering",
   "sourceUrl": "https://github.com/kemiller2002/state-directed-engineering",
   "footerNote": "Ordo is under active research. This site publishes what has been measured, what has been refuted, and what is still unknown, with equal prominence.",
   "copyright": "© Echelon Foundry",
   "nav": [
-    { "label": "Why", "path": "/why/" },
-    { "label": "Method", "path": "/method/" },
-    { "label": "Concepts", "path": "/concepts/" },
-    { "label": "Examples", "path": "/examples/" },
-    { "label": "Evidence", "path": "/evidence/" },
-    { "label": "Research", "path": "/research/" },
-    { "label": "Adoption", "path": "/adoption/" },
-    { "label": "Glossary", "path": "/glossary/" }
+    {
+      "label": "Why",
+      "path": "/why/"
+    },
+    {
+      "label": "Method",
+      "path": "/method/"
+    },
+    {
+      "label": "Concepts",
+      "path": "/concepts/"
+    },
+    {
+      "label": "Examples",
+      "path": "/examples/"
+    },
+    {
+      "label": "Evidence",
+      "path": "/evidence/"
+    },
+    {
+      "label": "Research",
+      "path": "/research/"
+    },
+    {
+      "label": "Adoption",
+      "path": "/adoption/"
+    },
+    {
+      "label": "Glossary",
+      "path": "/glossary/"
+    }
   ]
 }
