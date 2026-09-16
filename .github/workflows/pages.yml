@@ -70,15 +70,25 @@ jobs:
       - name: Re-check the generated site
         run: dotnet run --project src/Ordo.Site -- validate --site site
 
+      # Written to the log as well as the job summary. A measurement only a
+      # human can see by clicking into a summary page is not one anybody
+      # checks, and this site's own argument is about checkable numbers.
       - name: Report payload size
         run: |
-          echo "### Ordo site payload" >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-          echo "total:      $(du -sh dist | cut -f1)" >> "$GITHUB_STEP_SUMMARY"
-          echo "html:       $(find dist -name '*.html' | wc -l) files, $(find dist -name '*.html' -exec cat {} + | wc -c) bytes" >> "$GITHUB_STEP_SUMMARY"
-          echo "css:        $(find dist -name '*.css' -exec cat {} + | wc -c) bytes" >> "$GITHUB_STEP_SUMMARY"
-          echo "javascript: $(find dist -name '*.js' | wc -l) files" >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          largest=$(find dist -name '*.html' -printf '%s %p\n' | sort -rn | head -1)
+          {
+            echo "### Ordo site payload"
+            echo '```'
+            echo "total on disk:  $(du -sh dist | cut -f1)"
+            echo "files:          $(find dist -type f | wc -l)"
+            echo "html:           $(find dist -name '*.html' | wc -l) pages, $(find dist -name '*.html' -exec cat {} + | wc -c) bytes uncompressed"
+            echo "css:            $(find dist -name '*.css' -exec cat {} + | wc -c) bytes"
+            echo "javascript:     $(find dist -name '*.js' | wc -l) files"
+            echo "largest page:   $largest"
+            echo "typical page:   $(stat -c%s dist/method/index.html) bytes + $(stat -c%s dist/assets/css/ordo.css) bytes of CSS"
+            echo "requests/page:  1 html + 1 css + 1 favicon, plus 2 to Google Fonts"
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v4
         with:
