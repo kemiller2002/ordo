@@ -7,9 +7,14 @@ release process.
 ## How a release is triggered
 
 `.github/workflows/publish.yml` runs when `distribution/package.json` changes
-on a push to the release branch. It compares the local version against what is
-on npm and publishes only when they differ, so an unrelated edit to
-`package.json` does not cause a re-publish attempt.
+on a push to the release branch — the repository's default branch. It compares
+the local version against what is on npm and publishes only when they differ,
+so an unrelated edit to `package.json` does not cause a re-publish attempt.
+
+The workflow's `on.push.branches` list is the only place a branch name is tied
+to releasing. If the default branch is ever renamed, add the new name there
+*before* the rename and remove the old one afterwards; a stale single name
+stops publishing silently rather than failing.
 
 ## The version bump
 
@@ -62,7 +67,7 @@ rights). `@echelon-foundry/sde` is past that point.
 
 ## Releasing, step by step
 
-1. Land the change, with its tests, on the release branch.
+1. Land the change, with its tests, on the release branch (the default branch).
 2. Bump `version` in `distribution/package.json`.
 3. Check what would be published:
    ```bash

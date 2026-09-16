@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "repository": "state-directed-engineering",
-  "nextSeq": 31,
+  "nextSeq": 32,
   "items": [
     {
       "id": "WI-0001",
@@ -526,6 +526,23 @@
       "attachments": [],
       "createdAt": "2026-09-15T16:40:46.777Z",
       "updatedAt": "2026-09-15T16:40:46.777Z",
+      "createdBy": "unknown",
+      "source": "manual",
+      "sourceReference": null
+    },
+    {
+      "id": "WI-0031",
+      "title": "Make the publish trigger safe across a default-branch rename to main",
+      "description": "The npm publish workflow's on.push.branches list is the only thing tying releases to a branch name. Renaming the default branch would stop publishing silently, with nothing failing to signal it. Lists both the new and current names so the rename is safe in either order, and rewrites docs/releasing.md to describe the release branch by role rather than hardcoding a name it cannot keep in sync. Historical research, evidence and audit records that name the branch are left untouched: they record provenance as it was and are not rewritten.",
+      "tags": [
+        "ci",
+        "release"
+      ],
+      "priority": "high",
+      "status": "captured",
+      "attachments": [],
+      "createdAt": "2026-09-16T13:18:07.030Z",
+      "updatedAt": "2026-09-16T13:18:07.030Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
