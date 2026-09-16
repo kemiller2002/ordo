@@ -73,19 +73,30 @@ jobs:
       # Written to the log as well as the job summary. A measurement only a
       # human can see by clicking into a summary page is not one anybody
       # checks, and this site's own argument is about checkable numbers.
+      # Every figure here is measured from dist/. Naming a specific page would be
+      # a path copied out of site/content/ with nothing checking the copy still
+      # resolves — the rename to /how-it-works/ left this step stat-ing a page
+      # that no longer existed, and the error was swallowed by the pipeline.
       - name: Report payload size
         run: |
-          largest=$(find dist -name '*.html' -printf '%s %p\n' | sort -rn | head -1)
+          set -o pipefail
+          sizes=$(find dist -name '*.html' -printf '%s\n' | sort -n)
+          pages=$(printf '%s\n' "$sizes" | wc -l)
+          median=$(printf '%s\n' "$sizes" | awk -v n="$pages" 'NR == int((n + 1) / 2)')
+          # awk rather than head: head exits early, which can SIGPIPE sort, and
+          # pipefail would then fail the step for a reason that is not a defect.
+          largest=$(find dist -name '*.html' -printf '%s %p\n' | sort -rn | awk 'NR == 1')
+          css=$(find dist -name '*.css' -exec cat {} + | wc -c)
           {
             echo "### Ordo site payload"
             echo '```'
             echo "total on disk:  $(du -sh dist | cut -f1)"
             echo "files:          $(find dist -type f | wc -l)"
-            echo "html:           $(find dist -name '*.html' | wc -l) pages, $(find dist -name '*.html' -exec cat {} + | wc -c) bytes uncompressed"
-            echo "css:            $(find dist -name '*.css' -exec cat {} + | wc -c) bytes"
+            echo "html:           $pages pages, $(find dist -name '*.html' -exec cat {} + | wc -c) bytes uncompressed"
+            echo "css:            $css bytes"
             echo "javascript:     $(find dist -name '*.js' | wc -l) files"
             echo "largest page:   $largest"
-            echo "typical page:   $(stat -c%s dist/method/index.html) bytes + $(stat -c%s dist/assets/css/ordo.css) bytes of CSS"
+            echo "median page:    $median bytes + $css bytes of CSS"
             echo "requests/page:  1 html + 1 css + 1 favicon, plus 2 to Google Fonts"
             echo '```'
           } | tee -a "$GITHUB_STEP_SUMMARY"
