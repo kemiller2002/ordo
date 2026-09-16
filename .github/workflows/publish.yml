@@ -23,6 +23,13 @@ name: Publish @echelon-foundry/sde to npm
 on:
   push:
     branches:
+      # Both names are listed on purpose. This trigger is the only thing tying
+      # releases to a branch name, so renaming the default branch with a single
+      # name here would stop publishing silently — the workflow would simply
+      # never fire again, with nothing failing to say so. Whichever name is
+      # current, a push to it still publishes. Drop the old name once the
+      # rename has happened and one release has gone out from `main`.
+      - main
       - claude/ros-bootstrap-init-ao9vu4
     paths:
       - "distribution/package.json"

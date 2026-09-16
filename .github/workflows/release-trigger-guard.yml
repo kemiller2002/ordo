@@ -1,0 +1,64 @@
+name: Release trigger guard
+
+# Fails if the npm publish workflow would not fire on the repository's current
+# default branch.
+#
+# `publish.yml` selects releases by branch name. That coupling fails silently:
+# rename the default branch, or point releases at a branch that no longer
+# exists, and the workflow simply never runs again — no job fails, no check
+# goes red, and the first symptom is a version bump that never reaches npm.
+#
+# This check turns that silent failure into a loud one. It reads the default
+# branch from the event payload rather than assuming a name, so it keeps
+# working across any future rename and needs no edit of its own.
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  default-branch-is-a-release-trigger:
+    name: Publish workflow fires on the default branch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # PyYAML ships in the runner image today, but that is an undocumented
+      # detail of somebody else's image. Installing it makes this check depend
+      # on something stated rather than something assumed.
+      - name: Install the YAML parser
+        run: python3 -m pip install --quiet --disable-pip-version-check pyyaml
+
+      - name: Assert the default branch is in publish.yml's trigger list
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          python3 - <<'PY'
+          import os, sys, yaml
+
+          default_branch = os.environ["DEFAULT_BRANCH"]
+          workflow_path = ".github/workflows/publish.yml"
+
+          with open(workflow_path) as handle:
+              workflow = yaml.safe_load(handle)
+
+          # PyYAML resolves the bare key `on` to the boolean True, so accept
+          # either spelling rather than depending on which one it produced.
+          triggers = workflow.get("on", workflow.get(True, {}))
+          branches = (triggers.get("push") or {}).get("branches") or []
+
+          if default_branch in branches:
+              print(f"OK: {workflow_path} publishes on '{default_branch}'.")
+              print(f"Trigger list: {branches}")
+              sys.exit(0)
+
+          print(f"::error file={workflow_path}::The default branch "
+                f"'{default_branch}' is not in this workflow's push trigger "
+                f"list {branches}, so pushing a version bump to it would "
+                f"never publish. Add '{default_branch}' to on.push.branches "
+                f"in {workflow_path}.")
+          sys.exit(1)
+          PY
