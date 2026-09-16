@@ -1,0 +1,118 @@
+---
+path: /concepts/obligations/
+title: Obligations, effects and uncertainty
+description: Making unfinished work, external consequences, and genuinely unknown outcomes explicit parts of the model rather than implied ones.
+section: Concepts
+order: 40
+summary: What is still owed, what leaves the system, and what is honestly not known yet.
+---
+<section class="page-intro">
+  <p class="eyebrow">Concept 4</p>
+  <h1>Obligations, effects and uncertainty</h1>
+  <p class="lead">
+    Three things most models leave implied: what is still owed, what leaves the system, and what
+    genuinely is not known.
+  </p>
+</section>
+
+<section>
+  <h2>Obligations — what is still owed</h2>
+  <p>
+    A transition can succeed and still leave something outstanding. An entry is recorded but not
+    yet attested. A correction is applied but not yet propagated. Conventionally this lives in a
+    flag somebody has to remember to clear, or in a background job that infers it.
+  </p>
+  <p>
+    An obligation makes it part of the state's meaning. The question "what is still outstanding
+    here?" has an answer in the model rather than in a query somebody writes later.
+  </p>
+</section>
+
+<section>
+  <h2>Effects — what leaves the system</h2>
+  <p>
+    An effect is an externally observable consequence, requested as data rather than performed
+    in place. The transition function returns a description of what should happen; something at
+    the edge performs it.
+  </p>
+  <p>
+    The practical consequence is measurable. In the build with
+    {{metric:M-GF2A-DEPS}}, every domain function is pure and knows nothing about storage, which
+    is why the whole rule set could be tested without mocking anything — and why the
+    integration tests that <em>do</em> touch real disk are a genuinely different mechanism
+    rather than the same one again with more setup.
+  </p>
+</section>
+
+<section>
+  <h2>Uncertainty — what is not known</h2>
+  <p>
+    A write is attempted. The connection drops. Did it land?
+  </p>
+  <p>
+    Conventionally this becomes an exception, or a null, or a retry that hopes for idempotence.
+    Ordo makes it a state. Both independent builds of the time-entry system arrived at a
+    four-outcome result at the storage boundary — success, failure, conflict, and
+    <em>unknown</em> — and both arrived at a matching four-outcome reconciliation for resolving
+    the unknown case afterwards. Neither copied the other; they had not seen each other's work.
+  </p>
+  <div class="note">
+    <p>
+      <strong>And here is where it went wrong anyway.</strong> In one of those builds, the
+      reconciliation's Conflict outcome was declared in the type and could never actually be
+      constructed. Modelling uncertainty explicitly did not, by itself, make the model reachable.
+      That took a fresh reviewer, and it is one of the five findings for which
+      {{metric:M-GF2B-OVERLAP}} were already covered by the build's own checks.
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2>Being honest about fault injection</h2>
+  <p>
+    Both builds needed to test the unknown-outcome path, and neither could produce genuine
+    ambiguity from synchronous local file I/O. Both did the same thing: they built a labelled,
+    test-only seam and documented plainly that it is a seam, rather than dressing a simulation
+    up as a real concurrency test.
+  </p>
+  <p>
+    Both also recorded what that leaves unverified — true concurrent multi-process access is not
+    covered by either suite. That statement is on both experiment pages, in the limitations
+    section, where a reader looking for reasons to doubt the result will find it.
+  </p>
+</section>
+
+<section class="note">
+  <h2>What an agent should do differently</h2>
+  <ul>
+    <li>
+      When an operation can fail ambiguously, model the ambiguity. Do not pick success or failure
+      and move on.
+    </li>
+    <li>
+      When you declare an outcome in a result type, find the code path that constructs it. If
+      there is none, you have declared a contract you do not implement.
+    </li>
+    <li>
+      Keep effects as returned data for as long as possible. A domain function that performs I/O
+      cannot be tested without the world.
+    </li>
+    <li>
+      Label test seams as test seams. A simulated failure documented as simulated is evidence; the
+      same seam undocumented is a false claim about coverage.
+    </li>
+  </ul>
+</section>
+
+<section class="contradictions">
+  <h2>How this is most often got wrong</h2>
+  <p>
+    <strong>Unknown collapsed into failure.</strong> The most expensive version of this: a write
+    that actually succeeded is retried because the caller could not tell, and now there are two.
+  </p>
+  <p>
+    <strong>A type that describes more than the code does.</strong> Declaring four outcomes and
+    producing three is worse than declaring three, because every reader downstream now handles a
+    case that will never arrive and believes they are covered.
+  </p>
+</section>

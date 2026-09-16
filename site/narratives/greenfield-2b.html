@@ -1,0 +1,54 @@
+<h2 id="interpretation">Interpretation</h2>
+<p>
+  Two results here, and the second one is the reason this experiment matters more than its
+  replication status suggests.
+</p>
+<h3>The convergence</h3>
+<p>
+  Two agents, the same frozen requirements, no contact between them until one had frozen its own
+  results entirely. They converged strongly on semantics: the same seven entities, the same three
+  state machines with the same transitions, a mathematically identical overlap formula, an
+  identical billing formula, the same four-outcome storage result, and the same architecture for
+  deriving capabilities from the predicates the transitions enforce. Both documented the reason
+  for that last one in nearly the same words.
+</p>
+<p>
+  They converged much less on physical structure — different file counts under most directories,
+  two different shapes of dependency injection, one splitting its application layer five ways
+  where the other split it two. The comparison is explicit that identical source-file counts are
+  the least meaningful thing in it, and that the two builds' exactly-equal test line counts are
+  almost certainly coincidence and are not used as evidence for anything.
+</p>
+<p>
+  Declining to use a striking number is a harder discipline than finding one.
+</p>
+<h3>The verification result</h3>
+<p>
+  A fresh agent, with no knowledge of the construction, reviewed a build that had passed a
+  90-test suite, a strict type check, a dependency audit, an architecture check, and an
+  adversarial self-review including three mutation tests that deliberately broke shared guards to
+  confirm they were load-bearing.
+</p>
+<p>
+  Five findings. Zero overlap with any of it.
+</p>
+<p>
+  One was a result case declared in a type that no code path could construct. One was a tie-break
+  favouring the wrong side of an exact timestamp equality. One was a pair of diagnostic
+  categories that existed in the type system and were never actually surfaced. A fourth was dead
+  code. The fifth was not a defect at all but a genuine interpretation ambiguity, which was
+  recorded and deliberately left unresolved rather than settled by changing the product to match
+  a guess.
+</p>
+<p>
+  The comparison's own treatment of the defect counts is the part worth carrying away. This build
+  recorded seven defects against the other's two, and the comparison refuses to read that as a
+  quality difference, because four of the seven exist only because a verification pass was run
+  that the other build's protocol never included. Cut this build's process off where the other's
+  ended and it recorded three.
+</p>
+<p>
+  Then it checked whether one of its own defect classes existed in the other build. It did,
+  unaddressed — not because that build was careless, but because nothing in its protocol was
+  shaped to find it.
+</p>

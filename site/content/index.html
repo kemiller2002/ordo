@@ -1,0 +1,90 @@
+---
+path: /
+title: Ordo | State-Directed Engineering
+description: Ordo is Echelon Foundry's State-Directed Engineering methodology: building software through explicit state, constrained transitions, structural locality, evidence, and mechanical verification.
+section: Home
+order: 1
+summary: What Ordo is, why it exists, and what the current evidence does and does not support.
+---
+<section class="hero">
+  <p class="eyebrow">Echelon Foundry</p>
+  <h1>Software built out of states, not out of hope.</h1>
+  <p class="lead">
+    Ordo is a State-Directed Engineering methodology. A system built under it says out loud
+    what states it can be in, which changes between them are legal, what an actor is allowed
+    to do next, and what is still owed. What the model does not permit is not a bug waiting
+    to be caught — it is something the system does not offer.
+  </p>
+  <div class="actions">
+    <a class="button primary" href="{{link:/method/}}">How it works</a>
+    <a class="button ghost" href="{{link:/evidence/}}">See the evidence</a>
+  </div>
+</section>
+
+<section>
+  <h2>The one-minute version</h2>
+  <p>
+    Most systems represent what is true with a pile of booleans, nullable fields and status
+    strings, and then defend that pile with tests. The combinations that should never occur
+    are representable, so somebody has to remember to check for them — at every place that
+    touches the data, forever.
+  </p>
+  <p>
+    Ordo starts one step earlier. Name the states. Declare which transitions between them are
+    legal. Derive what an actor may do next from the same rules the transitions enforce, so
+    the two can never drift apart. Make the crossing points to the outside world explicit,
+    because that is where this research keeps finding the defects. Then verify with several
+    mechanisms whose blind spots differ, because — as the evidence below shows — no single one
+    of them is enough.
+  </p>
+  <div class="note">
+    <p>
+      <strong>Ordo and SDE are the same methodology.</strong> Ordo is the name it carries in
+      public. The research record that produced it, and every artifact cited on this site,
+      calls it State-Directed Engineering. Historical names are not rewritten, because those
+      names are part of the experimental record.
+      <a href="{{link:/about/}}">The full explanation is here.</a>
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2>What the evidence actually shows</h2>
+  <p>
+    Seven experiments across four codebases. Here are four results, chosen because two of them
+    are inconvenient.
+  </p>
+  {{metrics:M-GF2B-OVERLAP,M-HN2-BCA,M-HN1-MDR,M-HN3-COST}}
+  <p>
+    The second and fourth are not oversights. Boundary hardening was expected to reduce how
+    much boundary work a change requires; measured three times across two architectures, it did
+    not. And the single most quotable figure this programme produced — a 68% token reduction —
+    is published here as <em>not established</em>, because the run that produced it was
+    interrupted and its telemetry covers only part of the work.
+  </p>
+  <p><a href="{{link:/research/}}">Every proposition, including the refuted ones →</a></p>
+</section>
+
+<section>
+  <h2>The shape of a change</h2>
+  {{diagram:transition}}
+</section>
+
+<section>
+  <h2>Where to go next</h2>
+  {{section:Start here}}
+</section>
+
+<section class="callout">
+  <h2>What this site will not do</h2>
+  <p>
+    It will not tell you Ordo makes teams faster. Nothing here measures that. It will not give
+    you an industry-wide percentage, because three experiments in one organisation cannot
+    produce one. Where a number exists, you can open the artifact it came from and check it.
+    Where a number does not exist, the page says so instead of estimating.
+  </p>
+  <p>
+    That restraint is not modesty. A methodology whose central claim is that systems should
+    make their own uncertainty explicit has no business hiding its own.
+  </p>
+</section>

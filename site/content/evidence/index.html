@@ -1,0 +1,105 @@
+---
+path: /evidence/
+title: Evidence
+description: Every experiment behind Ordo, with its objective, method, recorded metrics, findings, refutations, anomalies and limitations, each traceable to a source artifact.
+section: Evidence
+order: 1
+summary: Seven experiments across four codebases, with provenance for every number.
+---
+<section class="page-intro">
+  <p class="eyebrow">Evidence</p>
+  <h1>Evidence</h1>
+  <p class="lead">
+    Seven experiments, four codebases, and every number on this site traceable to the artifact
+    that produced it. Including the ones that came out badly.
+  </p>
+</section>
+
+<section>
+  <h2>The experiments</h2>
+  {{experiments}}
+</section>
+
+<section>
+  <h2>How to read these pages</h2>
+  <p>
+    Each experiment page separates five things that a summary would merge: what the experiment
+    <strong>found</strong>, what it <strong>refuted</strong> — including its own predictions —
+    what <strong>went wrong</strong> during it, what its numbers <strong>are</strong>, and what a
+    reader must <strong>not conclude</strong> from any of it.
+  </p>
+  <p>
+    Every metric card carries four things beyond its value: what it measures, how it was
+    collected, what it does not show, and a link to the artifact. Following that link is the
+    point of the exercise.
+  </p>
+</section>
+
+<section>
+  <h2>How each number was produced</h2>
+  <div class="grid">
+    <div class="card">
+      <p class="card-kicker">Instrumented</p>
+      <h3>A machine recorded it</h3>
+      <p>
+        A test runner, a build wrapper, a git count, a platform usage API. The most reliable
+        class here, and still only as good as what the instrument was pointed at.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Self-reported</p>
+      <h3>The agent recorded its own work</h3>
+      <p>
+        Search counts, discovery classifications, mistake counts. In the paired trial every
+        self-reported build and test result was independently re-verified against committed
+        diffs, with zero discrepancies — but self-classification standards differed between
+        agents, which is why two of those figures are not comparable to each other.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Derived</p>
+      <h3>Computed from other values</h3>
+      <p>
+        Structural counts from regex rules, ratios between recorded figures. The counting rule is
+        stored with the number, because the rule is a judgement.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Not observable</p>
+      <h3>The telemetry never existed</h3>
+      <p>
+        An absence of data, not a zero. Several experiments here have no token or cost figures at
+        all, because the runtime exposed none to the running agent. They are labelled rather than
+        omitted.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="limitations">
+  <h2>What this evidence base cannot support</h2>
+  <ul>
+    <li>
+      <strong>Any general claim about the industry.</strong> Seven experiments in one
+      organisation, mostly by agents from one model family. That is not a sample of software
+      engineering.
+    </li>
+    <li>
+      <strong>Any percentage improvement you could put in a proposal.</strong> No experiment here
+      was designed to establish an effect size, and the one that came closest has incomplete
+      telemetry for its treatment condition.
+    </li>
+    <li>
+      <strong>Portability beyond F#, TypeScript, C# and JavaScript.</strong> Nothing here touches
+      any other ecosystem.
+    </li>
+    <li>
+      <strong>Anything about teams.</strong> Every experiment was executed by a single agent or a
+      single supervised session.
+    </li>
+    <li>
+      <strong>A comparison against unconstrained development.</strong> No experiment here has a
+      counterfactual arm in which the same requirements were built without the method.
+    </li>
+  </ul>
+</section>

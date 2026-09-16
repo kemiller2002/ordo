@@ -1,0 +1,38 @@
+<h2 id="interpretation">Interpretation</h2>
+<p>
+  This is the most useful experiment in the programme and the one that looks worst in a summary.
+</p>
+<p>
+  Set against its own predictions, it mostly failed. Of six preregistered hypotheses, three were
+  contradicted outright and one came out mixed. The hardened condition's headline discovery rate
+  went <em>down</em>. And the figure that would have been the programme's best marketing asset —
+  a 68% token reduction — cannot be claimed at all, because the run that produced it was
+  interrupted and resumed, and the counted portion began after most of the work was already done.
+</p>
+<p>
+  What makes it valuable is that it separated two things the programme had been treating as one.
+  Mechanical discovery rate had been serving as a proxy for cost. In this trial the hardened
+  condition had a lower discovery rate and lower search and repair costs simultaneously. A proxy
+  that moves opposite to the thing it proxies is not a proxy.
+</p>
+<p>
+  The confounders are worth reading in full, because they are the model for how this kind of
+  trial should be reported. Different investigation strategies between the two agents. Different
+  self-classification strictness, which the experiment noticed mid-flight and responded to by
+  introducing a second measure rather than by picking the flattering one. Nineteen minutes of one
+  condition's wall clock spent on builds the other never ran. Warm caches for whichever condition
+  went second. A shared database. Each of these is recorded as a reason to distrust the numbers,
+  by the people who produced the numbers.
+</p>
+<p>
+  There is one unambiguously good result buried in it: across the entire independent
+  re-verification, every build, test and architecture-check result either agent reported was
+  reproduced exactly against their committed diffs. Zero discrepancies. Both agents also
+  correctly reported their own token metrics as unavailable rather than estimating them. That
+  says something about whether agent self-reports can be trusted as evidence, and the answer here
+  was yes — which is only worth knowing because somebody checked.
+</p>
+<p>
+  And the semantic no-op appeared again, identically, in both conditions, caught by integration
+  tests only. Third trial, third time.
+</p>

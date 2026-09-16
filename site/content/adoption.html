@@ -1,0 +1,188 @@
+---
+path: /adoption/
+title: Adoption
+description: How a team can begin applying Ordo to one bounded feature, to an existing system, or to a greenfield build, without a rewrite.
+section: Adoption
+order: 1
+summary: Four starting points, with what each one actually costs and what the evidence does not cover.
+---
+<section class="page-intro">
+  <p class="eyebrow">Adoption</p>
+  <h1>Adoption</h1>
+  <p class="lead">
+    Ordo is not a framework to install. It is an order of operations, and it can be applied to
+    one feature without touching anything else.
+  </p>
+</section>
+
+<section class="note">
+  <h2>Read this first</h2>
+  <p>
+    Nothing on this site measures adoption. No experiment here observed a team adopting Ordo, or
+    compared a codebase before and after. The paths below are reasoned from what the experiments
+    found about failure modes — they are not an evidenced adoption programme, and anyone
+    presenting them as one is overstating what exists.
+  </p>
+</section>
+
+<section>
+  <h2>Path 1 — one bounded feature</h2>
+  <p>
+    The cheapest useful start, and the one that produces information fastest.
+  </p>
+  <ol>
+    <li>
+      Pick a feature with real states — something that is created, changes hands, and reaches a
+      terminal condition. Anything with a <code>status</code> column is a candidate.
+    </li>
+    <li>
+      Write down the states as names. Not the fields: the states. If you cannot name them without
+      saying "and also", there is more than one state machine in there.
+    </li>
+    <li>
+      Write down the legal transitions between them. Include the ones that are terminal, and say
+      so explicitly rather than leaving them absent.
+    </li>
+    <li>
+      Find every place that currently decides one of these rules. If there is more than one,
+      that is the finding, and it is usually the thing worth fixing first.
+    </li>
+    <li>
+      Make the capability query real: one function that answers what is legal now, calling the
+      same predicates the writes enforce. Point the interface at it.
+    </li>
+    <li>
+      Add one verification mechanism you do not already have. Not more of what you have.
+    </li>
+  </ol>
+  <p>
+    Step four is where most of the value is, and it needs no new code at all.
+  </p>
+</section>
+
+<section>
+  <h2>Path 2 — an existing system, gradually</h2>
+  <p>
+    No rewrite. Increase explicitness where a change is already happening.
+  </p>
+  <div class="grid">
+    <div class="card">
+      <h3>Find the authorities</h3>
+      <p>
+        For each important rule, find the place that decides it. Where there are several, note it.
+        You now have a map of where drift is possible, which is more useful than most
+        architecture diagrams.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Name the states in place</h3>
+      <p>
+        Introduce a state where flags are currently combined, and derive the old flags from it
+        rather than maintaining both. Two answers to one question is the thing to eliminate.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Check the boundaries</h3>
+      <p>
+        For each closed set of values, find where it is restated — persistence constraints, wire
+        formats, validation lists, fixtures. Add an agreement check anywhere the copies are
+        maintained by hand.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Add a differing mechanism</h3>
+      <p>
+        One integration test against a real boundary, or one adversarial review by someone who
+        did not write the code. Both have found things in this evidence base that nothing else
+        did.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Path 3 — greenfield</h2>
+  <p>
+    The path with the most direct evidence behind it, because it is what the greenfield
+    experiments actually did. Both builds went from a frozen requirements package to a verified
+    implementation with all acceptance criteria traced, and both preserved every open question
+    unresolved rather than guessing past it.
+  </p>
+  <p>
+    What those builds did, in order: read the requirements in full; record predictions before
+    writing code and never revise them afterwards; model states and transitions before
+    implementing; keep domain functions pure and effects as returned data; write tests from the
+    requirement text rather than from implementation output; then verify with mechanisms that
+    fail differently.
+  </p>
+  <p>
+    The step most likely to be skipped is the second. Both builds' preregistrations correctly
+    identified the highest-risk area and were wrong about the specific failure inside it — which
+    is only knowable because the predictions were written down first and not edited afterwards.
+  </p>
+</section>
+
+<section>
+  <h2>Path 4 — constraining an agent</h2>
+  <p>
+    Ordo's mechanisms are useful to an AI engineering agent for a reason that has nothing to do
+    with AI: they shrink the action space and make the consequences of a choice mechanical.
+  </p>
+  <ul>
+    <li>
+      Ask the domain what is legal, then choose from that. An action absent from the answer is
+      not one the agent can attempt badly.
+    </li>
+    <li>
+      Let the compiler enumerate propagation sites instead of searching for them — in the tiers
+      the architecture actually guards, and only there.
+    </li>
+    <li>
+      Require evidence at completion: which mechanisms ran, what each found, what was not
+      established, and what telemetry never existed.
+    </li>
+    <li>
+      Add an independent verification pass by an agent with no knowledge of the construction.
+      In the one trial that did this, {{metric:M-GF2B-OVERLAP}} of its findings were already
+      covered by everything else that had run.
+    </li>
+  </ul>
+  <div class="note">
+    <p>
+      <strong>And the limit.</strong> Constraint is not correctness. Both agents in the paired
+      trial produced a change that passed every mechanical check on both architectures and did
+      the wrong thing. Constraining what an agent can attempt does not constrain whether what it
+      attempts is right.
+    </p>
+  </div>
+</section>
+
+<section class="limitations">
+  <h2>What cannot be claimed about portability</h2>
+  <p>
+    The evidence base covers F#, TypeScript, C# and JavaScript. Within it, the clearest
+    language-related finding is not that one language is better: it is that the mechanisms
+    available to catch a mistake differ sharply, and that
+    {{metric:M-TE-JS-TOOLING}} of the JavaScript rebuild's mistakes were caught by the language,
+    against {{metric:M-TE-CS-TOOLING}} in the C# rebuild.
+  </p>
+  <p>
+    That says something about what has to substitute for a compiler in a dynamically typed
+    codebase. It says nothing about Java, Go, Rust, Python, or any ecosystem not listed, and this
+    site makes no claim about them.
+  </p>
+</section>
+
+<section>
+  <h2>What to measure if you try it</h2>
+  <p>
+    If you adopt any of this, the useful thing to record is not whether it felt better. It is:
+    where defects were found and by which mechanism; how many places a semantic decision required
+    touching; and how often two parts of the system disagreed about the same rule.
+  </p>
+  <p>
+    Define each measure before collecting it, and write down what it will not show at the same
+    time. That discipline is itself the part of Ordo that this evidence base supports most
+    strongly (<a href="{{link:/research/}}#CL-019">CL-019</a>).
+  </p>
+</section>

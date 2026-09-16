@@ -1,0 +1,122 @@
+---
+path: /concepts/state/
+title: Explicit domain state
+description: Naming what can be true, instead of inferring it from a combination of flags, nulls and status strings.
+section: Concepts
+order: 10
+summary: A named state instead of a combination of flags that a reader has to decode.
+---
+<section class="page-intro">
+  <p class="eyebrow">Concept 1</p>
+  <h1>Explicit domain state</h1>
+  <p class="lead">
+    Name what can be true. Do not leave it to be inferred from which fields happen to be set.
+  </p>
+</section>
+
+<section>
+  <h2>In plain language</h2>
+  <p>
+    Most systems answer "what is going on with this record?" by reading several fields and
+    combining them in your head. Is it cancelled? Well, <code>cancelledAt</code> is set, but
+    <code>active</code> is still true, and there is a <code>replacedBy</code> pointing at
+    something. Somebody knew what that meant once.
+  </p>
+  <p>
+    Explicit state replaces that inference with a name. The record <em>is</em> Recorded, or
+    Voided, or Superseded. There is no combination to decode, because the states are the thing
+    stored, not a consequence of other things stored.
+  </p>
+</section>
+
+<section>
+  <h2>Precisely</h2>
+  <p>
+    A semantic state is a named, explicit representation of what can be true, as opposed to an
+    inferred combination of flags and nulls. The set of states is closed: adding one is a change
+    to the model, which is the point, because it makes every place that must now handle it into
+    a place the compiler can find.
+  </p>
+  <p>
+    The strongest form goes further: data that belongs to one state is only constructible in
+    that state. A field meaningful only when superseded does not type-exist on a recorded entry.
+  </p>
+</section>
+
+<section>
+  <h2>In real code</h2>
+  <p>
+    A time-entry system built twice, independently, from the same frozen requirements. Both
+    builds arrived at the same three states and the same four transitions:
+  </p>
+  {{diagram:lifecycle}}
+  <p>
+    The measured structure of one of those builds:
+  </p>
+  {{metrics:M-GF1-TRANSITIONS,M-GF1-DIAGNOSTICS}}
+  <p>
+    Twenty-four distinguishable rejection states is the number worth pausing on. Each is a named
+    reason the system can refuse an action — a value, not a thrown exception and not a null.
+    "It didn't work" is not a state this system can be in.
+  </p>
+</section>
+
+<section>
+  <h2>The divergence, and why it is the interesting part</h2>
+  <p>
+    The two independent builds modelled illegal states differently, and both were right about
+    their own tradeoff.
+  </p>
+  <p>
+    One used a discriminated union keyed by status, so <code>supersededBy</code> only exists on
+    the superseded branch and the compiler refuses it everywhere else. It cost nothing extra: the
+    union was designed in from the start.
+  </p>
+  <p>
+    The other used one flat record with optional fields, and prevented the illegal combination
+    with construction discipline — only transition functions ever build an entry — plus a
+    load-time validator that rejects a tampered or corrupted file exhibiting the inconsistency.
+    Its own self-review names this, unprompted, as the most honest limitation it found in
+    itself, and its reasoning for not refactoring is sound: the retrofit cost was already high,
+    and the defect class was already covered.
+  </p>
+  <p>
+    Two defensible points in one design space. What separates them is not care; it is when the
+    decision was made.
+  </p>
+</section>
+
+<section class="note">
+  <h2>What an agent should do differently</h2>
+  <ul>
+    <li>
+      Before adding a boolean or a nullable field to a domain record, check whether the thing
+      being expressed is a state. If it is, add a state.
+    </li>
+    <li>
+      When asked "can this record be X?", answer from the state, not by reassembling a
+      condition from fields. If that is not possible, the state is not explicit yet.
+    </li>
+    <li>
+      When adding a case to a closed set, let the compiler enumerate the sites. Do not search for
+      them first — measured at 8 of 12 sites found mechanically on an unhardened architecture,
+      and at every targeted site after hardening.
+    </li>
+  </ul>
+</section>
+
+<section class="contradictions">
+  <h2>How this is most often got wrong</h2>
+  <p>
+    <strong>The status field that is not the state.</strong> A <code>status</code> column is
+    added, and the old booleans stay, and now there are two answers to the same question with
+    nothing keeping them in agreement. This is uncoordinated duplication with a new name.
+  </p>
+  <p>
+    <strong>Assuming explicit state buys correctness.</strong> It does not. The same programme
+    that measured these state models also measured a semantic no-op surviving every mechanical
+    check on both a hardened and an unhardened architecture. Explicit state makes a class of
+    mistake unrepresentable. It has nothing to say about whether the code that runs does the
+    right thing.
+  </p>
+</section>

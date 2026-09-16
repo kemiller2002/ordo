@@ -1,0 +1,92 @@
+---
+path: /concepts/capabilities/
+title: Capabilities
+description: Deriving what an actor may do next from the same rules the transitions enforce, so the answer and the enforcement cannot drift apart.
+section: Concepts
+order: 30
+summary: What an actor may do next, derived from the rules rather than maintained beside them.
+---
+<section class="page-intro">
+  <p class="eyebrow">Concept 3</p>
+  <h1>Capabilities</h1>
+  <p class="lead">
+    A capability is what an actor is permitted to do next, answered from the same predicates
+    that enforce it — never from a second copy.
+  </p>
+</section>
+
+<section>
+  <h2>In plain language</h2>
+  <p>
+    Interfaces need to know which buttons to disable. The usual approach is to write that logic
+    in the interface: if status is voided and the user is an admin, show Restore. The rule now
+    exists twice — once where it is enforced and once where it is displayed — and only one of
+    them is tested.
+  </p>
+  <p>
+    A capability query asks the domain instead: given this entry, in this state, for this actor,
+    what is legal right now? The interface renders the answer without knowing the rule.
+  </p>
+</section>
+
+<section>
+  <h2>Precisely</h2>
+  <p>
+    A capability projection is a read-only report of legality, computed by calling the same named
+    predicates the transition functions use as preconditions. The requirement it satisfies is not
+    "the two agree" but "there is only one".
+  </p>
+</section>
+
+<section>
+  <h2>In real code</h2>
+  <p>
+    Two agents built the same requirements independently, without seeing each other's work.
+    Both arrived at the same architecture for this: one parameterised validator, plus named
+    boolean predicates shared by the transitions and by the capability projection. Both
+    documented why in nearly the same words — never a second, independently maintained copy.
+  </p>
+  <p>
+    One of them proved it rather than asserting it. A mutation test deliberately broke the
+    shared predicate and confirmed that both the mutating action and the capability report broke
+    together. If they had not, the sharing would have been nominal.
+  </p>
+  <p>
+    Across a comparison of 12 product requirements, 20 business rules and 9 open questions, the
+    two builds differed on {{metric:M-GF2B-SCOPE}} — and it was a scope question about what to
+    build, not a disagreement about a rule.
+  </p>
+  {{metrics:M-GF1-DIAGNOSTICS}}
+</section>
+
+<section class="note">
+  <h2>What an agent should do differently</h2>
+  <ul>
+    <li>
+      Do not reimplement a rule in a view, a controller, or a client. Ask the domain what is
+      legal and render the answer.
+    </li>
+    <li>
+      When a capability report and an enforcement path disagree, the bug is that there are two of
+      them. Fix the duplication, not the discrepancy.
+    </li>
+    <li>
+      When you add a guard to a transition, check that the capability projection calls the same
+      predicate. If it re-states the condition, you have just created the drift.
+    </li>
+  </ul>
+</section>
+
+<section class="contradictions">
+  <h2>How this is most often got wrong</h2>
+  <p>
+    <strong>Sharing in name only.</strong> A shared helper that each caller wraps in its own
+    extra condition. The predicate is shared; the rule is not. A mutation test — break the
+    predicate, confirm both callers break — is how you find out which one you have.
+  </p>
+  <p>
+    <strong>Permission and legality conflated.</strong> "This user may not do this" and "this
+    entry cannot be in that state" are different refusals and deserve different diagnostics.
+    Collapsing them produces an error message that cannot tell a caller which problem to fix.
+  </p>
+</section>

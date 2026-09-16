@@ -1,0 +1,28 @@
+<h2 id="interpretation">Interpretation</h2>
+<p>
+  The headline here is often read as "the compiler found two thirds of it". The more useful
+  reading is the other third.
+</p>
+<p>
+  Four sites required a person to go looking, and the record of <em>how</em> they were found is
+  the interesting part: database constraint archaeology, noticing a symmetry with a sibling
+  function that had already been fixed, and reviewing test coverage. None of those is a
+  mechanism. All three are a competent person being thorough, and none of them would have
+  survived a tired afternoon.
+</p>
+<p>
+  The distribution explains itself. The one fact under the compiler's protection had zero
+  duplicated copies. The two facts outside it had four and two. That is not a coincidence about
+  this codebase — it is what happens to a fact that nothing forces to agree with itself.
+</p>
+<p>
+  The silent-omission probe is what turned this from a measurement into a research programme.
+  Everything passed. The build, the tests, the runtime, the architecture check. A clinical fact
+  was accepted into the system and written nowhere retrievable, and the only thing that noticed
+  was an experiment deliberately looking for it.
+</p>
+<p>
+  This experiment set both of the directions everything after it went: mechanise what the type
+  system can reach (Experiment 2), and find out what still gets through when you do
+  (Experiment 2's Phase 20, and every trial since).
+</p>

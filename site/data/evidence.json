@@ -1,0 +1,1742 @@
+{
+  "schemaVersion": "1.0.0",
+  "repositories": [
+    {
+      "id": "sde",
+      "name": "kemiller2002/state-directed-engineering",
+      "url": "https://github.com/kemiller2002/state-directed-engineering",
+      "visibility": "public",
+      "role": "Canonical methodology: doctrine, construction method, and the accepted EV-/HY-/TH-/DF- records every experiment on this site is cited through."
+    },
+    {
+      "id": "helixnote",
+      "name": "kemiller2002/helix-note-application",
+      "url": "https://github.com/kemiller2002/helix-note-application",
+      "visibility": "private",
+      "role": "The application the first three controlled experiments were run on. Treated as read-only source evidence."
+    },
+    {
+      "id": "greenfield-1",
+      "name": "kemiller2002/SDE-Engineering-Trial-1-Greenfield-Construction",
+      "url": "https://github.com/kemiller2002/SDE-Engineering-Trial-1-Greenfield-Construction",
+      "visibility": "private",
+      "role": "First greenfield trial: the frozen requirements package, the development-metrics instrumentation, and a full implementation against it."
+    },
+    {
+      "id": "greenfield-2",
+      "name": "kemiller2002/SDE-Engineering-Trial-2-Greenfield-Construction",
+      "url": "https://github.com/kemiller2002/SDE-Engineering-Trial-2-Greenfield-Construction",
+      "visibility": "private",
+      "role": "Second greenfield trial and its independent replication: two agents building the same frozen requirements without seeing each other's work."
+    },
+    {
+      "id": "time-entry",
+      "name": "kemiller2002/time-entry-state-machine",
+      "url": "https://github.com/kemiller2002/time-entry-state-machine",
+      "visibility": "private",
+      "role": "The time-entry domain and the effort experiment that rebuilt it twice in conventional styles for comparison."
+    },
+    {
+      "id": "consulting-company",
+      "name": "kemiller2002/consulting-company",
+      "url": "https://github.com/kemiller2002/consulting-company",
+      "visibility": "public",
+      "role": "The Echelon Foundry site. Its palette, type stack and layout primitives are the design system this site is built from."
+    }
+  ],
+  "experiments": [
+    {
+      "id": "helixnote-1",
+      "slug": "helixnote-1",
+      "title": "Controlled Experiment 1 — boundary amplification on an unhardened architecture",
+      "status": "Complete",
+      "summary": "How much of a new domain case's required propagation work a compiler can find on its own, and what happens to the part it cannot.",
+      "repository": "helixnote",
+      "branch": "experiment/observed-value-boundary-amplification",
+      "baselineTag": "state-programming-boundary-baseline-v1",
+      "baselineSha": "182e0e22b07123a08c9c47ee4b96ca571a7ff4c7",
+      "endingSha": "a8d5a4fb81b8eebef84386e3a4bed80b0554835b",
+      "agent": "A human-supervised session acting as its own instrument. The isolated-subagent protocol did not exist yet; it was introduced in Experiment 3.",
+      "objective": "Add one new case to a closed domain alternative — VitalSignObserved, a new ObservedValue — on an architecture with no dedicated boundary-hardening mechanisms, and count every site that had to change, how each one was found, and whether anything could be silently missed.",
+      "hypothesis": "Compiler exhaustiveness checking finds the required propagation sites for a new closed-alternative case. Sites outside the type system's reach do not get found this way.",
+      "method": "A branch cut directly from the baseline tag. The mutation was implemented, every required handling site recorded as it was discovered, and each one classified by how it was found: a compiler error, or manual investigation. A deliberate probe then removed one fan-out arm and re-ran the build, the test suite and a direct database query to see whether anything would object.",
+      "findings": [
+        "Eight of twelve required handling sites — 66.7% — were found by compiler exhaustiveness checking (FS0025) alone, on an architecture with no boundary hardening of any kind.",
+        "The four sites the compiler could not find were reached by SQL CHECK-constraint archaeology, by inferring symmetry with an already-fixed sibling function, and by reviewing test coverage. None of these is a mechanism; all three are a person looking.",
+        "The one fact the compiler protects — the shape of the closed alternative itself — had zero duplication. The two facts outside its reach were duplicated four times and twice respectively, with no automated agreement check between the copies.",
+        "Boundary Change Amplification was 4.0 boundary files per semantic decision, and 7.0 mechanical boundary edits per semantic decision.",
+        "Every fix compiled and passed on the first attempt: zero repair loops.",
+        "The semantic architecture check passed both before and after, and kept passing through the deliberate-omission probe."
+      ],
+      "contradictions": [
+        "The silent-omission probe refuted the idea that this architecture's existing checks would catch a missing boundary arm. Removing the fan-out arm produced zero compiler errors, zero test failures and zero runtime exceptions. The candidate was durably recorded as accepted while the clinical fact it represented was never written anywhere retrievable."
+      ],
+      "anomalies": [
+        "The completion tag could not be pushed to the remote: HTTP 403 on the tag ref. It exists locally on the recorded commit only, so the experiment is reproducible from the branch commit rather than from a tag listing on a fresh clone.",
+        "Tool-call and token counts are recorded as NOT OBSERVABLE. The executing session had no structured telemetry access, and the work-metrics table in the source report is an explicitly-labelled manual reconstruction rather than a counter reading."
+      ],
+      "limitations": [
+        "A single trial, a single new case, on a single architecture. The source report itself declines to claim that one data point establishes a distribution.",
+        "The executing session was its own instrument: it recorded its own discovery classifications. Experiments 2 and 3 inherited this limitation; only Experiment 3 added independent re-verification against committed diffs.",
+        "66.7% is a mechanical discovery rate for one class of change — a new case in a closed alternative. It says nothing about change classes the type system does not model."
+      ],
+      "sources": [
+        {
+          "repository": "sde",
+          "path": "research/evidence/EV-HN-2026-0003--experiment-1-boundary-amplification.md"
+        },
+        {
+          "repository": "helixnote",
+          "path": "docs/state-system/HELIXNOTE-EXPERIMENT-1-OBSERVED-VALUE-BOUNDARY-AMPLIFICATION.md",
+          "ref": "a8d5a4fb81b8eebef84386e3a4bed80b0554835b"
+        }
+      ]
+    },
+    {
+      "id": "helixnote-2",
+      "slug": "helixnote-2",
+      "title": "Controlled Experiment 2 — boundary authority hardening",
+      "status": "Complete",
+      "summary": "Whether the blind spots Experiment 1 found can be closed mechanically, and what closing them does and does not change.",
+      "repository": "helixnote",
+      "branch": "experiment/boundary-authority-v1",
+      "baselineTag": "state-programming-boundary-authority-pre-v1",
+      "baselineSha": "c38a1b0",
+      "endingSha": "97331562b718aa35483e20a37d6a04524f0fce20",
+      "agent": "The same human-supervised session pattern as Experiment 1, acting as its own instrument.",
+      "objective": "Build one hardening mechanism for each blind spot Experiment 1 found, then run the same class of mutation again — a new ObservedValue case, ProcedureObserved — and measure what changed.",
+      "hypothesis": "Targeted hardening raises the proportion of required sites a machine can find. It was an open question whether it also reduces how many sites there are.",
+      "method": "Five mechanisms were designed against Experiment 1's specific blind spots: a SQL CHECK-constraint agreement test; a single-source wire discriminator; a closed-union exhaustive dispatch replacing string dispatch; a field-vocabulary agreement test; and a test fixture forced to a compile error when a case is missing. The hardened state was tagged, the trial mutation applied, and discovery classified as before. A deliberate out-of-scope mutation then re-created Experiment 1's silent-omission shape against the hardened architecture.",
+      "findings": [
+        "Mechanical Discovery Rate rose from 66.7% to 100% for the targeted blind spots: every required site produced a machine-generated error.",
+        "One hardening mechanism removed a required site outright rather than mechanising its discovery. Making the wire discriminator single-sourced left nothing at that site to find. This is the first direct evidence in the programme that hardening can reduce the work rather than only redirect how it is found.",
+        "Five small, coherent mechanisms were sufficient. No large architectural change was needed."
+      ],
+      "contradictions": [
+        "Boundary Change Amplification did not move. It was 4.0 boundary files and 7.0 mechanical edits per semantic decision both before and after hardening. Hardening changed how the required work was found; it did not change how much there was.",
+        "Exhaustiveness checking was refuted as sufficient for behavioural correctness. A structurally-present but semantically-inert boundary arm passed the compiler, the architecture check, the schema-agreement test and the field-vocabulary agreement test, all clean. Only a live boundary-path integration test detected it."
+      ],
+      "anomalies": [
+        "This trial's mutation never required work at the API tier — a scope gap Experiment 3 deliberately extended into, and the dominant reason Experiment 3's numbers look worse than this one's.",
+        "The completion tag hit the same HTTP 403 tag-push restriction as Experiment 1 and exists locally only."
+      ],
+      "limitations": [
+        "A single trial and a single new case, executed by the same session that designed the hardening. An author measuring the effect of their own mechanism is not an independent test of it.",
+        "100% is a mechanical discovery rate against the specific blind spots these five mechanisms were built to close. It is not a general claim about all boundary work, and Experiment 3 showed it does not transfer to an unguarded tier.",
+        "Nothing here establishes that the hardening was worth its construction cost; the experiment measured discovery, not cost."
+      ],
+      "sources": [
+        {
+          "repository": "sde",
+          "path": "research/evidence/EV-HN-2026-0004--experiment-2-boundary-authority.md"
+        },
+        {
+          "repository": "helixnote",
+          "path": "docs/state-system/experiment-2-report.md",
+          "ref": "97331562b718aa35483e20a37d6a04524f0fce20"
+        },
+        {
+          "repository": "helixnote",
+          "path": "docs/state-system/boundary-authority-design.md",
+          "ref": "97331562b718aa35483e20a37d6a04524f0fce20"
+        }
+      ]
+    },
+    {
+      "id": "helixnote-3",
+      "slug": "helixnote-3",
+      "title": "Controlled Experiment 3 — agent cost under hardening (corrected)",
+      "status": "Complete — this record supersedes an earlier uncorrected draft",
+      "summary": "A paired A/B trial in which two isolated agents implemented the same frozen mission against the baseline and hardened architectures. The result that most complicates the programme's own thesis.",
+      "repository": "helixnote",
+      "branch": "experiment/agent-cost-comparison-v3",
+      "endingSha": "8ac05fd25252fe9c8b43c4864978e31ca7b16bc1",
+      "agent": "Two freshly spawned, isolated subagents from the same model family, neither with access to the other's work or to the programme's prior reports. Orchestrated and independently re-verified by a third session.",
+      "objective": "Hold the mission constant and vary only the architecture, to see whether mechanical boundary hardening reduces what an AI agent actually spends to implement a change.",
+      "hypothesis": "Six preregistered hypotheses, from 'hardening reduces search effort' through 'mechanical feedback can substitute for agent inference'. Two were supported or partly supported; three were contradicted; one came out mixed.",
+      "method": "Condition A started from Experiment 1's baseline tag, Condition B from Experiment 2's hardened tag. Each was given the identical frozen mission — add imaging finding tracking, end to end — and executed by a separate isolated subagent. Both conditions were then re-verified by the orchestrating session against the actual committed diffs rather than accepted on self-report.",
+      "findings": [
+        "Search operations fell from 38 to 14 between the baseline and hardened conditions, a 63% reduction.",
+        "Repair loops fell from 2 to 1.",
+        "Boundary Change Amplification was 4.0 for a third independent time — across three separate experiments, three separate domain cases and, in this experiment, two separate architectures.",
+        "Across the entire independent re-verification, every build, test and architecture-check result either agent reported was reproduced exactly against their committed diffs. Zero discrepancies were found between self-report and re-verification.",
+        "Required change sites were identical in both conditions: 19 and 19."
+      ],
+      "contradictions": [
+        "Higher mechanical discovery does not mean lower cost. The hardened condition had a LOWER as-experienced Mechanical Discovery Rate than the baseline — 31.6% against 42.1% — while simultaneously having substantially lower search and repair-loop costs. The two proxies moved in opposite directions in the same trial.",
+        "Hardening did not reduce required work volume: required change sites were 19 in both conditions and Boundary Change Amplification was unchanged.",
+        "Hardening did not close the semantic no-op class. The same present-but-inert implementation evaded every mechanical check on both architectures and was caught by integration tests only, in both conditions identically.",
+        "The preregistered prediction that hardening would reduce silent structural omissions was contradicted: the outcome was identical in both conditions."
+      ],
+      "anomalies": [
+        "Condition B was interrupted mid-trial by an infrastructure rate limit and resumed as a separate invocation. Its recorded token, tool-use and wall-clock figures cover only the resumed portion, which began after roughly 78% of its eventual log already existed. Condition B's true total cost is unknown and could match or exceed Condition A's.",
+        "Condition A spent roughly 19 to 21 of its 36.4 minutes on three client builds that Condition B never ran, for reasons unrelated to hardening.",
+        "Condition A ran first in a shared container; Condition B ran second with warm caches and restore artifacts. A real, unquantified contributor to Condition B's shorter wall clock.",
+        "The two agents applied different strictness standards to their own discovery self-classification, which is the primary reason their raw discovery rates are not directly comparable.",
+        "An earlier draft of the source report stated a log entry count of 167 for Condition A. A direct recount gave 76. The step-count ratio is therefore about 2.1x, not the 4.6x the draft implied. The correction is recorded rather than quietly replaced."
+      ],
+      "limitations": [
+        "One paired trial, one run per condition. A case study, not a statistically powered comparison. The source report makes no claim of statistical significance anywhere.",
+        "Condition B's cost telemetry is a documented lower bound, not a total. The raw reductions it implies — 59% fewer tool uses, 68% fewer tokens, 59% less wall clock — must never be read as a confirmed cost reduction.",
+        "Both conditions were executed by subagents from the same model family in the same environment. No cross-model or cross-tool comparison was made.",
+        "Nothing here shows this architecture is superior to any other: no control implementation in a different architecture was built.",
+        "Whether hardening reduces agent token or wall-clock cost remains OPEN, not answered."
+      ],
+      "sources": [
+        {
+          "repository": "sde",
+          "path": "research/evidence/EV-HN-2026-0005--experiment-3-corrected-agent-cost.md"
+        },
+        {
+          "repository": "sde",
+          "path": "research/decisions/DF-SDE-2026-0002--corrected-experiment-3-is-authoritative.md"
+        },
+        {
+          "repository": "helixnote",
+          "path": "docs/state-system/experiment-3-report.md",
+          "ref": "8ac05fd25252fe9c8b43c4864978e31ca7b16bc1"
+        },
+        {
+          "repository": "helixnote",
+          "path": "docs/state-system/experiment-3-results.json",
+          "ref": "8ac05fd25252fe9c8b43c4864978e31ca7b16bc1"
+        }
+      ]
+    },
+    {
+      "id": "greenfield-1",
+      "slug": "greenfield-1",
+      "title": "Greenfield Trial 1 — instrumented construction from frozen requirements",
+      "status": "Complete",
+      "summary": "A time-entry system built from a frozen requirements package, with development-metrics instrumentation established before any implementation code was written.",
+      "repository": "greenfield-1",
+      "branch": "claude/dev-metrics-instrumentation-dfnzhq",
+      "endingSha": "77a6952a5b4f2d68520af1fe5f3f65b00c45561b",
+      "agent": "Claude Code, configured model claude-sonnet-5, effort level high, permission mode auto, single remote session.",
+      "objective": "Take a bounded application from a frozen requirements package through to verified software, while capturing the raw evidence needed to compare architectural treatments later — rather than reconstructing numbers from memory afterwards.",
+      "hypothesis": "Instrumentation established before implementation produces comparable evidence. Instrumentation added afterwards does not.",
+      "method": "A metrics dictionary defining every metric's unit, collection mechanism, raw evidence source, derivation formula and known limitations was written and frozen first. Builds and test runs were then run through wrapper scripts that record exit code and duration to immutable JSON/log pairs; phase transitions, defects and AI reasoning errors were logged as they happened; repository snapshots were taken at each checkpoint. Only then was the application implemented.",
+      "findings": [
+        "All 59 acceptance tests passed on the final run, with the type checker clean, both captured as immutable instrument records rather than as a claim in prose.",
+        "The time-entry domain was built with three entry states, four distinct legal transitions, seven guards, seven entry capabilities and twenty-four distinguishable diagnostic variants.",
+        "One illegal transition is explicitly represented and directly tested rather than merely absent from the code: nothing leaves the Superseded state, and two acceptance criteria assert the refusal.",
+        "Five AI reasoning errors were logged separately from ordinary defects. Four were caught by the compiler, by inspection or by an integration test; one — designing a commit hook to append to a tracked file, creating an unbreakable chase where each commit needs another commit to record it — was caught only by the user's own tooling, not by self-review.",
+        "Real, platform-reported agent cost was captured for this session, which earlier work had wrongly assumed was unavailable to a running agent."
+      ],
+      "contradictions": [
+        "The metrics dictionary's own first version claimed per-session token and cost data was not programmatically available. That was wrong, and the correction is recorded in the metrics changelog rather than edited away: the platform's session API does expose cumulative usage and actual cost. What it does not expose is a per-turn breakdown, tool-call counts, retries or API errors, which remain best-effort."
+      ],
+      "anomalies": [
+        "The recorded cost reading covers both the metrics-instrumentation task and the application implementation in one figure, and was taken mid-session while the session was still running. It is a cumulative reading at a point in time, not a total for the implementation alone.",
+        "Tool-call counts, retries, API errors and context resets are recorded as null rather than estimated: the session API does not expose them and no transcript was available.",
+        "No AST-aware parser existed for counting functions, types or complexity at the time the dictionary was written, because the implementation language had not been chosen. The structural counts recorded are regex-derived and the counting rule is stored alongside each number."
+      ],
+      "limitations": [
+        "This trial has no comparison arm. It measures one construction, thoroughly; it does not compare that construction against an alternative, so nothing here establishes that the method caused any of the outcomes.",
+        "Test counts and pass rates say what was verified, not what was not. A suite written by the same agent that wrote the implementation shares that agent's blind spots — a limitation Greenfield 2B later measured directly.",
+        "Cost and token figures are a cumulative mid-session reading covering two different tasks and cannot be attributed to the implementation alone.",
+        "Several metric families defined in the dictionary were never populated, because the instruments for them did not exist. The dictionary records the gaps rather than dropping the rows."
+      ],
+      "sources": [
+        {
+          "repository": "greenfield-1",
+          "path": "metrics/METRICS-DICTIONARY.md",
+          "ref": "claude/dev-metrics-instrumentation-dfnzhq"
+        },
+        {
+          "repository": "greenfield-1",
+          "path": "metrics/METRICS-CHANGELOG.md",
+          "ref": "claude/dev-metrics-instrumentation-dfnzhq"
+        },
+        {
+          "repository": "greenfield-1",
+          "path": "metrics/raw/tests/2026-09-02T23-44-05-163Z_final-suite_.json",
+          "ref": "claude/dev-metrics-instrumentation-dfnzhq"
+        },
+        {
+          "repository": "greenfield-1",
+          "path": "metrics/raw/state-system/2026-09-03T00-59-15-753Z_fd2a013cb32a.json",
+          "ref": "claude/dev-metrics-instrumentation-dfnzhq"
+        },
+        {
+          "repository": "greenfield-1",
+          "path": "metrics/raw/agent-sessions.jsonl",
+          "ref": "claude/dev-metrics-instrumentation-dfnzhq"
+        },
+        {
+          "repository": "greenfield-1",
+          "path": "metrics/ai-errors/AI-ERROR-LOG.jsonl",
+          "ref": "claude/dev-metrics-instrumentation-dfnzhq"
+        }
+      ]
+    },
+    {
+      "id": "greenfield-2a",
+      "slug": "greenfield-2a",
+      "title": "Greenfield Experiment 2 — construction with no method authority in the repository",
+      "status": "Complete",
+      "summary": "The same frozen requirements, built in an empty repository that contained no architecture rules, no method documents and no conventions of any kind.",
+      "repository": "greenfield-2",
+      "branch": "claude/greenfield-engineering-experiment-2-ee44qz",
+      "baselineTag": "greenfield-experiment-2-baseline-20260907-090717",
+      "baselineSha": "45c651ce2d2696f3ce8b03655f6dbc065c62af09",
+      "endingSha": "633192d1b60f73568f20a59ffac0cdfa1b5c8cb7",
+      "agent": "Claude Code over the Claude Agent SDK, configured model claude-sonnet-5, single continuous remote session, no human intervention.",
+      "objective": "Build the full time-entry system from the frozen requirements package, recording preregistered predictions before construction and comparing them against what actually happened.",
+      "hypothesis": "Preregistered, written before any code existed and never revised afterwards: predicted file counts, source size, the highest-risk requirement area, and the number of repair cycles.",
+      "method": "The repository was tagged at baseline, the requirements read in full, and a preregistration frozen before any product code was written. Construction then proceeded through six checkpoints, T0 to T6, with telemetry recorded contemporaneously at each. Metrics the runtime does not expose to a running agent were marked unavailable rather than estimated.",
+      "findings": [
+        "All 12 product requirements, all 20 business rules and all 58 acceptance criteria were implemented, with an ID-by-ID traceability mapping from each criterion to the test that covers it.",
+        "All nine open questions in the requirements package were preserved as unresolved rather than guessed past.",
+        "The final suite was 87 tests across 12 files, all passing, none skipped, with a strict type check clean at every checkpoint from T2 onward.",
+        "The built system has zero runtime dependencies: everything beyond the language standard library is a development dependency.",
+        "Defects were found by four different mechanisms, and each found a different thing: the type checker found two, a manual smoke test against real disk found one, and adversarial self-review found one that no test had caught.",
+        "The preregistration correctly identified the highest-risk area — the reconciliation requirement — and was wrong about the specific failure inside it."
+      ],
+      "contradictions": [
+        "The test suite itself found zero new defects. Every test passed on first run against the already-corrected implementation. The experiment records this plainly rather than presenting 87 passing tests as 87 defects prevented: the suite's demonstrated value here was specification and regression protection, not discovery.",
+        "Actual repair cycles came in below the preregistered range of three to six: there were two.",
+        "Source and test size together exceeded the preregistered estimate by roughly 25 to 45 percent."
+      ],
+      "anomalies": [
+        "The repository contained no engineering-method authority of any kind at baseline — no architecture rules, no construction method, no conventions. This is recorded as a genuine finding about the experiment's conditions, not as an oversight.",
+        "The baseline tag could not be pushed: HTTP 403 on the tag ref across four retries. The local tag stands as the baseline record.",
+        "A dependency vulnerability in the test runner's transitive dependencies was found and cleared before any domain code was written.",
+        "Timer behaviour is verified only with injected timestamps. The real elapsed-time path is exercised by type checking and a sub-30-second integration test, not by an actual-elapsed-time test.",
+        "Concurrency paths are exercised by fault injection and sequential calls, not by genuinely concurrent processes."
+      ],
+      "limitations": [
+        "This is one agent's single pass, self-assessed at the end. No external audit was performed — a gap the replication was specifically designed to fill, and which it filled by finding four more defects.",
+        "Token, cost and context figures are unavailable for the whole run: the runtime exposes none of them to a running session. They are marked unavailable rather than estimated, and no cost claim is made.",
+        "The elapsed wall-clock figure is a session timestamp span, not active compute time, and includes substantial documentation writing interleaved with code.",
+        "Nothing here compares this construction against an alternative method. It is a record of one build, not a controlled comparison."
+      ],
+      "sources": [
+        {
+          "repository": "greenfield-2",
+          "path": "experiment/TELEMETRY.md",
+          "ref": "claude/greenfield-engineering-experiment-2-ee44qz"
+        },
+        {
+          "repository": "greenfield-2",
+          "path": "experiment/PREREGISTRATION.md",
+          "ref": "claude/greenfield-engineering-experiment-2-ee44qz"
+        },
+        {
+          "repository": "greenfield-2",
+          "path": "experiment/SELF-REVIEW.md",
+          "ref": "claude/greenfield-engineering-experiment-2-ee44qz"
+        },
+        {
+          "repository": "greenfield-2",
+          "path": "experiment/REQUIREMENTS-TRACEABILITY.md",
+          "ref": "claude/greenfield-engineering-experiment-2-ee44qz"
+        },
+        {
+          "repository": "greenfield-2",
+          "path": "experiment/SCOPE-VARIANCE.md",
+          "ref": "claude/greenfield-engineering-experiment-2-ee44qz"
+        },
+        {
+          "repository": "greenfield-2",
+          "path": "experiment/REP.md",
+          "ref": "claude/greenfield-engineering-experiment-2-ee44qz"
+        }
+      ]
+    },
+    {
+      "id": "greenfield-2b",
+      "slug": "greenfield-2b",
+      "title": "Greenfield Experiment 2B — independent replication and convergence comparison",
+      "status": "Complete",
+      "summary": "A second agent built the same requirements without seeing the first build, added an independent verification phase, and only then compared the two. The strongest single result on this site comes from that phase.",
+      "repository": "greenfield-2",
+      "branch": "claude/greenfield-experiment-2b-replication-n8pgtq",
+      "baselineSha": "d75a07747e41bc767af58073410b6791a312caff",
+      "endingSha": "fa73cf1f9454081a470dd010321081585487663f",
+      "agent": "Claude Code, configured model claude-sonnet-5, single continuous session. One general-purpose subagent was spawned for the independent verification phase.",
+      "objective": "Replicate Greenfield Experiment 2 independently, add a verification mechanism the original did not have, and then — only after freezing its own results — compare the two builds to see what two independent agents converge on and what they do not.",
+      "hypothesis": "Six preregistered hypotheses, including that failures migrate to boundaries, that heterogeneous verification mechanisms find defects earlier ones miss, and that two independent builds converge more on semantics than on physical structure.",
+      "method": "Construction, verification and self-review were completed and frozen before the first build was opened at all. Self-review included three targeted mutation tests that deliberately broke shared guards to confirm they were load-bearing. A genuinely fresh agent, with no knowledge of the construction, was then spawned to review the result. Only after its findings were handled was the other build read, its test suite run, and a per-dimension convergence comparison written.",
+      "findings": [
+        "Not one of the five independent-verification findings was already covered by the builder's own 90-test suite or by its own adversarial self-review. The overlap was zero.",
+        "Four of the seven recorded defects exist in the record only because that verification phase was run. Without it the count would have been three.",
+        "One of those four was a declared outcome that could never actually be constructed: the reconciliation function had a Conflict result in its type that no code path could produce. The type checker was satisfied, the tests were satisfied, and the contract was incomplete.",
+        "All 12 requirements, 20 business rules and 58 acceptance criteria were implemented and tested, with all nine open questions preserved unresolved — matching the other build exactly.",
+        "The two independent builds converged strongly on semantics: identical entity sets, identical state machines, identical transition sets, and mathematically identical overlap and billing formulas, arrived at separately.",
+        "Both builds independently arrived at the same architecture for deriving what an actor may do next from the same predicates the transitions use — never a second, independently maintained copy — and documented the reason in nearly the same words.",
+        "Both preregistrations independently ranked the same requirement as the highest risk, and both were wrong about the specific failure within it. The risk ranking converged even where the defects did not."
+      ],
+      "contradictions": [
+        "The raw defect counts between the two builds are not a quality comparison, and the comparison says so explicitly: the difference is largely a measure of how many independent verification passes each build received, not of how good either implementation was.",
+        "One defect class the verification phase fixed in this build was then found, unaddressed, in the other build — direct evidence that the class was reachable by both independent constructions and was exposed only by the extra mechanism.",
+        "Two builds produced exactly the same test line count from very different file structures. The comparison reports this as almost certainly coincidence and explicitly declines to use it as evidence for anything.",
+        "One hypothesis — that greenfield scope is more predictable than legacy scope — was recorded as not testable from this run, because no legacy comparison exists. It is left open rather than answered."
+      ],
+      "anomalies": [
+        "The two builds diverged on one genuine requirements-scope question: whether any provisioning capability belongs in the system at all. Both left the underlying question open; they differ on what to build in the meantime.",
+        "The two builds model illegal states differently. One makes an inconsistent entry impossible to construct at the type level; the other prevents it by construction discipline plus a load-time validator, and says so in its own self-review unprompted.",
+        "Four acceptance tests failed on their first run. The cause was a defect in a test helper, not in the product code.",
+        "Only five black-box scenarios were run live against both systems. That is a spot check corroborating the code reading, not exhaustive behavioural coverage of all 58 criteria.",
+        "Tag pushes failed with HTTP 403 throughout, consistently. Branch pushes worked.",
+        "The two experiments ran under different protocols, so their defect counts are not directly comparable without accounting for that asymmetry."
+      ],
+      "limitations": [
+        "Two builds are a replication, not a sample. Nothing here establishes how often two independent agents converge in general.",
+        "The zero-overlap result is one verification pass on one codebase. It shows that these mechanisms missed what that one found; it does not quantify how much any mechanism generally misses.",
+        "Both builds were produced by the same model family with the same tooling. Convergence between two runs of similar systems is weaker evidence than convergence between genuinely different ones.",
+        "Token, cost and context figures are unavailable for the main session. Only the verification subagent's own run was measured, because that is the one point where the tooling exposed it.",
+        "The convergence comparison was written by one of the two participants. It reads the other build's code and runs its tests directly, but it is not a third-party comparison.",
+        "No counterfactual arm exists: nothing compares either build against unconstrained development of the same requirements."
+      ],
+      "sources": [
+        {
+          "repository": "greenfield-2",
+          "path": "experiment-2b/INDEPENDENT-VERIFICATION.md",
+          "ref": "claude/greenfield-experiment-2b-replication-n8pgtq"
+        },
+        {
+          "repository": "greenfield-2",
+          "path": "experiment-2b/DEFECT-REGISTER.md",
+          "ref": "claude/greenfield-experiment-2b-replication-n8pgtq"
+        },
+        {
+          "repository": "greenfield-2",
+          "path": "experiment-2b/ARCHITECTURAL-CONVERGENCE.md",
+          "ref": "claude/greenfield-experiment-2b-replication-n8pgtq"
+        },
+        {
+          "repository": "greenfield-2",
+          "path": "experiment-2b/TELEMETRY.md",
+          "ref": "claude/greenfield-experiment-2b-replication-n8pgtq"
+        },
+        {
+          "repository": "greenfield-2",
+          "path": "experiment-2b/PREREGISTRATION.md",
+          "ref": "claude/greenfield-experiment-2b-replication-n8pgtq"
+        },
+        {
+          "repository": "greenfield-2",
+          "path": "experiment-2b/SCOPE-VARIANCE.md",
+          "ref": "claude/greenfield-experiment-2b-replication-n8pgtq"
+        }
+      ]
+    },
+    {
+      "id": "time-entry-effort",
+      "slug": "time-entry-effort",
+      "title": "Effort experiment — the same domain rebuilt twice in conventional styles",
+      "status": "Complete",
+      "summary": "The same requirement set built three ways — an explicit-state F# domain, and two deliberately ordinary rebuilds in C# and JavaScript — with every mistake recorded as it happened and classified by what caught it.",
+      "repository": "time-entry",
+      "branch": "main",
+      "endingSha": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+      "agent": "A single session, building each rebuild live under a stated persona and a no-look-ahead rule.",
+      "objective": "Find out not whether one language produces fewer mistakes, but what kind of mistake each approach allows to exist, and what mechanism has to catch it.",
+      "hypothesis": "An explicit-state domain converts classes of mistake that a conventional codebase can only catch by disciplined manual review into mistakes a compiler catches automatically.",
+      "method": "Each requirement was implemented in the order the requirements document lists it, with no reading ahead and nothing generalised in anticipation of a later requirement. Whatever rework a later requirement forced on earlier code was the data point. Files touched, line deltas, build attempts, test runs to green, rework and mistakes were recorded per requirement as each one landed, with mistakes distinguished from ordinary iteration.",
+      "findings": [
+        "The raw mistake counts came out close: six in the F# domain across about 1,600 changed lines, six rework-driving mistakes in the 1,645-line C# rebuild.",
+        "What differed was the mechanism that caught them. In the C# rebuild the compiler caught four, and every one of the sharpest bugs — swapped string arguments, a stale revision captured in a loop, a signature change hidden behind var — was something the compiler was structurally unable to catch even in principle. Each was found only by a person deliberately re-reading a diff before running it.",
+        "In the JavaScript rebuild, the language caught nothing at all, at any point, for any reason. Renaming a property across two production files produced zero errors, zero warnings and zero crashes; the program ran.",
+        "The F# mistake rate fell across increments, from five to one to zero.",
+        "Building the C# correction path surfaced a genuine error in the reconstructed requirements themselves, which were corrected in place rather than left wrong."
+      ],
+      "contradictions": [
+        "Read naively, the JavaScript rebuild looks best: two rework-driving mistakes against C#'s six, at comparable size. The log refuses that reading and explains why. This trial had already built the identical requirement set once, and that advantage shows up precisely in the two places where a failure mode from the earlier trial was consciously checked for and avoided. Adding those near-misses back brings the counts close to even.",
+        "The falling F# mistake rate is recorded as a threat to validity rather than as a result: it is at least partly a learning-curve effect, and the final increment was also the most structurally isolated change of the three.",
+        "The honest conclusion the log supports is explicitly narrower than 'F# had fewer mistakes'."
+      ],
+      "anomalies": [
+        "The F# baseline already existed before the session began, so there is no F# from-scratch effort data to compare against the rebuilds' baseline builds. Only the incremental extensions are directly comparable.",
+        "The C# rebuild's tracking table under-counted the actual requirement list twice, causing two requirements to be built out of order. This is a property of the experiment's own bookkeeping, not of the code.",
+        "Two mistakes in the JavaScript rebuild were deliberately avoided by hindsight rather than by tooling, and are recorded as non-events rather than counted as successes."
+      ],
+      "limitations": [
+        "One person, one session, one domain. Style was varied under a stated persona rather than by recruiting developers who actually work that way.",
+        "The rebuilds were written by someone who already knew the answer, which is a named threat to validity in the record itself and the reason the persona and no-look-ahead rules exist at all.",
+        "Mistake counts across trials are not comparable without accounting for order: each rebuild benefited from everything the previous one learned.",
+        "Nothing here measures cost, time or defect escape rate in production. It measures what caught each mistake before anything shipped."
+      ],
+      "sources": [
+        {
+          "repository": "time-entry",
+          "path": "effort-experiment/README.md",
+          "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81"
+        },
+        {
+          "repository": "time-entry",
+          "path": "effort-experiment/EFFORT-LOG.md",
+          "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81"
+        },
+        {
+          "repository": "time-entry",
+          "path": "research/experiments/EX-TE-2026-0002--hodgepodge-csharp-full-rebuild.md",
+          "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81"
+        },
+        {
+          "repository": "time-entry",
+          "path": "research/experiments/EX-TE-2026-0003--hodgepodge-javascript-full-rebuild.md",
+          "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81"
+        }
+      ]
+    }
+  ],
+  "metrics": [
+    {
+      "id": "M-HN1-MDR",
+      "label": "Required sites found by the compiler alone",
+      "value": "8 of 12",
+      "definition": "The share of required handling sites for a new closed-alternative case that a compiler exhaustiveness error pointed at directly — 66.7%.",
+      "measurement": "Each site was classified as it was discovered, as either a compiler error or manual investigation, during the implementation itself.",
+      "experiment": "helixnote-1",
+      "provenance": "self-reported",
+      "limitation": "One change class — a new case in a closed alternative — on one architecture, in one trial. It says nothing about change classes the type system does not model, and the session classified its own discoveries.",
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0003--experiment-1-boundary-amplification.md",
+        "section": "Key figures"
+      }
+    },
+    {
+      "id": "M-HN1-BCA",
+      "label": "Boundary files per semantic decision",
+      "value": "4.0",
+      "definition": "Boundary Change Amplification: the number of distinct boundary files that had to change for each single semantic decision.",
+      "measurement": "Counted from the committed diff of the experiment branch against its baseline tag.",
+      "experiment": "helixnote-1",
+      "provenance": "instrumented",
+      "limitation": "This is a measurement of one codebase's boundary structure, not a universal ratio. It is reported here because the same figure recurred in two later experiments, not because one measurement establishes a constant.",
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0003--experiment-1-boundary-amplification.md",
+        "section": "Key figures"
+      }
+    },
+    {
+      "id": "M-HN1-REPAIR",
+      "label": "Repair loops",
+      "value": "0",
+      "definition": "Cycles in which a fix had to be revised because it failed to compile or failed a test.",
+      "measurement": "Counted during implementation; every fix compiled and passed on its first attempt.",
+      "experiment": "helixnote-1",
+      "provenance": "self-reported",
+      "limitation": "Zero repair loops means the mechanically-discovered fixes were mechanical. It does not mean the change was correct: the same experiment's own probe showed a missing boundary arm passing every check.",
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0003--experiment-1-boundary-amplification.md",
+        "section": "Key figures"
+      }
+    },
+    {
+      "id": "M-HN1-SILENT",
+      "label": "Checks that objected to a deliberately removed boundary arm",
+      "value": "0 of 3",
+      "definition": "Of the compiler, the existing test suite and the running application, how many produced any signal when a required fan-out arm was removed.",
+      "measurement": "A deliberate probe: remove the arm, build, run the tests, query the database directly, then restore.",
+      "experiment": "helixnote-1",
+      "provenance": "instrumented",
+      "limitation": "One probe, one arm, one architecture. It establishes that this failure is real and reproducible here, not how often it occurs in general.",
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0003--experiment-1-boundary-amplification.md",
+        "section": "Key figures"
+      }
+    },
+    {
+      "id": "M-HN1-TELEMETRY",
+      "label": "Tool calls and tokens",
+      "value": "NOT OBSERVABLE",
+      "definition": "Agent tool-call and token counts for this experiment.",
+      "measurement": "Not collected. The executing session had no structured telemetry access, and the source report labels its work-metrics table a manual reconstruction rather than a counter reading.",
+      "experiment": "helixnote-1",
+      "provenance": "not-observable",
+      "limitation": "This is an absence of data, not a zero. No cost comparison involving this experiment is possible, and none is made.",
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0003--experiment-1-boundary-amplification.md",
+        "section": "Key figures"
+      }
+    },
+    {
+      "id": "M-HN2-MDR",
+      "label": "Mechanical discovery rate after hardening",
+      "value": "66.7% to 100%",
+      "definition": "The share of required sites reported by a machine rather than found by looking, before and after five targeted hardening mechanisms.",
+      "measurement": "Same classification method as Experiment 1, applied to a new case on the hardened architecture.",
+      "experiment": "helixnote-2",
+      "provenance": "self-reported",
+      "limitation": "100% is measured against the specific blind spots these five mechanisms were built to close. Experiment 3 showed the figure does not transfer to a tier the hardening does not cover, where it fell well below this.",
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0004--experiment-2-boundary-authority.md",
+        "section": "Key figures"
+      }
+    },
+    {
+      "id": "M-HN2-BCA",
+      "label": "Boundary files per semantic decision, after hardening",
+      "value": "4.0, unchanged",
+      "definition": "Boundary Change Amplification measured again on the hardened architecture, against the identical figure from the unhardened one.",
+      "measurement": "Counted from the committed diff, the same way as Experiment 1.",
+      "experiment": "helixnote-2",
+      "provenance": "instrumented",
+      "limitation": "This is the result that refutes a natural expectation. Hardening changed how required work was found and did not change how much of it there was. Do not cite hardening as reducing boundary work.",
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0004--experiment-2-boundary-authority.md",
+        "section": "Key figures"
+      }
+    },
+    {
+      "id": "M-HN2-NOOP",
+      "label": "Mechanical checks that caught a present-but-inert boundary arm",
+      "value": "0 of 4",
+      "definition": "Of the compiler, the architecture check, the schema-agreement test and the field-vocabulary agreement test, how many detected a boundary arm that existed but did nothing.",
+      "measurement": "A deliberate out-of-scope mutation re-creating Experiment 1's failure shape against the hardened architecture, with all four checks run against it.",
+      "experiment": "helixnote-2",
+      "provenance": "instrumented",
+      "limitation": "Exhaustiveness checking guarantees the arm exists. It says nothing about whether the arm does anything. A live integration test detected it; nothing else did.",
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0004--experiment-2-boundary-authority.md",
+        "section": "Key figures"
+      }
+    },
+    {
+      "id": "M-HN3-SEARCH",
+      "label": "Search operations",
+      "value": "38 to 14",
+      "definition": "Repository search operations performed by each agent while implementing the identical frozen mission, baseline architecture against hardened.",
+      "measurement": "Counted by each isolated subagent from its own execution log, then re-verified by the orchestrating session against committed diffs.",
+      "experiment": "helixnote-3",
+      "provenance": "self-reported",
+      "limitation": "One paired trial, one run per condition. Two agents with different investigation strategies; the reduction is confounded with that difference and is not attributable to architecture alone.",
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0005--experiment-3-corrected-agent-cost.md",
+        "section": "Corrected headline figures"
+      }
+    },
+    {
+      "id": "M-HN3-REPAIR",
+      "label": "Repair loops",
+      "value": "2 to 1",
+      "definition": "Cycles in which a fix had to be revised, baseline condition against hardened condition.",
+      "measurement": "Counted from each agent's own execution log and re-verified against committed diffs.",
+      "experiment": "helixnote-3",
+      "provenance": "self-reported",
+      "limitation": "A change from two to one in a single paired trial. This is a direction, not a rate, and the sample is one run per condition.",
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0005--experiment-3-corrected-agent-cost.md",
+        "section": "Corrected headline figures"
+      }
+    },
+    {
+      "id": "M-HN3-MDR",
+      "label": "As-experienced mechanical discovery rate",
+      "value": "42.1% to 31.6%",
+      "definition": "Each agent's own strict, temporally-ordered classification of which required sites it found mechanically rather than by reading, baseline against hardened.",
+      "measurement": "Self-classified by each agent during execution, under each agent's own strictness standard.",
+      "experiment": "helixnote-3",
+      "provenance": "self-reported",
+      "limitation": "The hardened condition scored LOWER here while spending less on search and repair. The two agents also applied different strictness standards, so these two figures are not directly comparable to each other — which is exactly why the experiment introduced a second, architecture-potential measure.",
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0005--experiment-3-corrected-agent-cost.md",
+        "section": "Corrected headline figures"
+      }
+    },
+    {
+      "id": "M-HN3-RCS",
+      "label": "Required change sites",
+      "value": "19 and 19",
+      "definition": "Normalised count of distinct locations the frozen mission required changing, in each condition.",
+      "measurement": "Counted from each condition's committed diff by the orchestrating session.",
+      "experiment": "helixnote-3",
+      "provenance": "instrumented",
+      "limitation": "Identical in both conditions. Hardening did not reduce the amount of work required; anything claiming otherwise contradicts this measurement.",
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0005--experiment-3-corrected-agent-cost.md",
+        "section": "Corrected headline figures"
+      }
+    },
+    {
+      "id": "M-HN3-BCA",
+      "label": "Boundary files per semantic decision",
+      "value": "4.0, third replication",
+      "definition": "Boundary Change Amplification, measured a third time — now across three experiments, three domain cases and two different architectures.",
+      "measurement": "Counted from committed diffs in each condition.",
+      "experiment": "helixnote-3",
+      "provenance": "instrumented",
+      "limitation": "Three replications in one codebase is a stable property of that codebase, not a law. No other application has been measured.",
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0005--experiment-3-corrected-agent-cost.md",
+        "section": "Corrected headline figures"
+      }
+    },
+    {
+      "id": "M-HN3-VERIFY",
+      "label": "Discrepancies between agent self-report and independent re-verification",
+      "value": "0",
+      "definition": "Build, test and architecture-check results each agent reported, checked against what their actual committed diffs produce.",
+      "measurement": "Every reported result was independently re-run by the orchestrating session against the committed code.",
+      "experiment": "helixnote-3",
+      "provenance": "instrumented",
+      "limitation": "This establishes that these agents reported their own results honestly. It says nothing about whether the work was correct — the same trial found a semantic no-op in both conditions.",
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0005--experiment-3-corrected-agent-cost.md",
+        "section": "Corrected headline figures"
+      }
+    },
+    {
+      "id": "M-HN3-COST",
+      "label": "Agent token and wall-clock cost",
+      "value": "Not established",
+      "definition": "Whether the hardened architecture cost the agent less to work in.",
+      "measurement": "Harness-level telemetry was captured for both conditions, but the hardened condition was interrupted by a rate limit and resumed as a separate invocation, so its figures cover only the resumed portion — beginning after roughly 78% of its eventual log already existed.",
+      "experiment": "helixnote-3",
+      "provenance": "not-observable",
+      "limitation": "The raw figures imply 59% fewer tool uses, 68% fewer tokens and 59% less wall clock. They MUST NOT be read as a cost reduction. They are a lower bound on a partial run; the true total is unknown and could match or exceed the baseline. This question is open.",
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0005--experiment-3-corrected-agent-cost.md",
+        "section": "Harness-level telemetry"
+      }
+    },
+    {
+      "id": "M-HN3-STEPS",
+      "label": "Execution log step ratio",
+      "value": "about 2.1x",
+      "definition": "The ratio of numbered execution-log entries between the two conditions: 76 against 36.",
+      "measurement": "A direct recount of both logs, correcting an earlier draft of the same report that stated 167 entries for the baseline condition and implied a 4.6x ratio.",
+      "experiment": "helixnote-3",
+      "provenance": "instrumented",
+      "limitation": "Log entry counts are a proxy for effort shaped by each agent's own logging habits, not a measure of work done. The correction is published because the superseded figure circulated first.",
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0005--experiment-3-corrected-agent-cost.md",
+        "section": "Corrected log/step-count figures"
+      }
+    },
+    {
+      "id": "M-GF1-TESTS",
+      "label": "Acceptance tests passing",
+      "value": "59 / 59",
+      "definition": "Tests passing in the final recorded run, with zero failed, zero skipped and zero cancelled.",
+      "measurement": "Captured by a test wrapper script to an immutable JSON and log pair recording the command, timestamps, duration and exit code.",
+      "experiment": "greenfield-1",
+      "provenance": "instrumented",
+      "limitation": "A passing suite says what was verified, not what was missed. This suite was written by the same agent that wrote the implementation, and shares its blind spots.",
+      "source": {
+        "repository": "greenfield-1",
+        "path": "metrics/raw/tests/2026-09-02T23-44-05-163Z_final-suite_.json",
+        "ref": "claude/dev-metrics-instrumentation-dfnzhq"
+      }
+    },
+    {
+      "id": "M-GF1-COST",
+      "label": "Recorded agent cost",
+      "value": "$19.04",
+      "definition": "Platform-reported cumulative cost for the session, in US dollars — the platform's own figure, not a token-math estimate.",
+      "measurement": "Read from the session usage API and written to the agent-session log with the reading's timestamp and source recorded alongside it.",
+      "experiment": "greenfield-1",
+      "provenance": "instrumented",
+      "limitation": "A cumulative mid-session reading covering BOTH the metrics-instrumentation task and the application implementation, taken while the session was still running. It cannot be attributed to the implementation alone and is not a total.",
+      "source": {
+        "repository": "greenfield-1",
+        "path": "metrics/raw/agent-sessions.jsonl",
+        "ref": "claude/dev-metrics-instrumentation-dfnzhq"
+      }
+    },
+    {
+      "id": "M-GF1-TOKENS",
+      "label": "Recorded tokens",
+      "value": "60,303,576",
+      "definition": "Total tokens for the session: 1,503 fresh input, 227,066 output, 58,825,031 cache reads and 1,249,976 cache writes.",
+      "measurement": "Read from the session usage API at the same checkpoint as the cost figure.",
+      "experiment": "greenfield-1",
+      "provenance": "instrumented",
+      "limitation": "Overwhelmingly cache reads, which are not comparable to fresh input tokens in cost or in meaning. Like the cost figure, it covers two tasks and is a mid-session reading.",
+      "source": {
+        "repository": "greenfield-1",
+        "path": "metrics/raw/agent-sessions.jsonl",
+        "ref": "claude/dev-metrics-instrumentation-dfnzhq"
+      }
+    },
+    {
+      "id": "M-GF1-TRANSITIONS",
+      "label": "Distinct legal transitions",
+      "value": "4",
+      "definition": "Distinct from-state to to-state pairs the entry lifecycle permits: create, void, restore, and supersede by split or merge.",
+      "measurement": "Counted by a structural snapshot script whose counting rule is stored in the snapshot record itself.",
+      "experiment": "greenfield-1",
+      "provenance": "derived",
+      "limitation": "A regex-derived count over one implementation, with the counting rule recorded because it is a judgement. No AST parser existed when the metric was defined.",
+      "source": {
+        "repository": "greenfield-1",
+        "path": "metrics/raw/state-system/2026-09-03T00-59-15-753Z_fd2a013cb32a.json",
+        "ref": "claude/dev-metrics-instrumentation-dfnzhq"
+      }
+    },
+    {
+      "id": "M-GF1-DIAGNOSTICS",
+      "label": "Distinguishable rejection states",
+      "value": "24",
+      "definition": "Named diagnostic variants: distinct reasons the system can refuse an action, each one a value rather than a thrown exception or a null.",
+      "measurement": "Counted by the same structural snapshot script, over the diagnostic union's variants.",
+      "experiment": "greenfield-1",
+      "provenance": "derived",
+      "limitation": "Counts how many refusals are distinguishable, not whether each one is correct or whether the set is complete.",
+      "source": {
+        "repository": "greenfield-1",
+        "path": "metrics/raw/state-system/2026-09-03T00-59-15-753Z_fd2a013cb32a.json",
+        "ref": "claude/dev-metrics-instrumentation-dfnzhq"
+      }
+    },
+    {
+      "id": "M-GF1-AIERRORS",
+      "label": "Agent reasoning errors logged",
+      "value": "5",
+      "definition": "Misread requirements or invented rules, logged separately from ordinary defects whether or not they produced observable misbehaviour.",
+      "measurement": "Logged at the moment each was found, with category, what detected it, and the correction.",
+      "experiment": "greenfield-1",
+      "provenance": "self-reported",
+      "limitation": "A count of errors the agent noticed and recorded about itself. Errors it did not notice are, by construction, absent from this number.",
+      "source": {
+        "repository": "greenfield-1",
+        "path": "metrics/ai-errors/AI-ERROR-LOG.jsonl",
+        "ref": "claude/dev-metrics-instrumentation-dfnzhq"
+      }
+    },
+    {
+      "id": "M-GF2A-AC",
+      "label": "Acceptance criteria implemented and traced",
+      "value": "58 / 58",
+      "definition": "Acceptance criteria from the frozen requirements package with an implementation and a named test, mapped ID by ID.",
+      "measurement": "A traceability document mapping each criterion to the test covering it, written alongside the implementation.",
+      "experiment": "greenfield-2a",
+      "provenance": "self-reported",
+      "limitation": "Traceability means every criterion has a test. It does not mean the tests are good: this build's own suite found zero new defects, and an independent reviewer of the replication found five things its equivalent suite missed.",
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment/REQUIREMENTS-TRACEABILITY.md",
+        "ref": "claude/greenfield-engineering-experiment-2-ee44qz"
+      }
+    },
+    {
+      "id": "M-GF2A-TESTS",
+      "label": "Tests passing",
+      "value": "87 / 87",
+      "definition": "Tests across 12 files, all passing, none skipped, with a strict type check clean.",
+      "measurement": "Test runner output at the final verification checkpoint.",
+      "experiment": "greenfield-2a",
+      "provenance": "instrumented",
+      "limitation": "All 87 passed on first run against the already-corrected implementation, finding zero new defects. The suite's demonstrated value here was specification and regression protection, not discovery.",
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment/TELEMETRY.md",
+        "ref": "claude/greenfield-engineering-experiment-2-ee44qz",
+        "section": "T5 — Verified Implementation"
+      }
+    },
+    {
+      "id": "M-GF2A-DEFECTS",
+      "label": "Defects, by the mechanism that found each",
+      "value": "2 + 1 + 1 + 0",
+      "definition": "Two found by the type checker, one by a manual smoke test against real disk, one by adversarial self-review, and zero by the automated test suite.",
+      "measurement": "Recorded per checkpoint as each was found, with the finding mechanism named.",
+      "experiment": "greenfield-2a",
+      "provenance": "self-reported",
+      "limitation": "Four mechanisms, four different results. This is a description of one build's defect discovery, not a ranking of mechanisms: the self-review found one because it looked for a shape the tests could not express.",
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment/TELEMETRY.md",
+        "ref": "claude/greenfield-engineering-experiment-2-ee44qz",
+        "section": "T5 — Verified Implementation"
+      }
+    },
+    {
+      "id": "M-GF2A-DEPS",
+      "label": "Runtime dependencies",
+      "value": "0",
+      "definition": "Third-party packages the built application needs at runtime. Everything else is a development dependency.",
+      "measurement": "Read from the dependency manifest at experiment close.",
+      "experiment": "greenfield-2a",
+      "provenance": "instrumented",
+      "limitation": "Zero runtime dependencies is a property of this problem — a business-rules engine behind a thin boundary — not a general outcome of the method.",
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment/TELEMETRY.md",
+        "ref": "claude/greenfield-engineering-experiment-2-ee44qz",
+        "section": "T4 — Primary Implementation Complete"
+      }
+    },
+    {
+      "id": "M-GF2A-SIZE",
+      "label": "Source and test size",
+      "value": "2,106 + 1,421 lines",
+      "definition": "22 source files and 12 test files, 3,527 lines in total.",
+      "measurement": "Counted from the working tree at the final checkpoint.",
+      "experiment": "greenfield-2a",
+      "provenance": "instrumented",
+      "limitation": "This exceeded the build's own preregistered estimate by roughly 25 to 45 percent. Line counts measure size, not quality, and the preregistration was wrong about them.",
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment/TELEMETRY.md",
+        "ref": "claude/greenfield-engineering-experiment-2-ee44qz",
+        "section": "T4 — Primary Implementation Complete"
+      }
+    },
+    {
+      "id": "M-GF2A-COST",
+      "label": "Token and cost totals",
+      "value": "NOT OBSERVABLE",
+      "definition": "Token counts, cost and context occupancy for this run.",
+      "measurement": "Not collected: this runtime exposes none of them to a running session. Recorded as unavailable at every checkpoint, and again explicitly at experiment close.",
+      "experiment": "greenfield-2a",
+      "provenance": "not-observable",
+      "limitation": "An absence of data, not a zero. No cost comparison with any other experiment on this site is possible.",
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment/TELEMETRY.md",
+        "ref": "claude/greenfield-engineering-experiment-2-ee44qz",
+        "section": "T6 — Experiment Closed"
+      }
+    },
+    {
+      "id": "M-GF2B-OVERLAP",
+      "label": "Independent-verification findings the builder's own checks had already caught",
+      "value": "0 of 5",
+      "definition": "Of five findings from a fresh agent with no knowledge of the construction, how many were already covered by the builder's own 90-test suite or its own adversarial self-review.",
+      "measurement": "An overlap analysis performed against the existing suite and self-review document after the verification findings were received.",
+      "experiment": "greenfield-2b",
+      "provenance": "instrumented",
+      "limitation": "One verification pass on one codebase. It shows these mechanisms missed what that one found; it does not quantify how much any mechanism generally misses, and a different reviewer would have found a different set.",
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment-2b/INDEPENDENT-VERIFICATION.md",
+        "ref": "claude/greenfield-experiment-2b-replication-n8pgtq"
+      }
+    },
+    {
+      "id": "M-GF2B-DEFECTS",
+      "label": "Defects found, and how many needed the extra pass",
+      "value": "7, of which 4",
+      "definition": "Seven recorded defects. Three were found by the builder's own construction, testing and self-review; four were found only by the independent verification phase.",
+      "measurement": "Every defect logged with a stable id, its discovery mechanism, root cause, repair and regression evidence.",
+      "experiment": "greenfield-2b",
+      "provenance": "self-reported",
+      "limitation": "A higher defect count here does not mean a worse build. It largely measures how many independent verification passes this build received compared with the one it is being read against.",
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment-2b/DEFECT-REGISTER.md",
+        "ref": "claude/greenfield-experiment-2b-replication-n8pgtq"
+      }
+    },
+    {
+      "id": "M-GF2B-TESTS",
+      "label": "Tests passing after verification",
+      "value": "90 / 90",
+      "definition": "Tests across six files after the six regression tests added in response to the independent verification findings.",
+      "measurement": "Test runner output at the final checkpoint.",
+      "experiment": "greenfield-2b",
+      "provenance": "instrumented",
+      "limitation": "Eighty-four of these tests existed before the independent review and did not catch any of the five things it found.",
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment-2b/TELEMETRY.md",
+        "ref": "claude/greenfield-experiment-2b-replication-n8pgtq",
+        "section": "Engineering execution"
+      }
+    },
+    {
+      "id": "M-GF2B-VERIFIER",
+      "label": "Independent verifier's own run",
+      "value": "35 tool calls, 164,383 tokens, 8.1 min",
+      "definition": "Measured cost of the verification subagent's run — the one point in the session where the tooling exposed usage for a unit of work.",
+      "measurement": "Reported by the subagent's own task-completion metadata.",
+      "experiment": "greenfield-2b",
+      "provenance": "instrumented",
+      "limitation": "This covers the verification pass only. The main session's equivalent figures are unavailable, so this cannot be read as a proportion of the experiment's total cost.",
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment-2b/TELEMETRY.md",
+        "ref": "claude/greenfield-experiment-2b-replication-n8pgtq",
+        "section": "Agent / model"
+      }
+    },
+    {
+      "id": "M-GF2B-CONVERGE",
+      "label": "Source files in each of two independent builds",
+      "value": "22 and 22",
+      "definition": "Source file counts from two agents building the same frozen requirements without seeing each other's work.",
+      "measurement": "Counted directly on both working trees during the comparison.",
+      "experiment": "greenfield-2b",
+      "provenance": "instrumented",
+      "limitation": "The comparison warns explicitly against reading physical similarity as semantic convergence: the identical count masks real differences in how each build maps semantic clusters onto files.",
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment-2b/ARCHITECTURAL-CONVERGENCE.md",
+        "ref": "claude/greenfield-experiment-2b-replication-n8pgtq",
+        "section": "C. Physical architecture convergence"
+      }
+    },
+    {
+      "id": "M-GF2B-SCOPE",
+      "label": "Requirements-scope divergences between two independent builds",
+      "value": "1 of 41",
+      "definition": "Across 12 product requirements, 20 business rules and 9 open questions, how many were handled differently by the two builds.",
+      "measurement": "A per-dimension comparison of both codebases and both requirements inventories, performed after this build's own results were frozen.",
+      "experiment": "greenfield-2b",
+      "provenance": "derived",
+      "limitation": "Two builds by the same model family with the same tooling. Convergence between similar systems is weaker evidence than convergence between genuinely different ones, and two runs are not a sample.",
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment-2b/ARCHITECTURAL-CONVERGENCE.md",
+        "ref": "claude/greenfield-experiment-2b-replication-n8pgtq",
+        "section": "G. Convergence scorecard"
+      }
+    },
+    {
+      "id": "M-TE-FS",
+      "label": "Mistakes in the explicit-state F# domain",
+      "value": "6",
+      "definition": "Real wrong decisions across about 1,600 lines of new and changed code in three increments — a bug introduced, or a requirement re-implemented because the first attempt was wrong — counted separately from ordinary build-fix iteration.",
+      "measurement": "Recorded live per increment as each mistake occurred, with what caught it.",
+      "experiment": "time-entry-effort",
+      "provenance": "self-reported",
+      "limitation": "The rate fell from five to one to zero across increments. The log records this as at least partly a learning-curve effect, not evidence the architecture got safer.",
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "section": "F# totals across all three increments"
+      }
+    },
+    {
+      "id": "M-TE-CS",
+      "label": "Mistakes in the conventional C# rebuild",
+      "value": "6",
+      "definition": "Rework-driving mistakes across a 1,645-line rebuild, built requirement by requirement with no reading ahead.",
+      "measurement": "Recorded live per requirement, with build attempts, test runs to green, rework and the mechanism that caught each mistake.",
+      "experiment": "time-entry-effort",
+      "provenance": "self-reported",
+      "limitation": "The raw count matching the F# domain's is the least interesting thing about this number. What differs is which mechanism caught each one.",
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "section": "Totals — the complete hodgepodge build"
+      }
+    },
+    {
+      "id": "M-TE-CS-TOOLING",
+      "label": "C# mistakes caught by the compiler",
+      "value": "4 of 6",
+      "definition": "How many of the conventional C# rebuild's mistakes the compiler caught by itself.",
+      "measurement": "Classified per mistake as it was found.",
+      "experiment": "time-entry-effort",
+      "provenance": "self-reported",
+      "limitation": "Every one of the sharpest bugs — swapped string arguments, a stale revision in a loop, a signature change hidden behind var — was outside what the compiler could catch even in principle, and was found only by a person re-reading a diff.",
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "section": "Totals — the complete hodgepodge build"
+      }
+    },
+    {
+      "id": "M-TE-JS-TOOLING",
+      "label": "JavaScript mistakes caught by the language",
+      "value": "0",
+      "definition": "How many mistakes in the 1,540-line JavaScript rebuild were caught by the language or its tooling.",
+      "measurement": "Classified per mistake. Renaming a property across two production files produced zero errors, zero warnings and zero crashes; the program ran.",
+      "experiment": "time-entry-effort",
+      "provenance": "instrumented",
+      "limitation": "Zero here is a property of the configuration — no compiler and no static type checker — not a claim about JavaScript projects that use one.",
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "section": "Totals — the complete hodgepodge JavaScript build"
+      }
+    },
+    {
+      "id": "M-TE-JS",
+      "label": "Rework-driving mistakes in the JavaScript rebuild",
+      "value": "2",
+      "definition": "Substantive mistakes across the 1,540-line JavaScript rebuild of the same requirement set.",
+      "measurement": "Recorded live per requirement under the same rules as the C# rebuild.",
+      "experiment": "time-entry-effort",
+      "provenance": "self-reported",
+      "limitation": "Read naively this beats the C# rebuild's six, which is the opposite of what the same trial's other findings predict. The log attributes it to having already built the identical requirement set once, and names the two places where that hindsight prevented a repeat of an earlier failure.",
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "section": "Totals — the complete hodgepodge JavaScript build"
+      }
+    }
+  ],
+  "claims": [
+    {
+      "id": "CL-001",
+      "proposition": "Change semantic authority before propagating outward: a semantic change starts at the model, not at the edge.",
+      "confidence": "required",
+      "state": "supported",
+      "records": [
+        "EV-HN-2026-0003",
+        "EV-HN-2026-0004",
+        "EV-HN-2026-0005",
+        "TH-SDE-2026-0001"
+      ],
+      "limitation": "No counterexample found, but this has not been tested outside one application and one language.",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/EVIDENCE-TO-ENGINEERING-MAP.md",
+        "section": "Evidence-to-Engineering Map"
+      }
+    },
+    {
+      "id": "CL-002",
+      "proposition": "Compile or build before searching the repository broadly, where the architecture provides exhaustiveness checking.",
+      "confidence": "recommended",
+      "state": "provisional",
+      "records": [
+        "EV-HN-2026-0005",
+        "HY-SDE-2026-0006"
+      ],
+      "limitation": "Substitutes for search only in tiers the hardening actually covers — the API tier in Experiment 3 was unguarded — and an agent that reads broadly first under-realises the benefit.",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/EVIDENCE-TO-ENGINEERING-MAP.md",
+        "section": "Evidence-to-Engineering Map"
+      }
+    },
+    {
+      "id": "CL-003",
+      "proposition": "A boundary fact needs one authority, a derivation from it, or a mechanical agreement check between its copies.",
+      "confidence": "required",
+      "state": "supported",
+      "records": [
+        "EV-HN-2026-0002",
+        "TH-SDE-2026-0002"
+      ],
+      "limitation": "Not tested on failure shapes beyond the four reproduced in the source investigation.",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/EVIDENCE-TO-ENGINEERING-MAP.md",
+        "section": "Evidence-to-Engineering Map"
+      }
+    },
+    {
+      "id": "CL-004",
+      "proposition": "Behavioural and present-but-wrong implementations require behavioural verification. Compile, architecture and contract checks cannot substitute.",
+      "confidence": "required",
+      "state": "supported",
+      "records": [
+        "EV-HN-2026-0004",
+        "EV-HN-2026-0005",
+        "HY-SDE-2026-0003",
+        "HY-SDE-2026-0005"
+      ],
+      "limitation": "Replicated twice and the strongest-replicated finding in this map — but still within one application. The greenfield experiments corroborate the shape independently, not the same measurement.",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/EVIDENCE-TO-ENGINEERING-MAP.md",
+        "section": "Evidence-to-Engineering Map"
+      }
+    },
+    {
+      "id": "CL-005",
+      "proposition": "Boundary hardening reduces search operations and repair loops.",
+      "confidence": "recommended",
+      "state": "provisional",
+      "records": [
+        "EV-HN-2026-0005",
+        "HY-SDE-2026-0001",
+        "HY-SDE-2026-0002"
+      ],
+      "limitation": "One paired trial. Unique files inspected did not move the same way search operations did, and the two agents' investigation strategies differ enough to confound the comparison.",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/EVIDENCE-TO-ENGINEERING-MAP.md",
+        "section": "Evidence-to-Engineering Map"
+      }
+    },
+    {
+      "id": "CL-006",
+      "proposition": "Boundary hardening reduces total boundary propagation.",
+      "confidence": "unclassified",
+      "state": "contradicted",
+      "records": [
+        "EV-HN-2026-0003",
+        "EV-HN-2026-0004",
+        "EV-HN-2026-0005",
+        "TH-SDE-2026-0004"
+      ],
+      "limitation": "Refuted. Boundary Change Amplification was 4.0, identically, three times across two architectures. Do not state that boundary hardening reduces the number of boundary files a change touches.",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/EVIDENCE-TO-ENGINEERING-MAP.md",
+        "section": "Evidence-to-Engineering Map"
+      }
+    },
+    {
+      "id": "CL-007",
+      "proposition": "A higher mechanical discovery rate means lower engineering cost.",
+      "confidence": "unclassified",
+      "state": "contradicted",
+      "records": [
+        "EV-HN-2026-0005",
+        "TH-SDE-2026-0003"
+      ],
+      "limitation": "Refuted within a single trial: the hardened condition had a lower as-experienced discovery rate and lower search and repair-loop cost at the same time. The two proxies moved in opposite directions.",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/EVIDENCE-TO-ENGINEERING-MAP.md",
+        "section": "Evidence-to-Engineering Map"
+      }
+    },
+    {
+      "id": "CL-008",
+      "proposition": "Exhaustiveness, architecture and contract checks are sufficient for behavioural correctness.",
+      "confidence": "unclassified",
+      "state": "contradicted",
+      "records": [
+        "EV-HN-2026-0004",
+        "EV-HN-2026-0005",
+        "HY-SDE-2026-0005"
+      ],
+      "limitation": "Refuted. The present-but-inert fan-out arm passed every mechanical check identically on both architectures.",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/EVIDENCE-TO-ENGINEERING-MAP.md",
+        "section": "Evidence-to-Engineering Map"
+      }
+    },
+    {
+      "id": "CL-009",
+      "proposition": "API and HTTP boundaries are sufficiently protected by the mechanisms these experiments tested.",
+      "confidence": "unclassified",
+      "state": "contradicted",
+      "records": [
+        "EV-HN-2026-0005"
+      ],
+      "limitation": "Refuted, and open. Zero mechanical guard exists for this tier on either architecture tested. A candidate mechanism is sketched in the source report; it has not been built or tested.",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/EVIDENCE-TO-ENGINEERING-MAP.md",
+        "section": "Evidence-to-Engineering Map"
+      }
+    },
+    {
+      "id": "CL-010",
+      "proposition": "Explicit state modelling reduces AI-agent token or wall-clock cost.",
+      "confidence": "unclassified",
+      "state": "open",
+      "records": [
+        "EV-HN-2026-0005"
+      ],
+      "limitation": "Open, not answered. The one trial that measured it has incomplete telemetry for the treatment condition: the recorded figures cover a resumed partial run only. Never cite the raw 59%, 68% and 59% reductions as a confirmed result.",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/EVIDENCE-TO-ENGINEERING-MAP.md",
+        "section": "Evidence-to-Engineering Map"
+      }
+    },
+    {
+      "id": "CL-011",
+      "proposition": "A shared host-language contracts assembly is sufficient boundary protection for a same-language pair.",
+      "confidence": "unclassified",
+      "state": "contradicted",
+      "records": [
+        "EV-HN-2026-0002",
+        "TH-SDE-2026-0002"
+      ],
+      "limitation": "Refuted by direct reproduction: the identical shared type produced three different wire behaviours depending on call path, inside one process.",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/EVIDENCE-TO-ENGINEERING-MAP.md",
+        "section": "Evidence-to-Engineering Map"
+      }
+    },
+    {
+      "id": "CL-012",
+      "proposition": "A public integration contract must not require adopting this methodology in order to integrate with a system built under it.",
+      "confidence": "recommended",
+      "state": "provisional",
+      "records": [
+        "EV-HN-2026-0002",
+        "TH-SDE-2026-0002"
+      ],
+      "limitation": "Plausible but not directly tested. The source investigation gives it exactly that rating and this map does not upgrade it.",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/EVIDENCE-TO-ENGINEERING-MAP.md",
+        "section": "Evidence-to-Engineering Map"
+      }
+    },
+    {
+      "id": "CL-013",
+      "proposition": "The construction method's fixed ordering — compile, architecture, boundary and contract, behaviour, search, integration.",
+      "confidence": "experimental",
+      "state": "provisional",
+      "records": [
+        "EV-HN-2026-0005"
+      ],
+      "limitation": "Assembled from the supported rows above rather than trial-tested as one ordered workflow. Not yet validated as a sequence on a real project. Reorder only with recorded rationale.",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/EVIDENCE-TO-ENGINEERING-MAP.md",
+        "section": "Evidence-to-Engineering Map"
+      }
+    },
+    {
+      "id": "CL-014",
+      "proposition": "A semantic area may span several files and clusters while its semantic authority remains singular.",
+      "confidence": "required",
+      "state": "provisional",
+      "records": [
+        "EV-SDE-2026-0006",
+        "DF-SDE-2026-0004",
+        "TH-SDE-2026-0005",
+        "HY-SDE-2026-0007"
+      ],
+      "limitation": "This is an adopted contract, not a measured outcome. No controlled comparison of a monolithic against a decomposed treatment exists, and physical splitting can worsen navigation or duplicate rules.",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/EVIDENCE-TO-ENGINEERING-MAP.md",
+        "section": "Evidence-to-Engineering Map"
+      }
+    },
+    {
+      "id": "CL-015",
+      "proposition": "Use a repository semantic map and feature manifests for deterministic local-first routing in a non-trivial project.",
+      "confidence": "required",
+      "state": "provisional",
+      "records": [
+        "EV-SDE-2026-0006",
+        "DF-SDE-2026-0004",
+        "HY-SDE-2026-0008"
+      ],
+      "limitation": "An adopted execution contract with no outcome trial behind it. Manifest maintenance and staleness may offset the benefit, and a small repository may not need per-feature manifests at all.",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/EVIDENCE-TO-ENGINEERING-MAP.md",
+        "section": "Evidence-to-Engineering Map"
+      }
+    },
+    {
+      "id": "CL-016",
+      "proposition": "Bounded reasoning scope — limiting what must be inferred at once to make a safe change — reduces engineering cost or defects.",
+      "confidence": "research-only",
+      "state": "open",
+      "records": [
+        "EV-SDE-2026-0006",
+        "TH-SDE-2026-0005",
+        "HY-SDE-2026-0007",
+        "HY-SDE-2026-0008"
+      ],
+      "limitation": "This is the methodology's central unifying idea and it is the least evidenced thing on this site. No causal comparison exists. Task, model, tooling, familiarity and verification differences may dominate any effect.",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/EVIDENCE-TO-ENGINEERING-MAP.md",
+        "section": "Evidence-to-Engineering Map"
+      }
+    },
+    {
+      "id": "CL-017",
+      "proposition": "Treat physical line count as a configurable review signal, not as semantic truth.",
+      "confidence": "recommended",
+      "state": "provisional",
+      "records": [
+        "EV-SDE-2026-0006",
+        "DF-SDE-2026-0004",
+        "HY-SDE-2026-0007"
+      ],
+      "limitation": "The specific thresholds are provisional and sensitive to language and generated code. Line count cannot detect duplicated authority, which is the thing it is often used as a proxy for.",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/EVIDENCE-TO-ENGINEERING-MAP.md",
+        "section": "Evidence-to-Engineering Map"
+      }
+    },
+    {
+      "id": "CL-018",
+      "proposition": "Context Surface, Context Expansion Ratio and Discovery Expansion diagnose unexpected context growth.",
+      "confidence": "experimental",
+      "state": "open",
+      "records": [
+        "EV-SDE-2026-0006",
+        "HY-SDE-2026-0007",
+        "HY-SDE-2026-0008"
+      ],
+      "limitation": "Proposed, not validated. The counting unit and denominator must be preregistered or the numbers mean nothing, and cross-cutting changes legitimately expand context. Never gate conformance on these.",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/EVIDENCE-TO-ENGINEERING-MAP.md",
+        "section": "Evidence-to-Engineering Map"
+      }
+    },
+    {
+      "id": "CL-019",
+      "proposition": "A serious experiment captures durable telemetry at fixed checkpoints and leaves genuinely unavailable metrics missing rather than estimated.",
+      "confidence": "required",
+      "state": "supported",
+      "records": [
+        "EV-HN-2026-0005",
+        "EV-SDE-2026-0006",
+        "DF-SDE-2026-0004"
+      ],
+      "limitation": "The no-invention rule is evidenced; the specific checkpoint schedule is an adopted practice for future trials. Checkpoints cannot retroactively repair telemetry that was never captured.",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/EVIDENCE-TO-ENGINEERING-MAP.md",
+        "section": "Evidence-to-Engineering Map"
+      }
+    },
+    {
+      "id": "CL-020",
+      "proposition": "Heterogeneous verification mechanisms find defects that earlier mechanisms — including careful, mutation-tested self-review — did not.",
+      "confidence": "recommended",
+      "state": "supported",
+      "records": [
+        "EV-HN-2026-0004",
+        "EV-HN-2026-0005"
+      ],
+      "limitation": "Supported by four independent observations in three codebases: two deliberate no-op probes and one replication where an independent reviewer's five findings had zero overlap with a 90-test suite and a self-review. All four involve agents from one model family, so a shared blind spot cannot be ruled out.",
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0004--experiment-2-boundary-authority.md",
+        "section": "Residual finding"
+      }
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Ordo",
+      "definition": "The public name of the methodology this site describes. In the repository that develops it, and in every research record cited here, the same methodology is called State-Directed Engineering. They are one thing under two names, not two things.",
+      "origin": "Ordo",
+      "source": {
+        "repository": "sde",
+        "path": "research/decisions/DF-SDE-2026-0005--adopt-ordo-as-the-public-methodology-name.md"
+      }
+    },
+    {
+      "term": "State-Directed Engineering (SDE)",
+      "definition": "The name Ordo carries in the research record: the engineering methodology for building software under State Programming constraints. Research artifacts keep this name because their names are part of the experimental record.",
+      "origin": "Methodology",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/STATE-DIRECTED-ENGINEERING.md"
+      }
+    },
+    {
+      "term": "State Programming",
+      "definition": "The paradigm Ordo works within: explicit semantic states, legal transitions, invariants, evidence, capabilities, obligations, effects, uncertainty and boundary preservation. State Programming defines the constraints; Ordo defines how to work within them.",
+      "origin": "Paradigm",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/STATE-PROGRAMMING.md"
+      }
+    },
+    {
+      "term": "Semantic state",
+      "definition": "A named, explicit representation of what can be true, as opposed to a combination of flags and nulls that a reader has to infer a meaning from.",
+      "origin": "Paradigm",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/GLOSSARY.md"
+      }
+    },
+    {
+      "term": "Legal transition",
+      "definition": "A change the model explicitly permits. A change the model does not permit is not a bug to be caught later; it is a thing the model does not offer.",
+      "origin": "Paradigm",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/GLOSSARY.md"
+      }
+    },
+    {
+      "term": "Invariant",
+      "definition": "A property that must hold across every reachable state.",
+      "origin": "Paradigm",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/GLOSSARY.md"
+      }
+    },
+    {
+      "term": "Capability",
+      "definition": "What an actor or a state is permitted to do next. Under Ordo a capability is derived from the same predicates the transitions use as preconditions — never a second, independently maintained copy.",
+      "origin": "Paradigm",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/GLOSSARY.md"
+      }
+    },
+    {
+      "term": "Obligation",
+      "definition": "What must still happen for a transition to be complete. An obligation makes unfinished work visible in the model rather than leaving it implied.",
+      "origin": "Paradigm",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/GLOSSARY.md"
+      }
+    },
+    {
+      "term": "Effect",
+      "definition": "An externally observable consequence, requested as data rather than performed in place. This is what lets a transition be tested without the outside world.",
+      "origin": "Paradigm",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/GLOSSARY.md"
+      }
+    },
+    {
+      "term": "Uncertainty",
+      "definition": "A first-class explicit state for an outcome that is not yet known — distinct from null, from an exception, and from a default value. Both greenfield builds independently arrived at a four-outcome write result at the storage boundary for exactly this reason.",
+      "origin": "Paradigm",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/GLOSSARY.md"
+      }
+    },
+    {
+      "term": "Boundary",
+      "definition": "A crossing point between architectural responsibilities, or between the system and the outside world. Boundaries are where this research programme found most of its defects, in every experiment that looked.",
+      "origin": "Paradigm",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/GLOSSARY.md"
+      }
+    },
+    {
+      "term": "Representation collapse",
+      "definition": "A closed or constrained value becoming weaker or open as it crosses a boundary — a named alternative arriving on the far side as an arbitrary string.",
+      "origin": "Boundary preservation",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/BOUNDARY-PRESERVATION.md"
+      }
+    },
+    {
+      "term": "Uncoordinated duplication",
+      "definition": "The same fact independently maintained in two or more places with no mechanism that makes them agree. Experiment 1 found the facts outside the compiler's reach duplicated four times and twice, with no agreement check between the copies.",
+      "origin": "Boundary preservation",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/BOUNDARY-PRESERVATION.md"
+      }
+    },
+    {
+      "term": "Wire contract",
+      "definition": "The deliberately specified representation of a value crossing a boundary, as opposed to whatever a serialiser happens to emit.",
+      "origin": "Boundary preservation",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/GLOSSARY.md"
+      }
+    },
+    {
+      "term": "Semantic no-op",
+      "definition": "Code that compiles, satisfies architecture rules and satisfies contract checks, yet performs the wrong behaviour or none. In every trial in this programme so far, it was caught only by integration testing or direct data inspection.",
+      "origin": "Engineering metric",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/GLOSSARY.md"
+      }
+    },
+    {
+      "term": "Semantic area",
+      "definition": "A coherent feature, workflow or concern whose behaviour belongs together. It may span several files.",
+      "origin": "Structural locality",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/STRUCTURAL-LOCALITY.md"
+      }
+    },
+    {
+      "term": "Semantic authority",
+      "definition": "The single representation that decides a semantic fact or rule. A semantic area may span many files; its authority does not.",
+      "origin": "Structural locality",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/STRUCTURAL-LOCALITY.md"
+      }
+    },
+    {
+      "term": "Responsibility cluster",
+      "definition": "A human-scale implementation grouping inside a semantic area — transitions, validation, capabilities, projections. A cluster is not automatically a separate authority.",
+      "origin": "Structural locality",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/GLOSSARY.md"
+      }
+    },
+    {
+      "term": "Structural locality",
+      "definition": "Organisation that keeps a feature's owned state, behaviour, contracts and tests coherently bounded and composable.",
+      "origin": "Structural locality",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/STRUCTURAL-LOCALITY.md"
+      }
+    },
+    {
+      "term": "Bounded reasoning scope",
+      "definition": "Ordo's unifying design objective: limiting how much a human or an agent must infer at once in order to make a safe change. Its causal effect on cost or correctness is an open research question, not a result.",
+      "origin": "Methodology",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/STATE-DIRECTED-ENGINEERING.md"
+      }
+    },
+    {
+      "term": "Repository semantic map",
+      "definition": "A small top-level index routing from major semantic areas to their locations and manifests, so navigation is deterministic rather than exploratory.",
+      "origin": "Navigation",
+      "source": {
+        "repository": "sde",
+        "path": "method/NAVIGATION-AND-CONTEXT.md"
+      }
+    },
+    {
+      "term": "Feature manifest",
+      "definition": "Navigation metadata declaring a feature's ownership, contracts, tests, dependencies and modification boundaries by reference. It is navigation, not semantic authority.",
+      "origin": "Navigation",
+      "source": {
+        "repository": "sde",
+        "path": "method/FEATURE-MANIFESTS.md"
+      }
+    },
+    {
+      "term": "Context Surface",
+      "definition": "The state, transitions, invariants, contracts, tests, direct dependencies and composition context a change actually requires.",
+      "origin": "Navigation",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/GLOSSARY.md"
+      }
+    },
+    {
+      "term": "Context Expansion Ratio (CER)",
+      "definition": "Actual context surface divided by the context a feature manifest declared, under a counting unit fixed in advance. An experimental diagnostic; never a conformance score.",
+      "origin": "Engineering metric",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/GLOSSARY.md"
+      }
+    },
+    {
+      "term": "Discovery Expansion",
+      "definition": "Files read outside a declared feature boundary, optionally classified by whether the dependency was declared. An experimental diagnostic.",
+      "origin": "Engineering metric",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/GLOSSARY.md"
+      }
+    },
+    {
+      "term": "Boundary Change Amplification (BCA)",
+      "definition": "Boundary files, or mechanical boundary edits, per semantic decision. Measured at 4.0 files across three independent experiments in one application — and unchanged by the hardening that was expected to reduce it.",
+      "origin": "Engineering metric",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/GLOSSARY.md"
+      }
+    },
+    {
+      "term": "Mechanical Discovery Rate (MDR)",
+      "definition": "The proportion of required change sites a machine reported rather than a person found by looking. Experiment 3 showed it is not a proxy for cost: it fell while search and repair costs also fell.",
+      "origin": "Engineering metric",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/GLOSSARY.md"
+      }
+    },
+    {
+      "term": "As-experienced and architecture-potential MDR",
+      "definition": "Two different measures of the same thing: what one agent's own strict self-classification recorded, against what the architecture structurally guarantees regardless of which behaviour happened to trigger it first. Introduced in Experiment 3 because raw self-reports from two agents were not comparable.",
+      "origin": "Engineering metric",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/GLOSSARY.md"
+      }
+    },
+    {
+      "term": "NOT OBSERVABLE",
+      "definition": "The required label for a metric whose telemetry genuinely does not exist for the environment that produced it. Never estimated, never silently omitted. Several metrics on this site carry it.",
+      "origin": "Evidence practice",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/GLOSSARY.md"
+      }
+    },
+    {
+      "term": "Heterogeneous verification",
+      "definition": "Using several verification mechanisms whose blind spots differ, rather than more of one. In the 2B replication, an independent reviewer's five findings had zero overlap with a 90-test suite and an adversarial self-review.",
+      "origin": "Verification",
+      "source": {
+        "repository": "sde",
+        "path": "method/VERIFICATION-METHOD.md"
+      }
+    },
+    {
+      "term": "Change classes",
+      "definition": "Semantic change, boundary change, mechanical propagation and presentation change. Which one a task is decides where implementation starts.",
+      "origin": "Methodology",
+      "source": {
+        "repository": "sde",
+        "path": "method/CHANGE-CLASSIFICATION.md"
+      }
+    },
+    {
+      "term": "Detection optimisation",
+      "definition": "Making an already-necessary change visible earlier or mechanically. Distinct from construction optimisation, and conflating the two is how a discovery improvement gets reported as a cost saving.",
+      "origin": "Methodology",
+      "source": {
+        "repository": "sde",
+        "path": "research/theories/TH-SDE-2026-0004--detection-vs-construction-optimization.md"
+      }
+    },
+    {
+      "term": "Construction optimisation",
+      "definition": "Reducing how many representations or implementation locations have to exist at all. Experiment 2 produced one instance of this: making a boundary value single-sourced removed a required change site rather than mechanising its discovery.",
+      "origin": "Methodology",
+      "source": {
+        "repository": "sde",
+        "path": "research/theories/TH-SDE-2026-0004--detection-vs-construction-optimization.md"
+      }
+    },
+    {
+      "term": "Confidence class",
+      "definition": "REQUIRED, RECOMMENDED, EXPERIMENTAL, RESEARCH ONLY or DEPRECATED — how strongly a rule is held. Distinct from evidence state, which is about what supports it.",
+      "origin": "Evidence practice",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/STATE-DIRECTED-ENGINEERING.md"
+      }
+    },
+    {
+      "term": "Evidence state",
+      "definition": "Supported, Provisional, Contradicted or Open — what the evidence currently says about a proposition. A contradicted row stays in the map permanently so nobody can silently re-propose it.",
+      "origin": "Evidence practice",
+      "source": {
+        "repository": "sde",
+        "path": "doctrine/EVIDENCE-TO-ENGINEERING-MAP.md"
+      }
+    },
+    {
+      "term": "ROS (Repository Operating System)",
+      "definition": "The operating layer this repository runs on: it governs work items, research artifact lifecycle, evidence records and validation. Ordo defines the engineering method; ROS is the process used to produce and record it.",
+      "origin": "Operations",
+      "source": {
+        "repository": "sde",
+        "path": "AGENTS.md"
+      }
+    }
+  ]
+}

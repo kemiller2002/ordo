@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "repository": "state-directed-engineering",
-  "nextSeq": 32,
+  "nextSeq": 33,
   "items": [
     {
       "id": "WI-0001",
@@ -543,6 +543,20 @@
       "attachments": [],
       "createdAt": "2026-09-16T13:18:07.030Z",
       "updatedAt": "2026-09-16T13:18:07.030Z",
+      "createdBy": "unknown",
+      "source": "manual",
+      "sourceReference": null
+    },
+    {
+      "id": "WI-0032",
+      "title": "Build and publish the Ordo public website (Echelon Foundry State-Directed Engineering methodology) as an F#-generated, evidence-traceable static site deployed via GitHub Pages",
+      "description": null,
+      "tags": [],
+      "priority": "medium",
+      "status": "ready",
+      "attachments": [],
+      "createdAt": "2026-09-16T16:22:45.416Z",
+      "updatedAt": "2026-09-16T16:22:59.785Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null

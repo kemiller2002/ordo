@@ -1,0 +1,120 @@
+---
+path: /concepts/evidence/
+title: Evidence and traceability
+description: Recording what ran, what it found, what it did not establish, and what telemetry never existed — as a durable artifact rather than a claim in prose.
+section: Concepts
+order: 90
+summary: What was measured, how, and what must never be concluded from it.
+---
+<section class="page-intro">
+  <p class="eyebrow">Concept 9</p>
+  <h1>Evidence and traceability</h1>
+  <p class="lead">
+    A result that cannot be checked is an assertion. Ordo treats the recording of evidence as
+    part of the engineering, not as documentation produced afterwards.
+  </p>
+</section>
+
+<section>
+  <h2>Six things every published number needs</h2>
+  <div class="grid grid-three">
+    <div class="card"><h3>Definition</h3><p>What exactly does it measure?</p></div>
+    <div class="card"><h3>Measurement</h3><p>How was it collected, by what instrument?</p></div>
+    <div class="card"><h3>Scope</h3><p>Which experiment, branch and commit does it apply to?</p></div>
+    <div class="card"><h3>Value</h3><p>What was actually observed, unrounded and unreformatted?</p></div>
+    <div class="card"><h3>Provenance</h3><p>Where is the artifact a reader can open?</p></div>
+    <div class="card"><h3>Limitation</h3><p>What must a reader <em>not</em> conclude from it?</p></div>
+  </div>
+  <p>
+    The last one is the one that gets dropped, and it is the one that makes the other five safe
+    to publish. On this site it is not optional in the ordinary sense: a metric with no stated
+    limitation cannot be represented in the evidence manifest, and the build fails.
+  </p>
+</section>
+
+<section>
+  <h2>Missing is not zero</h2>
+  <p>
+    The rule Ordo inherited from its own experimental record: a metric whose telemetry genuinely
+    does not exist is labelled <code>NOT OBSERVABLE</code> and stays visible. It is never
+    estimated, and never quietly dropped from the table.
+  </p>
+  {{metrics:M-GF2A-COST,M-HN1-TELEMETRY,M-HN3-COST}}
+  <p>
+    The third one is the hard case. That experiment did produce token and wall-clock figures.
+    Reported raw, they imply a 68% token reduction, which is by some distance the most quotable
+    number this programme has generated. It is published here as <em>not established</em>,
+    because the condition that produced it was interrupted by a rate limit and resumed, and the
+    counted portion began after roughly 78% of its eventual work already existed.
+  </p>
+  <p>
+    The true total is unknown and could exceed the baseline. The source record says so in bold,
+    twice, and calls the caveat load-bearing and never to be dropped in any downstream summary.
+    This is that downstream summary.
+  </p>
+</section>
+
+<section>
+  <h2>Contradictions stay in the record</h2>
+  <p>
+    When a measurement refutes something the programme believed, the refuted proposition is not
+    deleted. It stays in the evidence map permanently, classified Contradicted, cross-linked to
+    the record that refuted it, so that a future agent cannot silently re-propose it without
+    seeing why it was rejected.
+  </p>
+  <p>
+    Five propositions on this site carry that status. They are on the
+    <a href="{{link:/research/}}">research page</a> with everything else, not in an appendix.
+  </p>
+</section>
+
+<section>
+  <h2>Corrections are published, not applied quietly</h2>
+  <p>
+    An earlier draft of one experiment's report stated a step count of 167 where a direct recount
+    gave 76 — a 4.6x ratio where the real figure is
+    {{metric:M-HN3-STEPS}}. The correction is recorded as a correction, with both numbers, and a
+    decision record names the corrected version as authoritative.
+  </p>
+  <p>
+    Similarly, a metrics dictionary's first version claimed agent cost data was unavailable to a
+    running session. It was wrong; the API exposes it. The correction is in that dictionary's
+    changelog rather than edited over the original, because silent redefinition makes
+    before-and-after comparisons meaningless.
+  </p>
+</section>
+
+<section class="note">
+  <h2>What an agent should do differently</h2>
+  <ul>
+    <li>
+      Record a metric's definition and collection method before collecting it. A definition
+      written afterwards describes what you got.
+    </li>
+    <li>
+      Write the limitation at the same time as the value. It is hardest to write honestly once
+      the number looks good.
+    </li>
+    <li>
+      Never report a test as passing unless it ran and passed. Name the checks that were skipped
+      or unavailable, and what that leaves unverified.
+    </li>
+    <li>
+      When two records disagree, publish the disagreement and investigate whether definitions,
+      populations or measurements changed. Do not pick the better number.
+    </li>
+  </ul>
+</section>
+
+<section class="contradictions">
+  <h2>How this is most often got wrong</h2>
+  <p>
+    <strong>The tidy summary.</strong> Several findings collapsed into one confident sentence,
+    with the confounders left in a document nobody reads. Every experiment on this site has a
+    limitations section, and they are the most useful part of each page.
+  </p>
+  <p>
+    <strong>Reporting only what was measurable.</strong> An experiment that publishes its
+    available metrics and omits the rest has published a filtered result without saying so.
+  </p>
+</section>

@@ -72,5 +72,27 @@
     "title": "Adopt SDE v0.2 structural locality and deterministic context discovery",
     "type": "decision-record",
     "updated": "2026-09-05"
+  },
+  {
+    "created": "2026-09-16",
+    "id": "DF-SDE-2026-0005",
+    "path": "research/decisions/DF-SDE-2026-0005--adopt-ordo-as-the-public-methodology-name.md",
+    "related_documents": [
+      "research/decisions/DF-SDE-2026-0001--adopt-sde-name-and-separate-from-state-programming.md",
+      "doctrine/STATE-DIRECTED-ENGINEERING.md",
+      "site/README.md"
+    ],
+    "status": "accepted",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "governance",
+      "naming",
+      "website",
+      "publication"
+    ],
+    "title": "Adopt Ordo as the public name of the methodology while preserving State-Directed Engineering in the research record",
+    "type": "decision-record",
+    "updated": "2026-09-16"
   }
 ]

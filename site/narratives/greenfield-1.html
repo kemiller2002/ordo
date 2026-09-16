@@ -1,0 +1,32 @@
+<h2 id="interpretation">Interpretation</h2>
+<p>
+  This trial's contribution is not its output. It is that the instruments were built and frozen
+  before the work started.
+</p>
+<p>
+  A metrics dictionary defining every metric's unit, collection mechanism, raw evidence source,
+  derivation formula and known limitations was written first, with a rule that no definition
+  changes without a changelog entry. Builds and tests then ran through wrappers that write
+  immutable evidence pairs. The result is that the numbers here are readings rather than
+  recollections — which is the difference between this trial and the first two, whose work
+  metrics are explicitly labelled manual reconstructions.
+</p>
+<p>
+  The dictionary was also wrong about something, and that is worth more than most of what it got
+  right. Its first version stated that per-session cost data was not available to a running
+  agent. It is; the session API exposes it. The correction sits in the changelog next to the
+  original claim rather than replacing it, because a dictionary that silently redefines its own
+  metrics makes every before-and-after comparison meaningless.
+</p>
+<p>
+  The agent-error log is the other thing worth copying. Five reasoning errors recorded separately
+  from defects — a misread requirement or an invented rule, whether or not it produced
+  misbehaviour. One of them is a small masterpiece of the genre: a commit hook designed to append
+  each commit's evidence to a tracked file, which requires another commit to record, forever. The
+  agent's own self-review did not catch it. The user's tooling did.
+</p>
+<p>
+  The cost figure needs its caveat read. It covers two different tasks in one number, taken
+  mid-session. It is published because it is real and rare; it is not a cost-per-feature figure
+  and nothing on this site treats it as one.
+</p>

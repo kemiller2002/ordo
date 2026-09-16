@@ -1,0 +1,37 @@
+<h2 id="interpretation">Interpretation</h2>
+<p>
+  An empty repository, a frozen requirements package, and no method authority of any kind. That
+  absence is not incidental to the result — it is the condition being reported. There were no
+  architecture rules to follow, no construction method in the tree, no conventions. Whatever
+  structure the build has, it chose.
+</p>
+<p>
+  What it chose is the thing worth noticing: a strictly one-directional dependency flow with a
+  pure domain that knows nothing about storage, effects returned as data, a single parameterised
+  validator, named predicates shared between the transitions and the capability projection, and
+  a four-outcome result type at the storage boundary including an explicit unknown. None of that
+  was prescribed. The replication, run independently, arrived at substantially the same set.
+</p>
+<p>
+  The most honest thing in this record is the note that the test suite found zero new defects.
+  Eighty-seven tests, all passing on first run against the already-corrected implementation. The
+  record states plainly that the suite's demonstrated value here was specification and regression
+  protection rather than discovery, and that the defects it would have caught were caught
+  earlier, by a manual smoke test, before the suite existed.
+</p>
+<p>
+  It would have been trivially easy to present 87 passing tests as 87 defects prevented. The
+  record declines to.
+</p>
+<p>
+  The self-review found something the tests could not: a validation check that could never fire,
+  with a test that passed for the wrong reason. That is a failure shape assertions are
+  structurally bad at — the test was asserting something true and irrelevant — and it took a
+  person reading adversarially to see it.
+</p>
+<p>
+  Its own preregistration was directionally right and specifically wrong: it named the
+  reconciliation area as the top risk, and the defects did concentrate there, and it did not
+  predict which ones. The replication's preregistration, written independently, did exactly the
+  same thing.
+</p>

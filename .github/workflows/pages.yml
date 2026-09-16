@@ -1,0 +1,125 @@
+name: Ordo site
+
+# Builds and publishes the Ordo website (site/) to GitHub Pages.
+#
+# The generator validates the whole site in memory before writing anything, so
+# a failed check fails this job before the Pages artifact is uploaded. There is
+# no path by which a site with a broken citation, an unresolvable internal
+# link, an unsourced metric or an unparseable data file reaches the deployment
+# step: `ordo-site build` exits non-zero and the job stops.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "site/**"
+      - "src/Ordo.Site/**"
+      - "src/Sde.Core/**"
+      - "tests/Ordo.Site.Tests/**"
+      - "Directory.Build.props"
+      - ".github/workflows/pages.yml"
+  pull_request:
+    paths:
+      - "site/**"
+      - "src/Ordo.Site/**"
+      - "src/Sde.Core/**"
+      - "tests/Ordo.Site.Tests/**"
+      - "Directory.Build.props"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+# An older run must never overwrite a newer deployment. Cancelling in progress
+# is safe here because the artifact is rebuilt deterministically from the
+# repository on every run; nothing is lost by abandoning a superseded build.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+
+jobs:
+  build:
+    name: Build and validate the site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      # The test suite runs before the site is generated, not after. It covers
+      # the evidence-manifest parser's refusals, front-matter and token
+      # handling, every validation rule, and an integration pass over the real
+      # site/ tree including a byte-for-byte determinism check.
+      - name: Run the site test suite
+        run: dotnet test tests/Ordo.Site.Tests/Ordo.Site.Tests.fsproj --nologo
+
+      - name: Generate the site
+        run: dotnet run --project src/Ordo.Site -- build --site site --out dist
+
+      # `build` already validated before writing. Running `validate` again over
+      # the same sources is cheap and makes the gate explicit in the log rather
+      # than implicit in the build step's exit code.
+      - name: Re-check the generated site
+        run: dotnet run --project src/Ordo.Site -- validate --site site
+
+      - name: Report payload size
+        run: |
+          echo "### Ordo site payload" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "total:      $(du -sh dist | cut -f1)" >> "$GITHUB_STEP_SUMMARY"
+          echo "html:       $(find dist -name '*.html' | wc -l) files, $(find dist -name '*.html' -exec cat {} + | wc -c) bytes" >> "$GITHUB_STEP_SUMMARY"
+          echo "css:        $(find dist -name '*.css' -exec cat {} + | wc -c) bytes" >> "$GITHUB_STEP_SUMMARY"
+          echo "javascript: $(find dist -name '*.js' | wc -l) files" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ordo-site
+          path: dist
+          retention-days: 7
+
+  deploy:
+    name: Deploy to GitHub Pages
+    # Pull requests build and validate but never deploy: a proposed change is
+    # checked, not published.
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      # Rebuilt rather than downloaded from the build job: the generator is
+      # deterministic (asserted by the test suite), so a rebuild from the same
+      # commit produces byte-identical output, and this keeps the artifact that
+      # deploys traceable to a checkout rather than to an inter-job transfer.
+      - name: Generate the site
+        run: dotnet run --project src/Ordo.Site -- build --site site --out dist
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
