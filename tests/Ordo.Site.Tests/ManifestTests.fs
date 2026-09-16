@@ -60,18 +60,34 @@ let ``duplicate metric ids are rejected`` () =
     let errors = errorsOf (read text)
     Assert.Contains(errors, fun message -> message.Contains "duplicate metric id 'M-1'")
 
-/// Two independent problems must both be reported. A parser that stops at the
-/// first one turns a five-minute fix into five separate build runs.
+/// Two problems in the same phase must both be reported. A parser that stops
+/// at the first one turns a five-minute fix into five separate build runs.
 [<Fact>]
-let ``independent problems are all reported in one run`` () =
+let ``independent field problems are all reported in one run`` () =
     let text =
         validManifest
-            .Replace("\"experiment\": \"exp\"", "\"experiment\": \"nope\"")
+            .Replace("\"provenance\": \"instrumented\"", "\"provenance\": \"probably\"")
             .Replace("\"confidence\": \"recommended\"", "\"confidence\": \"fairly sure\"")
 
     let errors = errorsOf (read text)
-    Assert.Contains(errors, fun message -> message.Contains "unknown experiment")
+    Assert.Contains(errors, fun message -> message.Contains "unknown provenance")
     Assert.Contains(errors, fun message -> message.Contains "unknown confidence class")
+
+/// Field validation and cross-reference resolution are deliberately sequenced
+/// rather than accumulated together: resolving an id on a record whose own
+/// fields have not parsed would report a second failure caused by the first.
+/// Within the cross-reference phase, errors still accumulate. This test pins
+/// both halves of that decision so the sequencing stays a choice.
+[<Fact>]
+let ``cross-reference errors accumulate once the records themselves parse`` () =
+    let text =
+        validManifest
+            .Replace("\"experiment\": \"exp\"", "\"experiment\": \"nope\"")
+            .Replace("\"repository\": \"repo\", \"path\": \"map.md\"", "\"repository\": \"ghost\", \"path\": \"map.md\"")
+
+    let errors = errorsOf (read text)
+    Assert.Contains(errors, fun message -> message.Contains "unknown experiment 'nope'")
+    Assert.Contains(errors, fun message -> message.Contains "unknown repository 'ghost'")
 
 [<Fact>]
 let ``text that is not JSON reports that plainly`` () =
