@@ -89,13 +89,12 @@ Five repositories were located and inspected directly, not assumed:
 
 ## Evidence gaps and risks
 
-- The F# has not been compiled. The first CI run is the first compile.
-- GitHub Pages must be set to **Source: GitHub Actions** in repository
-  settings before the deploy job can succeed. Nothing in the repository can set
-  it, and it has not been set by this mission.
-- `site/data/site.json` assumes a project-page origin
-  (`https://kemiller2002.github.io/state-directed-engineering`). A custom
-  domain requires changing `baseUrl` and `pathPrefix` together.
+- GitHub Pages is configured with *Source: GitHub Actions* and the custom
+  domain `ordo.echelonfoundry.com`. Both were already set on the repository;
+  this mission discovered the domain from the deployment record, not before it.
+- `site/data/site.json` targets that domain at its root. `customDomain`,
+  `baseUrl` and `pathPrefix` now carry a mechanical agreement check, so the
+  mismatch that broke the first deployment cannot be expressed again.
 - No Limen artifact exists in any of the six repositories inspected. The site
   makes no claim about it and says so explicitly on `/about/`.
 - The evidence base remains one organisation, four languages, single-agent
@@ -104,6 +103,30 @@ Five repositories were located and inspected directly, not assumed:
 - The site duplicates doctrine in prose. If doctrine changes and
   `site/data/evidence.json` does not, they drift silently. `site/README.md`
   names this and requires both to change together.
+
+## Correction after the first deployment
+
+PR #8 merged and deployed successfully, and the deployed site was wrong.
+
+GitHub Pages on this repository is configured with the custom domain
+`ordo.echelonfoundry.com`, which serves from the domain root. `site.json` was
+written for a project-page path (`/state-directed-engineering`), so every
+internal link, the stylesheet, the favicon and every canonical URL pointed at a
+path that does not exist on that domain. The page loaded unstyled with no
+working navigation.
+
+Nothing caught it. Every check passed, because each field was internally valid
+and no mechanism compared `baseUrl`, `pathPrefix` and the actual deployment
+target. It is the same failure class this site's own evidence pages describe:
+one fact maintained in several places with no agreement check between them —
+found, as in every trial in that evidence base, only by looking at the real
+boundary rather than by any mechanical check.
+
+The fix adds `customDomain` to the site config and a mechanical agreement
+check: with a custom domain set, `baseUrl` must be `https://<customDomain>` and
+`pathPrefix` must be empty, or the build fails and reports both halves.
+`tests/Ordo.Site.Tests/SiteConfigTests.fs` pins the exact shape of the original
+defect. The build now also writes a `CNAME` into the artifact.
 
 ## Next recommended action
 

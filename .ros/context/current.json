@@ -4,7 +4,7 @@
   "repository": "state-directed-engineering",
   "actor": "ros-bootstrap",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-09-16T17:02:40.390Z",
+  "updatedAt": "2026-09-16T17:33:27.257Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -458,6 +458,24 @@
       ],
       "updatedAt": "2026-09-16T17:02:40.390Z",
       "completedAt": "2026-09-16T17:02:40.390Z"
+    },
+    {
+      "id": "WI-0033",
+      "type": "task",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Site/SiteConfig.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Site.Tests/SiteConfigTests.fs"
+        }
+      ],
+      "updatedAt": "2026-09-16T17:33:27.257Z",
+      "completedAt": "2026-09-16T17:33:27.257Z"
     }
   ]
 }

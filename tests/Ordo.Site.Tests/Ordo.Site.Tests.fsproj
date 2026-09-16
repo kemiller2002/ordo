@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <Compile Include="Fixtures.fs" />
+    <Compile Include="SiteConfigTests.fs" />
     <Compile Include="ManifestTests.fs" />
     <Compile Include="ContentTests.fs" />
     <Compile Include="ValidateTests.fs" />

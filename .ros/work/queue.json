@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "repository": "state-directed-engineering",
-  "nextSeq": 33,
+  "nextSeq": 34,
   "items": [
     {
       "id": "WI-0001",
@@ -557,6 +557,20 @@
       "attachments": [],
       "createdAt": "2026-09-16T16:22:45.416Z",
       "updatedAt": "2026-09-16T16:22:59.785Z",
+      "createdBy": "unknown",
+      "source": "manual",
+      "sourceReference": null
+    },
+    {
+      "id": "WI-0033",
+      "title": "Correct the Ordo site's deployment target: the custom domain ordo.echelonfoundry.com serves from the root, not a project-page path prefix",
+      "description": null,
+      "tags": [],
+      "priority": "medium",
+      "status": "ready",
+      "attachments": [],
+      "createdAt": "2026-09-16T17:33:22.360Z",
+      "updatedAt": "2026-09-16T17:33:27.136Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null

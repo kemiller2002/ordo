@@ -14,6 +14,7 @@ let private config: SiteConfig.Config =
       Description = "A methodology."
       BaseUrl = "https://example.invalid"
       PathPrefix = ""
+      CustomDomain = None
       SourceRepository = "owner/repo"
       SourceUrl = "https://example.invalid/owner/repo"
       Nav = [ { Label = "Home"; Path = "/" } ]

@@ -121,6 +121,13 @@ let assemble (layout: Layout) : Validation<Output list * (string * string) list>
                 Text = Machine.sitemap config allPages }
               { Path = "robots.txt"
                 Text = Machine.robots config } ]
+            @ (match config.CustomDomain with
+               // Written into the artifact as well as being set in the Pages
+               // configuration, so the domain this site expects to be served
+               // from is visible in the repository rather than only in a
+               // settings page nobody reads.
+               | Some domain -> [ { Path = "CNAME"; Text = domain + "\n" } ]
+               | None -> [])
 
         let rendered =
             ok (fun authoredOutputs experimentOutputs -> authoredOutputs @ experimentOutputs @ machine)

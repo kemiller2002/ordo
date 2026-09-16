@@ -155,14 +155,23 @@ run:
 re-checks it, reports the payload size to the job summary, and deploys. Pull
 requests build and validate but do not deploy.
 
-**One-time repository setting, outside this workflow:** GitHub Pages must be
-set to build from GitHub Actions — *Settings → Pages → Build and deployment →
-Source: GitHub Actions*. Until that is set, the workflow's deploy job fails
-with a Pages-not-enabled error. Nothing in the repository can set it.
+The site is served from the custom domain **`ordo.echelonfoundry.com`**,
+configured in *Settings → Pages* with *Source: GitHub Actions*. The build
+writes a matching `CNAME` into the artifact so the expected domain is visible
+in the repository rather than only in a settings page.
 
-If a custom domain is added later, update `baseUrl` and `pathPrefix` in
-`site/data/site.json` in the same change, or every canonical URL and sitemap
-entry will point at the old origin.
+**A custom domain serves the site from its root.** `customDomain`, `baseUrl`
+and `pathPrefix` in `site/data/site.json` are three statements of one fact, so
+the build checks that they agree: with `customDomain` set, `baseUrl` must be
+`https://<customDomain>` and `pathPrefix` must be empty. Disagreement fails the
+build and reports both halves at once.
+
+This check exists because the first deployment did not have it. The site was
+generated for a project-page prefix (`/state-directed-engineering`) and served
+from the custom domain's root, so every internal link and the stylesheet
+resolved to nothing — and every mechanical check passed, because each field was
+internally valid and nothing compared them. If the domain ever changes, change
+all three fields together; the build will refuse anything else.
 
 ## Visual consistency with Echelon Foundry
 
