@@ -89,6 +89,50 @@ let ``cross-reference errors accumulate once the records themselves parse`` () =
     Assert.Contains(errors, fun message -> message.Contains "unknown experiment 'nope'")
     Assert.Contains(errors, fun message -> message.Contains "unknown repository 'ghost'")
 
+// ---------------------------------------------------------------------------
+// External research
+// ---------------------------------------------------------------------------
+
+let private withReference (body: string) =
+    validManifest.Replace("\"glossary\": [", "\"references\": [ " + body + " ],\n  \"glossary\": [")
+
+let private validReference =
+    """{ "id": "R-1", "title": "A study", "author": "Someone", "year": "2025",
+        "url": "https://example.invalid/study", "finding": "Something was measured.",
+        "limitation": "One sample." }"""
+
+[<Fact>]
+let ``a manifest with no references parses`` () =
+    let manifest = valueOf (read validManifest)
+    Assert.Empty(manifest.References)
+
+[<Fact>]
+let ``a complete reference parses`` () =
+    let manifest = valueOf (read (withReference validReference))
+    Assert.Equal(1, List.length manifest.References)
+    Assert.Equal("Someone", (List.head manifest.References).Author)
+
+/// A third-party study cited without its own boundary is being used as
+/// authority rather than as evidence, so the limitation is mandatory here for
+/// the same reason it is on a metric.
+[<Fact>]
+let ``a reference without a limitation is rejected`` () =
+    let text = withReference (validReference.Replace("\"limitation\": \"One sample.\"", "\"unused\": 0"))
+    let errors = errorsOf (read text)
+    Assert.Contains(errors, fun message -> message.Contains "limitation")
+
+[<Fact>]
+let ``a reference without a url is rejected`` () =
+    let text = withReference (validReference.Replace("\"url\": \"https://example.invalid/study\",", ""))
+    let errors = errorsOf (read text)
+    Assert.Contains(errors, fun message -> message.Contains "url")
+
+[<Fact>]
+let ``duplicate reference ids are rejected`` () =
+    let text = withReference (validReference + ", " + validReference)
+    let errors = errorsOf (read text)
+    Assert.Contains(errors, fun message -> message.Contains "duplicate reference id 'R-1'")
+
 [<Fact>]
 let ``text that is not JSON reports that plainly`` () =
     let errors = errorsOf (read "not json at all")

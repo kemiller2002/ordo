@@ -1,0 +1,221 @@
+---
+path: /comparison/
+title: Ordo and conventional development
+description: A direct comparison built on what each approach lets a machine see, with the places the comparison does not hold stated plainly.
+section: Start here
+order: 40
+summary: Where the two approaches actually differ, and where they measurably do not.
+---
+<section class="page-intro">
+  <p class="eyebrow">Comparison</p>
+  <h1>Ordo and conventional development</h1>
+  <p class="lead">
+    This comparison is built on what each approach makes visible to a machine — not on defect
+    counts. We tried the defect-count comparison and it did not hold up, which is explained at the
+    bottom of this page rather than omitted from it.
+  </p>
+</section>
+
+<section>
+  <h2>What each approach asks a human or an agent to infer</h2>
+  <div class="table-scroll">
+    <table class="matrix">
+      <caption>The operative difference, dimension by dimension</caption>
+      <thead>
+        <tr>
+          <th scope="col">Dimension</th>
+          <th scope="col">Conventional</th>
+          <th scope="col">Ordo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">What state a record is in</th>
+          <td>Inferred by combining flags, nullable fields and status strings at each read site.</td>
+          <td>Named. The state is the thing stored, not a consequence of other things stored.</td>
+        </tr>
+        <tr>
+          <th scope="row">Which changes are possible</th>
+          <td>Any write the language permits. Illegal combinations are representable and must be defended against.</td>
+          <td>Only declared transitions. Data belonging to one state is constructible only in that state.</td>
+        </tr>
+        <tr>
+          <th scope="row">What an actor may do next</th>
+          <td>Usually re-derived in the interface, so the rule exists twice with nothing keeping the copies in step.</td>
+          <td>Computed from the same predicates the transitions enforce. There is one copy.</td>
+        </tr>
+        <tr>
+          <th scope="row">Finding the change surface</th>
+          <td>Exploration. Read until you are confident you have found every affected place.</td>
+          <td>Routing. Repository map to semantic area, semantic area to the authority that decides the rule.</td>
+        </tr>
+        <tr>
+          <th scope="row">When a rename changes meaning</th>
+          <td>Caught where the name appears. Silent where the value is a bare primitive passed positionally.</td>
+          <td>Distinct nominal types mean the wrong value cannot be supplied without a compile error.</td>
+        </tr>
+        <tr>
+          <th scope="row">What a green build proves</th>
+          <td>That it compiled. Independently measured not to establish merge-readiness.</td>
+          <td>One signal among several chosen because their blind spots differ.</td>
+        </tr>
+        <tr>
+          <th scope="row">Architectural conformance</th>
+          <td>Convention, review, and whoever remembers the rule.</td>
+          <td>A check that runs. Dependency direction is verified rather than agreed.</td>
+        </tr>
+        <tr>
+          <th scope="row">Requirement coverage</th>
+          <td>Believed, usually from test counts.</td>
+          <td>Traced criterion by criterion to the test that covers it.</td>
+        </tr>
+        <tr>
+          <th scope="row">Unknown outcomes at a boundary</th>
+          <td>Collapsed into success or failure, or thrown.</td>
+          <td>A distinct state, with reconciliation as a declared operation.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="muted">
+    Every row describes a property of the two approaches as built in our trials. Rows five, six,
+    seven and eight are the ones with measurements behind them; the others are design descriptions
+    you can verify by reading either codebase.
+  </p>
+</section>
+
+<section>
+  <h2>The same change, applied both ways</h2>
+  <p>
+    The unit of measure changes: recording becomes exact to the minute, and six-minute rounding
+    moves to a derived billing view. This change was applied to the same domain in several
+    implementations, which is why it is the most informative comparison available.
+  </p>
+  <div class="grid">
+    <div class="card">
+      <p class="card-kicker">Conventional C#</p>
+      <h3>Eight caught, fourteen silent</h3>
+      <p>
+        The compiler reported eight direct member accesses. Roughly
+        {{metric:M-TE-CS-SILENT}} more passed duration as a bare positional integer, so the
+        literal <code>10</code> silently went from meaning sixty minutes to meaning ten. Each had
+        to be found by hand and its intent re-read. Two ended up correct
+        {{metric:M-TE-CS-COINCIDENCE}}. The build was clean throughout.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Conventional JavaScript</p>
+      <h3>Nothing caught, program ran</h3>
+      <p>
+        {{metric:M-TE-JS-LANGUAGE}} mistakes were caught by the language across the whole rebuild.
+        The rename produced no errors, no warnings and no crashes. Eight of twenty-one existing
+        tests did fail — a real safety net, and the only one available.
+      </p>
+    </div>
+    <div class="card callout">
+      <p class="card-kicker">Ordo, C#</p>
+      <h3>Every site, one build</h3>
+      <p>
+        Ripple surfaced {{metric:M-TE-CSSTATE-RIPPLE}}, with exact file and line, and none
+        required a manual search. Separately and structurally:
+        <code>DurationMinutes</code> is a distinct type from <code>TimeOfDay</code>, so the
+        substitution that caused the silent sites cannot be written.
+      </p>
+    </div>
+    <div class="card callout">
+      <p class="card-kicker">Ordo, F#</p>
+      <h3>Seventeen at once</h3>
+      <p>
+        {{metric:M-TE-FSSTATE-RIPPLE}} across two root causes — each root cause showing every
+        affected call site in a single build rather than one per cycle.
+        {{metric:M-TE-FSSTATE-DEFECTS}} runtime domain defects.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>AI generating code, and AI working inside an engineering system</h2>
+  <p>
+    This is the distinction the methodology exists for, and it is not about model quality.
+  </p>
+  <div class="grid">
+    <div class="card">
+      <p class="card-kicker">Give the agent context</p>
+      <h3>Correctness depends on inference</h3>
+      <p>
+        The agent receives a goal and enough repository access to work out how to satisfy it. It
+        must infer where the change belongs, what it may affect, which states are valid, and what
+        would count as finished. Everything it gets right, it got right by reasoning correctly
+        about an under-specified system — including the parts nobody wrote down.
+      </p>
+      <p class="outcome-line">Failure mode: locally plausible code in the wrong place.</p>
+    </div>
+    <div class="card callout">
+      <p class="card-kicker">Give the agent a system</p>
+      <h3>Correctness depends on structure</h3>
+      <p>
+        The agent asks what is legal in the current state and chooses from the answer. The
+        compiler enumerates what its change propagates to. The architecture check refuses what
+        violates layering. An independent mechanism inspects what the tests cannot express.
+      </p>
+      <p class="outcome-line">
+        Failure mode: still possible — but a smaller share of it now depends on inference.
+      </p>
+    </div>
+  </div>
+  <div class="note">
+    <p>
+      <strong>Ordo does not make a model reliable.</strong> In one paired trial both agents
+      produced a change that passed every mechanical check on both architectures and did the wrong
+      thing. Constraining what an agent can attempt is not the same as guaranteeing that what it
+      attempts is right. The goal is to reduce how much of correctness rests on inference, not to
+      eliminate inference.
+    </p>
+  </div>
+</section>
+
+<section class="contradictions">
+  <h2>Where this comparison does not hold</h2>
+  <p>
+    Three places, all from our own records, and each one rules out a claim we would otherwise like
+    to make.
+  </p>
+  <ul>
+    <li>
+      <strong>Explicit types do not reduce ripple cost in general.</strong> The one experiment that
+      controlled for this properly found no difference on field renames and no help from either
+      type system on arithmetic business rules. It contradicts the blanket claim, and the
+      hypothesis remains open rather than supported.
+      <a href="{{link:/results/}}#no-difference">The full result →</a>
+    </li>
+    <li>
+      <strong>Defect counts do not favour Ordo.</strong> Raw rework-driving mistakes came out 6 for
+      the conventional C# rebuild and 2 for the conventional JavaScript one — the build with the
+      <em>least</em> static checking scored best. The research record's own conclusion is that raw
+      count "is not where the two styles differ." We therefore make no defect-count claim.
+    </li>
+    <li>
+      <strong>Part of this is persona, not architecture.</strong> The state-structured trials
+      deliberately reached for the strongest available patterns; the conventional rebuilds
+      deliberately reached for ordinary ones. Their own reports say comparing them is partly a
+      comparison of persona. The rows that survive that objection are the structural guarantees,
+      because those hold regardless of how careful the author was.
+    </li>
+  </ul>
+</section>
+
+<section>
+  <h2>What this leaves</h2>
+  <p>
+    A narrower claim than "Ordo produces better software," and a more useful one. Conventional
+    practice and Ordo make comparable numbers of mistakes. They differ in <em>which mechanism</em>
+    catches them — a compiler that reports every affected site, or a person who has to notice.
+    Under the conditions the industry now measures, where change volume outruns review capacity,
+    that difference is the one that determines whether the volume is absorbable.
+  </p>
+  <div class="actions">
+    <a class="button primary" href="{{link:/results/}}">The measurements</a>
+    <a class="button ghost" href="{{link:/adoption/}}">How to start</a>
+  </div>
+</section>

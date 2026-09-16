@@ -176,6 +176,62 @@ let claimsTable (context: Context) (claims: Claim list) : string =
                   element "tbody" [] (claims |> List.map row |> concat) ]))
 
 // ---------------------------------------------------------------------------
+// External research
+// ---------------------------------------------------------------------------
+
+/// An inline citation of independent work: author and year, linked out, with
+/// the finding in the title attribute. Deliberately lighter than `citation`,
+/// which carries a repository path — this is someone else's study, not our
+/// artifact, and it should read like a citation rather than a provenance trail.
+let referenceInline (reference: Reference) : string =
+    element
+        "a"
+        [ "class", "ref"
+          "href", reference.Url
+          "rel", "noopener"
+          "title", reference.Title + " — " + reference.Finding ]
+        (escape (reference.Author + " " + reference.Year))
+
+/// Independent research, with what each study does and does not establish.
+let referenceTable (context: Context) : string =
+    let row (reference: Reference) =
+        element
+            "tr"
+            [ "id", reference.Id ]
+            (concat
+                [ element
+                      "th"
+                      [ "scope", "row" ]
+                      (element
+                          "a"
+                          [ "href", reference.Url; "rel", "noopener" ]
+                          (escape reference.Title))
+                  text "td" [] (reference.Author + ", " + reference.Year)
+                  text "td" [] reference.Finding
+                  text "td" [ "class", "misses" ] reference.Limitation ])
+
+    let head =
+        element
+            "tr"
+            []
+            (concat
+                [ text "th" [ "scope", "col" ] "Study"
+                  text "th" [ "scope", "col" ] "Source"
+                  text "th" [ "scope", "col" ] "Finding"
+                  text "th" [ "scope", "col" ] "Does not establish" ])
+
+    element
+        "div"
+        [ "class", "table-scroll" ]
+        (element
+            "table"
+            [ "class", "matrix matrix-refs" ]
+            (concat
+                [ text "caption" [] "Independent research this site relies on"
+                  element "thead" [] head
+                  element "tbody" [] (context.Manifest.References |> List.map row |> concat) ]))
+
+// ---------------------------------------------------------------------------
 // Experiments
 // ---------------------------------------------------------------------------
 
@@ -391,6 +447,48 @@ let private sectionIndex (context: Context) (section: string) : string =
     | [] -> ""
     | pages -> element "div" [ "class", "grid" ] (pages |> List.map card |> concat)
 
+/// Spells a small count as a word, because the surrounding prose is prose. Past
+/// twenty a numeral reads better than a word, so the words stop there.
+let private spell (value: int) : string =
+    let words =
+        [ "zero"; "one"; "two"; "three"; "four"; "five"; "six"; "seven"
+          "eight"; "nine"; "ten"; "eleven"; "twelve"; "thirteen"; "fourteen"
+          "fifteen"; "sixteen"; "seventeen"; "eighteen"; "nineteen"; "twenty" ]
+
+    if value >= 0 && value < List.length words then
+        List.item value words
+    else
+        string value
+
+/// Counts a collection the manifest already holds.
+///
+/// A sentence that says how many experiments exist is a second copy of a fact
+/// the manifest states first, and a copy that nothing checks is precisely the
+/// defect class this site documents. This site had one: the evidence index read
+/// "seven experiments" after the manifest grew to eleven, and every mechanism
+/// here passed it, because each half was internally valid and nothing compared
+/// them. Counting through a token removes the copy rather than checking it.
+let private countOf (manifest: Manifest) (entity: string) : Validation<int> =
+    match entity with
+    | "experiments" -> ok (List.length manifest.Experiments)
+    | "codebases" ->
+        manifest.Experiments
+        |> List.map (fun experiment -> experiment.Repository)
+        |> List.distinct
+        |> List.length
+        |> ok
+    | "metrics" -> ok (List.length manifest.Metrics)
+    | "claims" -> ok (List.length manifest.Claims)
+    | "repositories" -> ok (List.length manifest.Repositories)
+    | "references" -> ok (List.length manifest.References)
+    | "glossary" -> ok (List.length manifest.Glossary)
+    | "contradicted" ->
+        manifest.Claims
+        |> List.filter (fun claim -> claim.State = Contradicted)
+        |> List.length
+        |> ok
+    | other -> error ("'count' does not know how to count '" + other + "'")
+
 /// Resolves one `{{token}}`. An unknown token name, or a known name with an
 /// unknown argument, fails the build.
 let resolveToken (context: Context) (token: string) : Validation<string> =
@@ -419,6 +517,16 @@ let resolveToken (context: Context) (token: string) : Validation<string> =
             error ("no claim matched '" + argument + "'")
         else
             ok (claimsTable context claims)
+    | "ref" ->
+        (match tryFindReference context.Manifest argument with
+         | Some reference -> ok (referenceInline reference)
+         | None -> error ("unknown reference id '" + argument + "'"))
+    | "references" ->
+        if List.isEmpty context.Manifest.References then
+            error "'references' was used but the manifest holds none"
+        else
+            ok (referenceTable context)
+    | "count" -> countOf context.Manifest argument |> map spell
     | "experiments" -> ok (experimentIndex context)
     | "repositories" -> ok (repositoryTable context)
     | "glossary" -> ok (glossaryList context)

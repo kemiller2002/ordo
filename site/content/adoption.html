@@ -2,8 +2,8 @@
 path: /adoption/
 title: Adoption
 description: How a team can begin applying Ordo to one bounded feature, to an existing system, or to a greenfield build, without a rewrite.
-section: Adoption
-order: 1
+section: Start here
+order: 60
 summary: Four starting points, with what each one actually costs and what the evidence does not cover.
 ---
 <section class="page-intro">
@@ -11,17 +11,7 @@ summary: Four starting points, with what each one actually costs and what the ev
   <h1>Adoption</h1>
   <p class="lead">
     Ordo is not a framework to install. It is an order of operations, and it can be applied to
-    one feature without touching anything else.
-  </p>
-</section>
-
-<section class="note">
-  <h2>Read this first</h2>
-  <p>
-    Nothing on this site measures adoption. No experiment here observed a team adopting Ordo, or
-    compared a codebase before and after. The paths below are reasoned from what the experiments
-    found about failure modes — they are not an evidenced adoption programme, and anyone
-    presenting them as one is overstating what exists.
+    one feature without touching anything else. Four starting points follow, cheapest first.
   </p>
 </section>
 
@@ -158,12 +148,26 @@ summary: Four starting points, with what each one actually costs and what the ev
 </section>
 
 <section class="limitations">
-  <h2>What cannot be claimed about portability</h2>
+  <h2>What these paths do not establish</h2>
+  <h3>Adoption itself is unmeasured</h3>
+  <p>
+    No experiment on this site observed a team adopting Ordo, or compared a codebase before and
+    after. The four paths are reasoned from what the experiments found about failure modes — each
+    step exists because something upstream of it was measured going wrong — which is a sound basis
+    for a starting point and not an evidenced adoption programme. Anyone presenting it as one is
+    overstating what exists.
+  </p>
+  <p>
+    The mechanisms those steps install are a different matter. That a state you cannot write down
+    cannot be written down is a property of the code, verifiable by reading it. That is why the
+    steps are worth taking before anyone has measured your team taking them.
+  </p>
+  <h3>Portability beyond four languages</h3>
   <p>
     The evidence base covers F#, TypeScript, C# and JavaScript. Within it, the clearest
     language-related finding is not that one language is better: it is that the mechanisms
     available to catch a mistake differ sharply, and that
-    {{metric:M-TE-JS-TOOLING}} of the JavaScript rebuild's mistakes were caught by the language,
+    {{metric:M-TE-JS-LANGUAGE}} of the JavaScript rebuild's mistakes were caught by the language,
     against {{metric:M-TE-CS-TOOLING}} in the C# rebuild.
   </p>
   <p>

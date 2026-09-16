@@ -1,0 +1,39 @@
+<h2 id="interpretation">Interpretation</h2>
+<p>
+  This is the most carefully controlled experiment in the evidence base and it went against the
+  hypothesis. That combination is why it matters more than the trials that agreed.
+</p>
+<p>
+  The design was honest before the result was known. Falsification criteria were written in
+  advance: if the conventional baseline needed equal or fewer edits and surfaced equal or fewer
+  stale call sites, the hypothesis would not be supported. The baseline was deliberately competent
+  — shared validation, immutable updates, a discriminated result type, real tests — with the single
+  removed ingredient being opaque types for the value that changes meaning.
+</p>
+<p>
+  The result splits cleanly in two, and the split is the finding. Field renames are a structural
+  change, and both type systems caught every affected site automatically and completely; there was
+  nothing to choose between them. Arithmetic embedded in an expression is not a structural change,
+  and neither type system helped at all, because the value is an ordinary number right up until it
+  crosses a smart constructor — and the arithmetic sits upstream of that boundary in both designs.
+</p>
+<p>
+  The one asymmetry that did appear was almost mistaken for a type-system result. A pattern search
+  for the conversion missed a site where the same rounding had been written as a division by 360
+  rather than by 6, and it was recovered only by a second search prompted by suspicion. It would
+  have been easy to file that under "explicit types win." The report does not: it traces the
+  difference to the explicitly-typed domain having routed its arithmetic through named accessors
+  instead of inlining the conversion, and states that the same discipline was achievable in the
+  baseline and arguably should have been applied there.
+</p>
+<p>
+  So the conclusion is narrower than the hypothesis wanted, and more useful than it would have
+  been: <em>centralising a conversion</em> is what avoided the missed site, not <em>nominal
+  typing</em>. Those are different interventions with different costs, and this experiment is the
+  reason we can tell them apart.
+</p>
+<p>
+  It also leaves a real gap it names itself. Comparing F# against TypeScript does not separate
+  language from type system. The trial that would — a primitive-typed version of the same language
+  against an explicitly-typed one — has not been run.
+</p>

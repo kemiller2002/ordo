@@ -301,6 +301,21 @@ main > section:first-child { margin-top: 0; }
 .badge-contradicted { border-left: 4px solid var(--ef-carbon); background: var(--ef-surface-inverse); color: var(--ef-text-inverse); }
 .badge-open { border-left: 4px solid var(--ef-graphite); border-style: dashed; }
 
+/* Inline citation of independent work. Visually distinct from .src, which
+   points into our own repositories — a reader should be able to tell at a
+   glance whether a claim rests on third-party research or on our own. */
+.ref {
+  white-space: nowrap;
+  padding: 0 .15em;
+  border-bottom: 1px dotted var(--ef-accent-secondary);
+  color: var(--ef-text-primary);
+  font-family: var(--mono);
+  font-size: .82em;
+  text-decoration: none;
+}
+.ref:hover { background: var(--ef-surface-secondary); }
+.matrix-refs tbody th { max-width: 22rem; font-weight: 600; }
+
 /* --- Tables ------------------------------------------------------------- */
 
 .table-scroll { overflow-x: auto; margin: 2rem 0; border: 1px solid var(--ef-border-decorative); }

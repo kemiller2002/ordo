@@ -4,7 +4,9 @@
 /// assembles into something whose numbers are not traceable, these fail.
 module Ordo.Site.Tests.SiteTests
 
+open System
 open System.IO
+open System.Text.RegularExpressions
 open Xunit
 open Ordo.Site
 open Ordo.Site.Model
@@ -115,3 +117,100 @@ let ``the research page publishes contradicted propositions`` () =
 [<Fact>]
 let ``the evidence base cites more than one repository`` () =
     Assert.True(List.length (manifest ()).Repositories > 1)
+
+// ---------------------------------------------------------------------------
+// Counts
+// ---------------------------------------------------------------------------
+
+let private config () =
+    SiteConfig.read (File.ReadAllText(Path.Combine(siteRoot, "data", "site.json"))) |> valueOf
+
+let private context () : Render.Context =
+    { Config = config ()
+      Manifest = manifest ()
+      Pages = [] }
+
+/// A count stated in prose is a second copy of a fact the manifest already
+/// holds. The site had one such copy go stale — the evidence index read "seven
+/// experiments" after the manifest reached eleven — so the count is now derived.
+[<Fact>]
+let ``the count token derives its numbers from the manifest`` () =
+    let model = manifest ()
+    let resolve token = valueOf (Render.resolveToken (context ()) token)
+
+    Assert.Equal("eleven", resolve "count:experiments")
+    Assert.Equal(11, List.length model.Experiments)
+    Assert.Equal("four", resolve "count:codebases")
+    Assert.Equal("five", resolve "count:contradicted")
+
+[<Fact>]
+let ``an unknown count subject fails the build`` () =
+    let errors = errorsOf (Render.resolveToken (context ()) "count:opinions")
+    Assert.Contains(errors, fun message -> message.Contains "count" && message.Contains "opinions")
+
+/// The regression guard for the stale count, checked against rendered output
+/// rather than source.
+///
+/// It matches a count that *opens* a statement — the shape a total takes, and
+/// the shape the defect took ("Seven experiments, four codebases, and every
+/// number..."). It deliberately does not match a count used mid-sentence for a
+/// subset, because the manifest quotes source artifacts that legitimately say
+/// things like "across three experiments", and rewording transcribed evidence
+/// to satisfy a test would be the wrong repair.
+[<Fact>]
+let ``no rendered page opens a statement with an experiment total the manifest contradicts`` () =
+    let words =
+        [ "zero"; "one"; "two"; "three"; "four"; "five"; "six"; "seven"; "eight"; "nine"
+          "ten"; "eleven"; "twelve"; "thirteen"; "fourteen"; "fifteen"; "sixteen"
+          "seventeen"; "eighteen"; "nineteen"; "twenty" ]
+
+    let actual = List.length (manifest ()).Experiments
+
+    let wrong =
+        words
+        |> List.mapi (fun index word -> index, word)
+        |> List.filter (fun (index, _) -> index <> actual)
+        |> List.map snd
+
+    let pattern =
+        "(?:>|</strong>|\\.)\\s*(" + String.Join("|", wrong) + ")\\s+(?:experiments|recorded trials|trials)\\b"
+
+    let expression = Regex(pattern, RegexOptions.IgnoreCase)
+
+    outputs ()
+    |> List.filter (fun output -> output.Path.EndsWith ".html")
+    |> List.iter (fun output ->
+        let found = expression.Match output.Text
+
+        Assert.False(
+            found.Success,
+            output.Path
+            + " opens a statement with \""
+            + found.Value.Trim()
+            + "\" but the manifest holds "
+            + string actual
+            + " experiments"))
+
+/// The concepts index tells a reader that every concept page ends by saying what
+/// an agent should do differently and how the idea is most often got wrong. That
+/// is a promise about the pages, so it is checked against the pages: one had
+/// grown without the second section, and nothing noticed.
+[<Fact>]
+let ``every concept page keeps the promise the concepts index makes`` () =
+    let promised =
+        [ "What an agent should do differently"; "How this is most often got wrong" ]
+
+    let pages =
+        outputs ()
+        |> List.filter (fun output ->
+            output.Path.StartsWith "concepts/"
+            && output.Path.EndsWith "/index.html"
+            && output.Path <> "concepts/index.html")
+
+    Assert.True(List.length pages >= 9, "expected the nine concept pages, found " + string (List.length pages))
+
+    pages
+    |> List.iter (fun page ->
+        promised
+        |> List.iter (fun heading ->
+            Assert.True(page.Text.Contains heading, page.Path + " is missing the \"" + heading + "\" section")))

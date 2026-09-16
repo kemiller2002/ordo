@@ -124,6 +124,24 @@ type Claim =
       Limitation: string
       Source: Source }
 
+/// An independent, external research source. These are the studies the site
+/// cites to establish the *problem* Ordo addresses. They are deliberately a
+/// separate type from `Source`: a `Source` points into a repository this
+/// organisation controls, a `Reference` points at work it does not, and
+/// conflating the two would let self-produced evidence borrow the authority of
+/// third-party research.
+type Reference =
+    { Id: string
+      Title: string
+      Author: string
+      Year: string
+      Url: string
+      /// The finding, stated as the source states it.
+      Finding: string
+      /// What this source does not establish. Required, for the same reason a
+      /// metric's limitation is required.
+      Limitation: string }
+
 type GlossaryEntry =
     { Term: string
       Definition: string
@@ -137,6 +155,7 @@ type Manifest =
       Experiments: Experiment list
       Metrics: Metric list
       Claims: Claim list
+      References: Reference list
       Glossary: GlossaryEntry list }
 
 // ---------------------------------------------------------------------------
@@ -190,6 +209,9 @@ let tryFindMetric (manifest: Manifest) (id: string) : Metric option =
 
 let tryFindRepository (manifest: Manifest) (id: string) : Repository option =
     manifest.Repositories |> List.tryFind (fun repository -> repository.Id = id)
+
+let tryFindReference (manifest: Manifest) (id: string) : Reference option =
+    manifest.References |> List.tryFind (fun reference -> reference.Id = id)
 
 let metricsFor (manifest: Manifest) (experimentId: string) : Metric list =
     manifest.Metrics |> List.filter (fun metric -> metric.Experiment = experimentId)

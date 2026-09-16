@@ -1,148 +1,166 @@
 ---
 path: /why/
 title: Why Ordo exists
-description: The failure modes that motivated State-Directed Engineering, and what the experiments found when they went looking for each one.
+description: AI generates plausible code faster than review and verification can absorb it. Ordo exists to make the constraints explicit so correctness stops depending on inference.
 section: Start here
 order: 10
-summary: The specific, reproduced failures this methodology was built in response to.
+summary: The measured problem in AI-assisted engineering, and what Ordo does about it.
 ---
 <section class="page-intro">
-  <p class="eyebrow">Motivation</p>
-  <h1>Why Ordo exists</h1>
+  <p class="eyebrow">Why Ordo</p>
+  <h1>The hard part was never writing the code</h1>
   <p class="lead">
-    Every rule in Ordo is a response to something that actually went wrong, in a codebase, in
-    a way that was reproduced deliberately afterwards. This page lists those failures and
-    points at the experiment that found each one.
+    An agent can produce a plausible implementation of almost anything. What it cannot reliably do
+    is know where the change belongs, what it is allowed to affect, which states are valid, and
+    what would count as finished — because in most codebases nobody wrote those down.
   </p>
 </section>
 
 <section>
-  <h2>A change compiles, passes every check, and does nothing</h2>
+  <h2>What the industry measured when it checked</h2>
   <p>
-    This is the failure that shaped the methodology more than any other. A boundary arm exists.
-    It type-checks. The architecture check passes. The contract tests pass. The arm does no
-    work, and nothing objects.
+    The optimistic case is real and narrow. {{ref:R-COPILOT}} found 95 developers completing a
+    bounded, automatically scored, greenfield task 55% faster with assistance. That result holds,
+    for that kind of task.
   </p>
   <p>
-    The first experiment removed a required fan-out arm on purpose and ran the build, the test
-    suite and a direct database query. {{metric:M-HN1-SILENT}} produced any signal. The record
-    was durably marked accepted while the fact it represented was never written anywhere
-    retrievable.
+    Then the harder measurements arrived. {{ref:R-METR-RCT}} put sixteen experienced maintainers on
+    246 real issues in repositories they knew well and found them <strong>19% slower</strong> with
+    AI available. The striking part is not the slowdown; it is that they could not perceive it.
+    They forecast 24% faster beforehand and still believed they had been 20% faster afterwards.
   </p>
   <p>
-    The second experiment built five mechanisms specifically to close the first experiment's
-    blind spots, then re-created the same failure shape against them.
-    {{metric:M-HN2-NOOP}} caught it. Exhaustiveness checking guarantees the arm <em>exists</em>;
-    it says nothing about whether the arm does anything. Only a live integration test found it.
+    At organisational scale, {{ref:R-DORA-2025}} found AI adoption now correlating with higher
+    delivery throughput <em>and</em> higher delivery instability at the same time — more change
+    failures, more rework, longer recovery. The throughput problem got solved. The stability problem
+    did not.
   </p>
   <p>
-    The third experiment ran the same class of mission on both architectures with two
-    independent agents. The identical semantic no-op appeared in both conditions and was
-    caught, in both, by integration tests only.
+    {{ref:R-PRP}} names the shape across more than ten thousand developers: 98% more pull requests,
+    91% longer review times, flat delivery. Industry analysis has a name for the missing term —
+    a <strong>verification tax</strong> on code that reads as correct.
+  </p>
+  <div class="callout">
+    <p>
+      Put together: generation is cheap now, and everything downstream of generation is not.
+      Reviewing, verifying, integrating and recovering from AI-written code is where the cost went.
+      DORA's own explanation is that change volume has outrun the control systems meant to absorb
+      it.
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2>Why more tests do not fix it</h2>
+  <p>
+    The obvious response is to test harder. Two independent findings say that does not address this
+    failure class.
+  </p>
+  <p>
+    {{ref:R-METR-HOLISTIC}} took eighteen real tasks in two mature repositories and found agent
+    solutions that <strong>passed the reference tests and still failed merge-readiness review</strong>
+    — on testing, documentation, formatting, typing and general quality.
+  </p>
+  <p>
+    We found the same thing from the other direction. A fresh reviewer examined a build that had
+    already passed a 90-test suite, a strict type check, a dependency audit, an architecture check
+    and an adversarial self-review with mutation testing. It found five defects, and
+    {{metric:M-GF2B-OVERLAP}} had been caught by any of it. In a separate build, the test suite
+    {{metric:M-GF2A-DEFECTS}}.
+  </p>
+  <p>
+    A test suite checks what its author thought to assert. That is enormously valuable and it is
+    not the same as checking whether the work is right.
   </p>
 </section>
 
 <section>
-  <h2>Illegal combinations are representable, so someone has to remember</h2>
-  <p>
-    When a record carries a status string and three optional fields, nothing stops
-    <code>{status: "Recorded", supersededBy: [...]}</code> from being constructed. It is
-    meaningless, and it is legal to write.
-  </p>
-  <p>
-    Two independent builds of the same requirements handled this differently, and the
-    difference is instructive. One modelled the entry as a discriminated union keyed by
-    status, so a superseded-only field cannot be supplied on a recorded entry — enforced by
-    the compiler at every construction site. The other used one flat record with optional
-    fields and prevented the combination by discipline plus a load-time validator, and said so
-    in its own self-review, unprompted, as the most honest limitation it had found in itself.
-  </p>
-  <p>
-    Both are defensible. The point is that one of them requires nobody to remember anything.
-  </p>
+  <h2>The specific failures this produces</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Code that compiles, passes, and does nothing</h3>
+      <p>
+        A boundary arm exists, type-checks, satisfies the architecture check and the contract
+        tests — and does no work. We removed one deliberately:
+        {{metric:M-HN1-SILENT}} objected. Five targeted mechanisms were then built to close that
+        class, and re-tested: {{metric:M-HN2-NOOP}} caught it. Only a live integration test did, in
+        every trial.
+      </p>
+    </div>
+    <div class="card">
+      <h3>A rename that changes meaning in silence</h3>
+      <p>
+        When duration stopped meaning six-minute units and started meaning minutes, the compiler
+        caught eight sites and around {{metric:M-TE-CS-SILENT}} more passed the value as a bare
+        positional integer. Identical source text, six times the duration, green build, passing
+        tests. Two came out correct {{metric:M-TE-CS-COINCIDENCE}}.
+      </p>
+    </div>
+    <div class="card">
+      <h3>One fact, several copies, no agreement check</h3>
+      <p>
+        The one value a compiler protected had zero duplication. The two outside its reach were
+        duplicated four times and twice, with nothing checking the copies agreed. A shared type
+        does not fix this: the identical type produced three different wire behaviours depending on
+        the call path, inside one process.
+      </p>
+    </div>
+    <div class="card">
+      <h3>A declared outcome nothing can produce</h3>
+      <p>
+        A reconciliation result declared four outcomes and the code could construct three. Every
+        caller handled a case that would never arrive, and believed it was covered. Ninety tests
+        and a mutation-tested self-review did not find it.
+      </p>
+    </div>
+  </div>
 </section>
 
 <section>
-  <h2>Boundaries lose meaning quietly</h2>
+  <h2>What Ordo does instead</h2>
   <p>
-    A closed set of named alternatives becomes a string when it crosses into the database, or
-    onto the wire, or into another service. Nothing fails. The set is now open, and the
-    agreement between what the domain permits and what the boundary admits is maintained by
-    hand, in several places, with no mechanism that notices when they disagree.
+    It moves the constraints out of convention, documentation and tribal knowledge, and into
+    structures a machine can act on. State becomes a named thing that is stored rather than
+    inferred. Change happens through declared transitions, so illegal actions are unavailable
+    rather than defended against. A rule has one authority, so the copy that drifts does not exist.
+    Verification is several mechanisms whose blind spots differ, because one mechanism has been
+    measured to be insufficient.
   </p>
   <p>
-    Experiment 1 found exactly this: the one fact the compiler protects had zero duplication;
-    the two facts outside its reach were duplicated four times and twice, with no automated
-    agreement check between the copies. A separate investigation reproduced something sharper
-    still — a single shared type, inside one process, producing three different wire behaviours
-    depending on which call path reached it.
+    {{ref:R-PRP}} reaches the same conclusion from the outside: under specification governance, the
+    bottleneck on velocity moves from generation to specification clarity. Two independent builds of
+    the same frozen requirements show that clarity is reachable —
+    {{metric:M-GF2A-AC}} traced criterion by criterion, twice, with all nine open questions
+    preserved rather than guessed past.
   </p>
-  <p>
-    Whatever a shared type does for you, it does not do this.
-  </p>
-</section>
-
-<section>
-  <h2>Discovering what to change costs more than changing it</h2>
-  <p>
-    An agent or an engineer who does not know where a semantic decision lives reads broadly to
-    find out. In the paired trial, the baseline condition performed
-    {{metric:M-HN3-SEARCH}} — a 63% reduction under the hardened architecture, in one paired
-    trial with two agents whose investigation strategies differed.
-  </p>
-  <p>
-    This is worth stating carefully, because the same trial refuted the obvious interpretation
-    of it. See the next section.
-  </p>
+  <div class="actions">
+    <a class="button primary" href="{{link:/how-it-works/}}">How it works</a>
+    <a class="button ghost" href="{{link:/comparison/}}">Compared with conventional</a>
+  </div>
 </section>
 
 <section class="contradictions">
-  <h2>Things this research expected and did not find</h2>
+  <h2>Where we expected a result and did not get one</h2>
   <p>
-    A motivation page that lists only confirmed problems is a sales page. Three expectations
-    this programme held, and measured, and gave up:
+    Three things this research programme believed, measured, and gave up. They stay published
+    because a methodology that only reports its confirmations is not offering you evidence.
   </p>
   <ul>
     <li>
-      <strong>That hardening would reduce how much boundary work a change requires.</strong>
-      It did not. {{metric:M-HN2-BCA}} — measured three times, across three domain cases and
-      two architectures, identically. Hardening changed how the work was found, not how much of
-      it there was.
+      <strong>That explicit domain types reduce the cost of propagating change.</strong> Tested with
+      everything else held constant: no measurable difference on field renames, and no help from
+      either type system on arithmetic business rules.
+      <a href="{{link:/results/}}#no-difference">The result →</a>
     </li>
     <li>
-      <strong>That a higher mechanical discovery rate means lower cost.</strong> In the paired
-      trial the hardened condition scored {{metric:M-HN3-MDR}} on as-experienced discovery
-      while simultaneously spending less on search and repair. The two proxies moved in
-      opposite directions, in the same trial, on the same mission.
+      <strong>That making boundaries explicit reduces boundary work.</strong> It does not.
+      {{metric:M-HN2-BCA}} — measured three times, across two architectures, identically. It changed
+      how the work was found, not how much of it there was.
     </li>
     <li>
-      <strong>That explicit state reduces agent token cost.</strong> Unknown.
-      {{metric:M-HN3-COST}} — the one trial that measured it was interrupted mid-run and its
-      treatment-condition telemetry covers a partial run only. The question is open.
+      <strong>That a higher mechanical discovery rate means lower cost.</strong> In one paired trial
+      the hardened condition scored {{metric:M-HN3-MDR}} on discovery while spending less on search
+      and repair. The two proxies moved in opposite directions on the same mission.
     </li>
   </ul>
-  <p>
-    All three stay in <a href="{{link:/research/}}">the research map</a> permanently, so that
-    nobody can propose them again without first reading why they were rejected.
-  </p>
-</section>
-
-<section>
-  <h2>And one thing it did not expect to find</h2>
-  <p>
-    In the replication trial, a fresh agent with no knowledge of the construction reviewed a
-    finished, self-reviewed, mutation-tested build. Of its five findings,
-    {{metric:M-GF2B-OVERLAP}} were already covered by the builder's own 90-test suite or its
-    own adversarial self-review.
-  </p>
-  <p>
-    One of them was a declared outcome that could never be constructed: a result case that
-    existed in the type and that no code path could produce. The type checker was satisfied.
-    The tests were satisfied. The contract was incomplete.
-  </p>
-  <p>
-    That is the strongest single argument this site can make for
-    <a href="{{link:/concepts/verification/}}">heterogeneous verification</a>, and it is still
-    one pass on one codebase.
-  </p>
 </section>

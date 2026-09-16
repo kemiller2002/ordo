@@ -1,0 +1,36 @@
+<h2 id="interpretation">Interpretation</h2>
+<p>
+  On the metric this experiment tracked, the conventional build handled the hardest change better
+  than the explicitly-typed codebase did: one build attempt, one test run, nothing that failed.
+  The log records that headline and then spends the rest of the entry explaining why it is the
+  wrong number to look at.
+</p>
+<p>
+  The change renamed a duration field and altered what its unit meant. The compiler found eight
+  sites — every place the old member name appeared. It could not find, and did not find, the
+  roughly fourteen places where duration arrived as a bare positional integer. There, the literal
+  <code>10</code> had meant ten six-minute units and now meant ten minutes: a sixfold change in
+  real duration, expressed in source text that did not alter by a single character.
+</p>
+<p>
+  Each of those had to be found by hand and then <em>interpreted</em> — was this 10 standing in for
+  an hour, or was it already a small literal that means the same either way? Most were migrated
+  correctly. Two were left untouched, and the log is careful about why: not because they were
+  checked and found correct, but because they happened to remain valid in the new scheme by
+  coincidence. That is the most instructive sentence in the trial.
+</p>
+<p>
+  Throughout, the build was clean and thirty tests passed. Nothing mechanical distinguished a
+  correctly migrated call site from a silently wrong one. A developer trusting a green build as
+  evidence of correctness — which is the ordinary and reasonable thing to do — would have had no
+  signal at all.
+</p>
+<p>
+  The wider pattern across the whole rebuild says the same thing more generally. The compiler
+  caught four of six rework-driving mistakes, and every one of the sharpest was a category it
+  cannot reach in principle: two swapped string arguments of the same type, a stale revision
+  captured in a loop, a signature change hidden behind an inferred local. All three were caught by
+  a person deliberately re-reading a diff before running it. That discipline held perfectly here,
+  by design — and the persona being simulated, a competent professional under deadline, is exactly
+  the group least likely to apply it every time.
+</p>

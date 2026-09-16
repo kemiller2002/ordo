@@ -1,0 +1,302 @@
+---
+path: /how-it-works/
+title: How Ordo works
+description: Each mechanism Ordo prescribes, the consequence it produces, and what was observed when it was measured.
+section: Start here
+order: 20
+summary: Each mechanism, the consequence it produces, and what was observed.
+---
+<section class="page-intro">
+  <p class="eyebrow">How it works</p>
+  <h1>How Ordo works</h1>
+  <p class="lead">
+    Ordo is an order of operations and a set of structural commitments, not a framework to
+    install. Below, each mechanism is paired with the consequence it produces and with what was
+    actually observed — because a mechanism with no consequence is decoration, and a consequence
+    with no measurement is a hope.
+  </p>
+</section>
+
+<section>
+  <h2>The construction order</h2>
+  {{diagram:engineering}}
+  <p>
+    Verification is not a phase at the end. It is several mechanisms with different sensitivities,
+    applied in order of how early and how cheaply each can refuse a mistake.
+  </p>
+  <p class="muted">
+    Status: the individual steps are separately supported; the ordering has not been trial-tested
+    as a single workflow on a production project.
+  </p>
+</section>
+
+<section>
+  <h2 id="state">Explicit state</h2>
+  <div class="grid grid-three">
+    <div class="card">
+      <p class="card-kicker">Mechanism</p>
+      <h3>The state is stored, not derived</h3>
+      <p>
+        A record is in a named state from a closed set. Fields meaningful only in one state are
+        constructible only in that state. Exhaustiveness checking is a build error.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Consequence</p>
+      <h3>Nothing has to decode a combination</h3>
+      <p>
+        No read site combines flags to work out what is true, so no read site can combine them
+        differently. Adding a state produces a failing build at every place that must now decide
+        what it means.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Observed</p>
+      <h3>Three states, four transitions, twenty-four refusals</h3>
+      <p>
+        The measured build declares {{metric:M-GF1-TRANSITIONS}} and
+        {{metric:M-GF1-DIAGNOSTICS}} — each refusal a named value rather than a thrown exception
+        or a null.
+      </p>
+    </div>
+  </div>
+  <div class="note">
+    <p>
+      <strong>Guaranteed, not measured:</strong> in the C# state implementation,
+      <code>TimeOfDay</code> and <code>DurationMinutes</code> are distinct nominal types
+      specifically so a duration cannot be supplied where a time-of-day is expected. That is a
+      property of the source, readable in the source.
+    </p>
+  </div>
+  <p><a href="{{link:/concepts/state/}}">The concept in depth →</a></p>
+</section>
+
+<section>
+  <h2 id="transitions">Legal transitions</h2>
+  <div class="grid grid-three">
+    <div class="card">
+      <p class="card-kicker">Mechanism</p>
+      <h3>Change goes through declared routes</h3>
+      <p>
+        Transition functions are the only thing that constructs a new state value. Terminal states
+        are enforced by every guard and asserted by tests, not merely absent from the code.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Consequence</p>
+      <h3>Illegal actions are unavailable, not rejected</h3>
+      <p>
+        An agent choosing from the legal set cannot construct an illegal request. Constraint
+        replaces remembering: the action space shrinks instead of the rulebook growing.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Observed</p>
+      <h3>Independent builds agreed</h3>
+      <p>
+        Two agents with no contact produced identical state machines and transition sets from the
+        same requirements, differing on {{metric:M-GF2B-SCOPE}} across 41 requirement-level
+        decisions — and that one was a scope question, not a rule.
+      </p>
+    </div>
+  </div>
+  {{diagram:transition}}
+  <p><a href="{{link:/concepts/transitions/}}">The concept in depth →</a></p>
+</section>
+
+<section>
+  <h2 id="authority">One authority per rule</h2>
+  <div class="grid grid-three">
+    <div class="card">
+      <p class="card-kicker">Mechanism</p>
+      <h3>Capabilities are derived, never copied</h3>
+      <p>
+        What an actor may do next is computed by calling the same named predicates the transitions
+        use as preconditions.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Consequence</p>
+      <h3>Two answers cannot disagree</h3>
+      <p>
+        The interface and the enforcement cannot drift apart, because there is one of them. A
+        change to the rule changes both by construction.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Observed</p>
+      <h3>Reached independently, and proved</h3>
+      <p>
+        Both greenfield builds arrived at this architecture separately and documented the reason in
+        nearly the same words. One proved the sharing was real by deliberately breaking the shared
+        predicate and confirming both callers broke together.
+      </p>
+    </div>
+  </div>
+  <p><a href="{{link:/concepts/capabilities/}}">The concept in depth →</a></p>
+</section>
+
+<section>
+  <h2 id="locality">Structural locality and deterministic routing</h2>
+  <div class="grid grid-three">
+    <div class="card">
+      <p class="card-kicker">Mechanism</p>
+      <h3>Route, do not explore</h3>
+      <p>
+        A repository map points from semantic areas to locations; a feature's owned state,
+        behaviour, contracts and tests stay bounded together. Navigation artifacts declare by
+        reference and never restate a rule.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Consequence</p>
+      <h3>Less has to be read to change anything</h3>
+      <p>
+        Finding where a decision lives becomes routing rather than search — which matters most for
+        whoever arrives without the model already in their head.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Observed</p>
+      <h3>Eighteen searches, no expansions</h3>
+      <p>
+        {{metric:M-TE-CSSTATE-SEARCH}} across a whole trial, with
+        {{metric:M-TE-CSSTATE-CONTEXT}} occasions where context proved insufficient. Separately,
+        {{metric:M-TE-CSSTATE-COLDSTART}} cold-start questions were answerable without opening a
+        source file.
+      </p>
+    </div>
+  </div>
+  <div class="note">
+    <p>
+      <strong>Honest about this one.</strong> The search figure comes from an agent working against
+      a specification it had just written — a favourable condition, and not a measured reduction
+      against a baseline. {{ref:R-RESUMPTION}} supports the general idea that contextual
+      reconstruction aids help, and {{ref:R-EXPERTISE-REVERSAL}} is the reason to expect they cost
+      something for an expert who already holds the model.
+    </p>
+  </div>
+  <p><a href="{{link:/concepts/locality/}}">Structural locality →</a> ·
+     <a href="{{link:/concepts/navigation/}}">Navigation and context →</a></p>
+</section>
+
+<section>
+  <h2 id="boundaries">Boundary authority</h2>
+  <div class="grid grid-three">
+    <div class="card">
+      <p class="card-kicker">Mechanism</p>
+      <h3>One authority, a derivation, or a check</h3>
+      <p>
+        A fact crossing a boundary has a single source, something derived from it, or a mechanical
+        agreement check between the copies. Unknown outcomes are a distinct state, not a collapsed
+        success or failure.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Consequence</p>
+      <h3>Silent divergence needs a mechanism to stay silent</h3>
+      <p>
+        Adding a case to a closed set stops producing a compiler error at one site and silence at
+        the others.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Observed</p>
+      <h3>Discovery went from two-thirds to complete</h3>
+      <p>
+        {{metric:M-HN1-MDR}} required sites were machine-reported before hardening;
+        {{metric:M-HN2-MDR}} after five targeted mechanisms. One mechanism removed a site outright
+        rather than mechanising its discovery.
+      </p>
+    </div>
+  </div>
+  <div class="contradictions">
+    <p>
+      <strong>And what it did not do.</strong> {{metric:M-HN2-BCA}} — boundary work per semantic
+      decision did not change, measured three times across two architectures. Hardening changed
+      how required work was found, not how much there was. Anyone claiming otherwise is
+      contradicted by our own measurements.
+    </p>
+  </div>
+  <p><a href="{{link:/concepts/boundaries/}}">The concept in depth →</a></p>
+</section>
+
+<section>
+  <h2 id="verification">Verification that fails differently</h2>
+  <div class="grid grid-three">
+    <div class="card">
+      <p class="card-kicker">Mechanism</p>
+      <h3>Mechanisms chosen for differing blind spots</h3>
+      <p>
+        Types, architecture checks, contract checks, behavioural tests, integration against a real
+        boundary, and independent adversarial review — not more of whichever one you already have.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Consequence</p>
+      <h3>A green suite stops being the only signal</h3>
+      <p>
+        Which matters because a green suite has been independently measured not to establish
+        merge-readiness.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Observed</p>
+      <h3>Zero overlap</h3>
+      <p>
+        {{metric:M-GF2B-OVERLAP}} of an independent reviewer's findings were already covered by a
+        90-test suite plus a mutation-tested adversarial self-review. In another build the suite
+        itself {{metric:M-GF2A-DEFECTS}}.
+      </p>
+    </div>
+  </div>
+  {{diagram:verification}}
+  <p><a href="{{link:/concepts/verification/}}">The concept in depth →</a></p>
+</section>
+
+<section>
+  <h2 id="evidence">Evidence as an output</h2>
+  <div class="grid grid-three">
+    <div class="card">
+      <p class="card-kicker">Mechanism</p>
+      <h3>Record what ran and what was never captured</h3>
+      <p>
+        Every metric carries a definition, a collection method and a statement of what it does not
+        show. Telemetry that does not exist is labelled, never estimated.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Consequence</p>
+      <h3>A later reader can tell what was established</h3>
+      <p>
+        Including when the answer is "nothing" — which is the case for several figures on this
+        site, and they say so.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Observed</p>
+      <h3>Applied to this site</h3>
+      <p>
+        A metric with no stated limitation or no resolvable source cannot be represented in this
+        site's own evidence manifest. The build fails rather than rendering it.
+      </p>
+    </div>
+  </div>
+  <p><a href="{{link:/concepts/evidence/}}">The concept in depth →</a> ·
+     <a href="{{link:/concepts/}}">All nine concepts →</a></p>
+</section>
+
+<section class="callout">
+  <h2>What this costs</h2>
+  <p>
+    Ordo adds explicit types, transition definitions, a semantic map and architectural checks. That
+    is real work, done once, before the thing it protects exists. It is recovered — where it is
+    recovered — in defensive branching that no longer has to be written, rules that exist in one
+    place instead of several, and change surfaces that are reported rather than discovered.
+  </p>
+  <p>
+    Whether that trade is net positive over a codebase's life is not something we have measured. No
+    change-task trial has been run against a state-structured build, so the compounding argument
+    has no data behind it. We think it is likely. We are not claiming it.
+  </p>
+</section>

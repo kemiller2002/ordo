@@ -1,0 +1,998 @@
+{
+  "$comment": "Internal claim-to-source map. Generated from site/data/evidence.json by scripts/claim-sources — do not hand-edit. The public site does not render a provenance link on every figure; this file is how a maintainer or an auditor checks one anyway. Each entry names the artifact the number came from, the experiment it belongs to, and what the number does not establish.",
+  "schemaVersion": "1.0.0",
+  "metrics": {
+    "M-HN1-MDR": {
+      "claim": "Required sites found by the compiler alone: 8 of 12",
+      "definition": "The share of required handling sites for a new closed-alternative case that a compiler exhaustiveness error pointed at directly — 66.7%.",
+      "measurement": "Each site was classified as it was discovered, as either a compiler error or manual investigation, during the implementation itself.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "One change class — a new case in a closed alternative — on one architecture, in one trial. It says nothing about change classes the type system does not model, and the session classified its own discoveries.",
+      "experiment": {
+        "id": "helixnote-1",
+        "title": "Controlled Experiment 1 — boundary amplification on an unhardened architecture",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0003--experiment-1-boundary-amplification.md",
+        "ref": null,
+        "section": "Key figures"
+      }
+    },
+    "M-HN1-BCA": {
+      "claim": "Boundary files per semantic decision: 4.0",
+      "definition": "Boundary Change Amplification: the number of distinct boundary files that had to change for each single semantic decision.",
+      "measurement": "Counted from the committed diff of the experiment branch against its baseline tag.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "This is a measurement of one codebase's boundary structure, not a universal ratio. It is reported here because the same figure recurred in two later experiments, not because one measurement establishes a constant.",
+      "experiment": {
+        "id": "helixnote-1",
+        "title": "Controlled Experiment 1 — boundary amplification on an unhardened architecture",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0003--experiment-1-boundary-amplification.md",
+        "ref": null,
+        "section": "Key figures"
+      }
+    },
+    "M-HN1-REPAIR": {
+      "claim": "Repair loops: 0",
+      "definition": "Cycles in which a fix had to be revised because it failed to compile or failed a test.",
+      "measurement": "Counted during implementation; every fix compiled and passed on its first attempt.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "Zero repair loops means the mechanically-discovered fixes were mechanical. It does not mean the change was correct: the same experiment's own probe showed a missing boundary arm passing every check.",
+      "experiment": {
+        "id": "helixnote-1",
+        "title": "Controlled Experiment 1 — boundary amplification on an unhardened architecture",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0003--experiment-1-boundary-amplification.md",
+        "ref": null,
+        "section": "Key figures"
+      }
+    },
+    "M-HN1-SILENT": {
+      "claim": "Checks that objected to a deliberately removed boundary arm: 0 of 3",
+      "definition": "Of the compiler, the existing test suite and the running application, how many produced any signal when a required fan-out arm was removed.",
+      "measurement": "A deliberate probe: remove the arm, build, run the tests, query the database directly, then restore.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "One probe, one arm, one architecture. It establishes that this failure is real and reproducible here, not how often it occurs in general.",
+      "experiment": {
+        "id": "helixnote-1",
+        "title": "Controlled Experiment 1 — boundary amplification on an unhardened architecture",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0003--experiment-1-boundary-amplification.md",
+        "ref": null,
+        "section": "Key figures"
+      }
+    },
+    "M-HN1-TELEMETRY": {
+      "claim": "Tool calls and tokens: NOT OBSERVABLE",
+      "definition": "Agent tool-call and token counts for this experiment.",
+      "measurement": "Not collected. The executing session had no structured telemetry access, and the source report labels its work-metrics table a manual reconstruction rather than a counter reading.",
+      "provenance": "not-observable",
+      "doesNotEstablish": "This is an absence of data, not a zero. No cost comparison involving this experiment is possible, and none is made.",
+      "experiment": {
+        "id": "helixnote-1",
+        "title": "Controlled Experiment 1 — boundary amplification on an unhardened architecture",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0003--experiment-1-boundary-amplification.md",
+        "ref": null,
+        "section": "Key figures"
+      }
+    },
+    "M-HN2-MDR": {
+      "claim": "Mechanical discovery rate after hardening: 66.7% to 100%",
+      "definition": "The share of required sites reported by a machine rather than found by looking, before and after five targeted hardening mechanisms.",
+      "measurement": "Same classification method as Experiment 1, applied to a new case on the hardened architecture.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "100% is measured against the specific blind spots these five mechanisms were built to close. Experiment 3 showed the figure does not transfer to a tier the hardening does not cover, where it fell well below this.",
+      "experiment": {
+        "id": "helixnote-2",
+        "title": "Controlled Experiment 2 — boundary authority hardening",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0004--experiment-2-boundary-authority.md",
+        "ref": null,
+        "section": "Key figures"
+      }
+    },
+    "M-HN2-BCA": {
+      "claim": "Boundary files per semantic decision, after hardening: 4.0, unchanged",
+      "definition": "Boundary Change Amplification measured again on the hardened architecture, against the identical figure from the unhardened one.",
+      "measurement": "Counted from the committed diff, the same way as Experiment 1.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "This is the result that refutes a natural expectation. Hardening changed how required work was found and did not change how much of it there was. Do not cite hardening as reducing boundary work.",
+      "experiment": {
+        "id": "helixnote-2",
+        "title": "Controlled Experiment 2 — boundary authority hardening",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0004--experiment-2-boundary-authority.md",
+        "ref": null,
+        "section": "Key figures"
+      }
+    },
+    "M-HN2-NOOP": {
+      "claim": "Mechanical checks that caught a present-but-inert boundary arm: 0 of 4",
+      "definition": "Of the compiler, the architecture check, the schema-agreement test and the field-vocabulary agreement test, how many detected a boundary arm that existed but did nothing.",
+      "measurement": "A deliberate out-of-scope mutation re-creating Experiment 1's failure shape against the hardened architecture, with all four checks run against it.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "Exhaustiveness checking guarantees the arm exists. It says nothing about whether the arm does anything. A live integration test detected it; nothing else did.",
+      "experiment": {
+        "id": "helixnote-2",
+        "title": "Controlled Experiment 2 — boundary authority hardening",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0004--experiment-2-boundary-authority.md",
+        "ref": null,
+        "section": "Key figures"
+      }
+    },
+    "M-HN3-SEARCH": {
+      "claim": "Search operations: 38 to 14",
+      "definition": "Repository search operations performed by each agent while implementing the identical frozen mission, baseline architecture against hardened.",
+      "measurement": "Counted by each isolated subagent from its own execution log, then re-verified by the orchestrating session against committed diffs.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "One paired trial, one run per condition. Two agents with different investigation strategies; the reduction is confounded with that difference and is not attributable to architecture alone.",
+      "experiment": {
+        "id": "helixnote-3",
+        "title": "Controlled Experiment 3 — agent cost under hardening (corrected)",
+        "status": "Complete — this record supersedes an earlier uncorrected draft"
+      },
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0005--experiment-3-corrected-agent-cost.md",
+        "ref": null,
+        "section": "Corrected headline figures"
+      }
+    },
+    "M-HN3-REPAIR": {
+      "claim": "Repair loops: 2 to 1",
+      "definition": "Cycles in which a fix had to be revised, baseline condition against hardened condition.",
+      "measurement": "Counted from each agent's own execution log and re-verified against committed diffs.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "A change from two to one in a single paired trial. This is a direction, not a rate, and the sample is one run per condition.",
+      "experiment": {
+        "id": "helixnote-3",
+        "title": "Controlled Experiment 3 — agent cost under hardening (corrected)",
+        "status": "Complete — this record supersedes an earlier uncorrected draft"
+      },
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0005--experiment-3-corrected-agent-cost.md",
+        "ref": null,
+        "section": "Corrected headline figures"
+      }
+    },
+    "M-HN3-MDR": {
+      "claim": "As-experienced mechanical discovery rate: 42.1% to 31.6%",
+      "definition": "Each agent's own strict, temporally-ordered classification of which required sites it found mechanically rather than by reading, baseline against hardened.",
+      "measurement": "Self-classified by each agent during execution, under each agent's own strictness standard.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "The hardened condition scored LOWER here while spending less on search and repair. The two agents also applied different strictness standards, so these two figures are not directly comparable to each other — which is exactly why the experiment introduced a second, architecture-potential measure.",
+      "experiment": {
+        "id": "helixnote-3",
+        "title": "Controlled Experiment 3 — agent cost under hardening (corrected)",
+        "status": "Complete — this record supersedes an earlier uncorrected draft"
+      },
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0005--experiment-3-corrected-agent-cost.md",
+        "ref": null,
+        "section": "Corrected headline figures"
+      }
+    },
+    "M-HN3-RCS": {
+      "claim": "Required change sites: 19 and 19",
+      "definition": "Normalised count of distinct locations the frozen mission required changing, in each condition.",
+      "measurement": "Counted from each condition's committed diff by the orchestrating session.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "Identical in both conditions. Hardening did not reduce the amount of work required; anything claiming otherwise contradicts this measurement.",
+      "experiment": {
+        "id": "helixnote-3",
+        "title": "Controlled Experiment 3 — agent cost under hardening (corrected)",
+        "status": "Complete — this record supersedes an earlier uncorrected draft"
+      },
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0005--experiment-3-corrected-agent-cost.md",
+        "ref": null,
+        "section": "Corrected headline figures"
+      }
+    },
+    "M-HN3-BCA": {
+      "claim": "Boundary files per semantic decision: 4.0, third replication",
+      "definition": "Boundary Change Amplification, measured a third time — now across three experiments, three domain cases and two different architectures.",
+      "measurement": "Counted from committed diffs in each condition.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "Three replications in one codebase is a stable property of that codebase, not a law. No other application has been measured.",
+      "experiment": {
+        "id": "helixnote-3",
+        "title": "Controlled Experiment 3 — agent cost under hardening (corrected)",
+        "status": "Complete — this record supersedes an earlier uncorrected draft"
+      },
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0005--experiment-3-corrected-agent-cost.md",
+        "ref": null,
+        "section": "Corrected headline figures"
+      }
+    },
+    "M-HN3-VERIFY": {
+      "claim": "Discrepancies between agent self-report and independent re-verification: 0",
+      "definition": "Build, test and architecture-check results each agent reported, checked against what their actual committed diffs produce.",
+      "measurement": "Every reported result was independently re-run by the orchestrating session against the committed code.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "This establishes that these agents reported their own results honestly. It says nothing about whether the work was correct — the same trial found a semantic no-op in both conditions.",
+      "experiment": {
+        "id": "helixnote-3",
+        "title": "Controlled Experiment 3 — agent cost under hardening (corrected)",
+        "status": "Complete — this record supersedes an earlier uncorrected draft"
+      },
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0005--experiment-3-corrected-agent-cost.md",
+        "ref": null,
+        "section": "Corrected headline figures"
+      }
+    },
+    "M-HN3-COST": {
+      "claim": "Agent token and wall-clock cost: Not established",
+      "definition": "Whether the hardened architecture cost the agent less to work in.",
+      "measurement": "Harness-level telemetry was captured for both conditions, but the hardened condition was interrupted by a rate limit and resumed as a separate invocation, so its figures cover only the resumed portion — beginning after roughly 78% of its eventual log already existed.",
+      "provenance": "not-observable",
+      "doesNotEstablish": "The raw figures imply 59% fewer tool uses, 68% fewer tokens and 59% less wall clock. They MUST NOT be read as a cost reduction. They are a lower bound on a partial run; the true total is unknown and could match or exceed the baseline. This question is open.",
+      "experiment": {
+        "id": "helixnote-3",
+        "title": "Controlled Experiment 3 — agent cost under hardening (corrected)",
+        "status": "Complete — this record supersedes an earlier uncorrected draft"
+      },
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0005--experiment-3-corrected-agent-cost.md",
+        "ref": null,
+        "section": "Harness-level telemetry"
+      }
+    },
+    "M-HN3-STEPS": {
+      "claim": "Execution log step ratio: about 2.1x",
+      "definition": "The ratio of numbered execution-log entries between the two conditions: 76 against 36.",
+      "measurement": "A direct recount of both logs, correcting an earlier draft of the same report that stated 167 entries for the baseline condition and implied a 4.6x ratio.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "Log entry counts are a proxy for effort shaped by each agent's own logging habits, not a measure of work done. The correction is published because the superseded figure circulated first.",
+      "experiment": {
+        "id": "helixnote-3",
+        "title": "Controlled Experiment 3 — agent cost under hardening (corrected)",
+        "status": "Complete — this record supersedes an earlier uncorrected draft"
+      },
+      "source": {
+        "repository": "sde",
+        "path": "research/evidence/EV-HN-2026-0005--experiment-3-corrected-agent-cost.md",
+        "ref": null,
+        "section": "Corrected log/step-count figures"
+      }
+    },
+    "M-GF1-TESTS": {
+      "claim": "Acceptance tests passing: 59 / 59",
+      "definition": "Tests passing in the final recorded run, with zero failed, zero skipped and zero cancelled.",
+      "measurement": "Captured by a test wrapper script to an immutable JSON and log pair recording the command, timestamps, duration and exit code.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "A passing suite says what was verified, not what was missed. This suite was written by the same agent that wrote the implementation, and shares its blind spots.",
+      "experiment": {
+        "id": "greenfield-1",
+        "title": "Greenfield Trial 1 — instrumented construction from frozen requirements",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "greenfield-1",
+        "path": "metrics/raw/tests/2026-09-02T23-44-05-163Z_final-suite_.json",
+        "ref": "claude/dev-metrics-instrumentation-dfnzhq",
+        "section": null
+      }
+    },
+    "M-GF1-COST": {
+      "claim": "Recorded agent cost: $19.04",
+      "definition": "Platform-reported cumulative cost for the session, in US dollars — the platform's own figure, not a token-math estimate.",
+      "measurement": "Read from the session usage API and written to the agent-session log with the reading's timestamp and source recorded alongside it.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "A cumulative mid-session reading covering BOTH the metrics-instrumentation task and the application implementation, taken while the session was still running. It cannot be attributed to the implementation alone and is not a total.",
+      "experiment": {
+        "id": "greenfield-1",
+        "title": "Greenfield Trial 1 — instrumented construction from frozen requirements",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "greenfield-1",
+        "path": "metrics/raw/agent-sessions.jsonl",
+        "ref": "claude/dev-metrics-instrumentation-dfnzhq",
+        "section": null
+      }
+    },
+    "M-GF1-TOKENS": {
+      "claim": "Recorded tokens: 60,303,576",
+      "definition": "Total tokens for the session: 1,503 fresh input, 227,066 output, 58,825,031 cache reads and 1,249,976 cache writes.",
+      "measurement": "Read from the session usage API at the same checkpoint as the cost figure.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "Overwhelmingly cache reads, which are not comparable to fresh input tokens in cost or in meaning. Like the cost figure, it covers two tasks and is a mid-session reading.",
+      "experiment": {
+        "id": "greenfield-1",
+        "title": "Greenfield Trial 1 — instrumented construction from frozen requirements",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "greenfield-1",
+        "path": "metrics/raw/agent-sessions.jsonl",
+        "ref": "claude/dev-metrics-instrumentation-dfnzhq",
+        "section": null
+      }
+    },
+    "M-GF1-TRANSITIONS": {
+      "claim": "Distinct legal transitions: 4",
+      "definition": "Distinct from-state to to-state pairs the entry lifecycle permits: create, void, restore, and supersede by split or merge.",
+      "measurement": "Counted by a structural snapshot script whose counting rule is stored in the snapshot record itself.",
+      "provenance": "derived",
+      "doesNotEstablish": "A regex-derived count over one implementation, with the counting rule recorded because it is a judgement. No AST parser existed when the metric was defined.",
+      "experiment": {
+        "id": "greenfield-1",
+        "title": "Greenfield Trial 1 — instrumented construction from frozen requirements",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "greenfield-1",
+        "path": "metrics/raw/state-system/2026-09-03T00-59-15-753Z_fd2a013cb32a.json",
+        "ref": "claude/dev-metrics-instrumentation-dfnzhq",
+        "section": null
+      }
+    },
+    "M-GF1-DIAGNOSTICS": {
+      "claim": "Distinguishable rejection states: 24",
+      "definition": "Named diagnostic variants: distinct reasons the system can refuse an action, each one a value rather than a thrown exception or a null.",
+      "measurement": "Counted by the same structural snapshot script, over the diagnostic union's variants.",
+      "provenance": "derived",
+      "doesNotEstablish": "Counts how many refusals are distinguishable, not whether each one is correct or whether the set is complete.",
+      "experiment": {
+        "id": "greenfield-1",
+        "title": "Greenfield Trial 1 — instrumented construction from frozen requirements",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "greenfield-1",
+        "path": "metrics/raw/state-system/2026-09-03T00-59-15-753Z_fd2a013cb32a.json",
+        "ref": "claude/dev-metrics-instrumentation-dfnzhq",
+        "section": null
+      }
+    },
+    "M-GF1-AIERRORS": {
+      "claim": "Agent reasoning errors logged: 5",
+      "definition": "Misread requirements or invented rules, logged separately from ordinary defects whether or not they produced observable misbehaviour.",
+      "measurement": "Logged at the moment each was found, with category, what detected it, and the correction.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "A count of errors the agent noticed and recorded about itself. Errors it did not notice are, by construction, absent from this number.",
+      "experiment": {
+        "id": "greenfield-1",
+        "title": "Greenfield Trial 1 — instrumented construction from frozen requirements",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "greenfield-1",
+        "path": "metrics/ai-errors/AI-ERROR-LOG.jsonl",
+        "ref": "claude/dev-metrics-instrumentation-dfnzhq",
+        "section": null
+      }
+    },
+    "M-GF2A-AC": {
+      "claim": "Acceptance criteria implemented and traced: 58 / 58",
+      "definition": "Acceptance criteria from the frozen requirements package with an implementation and a named test, mapped ID by ID.",
+      "measurement": "A traceability document mapping each criterion to the test covering it, written alongside the implementation.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "Traceability means every criterion has a test. It does not mean the tests are good: this build's own suite found zero new defects, and an independent reviewer of the replication found five things its equivalent suite missed.",
+      "experiment": {
+        "id": "greenfield-2a",
+        "title": "Greenfield Experiment 2 — construction with no method authority in the repository",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment/REQUIREMENTS-TRACEABILITY.md",
+        "ref": "claude/greenfield-engineering-experiment-2-ee44qz",
+        "section": null
+      }
+    },
+    "M-GF2A-TESTS": {
+      "claim": "Tests passing: 87 / 87",
+      "definition": "Tests across 12 files, all passing, none skipped, with a strict type check clean.",
+      "measurement": "Test runner output at the final verification checkpoint.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "All 87 passed on first run against the already-corrected implementation, finding zero new defects. The suite's demonstrated value here was specification and regression protection, not discovery.",
+      "experiment": {
+        "id": "greenfield-2a",
+        "title": "Greenfield Experiment 2 — construction with no method authority in the repository",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment/TELEMETRY.md",
+        "ref": "claude/greenfield-engineering-experiment-2-ee44qz",
+        "section": "T5 — Verified Implementation"
+      }
+    },
+    "M-GF2A-DEFECTS": {
+      "claim": "Defects, by the mechanism that found each: 2 + 1 + 1 + 0",
+      "definition": "Two found by the type checker, one by a manual smoke test against real disk, one by adversarial self-review, and zero by the automated test suite.",
+      "measurement": "Recorded per checkpoint as each was found, with the finding mechanism named.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "Four mechanisms, four different results. This is a description of one build's defect discovery, not a ranking of mechanisms: the self-review found one because it looked for a shape the tests could not express.",
+      "experiment": {
+        "id": "greenfield-2a",
+        "title": "Greenfield Experiment 2 — construction with no method authority in the repository",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment/TELEMETRY.md",
+        "ref": "claude/greenfield-engineering-experiment-2-ee44qz",
+        "section": "T5 — Verified Implementation"
+      }
+    },
+    "M-GF2A-DEPS": {
+      "claim": "Runtime dependencies: 0",
+      "definition": "Third-party packages the built application needs at runtime. Everything else is a development dependency.",
+      "measurement": "Read from the dependency manifest at experiment close.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "Zero runtime dependencies is a property of this problem — a business-rules engine behind a thin boundary — not a general outcome of the method.",
+      "experiment": {
+        "id": "greenfield-2a",
+        "title": "Greenfield Experiment 2 — construction with no method authority in the repository",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment/TELEMETRY.md",
+        "ref": "claude/greenfield-engineering-experiment-2-ee44qz",
+        "section": "T4 — Primary Implementation Complete"
+      }
+    },
+    "M-GF2A-SIZE": {
+      "claim": "Source and test size: 2,106 + 1,421 lines",
+      "definition": "22 source files and 12 test files, 3,527 lines in total.",
+      "measurement": "Counted from the working tree at the final checkpoint.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "This exceeded the build's own preregistered estimate by roughly 25 to 45 percent. Line counts measure size, not quality, and the preregistration was wrong about them.",
+      "experiment": {
+        "id": "greenfield-2a",
+        "title": "Greenfield Experiment 2 — construction with no method authority in the repository",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment/TELEMETRY.md",
+        "ref": "claude/greenfield-engineering-experiment-2-ee44qz",
+        "section": "T4 — Primary Implementation Complete"
+      }
+    },
+    "M-GF2A-COST": {
+      "claim": "Token and cost totals: NOT OBSERVABLE",
+      "definition": "Token counts, cost and context occupancy for this run.",
+      "measurement": "Not collected: this runtime exposes none of them to a running session. Recorded as unavailable at every checkpoint, and again explicitly at experiment close.",
+      "provenance": "not-observable",
+      "doesNotEstablish": "An absence of data, not a zero. No cost comparison with any other experiment on this site is possible.",
+      "experiment": {
+        "id": "greenfield-2a",
+        "title": "Greenfield Experiment 2 — construction with no method authority in the repository",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment/TELEMETRY.md",
+        "ref": "claude/greenfield-engineering-experiment-2-ee44qz",
+        "section": "T6 — Experiment Closed"
+      }
+    },
+    "M-GF2B-OVERLAP": {
+      "claim": "Independent-verification findings the builder's own checks had already caught: 0 of 5",
+      "definition": "Of five findings from a fresh agent with no knowledge of the construction, how many were already covered by the builder's own 90-test suite or its own adversarial self-review.",
+      "measurement": "An overlap analysis performed against the existing suite and self-review document after the verification findings were received.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "One verification pass on one codebase. It shows these mechanisms missed what that one found; it does not quantify how much any mechanism generally misses, and a different reviewer would have found a different set.",
+      "experiment": {
+        "id": "greenfield-2b",
+        "title": "Greenfield Experiment 2B — independent replication and convergence comparison",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment-2b/INDEPENDENT-VERIFICATION.md",
+        "ref": "claude/greenfield-experiment-2b-replication-n8pgtq",
+        "section": null
+      }
+    },
+    "M-GF2B-DEFECTS": {
+      "claim": "Defects found, and how many needed the extra pass: 7, of which 4",
+      "definition": "Seven recorded defects. Three were found by the builder's own construction, testing and self-review; four were found only by the independent verification phase.",
+      "measurement": "Every defect logged with a stable id, its discovery mechanism, root cause, repair and regression evidence.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "A higher defect count here does not mean a worse build. It largely measures how many independent verification passes this build received compared with the one it is being read against.",
+      "experiment": {
+        "id": "greenfield-2b",
+        "title": "Greenfield Experiment 2B — independent replication and convergence comparison",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment-2b/DEFECT-REGISTER.md",
+        "ref": "claude/greenfield-experiment-2b-replication-n8pgtq",
+        "section": null
+      }
+    },
+    "M-GF2B-TESTS": {
+      "claim": "Tests passing after verification: 90 / 90",
+      "definition": "Tests across six files after the six regression tests added in response to the independent verification findings.",
+      "measurement": "Test runner output at the final checkpoint.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "Eighty-four of these tests existed before the independent review and did not catch any of the five things it found.",
+      "experiment": {
+        "id": "greenfield-2b",
+        "title": "Greenfield Experiment 2B — independent replication and convergence comparison",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment-2b/TELEMETRY.md",
+        "ref": "claude/greenfield-experiment-2b-replication-n8pgtq",
+        "section": "Engineering execution"
+      }
+    },
+    "M-GF2B-VERIFIER": {
+      "claim": "Independent verifier's own run: 35 tool calls, 164,383 tokens, 8.1 min",
+      "definition": "Measured cost of the verification subagent's run — the one point in the session where the tooling exposed usage for a unit of work.",
+      "measurement": "Reported by the subagent's own task-completion metadata.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "This covers the verification pass only. The main session's equivalent figures are unavailable, so this cannot be read as a proportion of the experiment's total cost.",
+      "experiment": {
+        "id": "greenfield-2b",
+        "title": "Greenfield Experiment 2B — independent replication and convergence comparison",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment-2b/TELEMETRY.md",
+        "ref": "claude/greenfield-experiment-2b-replication-n8pgtq",
+        "section": "Agent / model"
+      }
+    },
+    "M-GF2B-CONVERGE": {
+      "claim": "Source files in each of two independent builds: 22 and 22",
+      "definition": "Source file counts from two agents building the same frozen requirements without seeing each other's work.",
+      "measurement": "Counted directly on both working trees during the comparison.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "The comparison warns explicitly against reading physical similarity as semantic convergence: the identical count masks real differences in how each build maps semantic clusters onto files.",
+      "experiment": {
+        "id": "greenfield-2b",
+        "title": "Greenfield Experiment 2B — independent replication and convergence comparison",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment-2b/ARCHITECTURAL-CONVERGENCE.md",
+        "ref": "claude/greenfield-experiment-2b-replication-n8pgtq",
+        "section": "C. Physical architecture convergence"
+      }
+    },
+    "M-GF2B-SCOPE": {
+      "claim": "Requirements-scope divergences between two independent builds: 1 of 41",
+      "definition": "Across 12 product requirements, 20 business rules and 9 open questions, how many were handled differently by the two builds.",
+      "measurement": "A per-dimension comparison of both codebases and both requirements inventories, performed after this build's own results were frozen.",
+      "provenance": "derived",
+      "doesNotEstablish": "Two builds by the same model family with the same tooling. Convergence between similar systems is weaker evidence than convergence between genuinely different ones, and two runs are not a sample.",
+      "experiment": {
+        "id": "greenfield-2b",
+        "title": "Greenfield Experiment 2B — independent replication and convergence comparison",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "greenfield-2",
+        "path": "experiment-2b/ARCHITECTURAL-CONVERGENCE.md",
+        "ref": "claude/greenfield-experiment-2b-replication-n8pgtq",
+        "section": "G. Convergence scorecard"
+      }
+    },
+    "M-TE-CS": {
+      "claim": "Mistakes in the conventional C# rebuild: 6",
+      "definition": "Rework-driving mistakes across a 1,645-line rebuild, built requirement by requirement with no reading ahead.",
+      "measurement": "Recorded live per requirement, with build attempts, test runs to green, rework and the mechanism that caught each mistake.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "The raw count matching the F# domain's is the least interesting thing about this number. What differs is which mechanism caught each one.",
+      "experiment": {
+        "id": "te-conventional-csharp",
+        "title": "Conventional C# rebuild — ordinary practice, requirement by requirement",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "ref": null,
+        "section": "Totals — the complete hodgepodge build"
+      }
+    },
+    "M-TE-CS-TOOLING": {
+      "claim": "C# mistakes caught by the compiler: 4 of 6",
+      "definition": "How many of the conventional C# rebuild's mistakes the compiler caught by itself.",
+      "measurement": "Classified per mistake as it was found.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "Every one of the sharpest bugs — swapped string arguments, a stale revision in a loop, a signature change hidden behind var — was outside what the compiler could catch even in principle, and was found only by a person re-reading a diff.",
+      "experiment": {
+        "id": "te-conventional-csharp",
+        "title": "Conventional C# rebuild — ordinary practice, requirement by requirement",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "ref": null,
+        "section": "Totals — the complete hodgepodge build"
+      }
+    },
+    "M-TE-JS": {
+      "claim": "Rework-driving mistakes in the JavaScript rebuild: 2",
+      "definition": "Substantive mistakes across the 1,540-line JavaScript rebuild of the same requirement set.",
+      "measurement": "Recorded live per requirement under the same rules as the C# rebuild.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "Read naively this beats the C# rebuild's six, which is the opposite of what the same trial's other findings predict. The log attributes it to having already built the identical requirement set once, and names the two places where that hindsight prevented a repeat of an earlier failure.",
+      "experiment": {
+        "id": "te-conventional-js",
+        "title": "Conventional JavaScript rebuild — the same domain with no type checker at all",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "ref": null,
+        "section": "Totals — the complete hodgepodge JavaScript build"
+      }
+    },
+    "M-TE-CS-SILENT": {
+      "claim": "Call sites where a rename silently changed meaning: ~14",
+      "definition": "Sites in the conventional C# rebuild where duration was passed as a bare positional integer, so the same source text meant something six times different after the unit change.",
+      "measurement": "Counted by hand during the change, because no mechanism surfaced them. The compiler caught eight direct member accesses and none of these.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "An approximate count of sites requiring manual re-interpretation, not a defect count. Every one was correctly migrated in this trial — the finding is that nothing mechanical distinguished a correct migration from a wrong one, not that wrong ones shipped.",
+      "experiment": {
+        "id": "te-conventional-csharp",
+        "title": "Conventional C# rebuild — ordinary practice, requirement by requirement",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "F1 — exact-minute recording + derived billing"
+      }
+    },
+    "M-TE-CS-COINCIDENCE": {
+      "claim": "Values that survived the change correct by coincidence: 2",
+      "definition": "Call sites left unchanged not because they were verified but because their literal happened to remain valid under the new unit.",
+      "measurement": "Identified by reading each site's intent during the manual migration pass.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "Two sites in one change in one codebase. It illustrates the failure mode rather than measuring its frequency.",
+      "experiment": {
+        "id": "te-conventional-csharp",
+        "title": "Conventional C# rebuild — ordinary practice, requirement by requirement",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "F1 — exact-minute recording + derived billing"
+      }
+    },
+    "M-TE-JS-LANGUAGE": {
+      "claim": "Mistakes caught by the language: 0",
+      "definition": "Mistakes in the conventional JavaScript rebuild caught by the language or its tooling rather than by a test or a person.",
+      "measurement": "Classified per mistake as it was found. A property rename across two production files produced zero errors, zero warnings and zero crashes.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "A property of JavaScript with no type checker configured, not a claim about JavaScript projects that use one.",
+      "experiment": {
+        "id": "te-conventional-js",
+        "title": "Conventional JavaScript rebuild — the same domain with no type checker at all",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "Totals — the complete hodgepodge JavaScript build"
+      }
+    },
+    "M-TE-CSSTATE-RIPPLE": {
+      "claim": "Ripple sites found by the compiler rather than by searching: all of them",
+      "definition": "Locations needing change as a consequence of another change, and whether each was reported by the compiler or found by a manual search.",
+      "measurement": "Classified per location during the trial. Every ripple location was compiler-discovered; the manual-search count was zero.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "One trial with one ripple-producing change. It shows the compiler covered this trial's ripple, not that it covers ripple in general — the controlled baseline trial found arithmetic changes that no type system catches.",
+      "experiment": {
+        "id": "te-csharp-state",
+        "title": "C# state-system trial — the same domain, structured explicitly",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/c-sharp-state/EXPERIMENT-REPORT.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "I. Compiler Ripple Analysis"
+      }
+    },
+    "M-TE-CSSTATE-DEFECTS": {
+      "claim": "Runtime domain defects: 0",
+      "definition": "Defects in domain logic reaching a run, as distinct from test-authoring or language-tooling errors.",
+      "measurement": "Counted across the whole trial, with all three repair loops classified and none of them a domain-logic error.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "A single uninterrupted first pass with no later requirement change to force rework. The trial's own report declines to read this as evidence that the architecture reduces rework.",
+      "experiment": {
+        "id": "te-csharp-state",
+        "title": "C# state-system trial — the same domain, structured explicitly",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/c-sharp-state/EXPERIMENT-REPORT.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "G. Metrics"
+      }
+    },
+    "M-TE-CSSTATE-REWORK": {
+      "claim": "Rework ratio: 0%",
+      "definition": "Proportion of completed work replaced because earlier work turned out to be wrong.",
+      "measurement": "Derived from the per-file classification: no file was rewritten, and no semantic decision was revised.",
+      "provenance": "derived",
+      "doesNotEstablish": "No later requirement arrived to force rework during this trial, so this is the absence of a cause, not evidence of resistance to one.",
+      "experiment": {
+        "id": "te-csharp-state",
+        "title": "C# state-system trial — the same domain, structured explicitly",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/c-sharp-state/EXPERIMENT-REPORT.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "G. Metrics"
+      }
+    },
+    "M-TE-CSSTATE-COLDSTART": {
+      "claim": "Cold-start questions answerable without opening source: 10 of 10",
+      "definition": "Whether a fresh engineer could answer what the application does, where authoritative state lives, which transitions are legal, where each workflow is implemented and how it is tested — from the generated documents alone.",
+      "measurement": "Evaluated question by question against the requirement specification, state model, execution map and state-system test report, holding source code in reserve.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "Evaluated after a documentation gap found by the trial's own adversarial test had been closed, so it reflects the corrected state rather than the first pass. It was also self-assessed, not tested on an actual fresh reader.",
+      "experiment": {
+        "id": "te-csharp-state",
+        "title": "C# state-system trial — the same domain, structured explicitly",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/c-sharp-state/EXPERIMENT-REPORT.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "M. Cold-Start Reconstruction"
+      }
+    },
+    "M-TE-CSSTATE-SEARCH": {
+      "claim": "Repository searches across the whole trial: 18",
+      "definition": "Find and grep operations performed during requirement recovery, modelling, implementation and verification combined.",
+      "measurement": "Recounted from the session transcript, superseding an earlier lower estimate.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "Not comparable to the conventional trials, which did not record search counts the same way. It is a figure about this trial, not a measured reduction.",
+      "experiment": {
+        "id": "te-csharp-state",
+        "title": "C# state-system trial — the same domain, structured explicitly",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/c-sharp-state/EXPERIMENT-REPORT.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "G. Metrics"
+      }
+    },
+    "M-TE-CSSTATE-CONTEXT": {
+      "claim": "Context expansions beyond the planned reading list: 0",
+      "definition": "Occasions where in-hand context proved insufficient and the agent had to widen its search to proceed.",
+      "measurement": "Counted during the trial.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "One agent working from a specification it had itself just produced, which is a favourable condition. It does not measure what a fresh agent would need.",
+      "experiment": {
+        "id": "te-csharp-state",
+        "title": "C# state-system trial — the same domain, structured explicitly",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/c-sharp-state/EXPERIMENT-REPORT.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "G. Metrics"
+      }
+    },
+    "M-TE-FSSTATE-RIPPLE": {
+      "claim": "Ripple sites surfaced in a single build: 17",
+      "definition": "Affected call sites across two root causes, and how many builds were needed to see them all.",
+      "measurement": "Counted per build. Each root cause surfaced at every affected call site at once; none required a manual search.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "These were test-project call sites, not domain logic. The figure shows completeness of compiler reporting, not severity.",
+      "experiment": {
+        "id": "te-fsharp-state",
+        "title": "F# state-system trial — same requirements, same model, different language",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/f-sharp-state/EXPERIMENT-REPORT.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "G. Metrics"
+      }
+    },
+    "M-TE-FSSTATE-DEFECTS": {
+      "claim": "Runtime domain defects: 0",
+      "definition": "Defects in domain logic reaching a run.",
+      "measurement": "Counted across the trial, which reused the C# trial's requirements and model verbatim.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "Implementation only: requirement recovery and modelling were reused, not repeated, so this trial covers a smaller task than the C# one.",
+      "experiment": {
+        "id": "te-fsharp-state",
+        "title": "F# state-system trial — same requirements, same model, different language",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/f-sharp-state/EXPERIMENT-REPORT.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "G. Metrics"
+      }
+    },
+    "M-TE-BASELINE-RENAME": {
+      "claim": "Difference between type systems on field renames: none measurable",
+      "definition": "Whether an explicitly-typed domain propagated a field rename more completely than a competent conventional baseline.",
+      "measurement": "The identical change was applied to both and every call site counted. Both caught every site automatically.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "This is a null result, published because the experiment was designed to be falsifiable. It does not mean types are useless; it means this particular change class does not distinguish them.",
+      "experiment": {
+        "id": "te-controlled-baseline",
+        "title": "Controlled baseline — everything held constant except explicit domain types",
+        "status": "Complete — and it refuted the hypothesis it was built to test"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "research/experiments/EX-TE-2026-0001--conventional-baseline-comparison.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "Analysis"
+      }
+    },
+    "M-TE-BASELINE-ARITH": {
+      "claim": "Help from either type system on arithmetic business rules: none",
+      "definition": "Whether a wrong unit conversion embedded in an expression was caught by either implementation's type system.",
+      "measurement": "The same change was applied to both. A wrong divisor compiles cleanly in both, because the value is a bare number until it crosses a smart constructor.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "This directly contradicts the stronger form of the hypothesis the experiment tested. It is on this site because it is true, not because it helps.",
+      "experiment": {
+        "id": "te-controlled-baseline",
+        "title": "Controlled baseline — everything held constant except explicit domain types",
+        "status": "Complete — and it refuted the hypothesis it was built to test"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "research/experiments/EX-TE-2026-0001--conventional-baseline-comparison.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "Analysis"
+      }
+    },
+    "M-TE-BASELINE-MISSED": {
+      "claim": "Conversion sites a pattern search missed: 1 of 7",
+      "definition": "Sites needing change that a grep for the conversion pattern failed to find, because the same rounding was written as a division by 360 rather than by 6.",
+      "measurement": "Found only by a second, deliberate search prompted by suspicion that the first pass was not exhaustive.",
+      "provenance": "instrumented",
+      "doesNotEstablish": "The report traces this to inlined conversions rather than to the type system, and notes the centralising discipline that avoided it is achievable in either language.",
+      "experiment": {
+        "id": "te-controlled-baseline",
+        "title": "Controlled baseline — everything held constant except explicit domain types",
+        "status": "Complete — and it refuted the hypothesis it was built to test"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "research/experiments/EX-TE-2026-0001--conventional-baseline-comparison.md",
+        "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "Results"
+      }
+    }
+  },
+  "externalReferences": {
+    "R-METR-RCT": {
+      "title": "Measuring the Impact of Early-2025 AI on Experienced Open-Source Developer Productivity",
+      "author": "METR (Becker, Rush, Barnes, Rein)",
+      "year": "2025",
+      "url": "https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/",
+      "finding": "Sixteen experienced maintainers completed 246 real issues in repositories they knew well and were 19% slower with AI available, having forecast a 24% speedup and still believing afterwards they had been 20% faster.",
+      "doesNotEstablish": "Sixteen developers, selected open-source projects, early-2025 tooling and self-reported time. The authors later judged a follow-up estimate unreliable because developers unwilling to work without AI declined to participate."
+    },
+    "R-DORA-2025": {
+      "title": "State of AI-assisted Software Development (2025 DORA report)",
+      "author": "DORA / Google Cloud",
+      "year": "2025",
+      "url": "https://cloud.google.com/blog/products/ai-machine-learning/announcing-the-2025-dora-report",
+      "finding": "Higher AI adoption now correlates with higher delivery throughput and, at the same time, with higher delivery instability — more change failures, more rework and longer recovery. DORA attributes the instability to change volume outrunning the control systems meant to absorb it.",
+      "doesNotEstablish": "Survey-based observational associations, not causal measurement. It describes a correlation across organisations, not an effect any single team should expect."
+    },
+    "R-DORA-2024": {
+      "title": "Impact of Generative AI in Software Development (2024 DORA report)",
+      "author": "DORA",
+      "year": "2024",
+      "url": "https://dora.dev/ai/gen-ai-report/report/",
+      "finding": "Every 25% rise in AI adoption was associated with roughly a 1.5% fall in delivery throughput and a 7.2% fall in delivery stability, while individual satisfaction and self-reported productivity rose.",
+      "doesNotEstablish": "Superseded in part: the 2025 report found the throughput relationship had reversed. Only the instability direction persisted. Cited here for the divergence between individual perception and system outcome, not for its throughput figure."
+    },
+    "R-METR-HOLISTIC": {
+      "title": "Holistic review of agent solutions on real repository tasks",
+      "author": "METR",
+      "year": "2025",
+      "url": "https://metr.org/research/",
+      "finding": "Across eighteen real tasks in two mature repositories, agent solutions could pass reference tests and still fail a holistic merge-readiness review on testing, documentation, formatting, typing or general quality.",
+      "doesNotEstablish": "Eighteen tasks in two repositories, with merge-readiness judged by manual review rather than by an objective standard."
+    },
+    "R-PRP": {
+      "title": "The Productivity-Reliability Paradox: Specification-Driven Governance for AI-Augmented Software Development",
+      "author": "arXiv 2605.01160",
+      "year": "2026",
+      "url": "https://arxiv.org/abs/2605.01160",
+      "finding": "Telemetry across more than ten thousand developers showed 98% more pull requests, 91% longer review times and flat delivery metrics. The authors reconcile the contradictory productivity literature through task abstraction, codebase maturity and developer experience, and argue that under specification governance the bottleneck moves from generation to specification clarity.",
+      "doesNotEstablish": "A framework paper synthesising other people's measurements. It proposes a governance model rather than reporting a controlled trial of one."
+    },
+    "R-COPILOT": {
+      "title": "Randomized controlled task: Copilot on a bounded HTTP-server implementation",
+      "author": "GitHub",
+      "year": "2022",
+      "url": "https://github.blog/news-insights/research/research-quantifying-github-copilots-impact-on-developer-productivity-and-happiness/",
+      "finding": "Ninety-five professional developers completed a bounded, automatically scored greenfield JavaScript task 55% faster with AI assistance, with a 78% completion rate against 70% for the control group.",
+      "doesNotEstablish": "Run and published by the tool vendor, on a bounded greenfield task with automatic scoring. It demonstrates that speedup is possible in that setting, not that it generalises to maintenance work."
+    },
+    "R-EXPERTISE-REVERSAL": {
+      "title": "Expertise reversal: guidance effects depend on prior knowledge",
+      "author": "Educational-psychology randomized experiment",
+      "year": "2026",
+      "url": "https://en.wikipedia.org/wiki/Expertise_reversal_effect",
+      "finding": "Instructional guidance and redundancy that help a newcomer can add extraneous cognitive load for an expert, so a fixed template can simultaneously over-support one reader and under-support another.",
+      "doesNotEstablish": "Established in instructional settings rather than in software engineering. It is a reason to expect a cost, not a measurement of that cost in a codebase."
+    },
+    "R-RESUMPTION": {
+      "title": "Contextual resumption cues and task-completion success",
+      "author": "Survey of 371 programmers with a controlled follow-up study",
+      "year": "2026",
+      "url": "https://dl.acm.org/",
+      "finding": "Automated contextual cues produced roughly twice the task-completion success of note-taking alone when programmers resumed interrupted work.",
+      "doesNotEstablish": "A laboratory result with older tooling. It supports the idea of state-reconstruction aids without establishing that any particular aid works in production."
+    },
+    "R-SPACE": {
+      "title": "The SPACE of Developer Productivity",
+      "author": "Forsgren, Storey, Maddila, Zimmermann, Houck, Butler",
+      "year": "2021",
+      "url": "https://queue.acm.org/detail.cfm?id=3454124",
+      "finding": "Developer productivity spans satisfaction, performance, activity, communication and efficiency, and cannot be reduced to any single metric without distorting what it measures.",
+      "doesNotEstablish": "A framework rather than a measurement. It tells you which dimensions to cover, not what good looks like on any of them."
+    }
+  }
+}

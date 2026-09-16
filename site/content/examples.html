@@ -2,16 +2,18 @@
 path: /examples/
 title: Examples
 description: Concrete examples of Ordo applied — illegal states, transitions, constrained agent action, boundary defects, and semantic no-ops — drawn from the experiment repositories.
-section: Examples
-order: 1
+section: Start here
+order: 50
 summary: Worked examples, each drawn from a real experiment rather than invented to illustrate.
 ---
 <section class="page-intro">
   <p class="eyebrow">Examples</p>
-  <h1>Examples</h1>
+  <h1>What this looks like in code</h1>
   <p class="lead">
-    Every example below comes from a repository cited on this site. Where an example is
-    simplified for reading, it says so.
+    Eight worked examples, in the order a reader usually needs them: what an explicit state buys,
+    what a transition costs, what changes for an agent, and then the four failures that shaped the
+    method. Every one is drawn from a repository cited on this site rather than invented to
+    illustrate — where an example is simplified for reading, it says so.
   </p>
 </section>
 
@@ -214,7 +216,7 @@ fixtures   sampleFor : ObservedValue -> Sample                   silence until e
   <p>
     The same requirement set built three ways, with every mistake classified by what caught it:
   </p>
-  {{metrics:M-TE-FS,M-TE-CS,M-TE-CS-TOOLING,M-TE-JS,M-TE-JS-TOOLING}}
+  {{metrics:M-TE-CS,M-TE-CS-TOOLING,M-TE-JS,M-TE-JS-LANGUAGE,M-TE-CSSTATE-RIPPLE,M-TE-FSSTATE-RIPPLE}}
   <p>
     Read naively, the JavaScript rebuild wins on raw count. The log that produced these numbers
     refuses that reading and explains why: that trial had already built the identical requirement

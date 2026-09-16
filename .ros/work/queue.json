@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "repository": "state-directed-engineering",
-  "nextSeq": 34,
+  "nextSeq": 35,
   "items": [
     {
       "id": "WI-0001",
@@ -571,6 +571,20 @@
       "attachments": [],
       "createdAt": "2026-09-16T17:33:22.360Z",
       "updatedAt": "2026-09-16T17:33:27.136Z",
+      "createdBy": "unknown",
+      "source": "manual",
+      "sourceReference": null
+    },
+    {
+      "id": "WI-0034",
+      "title": "Reposition the Ordo website as an outcome-led marketing site grounded in independent AI-engineering research and the five time-entry implementation trials",
+      "description": null,
+      "tags": [],
+      "priority": "medium",
+      "status": "ready",
+      "attachments": [],
+      "createdAt": "2026-09-16T23:22:09.619Z",
+      "updatedAt": "2026-09-16T23:22:09.684Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null

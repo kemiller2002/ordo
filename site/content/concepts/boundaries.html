@@ -4,7 +4,7 @@ title: Boundaries and authority
 description: Where meaning is lost crossing between responsibilities, what it costs, and what hardening the crossings did and did not change.
 section: Concepts
 order: 50
-summary: Where a constrained value becomes an open one, and what three experiments measured there.
+summary: Where a constrained value becomes an open one, and what three of the experiments measured there.
 ---
 <section class="page-intro">
   <p class="eyebrow">Concept 5</p>
@@ -101,6 +101,30 @@ summary: Where a constrained value becomes an open one, and what three experimen
     A candidate mechanism for that tier is sketched in the source report. It has not been built
     and it has not been tested, and this site does not claim it works
     (<a href="{{link:/research/}}#CL-009">CL-009</a>).
+  </p>
+</section>
+
+<section>
+  <h2>How this is most often got wrong</h2>
+  <p>
+    <strong>Reading compiler silence as agreement.</strong> A build that goes green after a case
+    is added to a closed set has told you about the tiers it can see. The persistence constraint,
+    the wire contract and the fixtures are the tiers it cannot, and they are the tiers where
+    Experiment 1 found the duplicated facts. Silence there is absence of a check, not a passing
+    one.
+  </p>
+  <p>
+    <strong>Expecting hardening to shrink the work.</strong> It does not, and that was measured
+    three times across two architectures
+    (<a href="{{link:/research/}}#CL-006">CL-006</a>). Hardening changes who finds a propagation
+    site — a mechanism instead of a person — and leaves the number of sites roughly where it was.
+    A team that adopts it expecting less work will conclude it failed; a team that adopts it
+    expecting fewer misses is measuring the thing it actually does.
+  </p>
+  <p>
+    <strong>Hardening the tiers that were already guarded.</strong> The tempting work is where the
+    tools already are, because that is where progress is visible. The unguarded tier stays
+    unguarded, and it is where 7 of 19 required sites fell.
   </p>
 </section>
 
