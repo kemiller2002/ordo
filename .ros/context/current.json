@@ -4,7 +4,7 @@
   "repository": "state-directed-engineering",
   "actor": "ros-bootstrap",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-09-16T13:18:11.863Z",
+  "updatedAt": "2026-09-16T13:23:29.443Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -426,10 +426,20 @@
     {
       "id": "WI-0031",
       "type": "task",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-09-16T13:18:11.863Z"
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": ".github/workflows/publish.yml"
+        },
+        {
+          "type": "tests",
+          "path": ".github/workflows/release-trigger-guard.yml"
+        }
+      ],
+      "updatedAt": "2026-09-16T13:23:29.443Z",
+      "completedAt": "2026-09-16T13:23:29.443Z"
     }
   ]
 }
