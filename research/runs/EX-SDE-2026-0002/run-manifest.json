@@ -35,9 +35,9 @@
     "B2r": "never completed"
   },
   "still_needed": {
-    "A": 0,
-    "B": 1,
-    "note": "After wave 5 completes: baseline reaches n=4, hardened reaches n=3. One further hardened run (B6) then completes the fixed sample."
+    "A": 1,
+    "B": 2,
+    "note": "UNREACHABLE within the current ceiling. Wave 6 voided both runs, leaving n=3 baseline / n=2 hardened verified against the fixed target of 4. The seven-day rate-limit window is at allowed_warning until 2026-09-21T04:00Z. The stopping rule is NOT amended; the experiment stops short and reports that."
   },
   "runs": [
     {
@@ -287,14 +287,52 @@
         "output_tokens": 592
       },
       "epoch_at_start": 1,
-      "status": "mission-running, epoch already changed 1 -> 2",
+      "status": "VOID (complete and independently verified)",
       "mission_fired_at": "2026-09-17T13:23Z",
       "complexity": {
-        "not_measured": "no committed branch to measure"
+        "branch_points_added": 147,
+        "lines_added": 1177,
+        "files_touched": 17,
+        "uncounted_sql": {
+          "files": 1,
+          "lines_added": 232,
+          "decision_bearing_constructs_crude_keyword_count": 11
+        },
+        "measured_against": "4879537",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total."
       },
-      "epoch_observed_mid_mission": 2,
-      "void_expected": "worker_epoch read 2 while the mission was still RUNNING, against 1 at the start marker. The pre-registered corrected criterion voids on a change between the two markers, so this run is void whatever it finishes at. Recorded now, while the run is still in flight, so the call cannot be said to have been made after seeing its cost.",
-      "self_report_note": "The session's own task_summary claims it was told not to implement and is proceeding anyway. No such instruction was sent; the mission prompt asks for implementation. Recorded as an observation about agent self-reports, which this design already does not trust (see A4's retracted void), not as a finding about the run."
+      "self_report_note": "The session's own task_summary claims it was told not to implement and is proceeding anyway. No such instruction was sent; the mission prompt asks for implementation. Recorded as an observation about agent self-reports, which this design already does not trust (see A4's retracted void), not as a finding about the run.",
+      "close_marker_observed": {
+        "cost_usd": 26.059556,
+        "cache_read_tokens": 41288122,
+        "cache_write_tokens": 312445,
+        "input_tokens": 354,
+        "output_tokens": 91571
+      },
+      "epoch_at_close": 2,
+      "mission_cost_observed": {
+        "cost_usd": 25.699923,
+        "cache_read_tokens": 41097976,
+        "cache_write_tokens": 287473,
+        "input_tokens": 346,
+        "output_tokens": 90979
+      },
+      "void_reason": "worker_epoch changed 1 -> 2 between the start and close markers. Pre-registered corrected criterion. Recorded as VOID at 13:44Z while the run was still executing, BEFORE its cost was known.",
+      "branch": "experiment/ex-sde-0002-a6",
+      "commit": "2eef6ff",
+      "files_changed": 20,
+      "insertions": 1444,
+      "independent_verification_despite_void": {
+        "semantic": "157/157",
+        "wasm": "4/4",
+        "routecontract": "6/6",
+        "apihttp": "6 passed 24 skipped /30",
+        "postgres": "3 passed 57 skipped /60",
+        "api": "36 passed 3 failed /39",
+        "regressions": "none",
+        "note": "Complete and sound. Voided solely on the epoch criterion."
+      },
+      "self_report_mismatch": "A6's own post-turn summary reads 'task failed: agent built imaging-finding feature instead of stopping after SDK install'. The mission prompt asked for exactly that implementation. The run is complete and passes every suite with zero regressions. Fourth run whose self-report contradicts measurement."
     },
     {
       "id": "B6",
@@ -309,14 +347,52 @@
         "output_tokens": 583
       },
       "epoch_at_start": 1,
-      "status": "mission-running, epoch already changed 1 -> 2",
+      "status": "VOID (complete and independently verified)",
       "mission_fired_at": "2026-09-17T13:23Z",
       "complexity": {
-        "not_measured": "no committed branch to measure"
+        "branch_points_added": 86,
+        "lines_added": 721,
+        "files_touched": 15,
+        "uncounted_sql": {
+          "files": 2,
+          "lines_added": 265,
+          "decision_bearing_constructs_crude_keyword_count": 10
+        },
+        "measured_against": "8d2d789",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total."
       },
-      "epoch_observed_mid_mission": 2,
-      "void_expected": "worker_epoch read 2 while the mission was still RUNNING, against 1 at the start marker. The pre-registered corrected criterion voids on a change between the two markers, so this run is void whatever it finishes at. Recorded now, while the run is still in flight, so the call cannot be said to have been made after seeing its cost.",
-      "self_report_note": "The session's own task_summary claims it was told not to implement and is proceeding anyway. No such instruction was sent; the mission prompt asks for implementation. Recorded as an observation about agent self-reports, which this design already does not trust (see A4's retracted void), not as a finding about the run."
+      "self_report_note": "The session's own task_summary claims it was told not to implement and is proceeding anyway. No such instruction was sent; the mission prompt asks for implementation. Recorded as an observation about agent self-reports, which this design already does not trust (see A4's retracted void), not as a finding about the run.",
+      "close_marker_observed": {
+        "cost_usd": 27.5137225,
+        "cache_read_tokens": 44425055,
+        "cache_write_tokens": 299371,
+        "input_tokens": 402,
+        "output_tokens": 92219
+      },
+      "epoch_at_close": 2,
+      "mission_cost_observed": {
+        "cost_usd": 27.1544605,
+        "cache_read_tokens": 44234921,
+        "cache_write_tokens": 274413,
+        "input_tokens": 394,
+        "output_tokens": 91636
+      },
+      "void_reason": "worker_epoch changed 1 -> 2 between the start and close markers. Pre-registered corrected criterion. Recorded as VOID at 13:44Z while the run was still executing, BEFORE its cost was known.",
+      "branch": "experiment/ex-sde-0002-b6",
+      "commit": "253536b",
+      "files_changed": 18,
+      "insertions": 1004,
+      "independent_verification_despite_void": {
+        "semantic": "154/154",
+        "wasm": "4/4",
+        "routecontract": "6/6",
+        "apihttp": "6 passed 21 skipped /27",
+        "postgres": "3 passed 57 skipped /60",
+        "api": "36 passed 3 failed /39",
+        "regressions": "none",
+        "note": "Complete and sound. Voided solely on the epoch criterion."
+      },
+      "verification_near_miss": "B6's API suite produced NO output and exit code 0 on the first attempt - no build, no tests, no error. Reading that as a failure would have recorded 'the hardened run broke the API suite'. After an explicit build it gives 36 passed / 3 failed, identical to the start commit. This is the second time this exact trap has appeared on a hardened-condition worktree (see B1 in EV-SDE-2026-0007); both were artifacts of the orchestrator's build cache, not of the runs."
     }
   ],
   "operational_log": [
@@ -354,6 +430,15 @@
       "rate_limit": "rateLimitType moved from five_hour to seven_day with status allowed_warning, resetting 2026-09-21T04:00Z. The weekly ceiling, not the hourly one, is now the binding constraint on further runs.",
       "void_rate": "6 of 11 completed or in-flight runs are now void, and the criterion's duration-exposure bias (logged 13:10Z) is the most likely reason.",
       "consequence": "The fixed sample of n=4 per condition cannot be reached inside this window without more runs than the weekly ceiling allows. This is an operational limit, not a result, and the stopping rule is NOT amended to accommodate it."
+    },
+    {
+      "at": "2026-09-17T14:20Z",
+      "event": "Wave 6 close markers read. BOTH RUNS VOID, and the direction REVERSED.",
+      "figures": "A6 baseline $25.70, B6 hardened $27.15. The hardened run cost MORE. First reversal in eleven runs.",
+      "why_this_matters": "Both runs were recorded VOID at 13:44Z, while still executing, before either figure was known. That ordering is the only reason this reversal cannot be read as a criterion applied to taste.",
+      "both_verified": "A6 and B6 are complete, independently verified against their committed diffs, zero regressions in either.",
+      "cost_scale": "Wave 6 is far the most expensive pair: $25.70 and $27.15 against $12-$21 for every earlier run. This is exactly what the duration-exposure bias predicts - the longest runs are the likeliest to be restarted, so the criterion strips the expensive tail from both conditions.",
+      "complexity_did_not_reverse": "A6 added 147 F# branch points and B6 added 86, so the complexity separation holds in the very wave where cost reversed. That decoupling is direct support for EV-SDE-2026-0008's claim that complexity is not the cost axis."
     }
   ],
   "complexity_measurement": {

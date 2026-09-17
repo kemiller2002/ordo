@@ -188,7 +188,7 @@
   },
   {
     "confidence": "very-low",
-    "confidence_rationale": "Untested, not disbelieved. No evidence exists in either direction; the lowest available label is used because the schema has no 'unestimated' value, and TH-SDE-2026-0003 gives concrete reason to think the effect could run either way.",
+    "confidence_rationale": "Untested under its own criteria, and now with measured observation pointing away from it. Eleven runs across two experiments never reached the pre-registered sample; the sensitivity analysis over all verified runs shows separation ($2.61) well inside within-condition spread ($9.78 and $15.15) and an inconsistent direction. The lowest available label remains correct, for a changed reason.",
     "created": "2026-09-17",
     "disposition": "untested",
     "evidence_against": [],
@@ -196,7 +196,8 @@
     "id": "HY-SDE-2026-0009",
     "path": "research/hypotheses/HY-SDE-2026-0009--hardening-reduces-agent-monetary-cost.md",
     "related_evidence": [
-      "EV-SDE-2026-0007"
+      "EV-SDE-2026-0007",
+      "EV-SDE-2026-0009"
     ],
     "source_experiment": "EX-SDE-2026-0001",
     "status": "proposed",
@@ -206,7 +207,8 @@
       "experiment-3",
       "open-question",
       "preregistered",
-      "attempted-inconclusive"
+      "attempted-inconclusive",
+      "direction-reversed"
     ],
     "title": "Mechanical boundary hardening reduces an agent's monetary cost to implement an identical mission",
     "type": "hypothesis",

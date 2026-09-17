@@ -2,7 +2,7 @@
 id: EX-SDE-2026-0002
 title: Agent monetary cost under mechanical boundary hardening — continuation with a corrected interruption criterion
 research_area: sde
-status: active
+status: completed
 created: 2026-09-17
 author_agent: claude-code
 tests_hypotheses: [HY-SDE-2026-0009]
@@ -135,7 +135,75 @@ family.
 
 ## Results
 
-Pending.
+**The experiment stopped short of its fixed sample, and the data it produced
+does not support the hypothesis.** Full record in `EV-SDE-2026-0009`.
+
+Eleven runs across both experiments completed and were independently verified
+against their committed diffs. Five survive the pre-registered criterion:
+
+| | baseline | hardened |
+|---|---|---|
+| Verified n | 3 | 2 |
+| Runs | $19.94, $15.92, $20.42 | $12.66, $14.73 |
+| Mean | $18.76 | $13.70 |
+
+**n=4 per condition was required and was not reached**, so the pre-registered
+test cannot be evaluated. It is also no longer reachable: the seven-day
+rate-limit window sat at `allowed_warning` from 13:44Z, and the stopping rule
+was not amended to fit the ceiling.
+
+### The sensitivity analysis, which the operational log required
+
+Over every complete, independently verified run including the voids:
+
+| | baseline | hardened |
+|---|---|---|
+| n | 6 | 5 |
+| Mean | $20.05 | $17.43 |
+| Range | $15.92 – $25.70 | $12.00 – $27.15 |
+| Within-condition spread | $9.78 | $15.15 |
+
+Separation of means is **$2.61** against within-condition spreads of **$9.78
+and $15.15**, and the ranges overlap across almost their whole extent. Two of
+the three pre-registered "not supported" conditions are met: the separation
+does not exceed the within-condition spread, and **the direction is not
+consistent across pairs**.
+
+### Wave 6 reversed
+
+**A6 (baseline) $25.70. B6 (hardened) $27.15.** The hardened run cost more —
+the first reversal in eleven runs, and the pair is also the most expensive by a
+wide margin.
+
+Both runs were recorded **VOID at 13:44Z, while they were still executing and
+before either figure was known**, on the epoch criterion. That ordering is the
+only thing that keeps this from being a criterion applied to taste, and it is
+why the void was written down in flight rather than at the end.
+
+Both are complete and independently verified with zero regressions. Neither
+enters the pre-registered analysis, and both enter the sensitivity analysis,
+where they are what breaks the direction.
+
+### What this does to the hypothesis
+
+`HY-SDE-2026-0009` stays **untested under its own criteria**, because those
+criteria were never reached. But the sensitivity analysis is the first measured
+evidence pointing *away* from it, and it is recorded as such rather than left
+as an absence. The doctrine entry holding Experiment 3's figures **Unsupported
+(Open)** stands unchanged, and nothing here licenses citing 59/68/59%.
+
+### Two process observations
+
+- **A6's self-report was wrong**, the fourth in this series. Its summary reads
+  "task failed: agent built imaging-finding feature instead of stopping after
+  SDK install" — which describes the mission it was given. Its work passes every
+  suite.
+- **B6's API suite produced no output and exit code 0** on first run — no build,
+  no tests, no error. Reading that as a failure would have recorded "the hardened
+  run broke the API suite". After an explicit build: 36 passed, 3 failed,
+  identical to the start commit. The same trap caught B1 in the predecessor;
+  both times it was the orchestrator's build cache, not the run.
+
 
 ## A post-hoc measurement, kept separate from the analysis
 

@@ -40,6 +40,8 @@ run added in F#**, and every run also wrote SQL that was never counted.
 | B2 | hardened | 1 | 239 | 9 |
 | B4 | hardened | 1 | 238 | 9 |
 | B5 | hardened | 1 | 228 | 9 |
+| A6 | baseline | 1 | 232 | 11 |
+| B6 | hardened | 2 | 265 | 10 |
 
 This is not inert schema. The added SQL declares triggers, `CREATE OR REPLACE
 FUNCTION` bodies, `CHECK` constraints and `COALESCE` defaults — decision logic
@@ -52,8 +54,8 @@ the gap is visible rather than implied.
 **What the correction does and does not change:**
 
 - It does **not** change the separation. The uncounted SQL is close to uniform
-  across every run — 228 to 263 lines, 9 to 11 constructs — and does not
-  differ between conditions. It cannot account for baseline's 126–140 against
+  across every run — 228 to 265 lines, 9 to 11 constructs — and does not
+  differ between conditions. It cannot account for baseline's 126–147 against
   hardened's 82–111.
 - It does **not** change the density finding. Recomputed with SQL lines in the
   denominator, baseline runs 10.6–12.5 and hardened 9.4–10.8 branch points per
@@ -127,14 +129,15 @@ regressions.
 | B2 | 0001 | hardened | void | 102 | 746 | 14 | 13.7 | $12.00 |
 | B4 | 0002 | hardened | verified | 82 | 638 | 14 | 12.9 | $14.73 |
 | B5 | 0002 | hardened | void | 97 | 667 | 14 | 14.5 | $20.62 |
+| A6 | 0002 | baseline | void | 147 | 1,177 | 17 | 12.5 | $25.70 |
+| B6 | 0002 | hardened | void | 86 | 721 | 15 | 11.9 | $27.15 |
 
-B2r is absent because it never committed. A6 and B6 were still running when
-this was measured.
+B2r is absent because it never committed.
 
-**The ranges do not overlap.** Baseline added 126–140 branch points across
-five runs; hardened added 82–111 across four. Restricted to runs the cost
-experiment accepted, it is 131–140 against 82–111. This is a wider separation
-than the cost measure produced, where the conditions' ranges overlap.
+**The ranges do not overlap.** Baseline added 126–147 branch points across six
+runs; hardened added 82–111 across five. Restricted to runs the cost experiment
+accepted, it is 131–140 against 82–111. This is a wider separation than the cost
+measure produced, where the conditions' ranges overlap almost entirely.
 
 ## Three things that cut against reading too much into it
 
@@ -146,13 +149,22 @@ per line; they wrote **less code**, at a similar density of decisions. Whether
 writing less code for the same fixed mission is a virtue or a shortfall is not
 settled by this number.
 
-### It is not the cost axis
+### It is not the cost axis, and wave 6 proved it
 
-B5 is the counterexample and it is decisive. At **$20.62** it is the most
-expensive hardened run and the second most expensive run of any condition, and
-it added **97** branch points — the second-lowest figure in the table.
-Whatever drives the run-to-run cost variance that made the cost experiment
-inconclusive, it is not simply how much branching the run wrote.
+**Wave 6 is the decisive case.** In that pair the cost direction *reversed* —
+A6 baseline $25.70 against B6 hardened $27.15, the hardened run costing more
+for the first time in eleven runs [EV-SDE-2026-0009]. The complexity direction
+did not move with it: A6 added **147** branch points, the highest in the table,
+and B6 added **86**, the second-lowest.
+
+So in the one pair where cost said the opposite of every other pair, complexity
+said what it always says. The two measures are not tracking the same thing, and
+a reader who takes the clean complexity separation as indirect support for the
+cost hypothesis has the relationship backwards.
+
+B5 makes the same point more quietly: at **$20.62** it was the most expensive
+hardened run of the first five, and added **97** branch points, among the
+lowest.
 
 ### The two start trees are nearly the same size
 
@@ -173,6 +185,9 @@ measurement does not isolate.
 ## Limitations
 
 - **Not pre-registered**, as stated at the top. Nothing here is confirmatory.
+- **The separation is over runs, not over a controlled comparison.** Six
+  baseline runs against five hardened is a description of what eleven agents
+  wrote, and eleven is not many.
 - **`|` over-counts.** It fires on discriminated-union case declarations as
   well as on match clauses, so a file declaring many union cases scores higher
   than its control flow warrants. This applies identically to both conditions,
