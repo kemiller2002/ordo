@@ -301,5 +301,39 @@
     "title": "EX-SDE-2026-0002 stopped short of its fixed sample, and the direction reversed in its final pair",
     "type": "evidence",
     "updated": "2026-09-17"
+  },
+  {
+    "collection_date": "2026-09-17",
+    "confidence": "medium",
+    "created": "2026-09-17",
+    "evidence_type": "derived",
+    "id": "EV-SDE-2026-0010",
+    "method": "token- and syntax-tree-accurate cyclomatic complexity over three complete implementations of one frozen requirement set — two C# (Roslyn), one F# (FSharp.Compiler.Service)",
+    "observation_type": "derived measurement over committed source, computed after the trials finished and not part of any pre-registered analysis",
+    "path": "research/evidence/EV-SDE-2026-0010--state-structure-does-not-reduce-decision-points.md",
+    "related_evidence": [
+      "EV-SDE-2026-0008"
+    ],
+    "research_area": "state-directed-engineering",
+    "source_paths": [
+      "effort-experiment/c-sharp/",
+      "effort-experiment/c-sharp-state/",
+      "effort-experiment/f-sharp-state/",
+      "research/runs/effort-experiment-complexity/"
+    ],
+    "source_repository": "kemiller2002/time-entry-state-machine",
+    "status": "accepted",
+    "tags": [
+      "complexity",
+      "cyclomatic",
+      "effort-experiment",
+      "negative-result",
+      "post-hoc",
+      "not-preregistered",
+      "cross-language"
+    ],
+    "title": "State structure did not reduce decision points in domain source — the apparent reduction was a test-authoring artifact",
+    "type": "evidence",
+    "updated": "2026-09-17"
   }
 ]

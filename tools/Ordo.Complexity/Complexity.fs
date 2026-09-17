@@ -23,13 +23,20 @@
 /// as well as on match clauses, so a file declaring many union cases scores
 /// higher than its control flow alone warrants. That inflation applies
 /// identically to both experimental conditions, so it does not bias the
-/// between-condition comparison, which is the only comparison made from it. It
-/// would bias an absolute claim, so no absolute claim is made.
+/// between-condition comparison it was built for.
+///
+/// It WOULD bias a comparison against C#, which has no construct that inflates
+/// the same way. So the inflation is now measured rather than merely declared:
+/// `DeclaredCases` counts union and enum cases from the parse tree, and
+/// `ControlFlowBranches` is the figure with them removed. Use the raw
+/// `Branches` to compare F# against F#, and `ControlFlowBranches` to compare
+/// F# against C#.
 ///
 /// A `Bar` immediately followed by `Null` is excluded — see `isNullTypeBar` for
 /// why, and for what that exclusion costs.
 ///
-/// SCOPE: F# only. This tool measures `.fs` and `.fsi` and nothing else. The
+/// SCOPE: this module measures `.fs` and `.fsi`. C# is measured by the
+/// companion module `Ordo.Complexity.CSharp`. The
 /// codebases it has been pointed at are not F#-only — the agent-cost runs also
 /// wrote SQL containing triggers, function bodies and CHECK constraints, and
 /// the effort experiment elsewhere in this programme has two C# arms. A total
@@ -55,20 +62,82 @@ module Ordo.Complexity.Measure
 open System
 open System.Diagnostics
 open System.IO
+open FSharp.Compiler.CodeAnalysis
+open FSharp.Compiler.Syntax
 open FSharp.Compiler.Text
 open FSharp.Compiler.Tokenization
+
+/// Declared union and enum cases, counted from the parse tree rather than the
+/// token stream.
+///
+/// This exists to make the F# figure comparable with the C# one. `Bar` fires on
+/// a union-case declaration as well as on a match clause, and a declaration is
+/// data, not control flow. C# has no construct that inflates its count the same
+/// way, so leaving the inflation in would flatter C# in any cross-language
+/// reading — and the effort experiment's arms are two C# against one F#.
+///
+/// Counting them separately turns a documented imprecision into a measured
+/// quantity that a reader can subtract, instead of a caveat they have to trust.
+let private parser = lazy FSharpChecker.Create()
+
+/// The source ranges of union and enum type representations.
+///
+/// Ranges rather than a count of cases, because counting cases and subtracting
+/// is wrong in both directions. `type PersonId = PersonId of string` declares
+/// one case and emits no `Bar` at all, so subtracting its count drives the
+/// figure negative — which is how this was found. `type X = A | B | C` declares
+/// three cases from two bars. There is no fixed ratio, so the only correct
+/// approach is positional: a `Bar` inside one of these ranges is separating
+/// declared cases, and a `Bar` outside them is control flow.
+let rec private unionRangesInDecls (decls: SynModuleDecl list) : FSharp.Compiler.Text.range list =
+    decls
+    |> List.collect (fun decl ->
+        match decl with
+        | SynModuleDecl.Types(typeDefns, _) ->
+            typeDefns
+            |> List.choose (fun (SynTypeDefn(typeRepr = repr)) ->
+                match repr with
+                | SynTypeDefnRepr.Simple(SynTypeDefnSimpleRepr.Union(range = range), _) -> Some range
+                | SynTypeDefnRepr.Simple(SynTypeDefnSimpleRepr.Enum(range = range), _) -> Some range
+                | _ -> None)
+        | SynModuleDecl.NestedModule(decls = inner) -> unionRangesInDecls inner
+        | _ -> [])
+
+let declarationRanges (path: string) (source: string) : FSharp.Compiler.Text.range list =
+    let options = { FSharpParsingOptions.Default with SourceFiles = [| path |] }
+
+    let parsed =
+        parser.Value.ParseFile(path, SourceText.ofString source, options)
+        |> Async.RunSynchronously
+
+    match parsed.ParseTree with
+    | ParsedInput.ImplFile(ParsedImplFileInput(contents = modules)) ->
+        modules |> List.collect (fun (SynModuleOrNamespace(decls = decls)) -> unionRangesInDecls decls)
+    | ParsedInput.SigFile _ -> []
 
 type FileComplexity =
     { Path: string
       Cyclomatic: int
       Branches: int
+      DeclaredCases: int
       Lines: int }
+
+    /// Branch points with union and enum case separators removed. This is the
+    /// figure to use against a C# measurement; `Branches` is the raw token
+    /// count and stays comparable with earlier F#-only figures. It can never
+    /// exceed `Branches`, because `DeclaredCases` counts a subset of the same
+    /// tokens rather than a separately-derived quantity.
+    member this.ControlFlowBranches = this.Branches - this.DeclaredCases
 
 /// Complexity of an absent file. A file added by a run has this at base; a file
 /// deleted by a run has it at head. `Cyclomatic` is 0 rather than 1 because the
 /// "+1" of McCabe's formula counts a single entry path, and absent code has none.
 let absent (path: string) =
-    { Path = path; Cyclomatic = 0; Branches = 0; Lines = 0 }
+    { Path = path
+      Cyclomatic = 0
+      Branches = 0
+      DeclaredCases = 0
+      Lines = 0 }
 
 let isBranch (kind: FSharpTokenKind) =
     match kind with
@@ -132,12 +201,32 @@ let countedTokens (source: string) : Counted list =
     |> Seq.map fst
     |> List.ofSeq
 
+let private within (ranges: FSharp.Compiler.Text.range list) (token: Counted) =
+    ranges
+    |> List.exists (fun range ->
+        let afterStart =
+            token.Line > range.StartLine
+            || (token.Line = range.StartLine && token.Column >= range.StartColumn)
+
+        let beforeEnd =
+            token.Line < range.EndLine
+            || (token.Line = range.EndLine && token.Column <= range.EndColumn)
+
+        afterStart && beforeEnd)
+
 let complexityOf (path: string) (source: string) : FileComplexity =
-    let branches = countedTokens source |> List.length
+    let tokens = countedTokens source
+    let ranges = declarationRanges path source
+
+    let declaration =
+        tokens
+        |> List.filter (fun token -> token.Kind = FSharpTokenKind.Bar && within ranges token)
+        |> List.length
 
     { Path = path
-      Cyclomatic = branches + 1
-      Branches = branches
+      Cyclomatic = List.length tokens + 1
+      Branches = List.length tokens
+      DeclaredCases = declaration
       Lines = source.Split('\n').Length }
 
 let isFSharp (path: string) =
