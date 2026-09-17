@@ -259,11 +259,14 @@
         "output_tokens": 592
       },
       "epoch_at_start": 1,
-      "status": "mission-running",
+      "status": "mission-running, epoch already changed 1 -> 2",
       "mission_fired_at": "2026-09-17T13:23Z",
       "complexity": {
         "not_measured": "no committed branch to measure"
-      }
+      },
+      "epoch_observed_mid_mission": 2,
+      "void_expected": "worker_epoch read 2 while the mission was still RUNNING, against 1 at the start marker. The pre-registered corrected criterion voids on a change between the two markers, so this run is void whatever it finishes at. Recorded now, while the run is still in flight, so the call cannot be said to have been made after seeing its cost.",
+      "self_report_note": "The session's own task_summary claims it was told not to implement and is proceeding anyway. No such instruction was sent; the mission prompt asks for implementation. Recorded as an observation about agent self-reports, which this design already does not trust (see A4's retracted void), not as a finding about the run."
     },
     {
       "id": "B6",
@@ -278,11 +281,14 @@
         "output_tokens": 583
       },
       "epoch_at_start": 1,
-      "status": "mission-running",
+      "status": "mission-running, epoch already changed 1 -> 2",
       "mission_fired_at": "2026-09-17T13:23Z",
       "complexity": {
         "not_measured": "no committed branch to measure"
-      }
+      },
+      "epoch_observed_mid_mission": 2,
+      "void_expected": "worker_epoch read 2 while the mission was still RUNNING, against 1 at the start marker. The pre-registered corrected criterion voids on a change between the two markers, so this run is void whatever it finishes at. Recorded now, while the run is still in flight, so the call cannot be said to have been made after seeing its cost.",
+      "self_report_note": "The session's own task_summary claims it was told not to implement and is proceeding anyway. No such instruction was sent; the mission prompt asks for implementation. Recorded as an observation about agent self-reports, which this design already does not trust (see A4's retracted void), not as a finding about the run."
     }
   ],
   "operational_log": [
@@ -312,6 +318,14 @@
       "evidence": "Void rate is now 4 of 9 completed runs (~44%). The voided set includes A3 $19.49, B5 $20.62 and B2 $12.00 - skewed toward the expensive end.",
       "consequence": "With n small this bias need not fall evenly across conditions. The pre-registered analysis stays primary, but a sensitivity analysis over ALL complete, verified runs must be reported beside it, clearly labelled.",
       "not_an_amendment": "The criterion is NOT changed. B5 stays void. This is recorded so the reader can judge the criterion, not so the data can be rescued."
+    },
+    {
+      "at": "2026-09-17T13:44Z",
+      "event": "Wave 6 is void before it finishes, and the rate-limit window has changed shape.",
+      "epochs": "A6 and B6 both read worker_epoch 2 mid-mission against 1 at their start markers. Both void under the pre-registered criterion. Wave 6 removes one run from EACH condition, so it does not tilt the comparison.",
+      "rate_limit": "rateLimitType moved from five_hour to seven_day with status allowed_warning, resetting 2026-09-21T04:00Z. The weekly ceiling, not the hourly one, is now the binding constraint on further runs.",
+      "void_rate": "6 of 11 completed or in-flight runs are now void, and the criterion's duration-exposure bias (logged 13:10Z) is the most likely reason.",
+      "consequence": "The fixed sample of n=4 per condition cannot be reached inside this window without more runs than the weekly ceiling allows. This is an operational limit, not a result, and the stopping rule is NOT amended to accommodate it."
     }
   ],
   "complexity_measurement": {
