@@ -73,5 +73,14 @@
       "epoch_at_start": 1,
       "mission_fired_at": "2026-09-17T10:57Z"
     }
+  ],
+  "operational_log": [
+    {
+      "at": "2026-09-17T11:22Z",
+      "observation": "rate_limit_info.status moved from 'allowed' to 'allowed_warning' on both wave-4 sessions; five-hour window resets 2026-09-17T12:30Z.",
+      "decision": "Hold wave 5 until after the window resets. Launching into a warning state risks interrupting wave 4 and wave 5 together, and the corrected criterion voids any interrupted run.",
+      "affects_stopping_rule": false,
+      "note": "Timing only. The sample size stays fixed at n=4 per condition and every planned run still executes. This is the failure mode that destroyed Experiment 3's Condition B, so it is recorded rather than worked around."
+    }
   ]
 }
