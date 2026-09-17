@@ -1,0 +1,7 @@
+path,cyclomatic,branches,branches_without_null_coalescing,null_coalescing,lines
+c-sharp/HodgepodgeTimeEntry/Diagnostics.cs,1,0,0,0,36
+c-sharp/HodgepodgeTimeEntry/Models.cs,5,4,4,0,165
+c-sharp/HodgepodgeTimeEntry/Persistence.cs,7,6,5,1,113
+c-sharp/HodgepodgeTimeEntry/Program.cs,149,148,148,0,800
+c-sharp/HodgepodgeTimeEntry/TimeEntryService.cs,69,68,68,0,536
+TOTAL,231,226,225,1,1650

@@ -182,6 +182,19 @@ is small, so "it was already there" is not supported at tree scale. It is not
 excluded at the scale of the specific files the mission touches, which this
 measurement does not isolate.
 
+## A later measurement that narrows this one
+
+`EV-SDE-2026-0010` measured total decision points across three complete
+implementations of one frozen requirement set, and found **no reduction** in
+domain source — the state-structured C# arm scores higher in absolute terms
+than the conventional one (88 against 78). That is a different question from
+this record's (complexity *added per run* against a fixed start commit), and
+both results stand.
+
+Read together: this record should not be cited as evidence that state structure
+produces simpler code. It says hardened runs added fewer F# branch points in
+one codebase. It does not say the resulting code has fewer.
+
 ## Limitations
 
 - **Not pre-registered**, as stated at the top. Nothing here is confirmatory.
