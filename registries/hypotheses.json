@@ -185,5 +185,33 @@
     "title": "Semantic maps and feature manifests reduce discovery expansion",
     "type": "hypothesis",
     "updated": "2026-09-05"
+  },
+  {
+    "confidence": "very-low",
+    "confidence_rationale": "Untested under its own criteria, and now with measured observation pointing away from it. Eleven runs across two experiments never reached the pre-registered sample; the sensitivity analysis over all verified runs shows separation ($2.61) well inside within-condition spread ($9.78 and $15.15) and an inconsistent direction. The lowest available label remains correct, for a changed reason.",
+    "created": "2026-09-17",
+    "disposition": "untested",
+    "evidence_against": [],
+    "evidence_for": [],
+    "id": "HY-SDE-2026-0009",
+    "path": "research/hypotheses/HY-SDE-2026-0009--hardening-reduces-agent-monetary-cost.md",
+    "related_evidence": [
+      "EV-SDE-2026-0007",
+      "EV-SDE-2026-0009"
+    ],
+    "source_experiment": "EX-SDE-2026-0001",
+    "status": "proposed",
+    "tags": [
+      "agent-cost",
+      "tokens",
+      "experiment-3",
+      "open-question",
+      "preregistered",
+      "attempted-inconclusive",
+      "direction-reversed"
+    ],
+    "title": "Mechanical boundary hardening reduces an agent's monetary cost to implement an identical mission",
+    "type": "hypothesis",
+    "updated": "2026-09-17"
   }
 ]

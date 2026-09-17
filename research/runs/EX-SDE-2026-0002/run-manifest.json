@@ -1,0 +1,479 @@
+{
+  "experiment": "EX-SDE-2026-0002",
+  "orchestrator_session": "session_01UjkFnW7ZRis2jcVHXP66rE",
+  "stopping_rule": {
+    "target_n_per_condition": 4,
+    "fixed_before_any_new_run": true,
+    "no_interim_analysis_decides_continuation": true,
+    "commitment": "All planned runs execute regardless of interim figures. The outcome is reported whatever it is, including a reversal or a null.",
+    "known_limitation": "The orchestrator already knows the pilot direction and cannot unsee it."
+  },
+  "corrected_criterion": "worker_epoch read at the start marker AND at the close marker; a change between those two readings voids the run. A change at any other time, including after archiving, is not evidence about the run.",
+  "pooled_from_EX_0001": [
+    {
+      "id": "A1",
+      "condition": "A",
+      "mission_cost_usd": 19.936247,
+      "epoch_at_close": 1
+    },
+    {
+      "id": "A2",
+      "condition": "A",
+      "mission_cost_usd": 15.915946,
+      "epoch_at_close": 1
+    },
+    {
+      "id": "B1",
+      "condition": "B",
+      "mission_cost_usd": 12.6635935,
+      "epoch_at_close": 1
+    }
+  ],
+  "not_pooled": {
+    "A3": "restart observed mid-mission",
+    "B2": "restart timing never established",
+    "B2r": "never completed"
+  },
+  "still_needed": {
+    "A": 1,
+    "B": 2,
+    "note": "UNREACHABLE within the current ceiling. Wave 6 voided both runs, leaving n=3 baseline / n=2 hardened verified against the fixed target of 4. The seven-day rate-limit window is at allowed_warning until 2026-09-21T04:00Z. The stopping rule is NOT amended; the experiment stops short and reports that."
+  },
+  "runs": [
+    {
+      "id": "A4",
+      "condition": "A",
+      "session": "session_01KVdaZPxndNQuHUeoPHuZ1S",
+      "wave": 4,
+      "status": "complete-verified",
+      "start_marker": {
+        "cost_usd": 0.455929,
+        "cache_read_tokens": 180148,
+        "cache_write_tokens": 35119,
+        "input_tokens": 8,
+        "output_tokens": 585,
+        "worker_epoch": 1
+      },
+      "epoch_at_start": 1,
+      "mission_fired_at": "2026-09-17T10:57Z",
+      "epoch_at_close": 1,
+      "void_reason": "Container recycled between the setup turn and the mission turn. The setup turn reported SDKs 8.0.131 and 10.0.112 installed; the mission turn found no SDK, attempted the blocked Microsoft CDN, and never compiled or ran the verification sequence. Code was drafted but uncompiled and unexecuted, so the run fails the completed-and-verified criterion. Epoch was 1 at both markers, so the interruption criterion is NOT what voids it.",
+      "close_marker": {
+        "cost_usd": 20.8751015,
+        "cache_read_tokens": 31850513,
+        "cache_write_tokens": 298466,
+        "input_tokens": 792,
+        "output_tokens": 78449
+      },
+      "mission_cost": {
+        "cost_usd": 20.4191725,
+        "cache_read_tokens": 31670365,
+        "cache_write_tokens": 263347,
+        "input_tokens": 784,
+        "output_tokens": 77864
+      },
+      "void_reason_RETRACTED": "RETRACTED. A4 was voided on its own post-turn summary, which claimed the SDK install was blocked and nothing was compiled or executed. That summary is false: the branch holds 17 files and 1,278 insertions, and independent re-verification against the committed diff gives 154/154 semantic, 6/6 route contract, 6 of 25 api-http, 4/4 wasm, 3 of 63 postgres, and 36 passed with the 3 pre-existing Docker failures \u2014 zero regressions. Voiding it relied on a self-report, which is precisely what this design says not to trust. Epoch read 1 at both markers.",
+      "independent_verification": {
+        "semantic": "154/154",
+        "routecontract": "6/6",
+        "apihttp": "6 passed 19 skipped /25",
+        "wasm": "4/4",
+        "postgres": "3 passed 60 skipped /63",
+        "api": "36 passed 3 failed /39",
+        "regressions": "none",
+        "commit": "f57d9be",
+        "files": 17,
+        "insertions": 1278
+      },
+      "process_caveat": "A4's summary claims it never compiled during its run. Its committed output compiles and passes. Whether it ran the verification sequence itself is UNESTABLISHED. The criterion requires orchestrator verification against the committed diff, which it passes.",
+      "complexity": {
+        "branch_points_added": 140,
+        "lines_added": 983,
+        "files_touched": 15,
+        "branch_points_per_100_lines_added": 14.2,
+        "measured_against": "4879537",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total.",
+        "uncounted_sql": {
+          "files": 2,
+          "lines_added": 263,
+          "decision_bearing_constructs_crude_keyword_count": 11,
+          "note": "Crude keyword matching, which is the technique the F# measure exists to avoid. Indicates scale only; not comparable to branch_points_added."
+        }
+      }
+    },
+    {
+      "id": "B4",
+      "condition": "B",
+      "session": "session_01SeqKF8WT8pnv8iH6FSaWb3",
+      "wave": 4,
+      "status": "complete-verified",
+      "start_marker": {
+        "cost_usd": 0.360339,
+        "cache_read_tokens": 190268,
+        "cache_write_tokens": 25014,
+        "input_tokens": 8,
+        "output_tokens": 601,
+        "worker_epoch": 1
+      },
+      "epoch_at_start": 1,
+      "mission_fired_at": "2026-09-17T10:57Z",
+      "close_marker": {
+        "cost_usd": 15.092526,
+        "cache_read_tokens": 22434792,
+        "cache_write_tokens": 234517,
+        "input_tokens": 752,
+        "output_tokens": 61048
+      },
+      "epoch_at_close": 1,
+      "mission_cost": {
+        "cost_usd": 14.732187,
+        "cache_read_tokens": 22244524,
+        "cache_write_tokens": 209503,
+        "input_tokens": 744,
+        "output_tokens": 60447
+      },
+      "independent_verification": {
+        "semantic": "152/152",
+        "routecontract": "6/6",
+        "apihttp": "6 passed 19 skipped /25",
+        "wasm": "4/4",
+        "postgres": "3 passed 57 skipped /60",
+        "api": "36 passed 3 failed /39",
+        "regressions": "none",
+        "commit": "f4b22a3",
+        "files": 15,
+        "insertions": 888
+      },
+      "complexity": {
+        "branch_points_added": 82,
+        "lines_added": 638,
+        "files_touched": 14,
+        "branch_points_per_100_lines_added": 12.9,
+        "measured_against": "8d2d789",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total.",
+        "uncounted_sql": {
+          "files": 1,
+          "lines_added": 238,
+          "decision_bearing_constructs_crude_keyword_count": 9,
+          "note": "Crude keyword matching, which is the technique the F# measure exists to avoid. Indicates scale only; not comparable to branch_points_added."
+        }
+      }
+    },
+    {
+      "id": "A5",
+      "condition": "A",
+      "session": "session_018wxLZENyUD64SL4uq2B71x",
+      "wave": 5,
+      "status": "VOID",
+      "start_marker": {
+        "cost_usd": 0.3598415,
+        "cache_read_tokens": 190253,
+        "cache_write_tokens": 25010,
+        "input_tokens": 8,
+        "output_tokens": 583
+      },
+      "epoch_at_start": 1,
+      "mission_fired_at": "2026-09-17T12:38Z",
+      "prompt_revision": "Mission prompt now carries SDK-recovery instructions (verify dotnet --list-sdks; reinstall from Ubuntu archive if the container recycled; never touch the blocked CDN).",
+      "close_marker_observed": {
+        "cost_usd": 19.187922,
+        "cache_read_tokens": 28700874,
+        "cache_write_tokens": 297184,
+        "input_tokens": 254,
+        "output_tokens": 74575
+      },
+      "epoch_at_close": 2,
+      "mission_cost_observed": {
+        "cost_usd": 18.8280805,
+        "cache_read_tokens": 28510621,
+        "cache_write_tokens": 272174,
+        "input_tokens": 246,
+        "output_tokens": 73992
+      },
+      "void_reason": "worker_epoch changed 1 -> 2 between start and close markers. Pre-registered corrected criterion.",
+      "independent_verification_despite_void": {
+        "semantic": "157/157",
+        "regressions": "none",
+        "files": 18,
+        "insertions": 1225,
+        "note": "Complete and sound. Voided solely on the epoch criterion."
+      },
+      "note": "Baseline void at $18.83 \u2014 this one removes a BASELINE point, where B5's removed a hardened one. The voids are not falling on one side.",
+      "complexity": {
+        "branch_points_added": 126,
+        "lines_added": 957,
+        "files_touched": 16,
+        "branch_points_per_100_lines_added": 13.2,
+        "measured_against": "4879537",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total.",
+        "uncounted_sql": {
+          "files": 1,
+          "lines_added": 235,
+          "decision_bearing_constructs_crude_keyword_count": 10,
+          "note": "Crude keyword matching, which is the technique the F# measure exists to avoid. Indicates scale only; not comparable to branch_points_added."
+        }
+      }
+    },
+    {
+      "id": "B5",
+      "condition": "B",
+      "session": "session_01PnkyE5MotjxWDUqppBjuqs",
+      "wave": 5,
+      "status": "VOID",
+      "start_marker": {
+        "cost_usd": 0.360277,
+        "cache_read_tokens": 190264,
+        "cache_write_tokens": 25013,
+        "input_tokens": 8,
+        "output_tokens": 599
+      },
+      "epoch_at_start": 1,
+      "mission_fired_at": "2026-09-17T12:38Z",
+      "prompt_revision": "Mission prompt now carries SDK-recovery instructions (verify dotnet --list-sdks; reinstall from Ubuntu archive if the container recycled; never touch the blocked CDN).",
+      "close_marker_observed": {
+        "cost_usd": 20.97921,
+        "cache_read_tokens": 31867510,
+        "cache_write_tokens": 299647,
+        "input_tokens": 292,
+        "output_tokens": 81901
+      },
+      "epoch_at_close": 2,
+      "mission_cost_observed": {
+        "cost_usd": 20.618933,
+        "cache_read_tokens": 31677246,
+        "cache_write_tokens": 274634,
+        "input_tokens": 284,
+        "output_tokens": 81302
+      },
+      "void_reason": "worker_epoch changed 1 -> 2 between the start and close markers. Voided by the pre-registered corrected criterion.",
+      "independent_verification_despite_void": {
+        "semantic": "152/152",
+        "routecontract": "6/6",
+        "wasm": "4/4",
+        "postgres": "3 passed 57 skipped /60",
+        "api": "36 passed 3 failed /39",
+        "regressions": "none",
+        "commit": "a442976",
+        "files": 16,
+        "insertions": 920,
+        "note": "Complete and sound. Voided solely on the epoch criterion, not on quality."
+      },
+      "FLAG": "This void REMOVES THE STRONGEST COUNTER-EVIDENCE. At $20.62 B5 is the most expensive hardened run and the second most expensive run overall. Keeping it would push the hardened condition's mean ABOVE two baseline runs and likely erase the remaining gap. The criterion is pre-registered and applied unchanged, but a reader must be able to see that it fell this way.",
+      "complexity": {
+        "branch_points_added": 97,
+        "lines_added": 667,
+        "files_touched": 14,
+        "branch_points_per_100_lines_added": 14.5,
+        "measured_against": "8d2d789",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total.",
+        "uncounted_sql": {
+          "files": 1,
+          "lines_added": 228,
+          "decision_bearing_constructs_crude_keyword_count": 9,
+          "note": "Crude keyword matching, which is the technique the F# measure exists to avoid. Indicates scale only; not comparable to branch_points_added."
+        }
+      }
+    },
+    {
+      "id": "A6",
+      "condition": "A",
+      "session": "session_01SdQnGTSbwgmAZs8uzoZZc2",
+      "wave": 6,
+      "start_marker": {
+        "cost_usd": 0.359633,
+        "cache_read_tokens": 190146,
+        "cache_write_tokens": 24972,
+        "input_tokens": 8,
+        "output_tokens": 592
+      },
+      "epoch_at_start": 1,
+      "status": "VOID (complete and independently verified)",
+      "mission_fired_at": "2026-09-17T13:23Z",
+      "complexity": {
+        "branch_points_added": 147,
+        "lines_added": 1177,
+        "files_touched": 17,
+        "uncounted_sql": {
+          "files": 1,
+          "lines_added": 232,
+          "decision_bearing_constructs_crude_keyword_count": 11
+        },
+        "measured_against": "4879537",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total."
+      },
+      "self_report_note": "The session's own task_summary claims it was told not to implement and is proceeding anyway. No such instruction was sent; the mission prompt asks for implementation. Recorded as an observation about agent self-reports, which this design already does not trust (see A4's retracted void), not as a finding about the run.",
+      "close_marker_observed": {
+        "cost_usd": 26.059556,
+        "cache_read_tokens": 41288122,
+        "cache_write_tokens": 312445,
+        "input_tokens": 354,
+        "output_tokens": 91571
+      },
+      "epoch_at_close": 2,
+      "mission_cost_observed": {
+        "cost_usd": 25.699923,
+        "cache_read_tokens": 41097976,
+        "cache_write_tokens": 287473,
+        "input_tokens": 346,
+        "output_tokens": 90979
+      },
+      "void_reason": "worker_epoch changed 1 -> 2 between the start and close markers. Pre-registered corrected criterion. Recorded as VOID at 13:44Z while the run was still executing, BEFORE its cost was known.",
+      "branch": "experiment/ex-sde-0002-a6",
+      "commit": "2eef6ff",
+      "files_changed": 20,
+      "insertions": 1444,
+      "independent_verification_despite_void": {
+        "semantic": "157/157",
+        "wasm": "4/4",
+        "routecontract": "6/6",
+        "apihttp": "6 passed 24 skipped /30",
+        "postgres": "3 passed 57 skipped /60",
+        "api": "36 passed 3 failed /39",
+        "regressions": "none",
+        "note": "Complete and sound. Voided solely on the epoch criterion."
+      },
+      "self_report_mismatch": "A6's own post-turn summary reads 'task failed: agent built imaging-finding feature instead of stopping after SDK install'. The mission prompt asked for exactly that implementation. The run is complete and passes every suite with zero regressions. Fourth run whose self-report contradicts measurement."
+    },
+    {
+      "id": "B6",
+      "condition": "B",
+      "session": "session_017Db57zrnkzD5Mm8wJYchsX",
+      "wave": 6,
+      "start_marker": {
+        "cost_usd": 0.359262,
+        "cache_read_tokens": 190134,
+        "cache_write_tokens": 24958,
+        "input_tokens": 8,
+        "output_tokens": 583
+      },
+      "epoch_at_start": 1,
+      "status": "VOID (complete and independently verified)",
+      "mission_fired_at": "2026-09-17T13:23Z",
+      "complexity": {
+        "branch_points_added": 86,
+        "lines_added": 721,
+        "files_touched": 15,
+        "uncounted_sql": {
+          "files": 2,
+          "lines_added": 265,
+          "decision_bearing_constructs_crude_keyword_count": 10
+        },
+        "measured_against": "8d2d789",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total."
+      },
+      "self_report_note": "The session's own task_summary claims it was told not to implement and is proceeding anyway. No such instruction was sent; the mission prompt asks for implementation. Recorded as an observation about agent self-reports, which this design already does not trust (see A4's retracted void), not as a finding about the run.",
+      "close_marker_observed": {
+        "cost_usd": 27.5137225,
+        "cache_read_tokens": 44425055,
+        "cache_write_tokens": 299371,
+        "input_tokens": 402,
+        "output_tokens": 92219
+      },
+      "epoch_at_close": 2,
+      "mission_cost_observed": {
+        "cost_usd": 27.1544605,
+        "cache_read_tokens": 44234921,
+        "cache_write_tokens": 274413,
+        "input_tokens": 394,
+        "output_tokens": 91636
+      },
+      "void_reason": "worker_epoch changed 1 -> 2 between the start and close markers. Pre-registered corrected criterion. Recorded as VOID at 13:44Z while the run was still executing, BEFORE its cost was known.",
+      "branch": "experiment/ex-sde-0002-b6",
+      "commit": "253536b",
+      "files_changed": 18,
+      "insertions": 1004,
+      "independent_verification_despite_void": {
+        "semantic": "154/154",
+        "wasm": "4/4",
+        "routecontract": "6/6",
+        "apihttp": "6 passed 21 skipped /27",
+        "postgres": "3 passed 57 skipped /60",
+        "api": "36 passed 3 failed /39",
+        "regressions": "none",
+        "note": "Complete and sound. Voided solely on the epoch criterion."
+      },
+      "verification_near_miss": "B6's API suite produced NO output and exit code 0 on the first attempt - no build, no tests, no error. Reading that as a failure would have recorded 'the hardened run broke the API suite'. After an explicit build it gives 36 passed / 3 failed, identical to the start commit. This is the second time this exact trap has appeared on a hardened-condition worktree (see B1 in EV-SDE-2026-0007); both were artifacts of the orchestrator's build cache, not of the runs."
+    }
+  ],
+  "operational_log": [
+    {
+      "at": "2026-09-17T11:22Z",
+      "observation": "rate_limit_info.status moved from 'allowed' to 'allowed_warning' on both wave-4 sessions; five-hour window resets 2026-09-17T12:30Z.",
+      "decision": "Hold wave 5 until after the window resets. Launching into a warning state risks interrupting wave 4 and wave 5 together, and the corrected criterion voids any interrupted run.",
+      "affects_stopping_rule": false,
+      "note": "Timing only. The sample size stays fixed at n=4 per condition and every planned run still executes. This is the failure mode that destroyed Experiment 3's Condition B, so it is recorded rather than worked around."
+    },
+    {
+      "at": "2026-09-17T11:40Z",
+      "finding": "Containers are NOT guaranteed to persist between the setup turn and the mission turn.",
+      "evidence": "A4's setup turn reported both SDKs installed; its mission turn found none and reached for the blocked CDN.",
+      "consequence_for_this_experiment": "A4 void. The mission prompt must carry the SDK install instructions so a recycled container can recover via the permitted Ubuntu archive instead of the denied CDN.",
+      "consequence_for_EX_0001": "The claim that setup cost 'lands entirely before the start marker' is not guaranteed by the design. Where a container recycled, reinstall cost fell INSIDE the measured mission window. Setup measured $0.25-$0.46 against missions of $12-$20, so this is noise of roughly 2-4%, not a reversal - but the exclusion claim as written is stronger than the design supports and EV-SDE-2026-0007 is corrected."
+    },
+    {
+      "at": "2026-09-17T12:31Z",
+      "event": "Wave 5 launched after the five-hour rate-limit window reset at 12:30Z.",
+      "note": "Held 68 minutes rather than launch into allowed_warning."
+    },
+    {
+      "at": "2026-09-17T13:10Z",
+      "finding": "THE INTERRUPTION CRITERION PREFERENTIALLY VOIDS EXPENSIVE RUNS.",
+      "argument": "A worker restart is a time-exposed event: the longer a run lasts, the more likely it experiences one. Run duration correlates with cost. So voiding on worker_epoch change systematically removes the longest and therefore most expensive runs from BOTH conditions, biasing every surviving cost estimate downward.",
+      "evidence": "Void rate is now 4 of 9 completed runs (~44%). The voided set includes A3 $19.49, B5 $20.62 and B2 $12.00 - skewed toward the expensive end.",
+      "consequence": "With n small this bias need not fall evenly across conditions. The pre-registered analysis stays primary, but a sensitivity analysis over ALL complete, verified runs must be reported beside it, clearly labelled.",
+      "not_an_amendment": "The criterion is NOT changed. B5 stays void. This is recorded so the reader can judge the criterion, not so the data can be rescued."
+    },
+    {
+      "at": "2026-09-17T13:44Z",
+      "event": "Wave 6 is void before it finishes, and the rate-limit window has changed shape.",
+      "epochs": "A6 and B6 both read worker_epoch 2 mid-mission against 1 at their start markers. Both void under the pre-registered criterion. Wave 6 removes one run from EACH condition, so it does not tilt the comparison.",
+      "rate_limit": "rateLimitType moved from five_hour to seven_day with status allowed_warning, resetting 2026-09-21T04:00Z. The weekly ceiling, not the hourly one, is now the binding constraint on further runs.",
+      "void_rate": "6 of 11 completed or in-flight runs are now void, and the criterion's duration-exposure bias (logged 13:10Z) is the most likely reason.",
+      "consequence": "The fixed sample of n=4 per condition cannot be reached inside this window without more runs than the weekly ceiling allows. This is an operational limit, not a result, and the stopping rule is NOT amended to accommodate it."
+    },
+    {
+      "at": "2026-09-17T14:20Z",
+      "event": "Wave 6 close markers read. BOTH RUNS VOID, and the direction REVERSED.",
+      "figures": "A6 baseline $25.70, B6 hardened $27.15. The hardened run cost MORE. First reversal in eleven runs.",
+      "why_this_matters": "Both runs were recorded VOID at 13:44Z, while still executing, before either figure was known. That ordering is the only reason this reversal cannot be read as a criterion applied to taste.",
+      "both_verified": "A6 and B6 are complete, independently verified against their committed diffs, zero regressions in either.",
+      "cost_scale": "Wave 6 is far the most expensive pair: $25.70 and $27.15 against $12-$21 for every earlier run. This is exactly what the duration-exposure bias predicts - the longest runs are the likeliest to be restarted, so the criterion strips the expensive tail from both conditions.",
+      "complexity_did_not_reverse": "A6 added 147 F# branch points and B6 added 86, so the complexity separation holds in the very wave where cost reversed. That decoupling is direct support for EV-SDE-2026-0008's claim that complexity is not the cost axis."
+    }
+  ],
+  "complexity_measurement": {
+    "metric": "cyclomatic complexity, McCabe decision-counting form: 1 + branch points",
+    "reported_as": "DELTA against the run's own condition start commit, never an absolute total",
+    "why_delta": "Condition A starts at 4879537 and Condition B at 8d2d789. They are different trees, so absolute totals are not comparable. A file a run never touched contributes zero by construction.",
+    "tool": "tools/Ordo.Complexity (F#, FSharp.Compiler.Service lexer)",
+    "counted": [
+      "if",
+      "elif",
+      "when",
+      "while",
+      "while!",
+      "for",
+      "|",
+      "&&",
+      "||"
+    ],
+    "not_counted": {
+      "match": "its clauses are already counted through '|'; counting both would double-count every match expression",
+      "| null": "a lexer cannot distinguish the nullable type annotation 'string | null' from the match clause '| null ->'. All are excluded. This loses real null clauses and removes a disagreement between FCS versions; verified identical across all nine runs."
+    },
+    "known_imprecision": "'|' fires on discriminated-union case declarations as well as match clauses, inflating files that declare many cases. Identical across conditions, so unbiased for the between-condition comparison; it would bias an absolute claim, and none is made.",
+    "preregistered": false,
+    "preregistration_note": "Taken after every run finished. Outside this experiment's falsification criteria. It is descriptive and cannot move HY-SDE-2026-0009, which concerns monetary cost.",
+    "per_file_data": "complexity/<run>.csv",
+    "evidence_record": "EV-SDE-2026-0008",
+    "languages_covered": [
+      ".fs",
+      ".fsi"
+    ],
+    "languages_NOT_covered": {
+      "sql": "Every run added 228-263 lines of SQL containing triggers, CREATE OR REPLACE FUNCTION bodies, CHECK constraints and COALESCE defaults - decision logic that lives in the database. None of it is counted. The omission is close to uniform across runs and does not differ between conditions, so it does not account for the separation, but every branch_points_added figure below is a LOWER BOUND covering one of the two languages the run wrote in.",
+      "md": "Markdown carries no control flow; its exclusion costs nothing."
+    },
+    "correction_2026_09_17": "The first version of this block described its figures as the complexity each run added. They are the complexity each run added IN F#. Corrected in place rather than reworded, and EV-SDE-2026-0008 carries the same correction."
+  }
+}

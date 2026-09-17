@@ -1,0 +1,17 @@
+path,base_branches,head_branches,added_branches,base_lines,head_lines,added_lines
+api/HelixNote.Api.Authorization.fs,113,125,12,369,403,34
+api/HelixNote.Api.CorrectionHandlers.fs,181,212,31,1299,1531,232
+api/HelixNote.Data.fs,64,66,2,832,889,57
+api/Program.fs,23,23,0,445,450,5
+domain/HelixNote.Semantic.Host.Postgres.Tests/CorrectionReaderTests.fs,201,240,39,912,1070,158
+domain/HelixNote.Semantic.Host.Postgres.Tests/IntegrationTests.fs,76,80,4,645,708,63
+domain/HelixNote.Semantic.Host.Postgres/CorrectionHost.fs,65,70,5,457,470,13
+domain/HelixNote.Semantic.Host.Postgres/CorrectionReader.fs,54,63,9,345,367,22
+domain/HelixNote.Semantic.Host.Postgres/PostgresHost.fs,57,60,3,561,587,26
+domain/HelixNote.Semantic.Tests/Fixtures.fs,4,4,0,105,120,15
+domain/HelixNote.Semantic.Tests/StateSystemTests.fs,132,142,10,955,1065,110
+domain/HelixNote.Semantic/Protocol.fs,90,97,7,377,413,36
+domain/HelixNote.Semantic/Provenance.fs,48,54,6,233,253,20
+TOTAL,,,128,,,791
+FILES_TOUCHED,13
+FILES_CREATED,0

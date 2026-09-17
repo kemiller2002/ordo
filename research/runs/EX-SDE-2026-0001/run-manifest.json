@@ -1,0 +1,404 @@
+{
+  "experiment": "EX-SDE-2026-0001",
+  "orchestrator_session": "session_01UjkFnW7ZRis2jcVHXP66rE",
+  "verified_setup_cost_usd_probe": 0.584559,
+  "rate_limit_at_wave1_launch": {
+    "type": "five_hour",
+    "status": "allowed",
+    "isUsingOverage": false,
+    "resetsAt": 1789630200
+  },
+  "conditions": {
+    "A": {
+      "name": "baseline",
+      "start_commit": "48795374b2a433a7ce3658df1df2a0112d0cfc4a"
+    },
+    "B": {
+      "name": "hardened",
+      "start_commit": "8d2d789deb63cb2078d93436eedfcd5e625d550c"
+    }
+  },
+  "runs": [
+    {
+      "id": "A1",
+      "condition": "A",
+      "session": "session_016aovZpUgZRzohjeo2F6QSt",
+      "wave": 1,
+      "start_marker": {
+        "cost_usd": 0.3598415,
+        "cache_read_tokens": 190243,
+        "cache_write_tokens": 24998,
+        "input_tokens": 8,
+        "output_tokens": 588
+      },
+      "close_marker": {
+        "cost_usd": 20.2960885,
+        "cache_read_tokens": 30453587,
+        "cache_write_tokens": 302015,
+        "input_tokens": 774,
+        "output_tokens": 81811
+      },
+      "status": "complete-verified",
+      "mission_fired_at": "2026-09-17T07:24Z",
+      "sdks": "8.0.131, 10.0.112",
+      "mission_cost": {
+        "cost_usd": 19.936247,
+        "cache_read_tokens": 30263344,
+        "cache_write_tokens": 277017,
+        "input_tokens": 766,
+        "output_tokens": 81223
+      },
+      "branch": "experiment/ex-sde-0001-a1",
+      "rate_limit_at_close": "allowed",
+      "independent_verification": {
+        "semantic": "157/157",
+        "routecontract": "6/6",
+        "apihttp": "6 passed 21 skipped /27",
+        "wasm": "4/4",
+        "postgres": "3 passed 59 skipped /62",
+        "api": "36 passed 3 failed /39",
+        "regressions": "none",
+        "commit": "5b69671",
+        "files": 18,
+        "insertions": 1283
+      },
+      "complexity": {
+        "branch_points_added": 140,
+        "lines_added": 1019,
+        "files_touched": 16,
+        "branch_points_per_100_lines_added": 13.7,
+        "measured_against": "4879537",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total.",
+        "uncounted_sql": {
+          "files": 1,
+          "lines_added": 234,
+          "decision_bearing_constructs_crude_keyword_count": 9,
+          "note": "Crude keyword matching, which is the technique the F# measure exists to avoid. Indicates scale only; not comparable to branch_points_added."
+        }
+      }
+    },
+    {
+      "id": "B1",
+      "condition": "B",
+      "session": "session_01KHvLEv9ftFYBDQ4NrQ2Xzp",
+      "wave": 1,
+      "start_marker": {
+        "cost_usd": 0.359955,
+        "cache_read_tokens": 190280,
+        "cache_write_tokens": 25010,
+        "input_tokens": 8,
+        "output_tokens": 587
+      },
+      "close_marker": {
+        "cost_usd": 13.0235485,
+        "cache_read_tokens": 17813097,
+        "cache_write_tokens": 250821,
+        "input_tokens": 698,
+        "output_tokens": 64212
+      },
+      "status": "complete-verified",
+      "mission_fired_at": "2026-09-17T07:24Z",
+      "sdks": "8.0.131, 10.0.112",
+      "mission_cost": {
+        "cost_usd": 12.6635935,
+        "cache_read_tokens": 17622817,
+        "cache_write_tokens": 225811,
+        "input_tokens": 690,
+        "output_tokens": 63625
+      },
+      "branch": "experiment/ex-sde-0001-b1",
+      "commit": "ecce4a4",
+      "files_changed": 16,
+      "insertions": 1062,
+      "rate_limit_at_close": "allowed",
+      "independent_verification": {
+        "semantic": "158/158",
+        "routecontract": "6/6",
+        "apihttp": "6 passed 19 skipped /25",
+        "wasm": "4/4",
+        "postgres": "3 passed 57 skipped /60",
+        "api": "36 passed 3 failed /39",
+        "regressions": "none",
+        "commit": "ecce4a4",
+        "files": 16,
+        "insertions": 1062
+      },
+      "complexity": {
+        "branch_points_added": 111,
+        "lines_added": 791,
+        "files_touched": 14,
+        "branch_points_per_100_lines_added": 14.0,
+        "measured_against": "8d2d789",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total.",
+        "uncounted_sql": {
+          "files": 2,
+          "lines_added": 258,
+          "decision_bearing_constructs_crude_keyword_count": 11,
+          "note": "Crude keyword matching, which is the technique the F# measure exists to avoid. Indicates scale only; not comparable to branch_points_added."
+        }
+      }
+    },
+    {
+      "id": "A2",
+      "condition": "A",
+      "session": "session_01LL9u6mqPu7UE3H9WjhsawN",
+      "wave": 2,
+      "start_marker": {
+        "cost_usd": 0.342163,
+        "cache_read_tokens": 201496,
+        "cache_write_tokens": 22640,
+        "input_tokens": 8,
+        "output_tokens": 599
+      },
+      "close_marker": {
+        "cost_usd": 16.258109,
+        "cache_read_tokens": 24096858,
+        "cache_write_tokens": 237080,
+        "input_tokens": 766,
+        "output_tokens": 73402
+      },
+      "status": "complete-verified",
+      "mission_fired_at": "2026-09-17T08:03Z",
+      "mission_cost": {
+        "cost_usd": 15.915946,
+        "cache_read_tokens": 23895362,
+        "cache_write_tokens": 214440,
+        "input_tokens": 758,
+        "output_tokens": 72803
+      },
+      "branch": "experiment/ex-sde-0001-a2",
+      "worker_epoch": 1,
+      "rate_limit_at_close": "allowed",
+      "independent_verification": {
+        "semantic": "160/160",
+        "routecontract": "6/6",
+        "apihttp": "6 passed 19 skipped /25",
+        "wasm": "4/4",
+        "postgres": "3 passed 54 skipped /57",
+        "api": "36 passed 3 failed /39",
+        "regressions": "none",
+        "commit": "8bb2f1f",
+        "files": 16,
+        "insertions": 1121
+      },
+      "complexity": {
+        "branch_points_added": 131,
+        "lines_added": 863,
+        "files_touched": 14,
+        "branch_points_per_100_lines_added": 15.2,
+        "measured_against": "4879537",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total.",
+        "uncounted_sql": {
+          "files": 1,
+          "lines_added": 230,
+          "decision_bearing_constructs_crude_keyword_count": 9,
+          "note": "Crude keyword matching, which is the technique the F# measure exists to avoid. Indicates scale only; not comparable to branch_points_added."
+        }
+      }
+    },
+    {
+      "id": "B2",
+      "condition": "B",
+      "session": "session_01VGosSLdJgfrLp1ZSsisAhX",
+      "wave": 2,
+      "start_marker": {
+        "cost_usd": 0.359896,
+        "cache_read_tokens": 190262,
+        "cache_write_tokens": 25005,
+        "input_tokens": 8,
+        "output_tokens": 587
+      },
+      "close_marker": null,
+      "status": "VOID",
+      "mission_fired_at": "2026-09-17T08:03Z",
+      "void_reason": "worker_epoch=2 indicates a worker restart during the session. Acceptance criterion 1 requires establishing the run completed without interruption or resume, checked against the session's event record. No list_events tool is available in this session, so absence of interruption cannot be established, and the epoch increment is positive evidence of a restart. Figures not reported, not averaged, not cited.",
+      "void_observed_close_marker": {
+        "cost_usd": 12.364225,
+        "note": "recorded for audit only; NOT a result"
+      },
+      "worker_epoch": 2,
+      "close_marker_observed": {
+        "cost_usd": 12.364225,
+        "cache_read_tokens": 17302560,
+        "cache_write_tokens": 231104,
+        "input_tokens": 706,
+        "output_tokens": 55935
+      },
+      "mission_cost_observed": {
+        "cost_usd": 12.004329,
+        "cache_read_tokens": 17112298,
+        "cache_write_tokens": 206099,
+        "input_tokens": 698,
+        "output_tokens": 55348,
+        "note": "OBSERVED ONLY \u2014 VOID run. Not a result, not averaged, not cited."
+      },
+      "complexity": {
+        "branch_points_added": 102,
+        "lines_added": 746,
+        "files_touched": 14,
+        "branch_points_per_100_lines_added": 13.7,
+        "measured_against": "8d2d789",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total.",
+        "uncounted_sql": {
+          "files": 1,
+          "lines_added": 239,
+          "decision_bearing_constructs_crude_keyword_count": 9,
+          "note": "Crude keyword matching, which is the technique the F# measure exists to avoid. Indicates scale only; not comparable to branch_points_added."
+        }
+      }
+    },
+    {
+      "id": "A3",
+      "condition": "A",
+      "session": "session_01RgbH2hh1U5s9gDPR5y6EVs",
+      "wave": 3,
+      "start_marker": {
+        "cost_usd": 0.245565,
+        "cache_read_tokens": 211600,
+        "cache_write_tokens": 12510,
+        "input_tokens": 8,
+        "output_tokens": 585
+      },
+      "close_marker": {
+        "cost_usd": 19.7371895,
+        "cache_read_tokens": 30818989,
+        "cache_write_tokens": 258622,
+        "input_tokens": 300,
+        "output_tokens": 69599
+      },
+      "status": "VOID-pending-criterion-decision",
+      "worker_epoch_at_start": 1,
+      "mission_cost": {
+        "cost_usd": 19.4916245,
+        "cache_read_tokens": 30607389,
+        "cache_write_tokens": 246112,
+        "input_tokens": 292,
+        "output_tokens": 69014
+      },
+      "worker_epoch": 2,
+      "completed_and_pushed": true,
+      "void_reason": "worker_epoch=2 (restart during mission turn). Completed and pushed. Voided only by the disputed criterion-1 reading.",
+      "note": "Contested void. Baseline run at $19.49 \u2014 admitting contested runs adds a HIGH figure to baseline, so the disputed amendment does not favour the hypothesis.",
+      "complexity": {
+        "branch_points_added": 128,
+        "lines_added": 791,
+        "files_touched": 13,
+        "branch_points_per_100_lines_added": 16.2,
+        "measured_against": "4879537",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total.",
+        "uncounted_sql": {
+          "files": 1,
+          "lines_added": 236,
+          "decision_bearing_constructs_crude_keyword_count": 10,
+          "note": "Crude keyword matching, which is the technique the F# measure exists to avoid. Indicates scale only; not comparable to branch_points_added."
+        }
+      }
+    },
+    {
+      "id": "B2r",
+      "condition": "B",
+      "session": "session_0114bdU6cjaz3ETgPwi77zXM",
+      "wave": 3,
+      "replaces": "B2",
+      "start_marker": {
+        "cost_usd": 0.3599735,
+        "cache_read_tokens": 190257,
+        "cache_write_tokens": 25013,
+        "input_tokens": 8,
+        "output_tokens": 587
+      },
+      "close_marker": {
+        "cost_usd": 14.4479575,
+        "cache_read_tokens": 20692505,
+        "cache_write_tokens": 244022,
+        "input_tokens": 222,
+        "output_tokens": 66415
+      },
+      "status": "VOID",
+      "worker_epoch_at_start": 1,
+      "mission_cost": {
+        "cost_usd": 14.087984,
+        "cache_read_tokens": 20502248,
+        "cache_write_tokens": 219009,
+        "input_tokens": 214,
+        "output_tokens": 65828
+      },
+      "worker_epoch": 2,
+      "completed_and_pushed": false,
+      "void_reason": "UNCONTESTED: did not complete the mission. Blocked by a permission classifier on `git commit`; 15 files staged, never committed or pushed. Fails acceptance criterion 4 (mission complete, verified against the committed diff) independently of the worker_epoch question. Also epoch 2.",
+      "complexity": {
+        "not_measured": "no committed branch to measure"
+      }
+    }
+  ],
+  "outcome": {
+    "status": "stopped short of pre-registered threshold",
+    "verified": {
+      "A": 2,
+      "B": 1
+    },
+    "required_per_condition": 3,
+    "evidence_record": "EV-SDE-2026-0007",
+    "hypothesis_disposition": "HY-SDE-2026-0009 remains untested",
+    "note": "Every completed run placed baseline above hardened, six of six. Suggestive, not evidence, and not cited as a result."
+  },
+  "worker_epoch_observation_note": {
+    "finding": "worker_epoch is perturbed by session-lifecycle events, including the orchestrator archiving a session.",
+    "evidence": "A1 read epoch 1 at its close marker and epoch 2 immediately after being archived, with no work between. B1, left unarchived, still reads 1.",
+    "per_run": {
+      "A3": "epoch 2 observed at 09:04 while RUNNING mid-mission \u2014 genuine mid-run restart",
+      "B2": "epoch 2 observed only at close \u2014 timing unknown, voided on an observation that cannot distinguish mid-run from post-run",
+      "B2r": "epoch 2 at close, irrelevant; void is uncontested (never committed)",
+      "A1": "epoch 2 only after orchestrator archived it \u2014 artifact of cleanup, not the run"
+    },
+    "successor_requirement": "Read worker_epoch at the start marker and again at the close marker; treat only a change between those readings as evidence about the run. Do not archive a session before its final reading."
+  },
+  "complexity_measurement": {
+    "metric": "cyclomatic complexity, McCabe decision-counting form: 1 + branch points",
+    "reported_as": "DELTA against the run's own condition start commit, never an absolute total",
+    "why_delta": "Condition A starts at 4879537 and Condition B at 8d2d789. They are different trees, so absolute totals are not comparable. A file a run never touched contributes zero by construction.",
+    "tool": "tools/Ordo.Complexity (F#, FSharp.Compiler.Service lexer)",
+    "counted": [
+      "if",
+      "elif",
+      "when",
+      "while",
+      "while!",
+      "for",
+      "|",
+      "&&",
+      "||"
+    ],
+    "not_counted": {
+      "match": "its clauses are already counted through '|'; counting both would double-count every match expression",
+      "| null": "a lexer cannot distinguish the nullable type annotation 'string | null' from the match clause '| null ->'. All are excluded. This loses real null clauses and removes a disagreement between FCS versions; verified identical across all nine runs."
+    },
+    "known_imprecision": "'|' fires on discriminated-union case declarations as well as match clauses, inflating files that declare many cases. Identical across conditions, so unbiased for the between-condition comparison; it would bias an absolute claim, and none is made.",
+    "preregistered": false,
+    "preregistration_note": "Taken after every run finished. Outside this experiment's falsification criteria. It is descriptive and cannot move HY-SDE-2026-0009, which concerns monetary cost.",
+    "per_file_data": "complexity/<run>.csv",
+    "evidence_record": "EV-SDE-2026-0008",
+    "start_tree_complexity": {
+      "4879537_baseline": {
+        "files": 93,
+        "branch_points": 4671,
+        "lines": 35849
+      },
+      "8d2d789_hardened": {
+        "files": 95,
+        "branch_points": 4718,
+        "lines": 36262
+      },
+      "note": "Measured across every .fs and .fsi file. A 1.0% difference in branch points, so 'the hardened tree already contained the complexity' is not supported at tree scale."
+    },
+    "languages_covered": [
+      ".fs",
+      ".fsi"
+    ],
+    "languages_NOT_covered": {
+      "sql": "Every run added 228-263 lines of SQL containing triggers, CREATE OR REPLACE FUNCTION bodies, CHECK constraints and COALESCE defaults - decision logic that lives in the database. None of it is counted. The omission is close to uniform across runs and does not differ between conditions, so it does not account for the separation, but every branch_points_added figure below is a LOWER BOUND covering one of the two languages the run wrote in.",
+      "md": "Markdown carries no control flow; its exclusion costs nothing."
+    },
+    "correction_2026_09_17": "The first version of this block described its figures as the complexity each run added. They are the complexity each run added IN F#. Corrected in place rather than reworded, and EV-SDE-2026-0008 carries the same correction."
+  }
+}

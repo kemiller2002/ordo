@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>ordo-complexity</AssemblyName>
+    <RootNamespace>Ordo.Complexity</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <!--
+      A measurement tool, not part of the distributed package. Nothing under
+      src/Sde.* references it, and it is excluded from distribution packaging
+      for the same reason src/Ordo.Site is.
+    -->
+    <!--
+      FSharp.Compiler.Service carries its own FSharp.Core and will not agree
+      with the one the SDK implies, so the implicit reference is turned off and
+      the version is pinned here where it can be seen.
+    -->
+    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Complexity.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FSharp.Core" Version="8.0.400" />
+    <PackageReference Include="FSharp.Compiler.Service" Version="43.8.400" />
+  </ItemGroup>
+
+</Project>

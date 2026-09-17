@@ -203,5 +203,103 @@
     "title": "Structural locality, agent navigation, and SDE v0.2 proposal notes",
     "type": "evidence",
     "updated": "2026-09-05"
+  },
+  {
+    "collection_date": "2026-09-17",
+    "created": "2026-09-17",
+    "id": "EV-SDE-2026-0007",
+    "method": "direct orchestration of six isolated Claude Code Remote sessions, per-session usage telemetry read externally at turn boundaries, every completed run re-verified against its committed diff",
+    "observation_type": "direct-observation, instrumented telemetry plus independent re-verification of each run's claimed test results",
+    "path": "research/evidence/EV-SDE-2026-0007--agent-cost-trial-stopped-method-defect.md",
+    "related_evidence": [
+      "EV-HN-2026-0005"
+    ],
+    "source_paths": [
+      "research/experiments/EX-SDE-2026-0001--agent-cost-under-boundary-hardening-uninterrupted.md",
+      "research/runs/EX-SDE-2026-0001/run-manifest.json",
+      "research/runs/EX-SDE-2026-0001/README.md"
+    ],
+    "source_repository": "kemiller2002/state-directed-engineering",
+    "status": "accepted",
+    "tags": [
+      "agent-cost",
+      "experiment-3",
+      "method-defect",
+      "telemetry",
+      "preregistered",
+      "inconclusive"
+    ],
+    "title": "EX-SDE-2026-0001 stopped short — working cost telemetry, a mis-specified acceptance criterion, and no answer on agent cost",
+    "type": "evidence",
+    "updated": "2026-09-17"
+  },
+  {
+    "collection_date": "2026-09-17",
+    "confidence": "medium",
+    "created": "2026-09-17",
+    "evidence_type": "derived",
+    "id": "EV-SDE-2026-0008",
+    "method": "token-accurate cyclomatic complexity from the F# compiler service lexer, computed as the delta between each run's committed branch tip and its own condition's start commit",
+    "observation_type": "derived measurement over committed diffs, computed after the runs finished and not part of any pre-registered analysis",
+    "path": "research/evidence/EV-SDE-2026-0008--decision-point-complexity-added-per-run.md",
+    "related_evidence": [
+      "EV-SDE-2026-0007"
+    ],
+    "research_area": "state-directed-engineering",
+    "source_paths": [
+      "research/runs/EX-SDE-2026-0001/complexity/",
+      "research/runs/EX-SDE-2026-0002/complexity/",
+      "tools/Ordo.Complexity/Complexity.fs"
+    ],
+    "source_repository": "kemiller2002/helix-note-application",
+    "status": "accepted",
+    "tags": [
+      "complexity",
+      "cyclomatic",
+      "agent-cost",
+      "post-hoc",
+      "exploratory",
+      "not-preregistered",
+      "fsharp-only",
+      "partial-coverage"
+    ],
+    "title": "F# decision-point complexity added per run across the agent-cost trials — hardened runs added fewer branch points, measured post hoc and F#-only",
+    "type": "evidence",
+    "updated": "2026-09-17"
+  },
+  {
+    "collection_date": "2026-09-17",
+    "confidence": "medium",
+    "created": "2026-09-17",
+    "evidence_type": "primary",
+    "id": "EV-SDE-2026-0009",
+    "method": "eleven isolated Claude Code Remote sessions across two experiments, per-session usage telemetry read externally at turn boundaries, every completed run re-verified by the orchestrator against its committed diff",
+    "observation_type": "direct-observation, instrumented telemetry plus independent re-verification of each run",
+    "path": "research/evidence/EV-SDE-2026-0009--agent-cost-continuation-stopped-short-direction-reversed.md",
+    "related_evidence": [
+      "EV-SDE-2026-0007",
+      "EV-SDE-2026-0008",
+      "EV-HN-2026-0005"
+    ],
+    "research_area": "state-directed-engineering",
+    "source_paths": [
+      "research/experiments/EX-SDE-2026-0002--agent-cost-under-boundary-hardening-continued.md",
+      "research/runs/EX-SDE-2026-0002/run-manifest.json",
+      "research/runs/EX-SDE-2026-0001/run-manifest.json"
+    ],
+    "source_repository": "kemiller2002/state-directed-engineering",
+    "status": "accepted",
+    "tags": [
+      "agent-cost",
+      "experiment-3",
+      "telemetry",
+      "preregistered",
+      "stopped-short",
+      "direction-reversed",
+      "not-supported"
+    ],
+    "title": "EX-SDE-2026-0002 stopped short of its fixed sample, and the direction reversed in its final pair",
+    "type": "evidence",
+    "updated": "2026-09-17"
   }
 ]
