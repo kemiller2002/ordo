@@ -31,3 +31,7 @@ jobs:
         with:
           dotnet-version: "8.0.x"
       - run: dotnet test tests/Ordo.Complexity.Tests/Ordo.Complexity.Tests.fsproj --nologo
+      # EX-SDE-2026-0003's rework figures come from this tool, and it replaces
+      # hand-classified numbers that cannot be audited. Two defects in it were
+      # found by running it against real history; these tests pin both.
+      - run: dotnet test tests/Ordo.Churn.Tests/Ordo.Churn.Tests.fsproj --nologo

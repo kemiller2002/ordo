@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>ordo-churn</AssemblyName>
+    <RootNamespace>Ordo.Churn</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <!--
+      A measurement tool, like tools/Ordo.Complexity. Nothing under src/Sde.* or
+      src/Ordo.Site references it, and it is excluded from distribution.
+    -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Churn.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+</Project>
