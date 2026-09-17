@@ -136,7 +136,7 @@
       "condition": "A",
       "session": "session_018wxLZENyUD64SL4uq2B71x",
       "wave": 5,
-      "status": "mission-running",
+      "status": "VOID",
       "start_marker": {
         "cost_usd": 0.3598415,
         "cache_read_tokens": 190253,
@@ -146,7 +146,31 @@
       },
       "epoch_at_start": 1,
       "mission_fired_at": "2026-09-17T12:38Z",
-      "prompt_revision": "Mission prompt now carries SDK-recovery instructions (verify dotnet --list-sdks; reinstall from Ubuntu archive if the container recycled; never touch the blocked CDN)."
+      "prompt_revision": "Mission prompt now carries SDK-recovery instructions (verify dotnet --list-sdks; reinstall from Ubuntu archive if the container recycled; never touch the blocked CDN).",
+      "close_marker_observed": {
+        "cost_usd": 19.187922,
+        "cache_read_tokens": 28700874,
+        "cache_write_tokens": 297184,
+        "input_tokens": 254,
+        "output_tokens": 74575
+      },
+      "epoch_at_close": 2,
+      "mission_cost_observed": {
+        "cost_usd": 18.8280805,
+        "cache_read_tokens": 28510621,
+        "cache_write_tokens": 272174,
+        "input_tokens": 246,
+        "output_tokens": 73992
+      },
+      "void_reason": "worker_epoch changed 1 -> 2 between start and close markers. Pre-registered corrected criterion.",
+      "independent_verification_despite_void": {
+        "semantic": "157/157",
+        "regressions": "none",
+        "files": 18,
+        "insertions": 1225,
+        "note": "Complete and sound. Voided solely on the epoch criterion."
+      },
+      "note": "Baseline void at $18.83 \u2014 this one removes a BASELINE point, where B5's removed a hardened one. The voids are not falling on one side."
     },
     {
       "id": "B5",
