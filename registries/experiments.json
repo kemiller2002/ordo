@@ -1,1 +1,29 @@
-[]
+[
+  {
+    "author_agent": "claude-code",
+    "created": "2026-09-17",
+    "id": "EX-SDE-2026-0001",
+    "inputs": [
+      "EV-HN-2026-0005",
+      "doctrine/CONTRADICTIONS-AND-DEPRECATED.md",
+      "kemiller2002/helix-note-application@experiment/agent-cost-baseline-v3 (76d6c25)",
+      "kemiller2002/helix-note-application@experiment/agent-cost-hardened-v3 (58fcbc1)",
+      "kemiller2002/helix-note-application@experiment/agent-cost-comparison-v3 (8ac05fd)"
+    ],
+    "outputs": [
+      "research/evidence/EV-SDE-2026-00NN (on completion)"
+    ],
+    "path": "research/experiments/EX-SDE-2026-0001--agent-cost-under-boundary-hardening-uninterrupted.md",
+    "related_theories": [
+      "TH-SDE-2026-0003",
+      "TH-SDE-2026-0004",
+      "TH-SDE-2026-0005"
+    ],
+    "research_area": "sde",
+    "status": "proposed",
+    "tests_hypotheses": [
+      "HY-SDE-2026-0009"
+    ],
+    "title": "Agent token and monetary cost under mechanical boundary hardening, with uninterrupted per-condition telemetry"
+  }
+]

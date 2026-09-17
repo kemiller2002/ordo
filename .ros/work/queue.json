@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "repository": "state-directed-engineering",
-  "nextSeq": 35,
+  "nextSeq": 37,
   "items": [
     {
       "id": "WI-0001",
@@ -585,6 +585,38 @@
       "attachments": [],
       "createdAt": "2026-09-16T23:22:09.619Z",
       "updatedAt": "2026-09-16T23:22:09.684Z",
+      "createdBy": "unknown",
+      "source": "manual",
+      "sourceReference": null
+    },
+    {
+      "id": "WI-0035",
+      "title": "Register the agent-cost experiment and its hypothesis",
+      "description": "Author EX-SDE-2026-0001 and HY-SDE-2026-0009: a re-run of Experiment 3's agent-cost comparison with isolated per-condition telemetry, replacing figures the doctrine disqualified.",
+      "tags": [
+        "research"
+      ],
+      "priority": "medium",
+      "status": "abandoned",
+      "attachments": [],
+      "createdAt": "2026-09-17T06:51:15.128Z",
+      "updatedAt": "2026-09-17T06:52:15.840Z",
+      "createdBy": "unknown",
+      "source": "manual",
+      "sourceReference": null
+    },
+    {
+      "id": "WI-0036",
+      "title": "Register the agent-cost experiment and its hypothesis",
+      "description": "Author EX-SDE-2026-0001 and HY-SDE-2026-0009: a re-run of Experiment 3's agent-cost comparison with isolated per-condition telemetry, replacing figures the doctrine disqualified.",
+      "tags": [
+        "research"
+      ],
+      "priority": "medium",
+      "status": "ready",
+      "attachments": [],
+      "createdAt": "2026-09-17T06:52:24.280Z",
+      "updatedAt": "2026-09-17T06:52:24.448Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null

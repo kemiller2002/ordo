@@ -4,7 +4,7 @@
   "repository": "state-directed-engineering",
   "actor": "ros-bootstrap",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-09-16T23:22:09.805Z",
+  "updatedAt": "2026-09-17T06:52:28.523Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -494,6 +494,29 @@
       ],
       "updatedAt": "2026-09-16T23:22:09.805Z",
       "completedAt": "2026-09-16T23:22:09.805Z"
+    },
+    {
+      "id": "WI-0035",
+      "type": "task",
+      "state": "active",
+      "semanticState": "active",
+      "evidence": [],
+      "updatedAt": "2026-09-17T06:51:26.370Z"
+    },
+    {
+      "id": "WI-0036",
+      "type": "research",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "research-record",
+          "path": "research/experiments/EX-SDE-2026-0001--agent-cost-under-boundary-hardening-uninterrupted.md"
+        }
+      ],
+      "updatedAt": "2026-09-17T06:52:28.523Z",
+      "completedAt": "2026-09-17T06:52:28.523Z",
+      "conclusion": "inconclusive"
     }
   ]
 }
