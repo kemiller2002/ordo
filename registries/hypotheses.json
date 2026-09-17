@@ -213,5 +213,32 @@
     "title": "Mechanical boundary hardening reduces an agent's monetary cost to implement an identical mission",
     "type": "hypothesis",
     "updated": "2026-09-17"
+  },
+  {
+    "confidence": "very-low",
+    "confidence_rationale": "Untested and, unlike its predecessors, registered with a concrete reason to expect either direction. The evidence base already contains a measurement pointing the other way (EV-SDE-2026-0010: the state-structured domain has more decision points, not fewer) and one pointing toward it (EV-SDE-2026-0008). Neither is about rework.",
+    "created": "2026-09-17",
+    "disposition": "untested",
+    "evidence_against": [],
+    "evidence_for": [],
+    "id": "HY-SDE-2026-0010",
+    "path": "research/hypotheses/HY-SDE-2026-0010--state-structure-reduces-rework-from-new-requirements.md",
+    "related_evidence": [
+      "EV-SDE-2026-0008",
+      "EV-SDE-2026-0010"
+    ],
+    "research_area": "sde",
+    "source_experiment": "EX-SDE-2026-0003",
+    "status": "proposed",
+    "tags": [
+      "rework",
+      "requirements-change",
+      "preregistered",
+      "time-entry",
+      "churn"
+    ],
+    "title": "A state-structured domain requires less rework of existing code when a new requirement arrives",
+    "type": "hypothesis",
+    "updated": "2026-09-17"
   }
 ]

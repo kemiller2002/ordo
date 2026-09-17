@@ -53,5 +53,32 @@
       "HY-SDE-2026-0009"
     ],
     "title": "Agent monetary cost under mechanical boundary hardening — continuation with a corrected interruption criterion"
+  },
+  {
+    "author_agent": "claude-code",
+    "created": "2026-09-17",
+    "id": "EX-SDE-2026-0003",
+    "inputs": [
+      "EV-SDE-2026-0008",
+      "EV-SDE-2026-0010",
+      "kemiller2002/time-entry-state-machine requirements-reconstruction/",
+      "tools/Ordo.Churn"
+    ],
+    "outputs": [
+      "research/evidence/EV-SDE-2026-00NN (on completion)",
+      "research/runs/EX-SDE-2026-0003/run-manifest.json"
+    ],
+    "path": "research/experiments/EX-SDE-2026-0003--rework-from-arriving-requirements.md",
+    "related_theories": [
+      "TH-SDE-2026-0003",
+      "TH-SDE-2026-0004",
+      "TH-SDE-2026-0005"
+    ],
+    "research_area": "sde",
+    "status": "proposed",
+    "tests_hypotheses": [
+      "HY-SDE-2026-0010"
+    ],
+    "title": "Rework caused by arriving requirements — conventional against state-structured, measured mechanically"
   }
 ]
