@@ -217,6 +217,38 @@
         "note": "Complete and sound. Voided solely on the epoch criterion, not on quality."
       },
       "FLAG": "This void REMOVES THE STRONGEST COUNTER-EVIDENCE. At $20.62 B5 is the most expensive hardened run and the second most expensive run overall. Keeping it would push the hardened condition's mean ABOVE two baseline runs and likely erase the remaining gap. The criterion is pre-registered and applied unchanged, but a reader must be able to see that it fell this way."
+    },
+    {
+      "id": "A6",
+      "condition": "A",
+      "session": "session_01SdQnGTSbwgmAZs8uzoZZc2",
+      "wave": 6,
+      "start_marker": {
+        "cost_usd": 0.359633,
+        "cache_read_tokens": 190146,
+        "cache_write_tokens": 24972,
+        "input_tokens": 8,
+        "output_tokens": 592
+      },
+      "epoch_at_start": 1,
+      "status": "mission-running",
+      "mission_fired_at": "2026-09-17T13:23Z"
+    },
+    {
+      "id": "B6",
+      "condition": "B",
+      "session": "session_017Db57zrnkzD5Mm8wJYchsX",
+      "wave": 6,
+      "start_marker": {
+        "cost_usd": 0.359262,
+        "cache_read_tokens": 190134,
+        "cache_write_tokens": 24958,
+        "input_tokens": 8,
+        "output_tokens": 583
+      },
+      "epoch_at_start": 1,
+      "status": "mission-running",
+      "mission_fired_at": "2026-09-17T13:23Z"
     }
   ],
   "operational_log": [
