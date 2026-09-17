@@ -9,9 +9,10 @@ confidence_rationale: "Untested, not disbelieved. No evidence exists in either d
 source_experiment: EX-SDE-2026-0001
 evidence_for: []
 evidence_against: []
+related_evidence: [EV-SDE-2026-0007]
 created: 2026-09-17
 updated: 2026-09-17
-tags: [agent-cost, tokens, experiment-3, open-question, preregistered]
+tags: [agent-cost, tokens, experiment-3, open-question, preregistered, attempted-inconclusive]
 ---
 
 # HY-SDE-2026-0009
@@ -20,9 +21,22 @@ tags: [agent-cost, tokens, experiment-3, open-question, preregistered]
 mission incurs lower monetary cost working against a mechanically hardened
 boundary architecture than against the unhardened baseline architecture.
 
-**Status: OPEN — never measured.** This hypothesis is registered *before*
+**Status: OPEN — attempted, still untested.** This hypothesis is registered *before*
 its experiment (EX-SDE-2026-0001) runs, so that the prediction is on record
 and cannot be adjusted to fit a result.
+
+**Attempted and stopped short.** EX-SDE-2026-0001 ran six trials on
+2026-09-17 and did not reach its threshold [EV-SDE-2026-0007]. Three runs
+verified — baseline $19.94 and $15.92, hardened $12.66 — and three void, two
+on a criterion that proved mis-specified and one that never completed. That
+is n=2 against n=1, where the criteria require three per condition with
+separation exceeding within-condition spread; the two baseline runs alone
+span $4.02 on identical inputs, the same order as the gap between
+conditions.
+
+Every completed run placed baseline above hardened. **This is not recorded
+as evidence for.** A direction from an underpowered set is what Experiment 3
+already produced and had to withdraw.
 
 **Evidence for:** None. Note specifically that Experiment 3's apparent
 figures — 59% fewer tool uses, 68% fewer tokens, 59% less wall clock — are

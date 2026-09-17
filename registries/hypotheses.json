@@ -195,6 +195,9 @@
     "evidence_for": [],
     "id": "HY-SDE-2026-0009",
     "path": "research/hypotheses/HY-SDE-2026-0009--hardening-reduces-agent-monetary-cost.md",
+    "related_evidence": [
+      "EV-SDE-2026-0007"
+    ],
     "source_experiment": "EX-SDE-2026-0001",
     "status": "proposed",
     "tags": [
@@ -202,7 +205,8 @@
       "tokens",
       "experiment-3",
       "open-question",
-      "preregistered"
+      "preregistered",
+      "attempted-inconclusive"
     ],
     "title": "Mechanical boundary hardening reduces an agent's monetary cost to implement an identical mission",
     "type": "hypothesis",

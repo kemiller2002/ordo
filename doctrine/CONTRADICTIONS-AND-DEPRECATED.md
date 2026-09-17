@@ -47,6 +47,13 @@ eventual log already existed before the counted portion began. The true
 total could plausibly match or exceed Condition A's (195 tool uses, 516,665
 tokens, 36.43 minutes) [EV-HN-2026-0005, §39.1]. Never cite the raw
 percentage reductions (59%/68%/59%) as a confirmed cost reduction.
+**Re-measurement attempted and stopped short:** EX-SDE-2026-0001 ran six
+controlled trials on 2026-09-17 with working per-condition telemetry and
+reached n=2 against n=1 before stopping, short of its own threshold
+[EV-SDE-2026-0007]. Its acceptance criterion proved mis-specified and was
+deliberately not amended mid-flight. **This entry is unchanged by that
+attempt**: the figure remains Unsupported (Open), and the runs' apparent
+direction is not evidence and is not to be cited as such.
 
 ## Experiment 3 proves an elapsed-time reduction from boundary hardening
 

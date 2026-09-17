@@ -174,7 +174,22 @@
         "cost_usd": 12.364225,
         "note": "recorded for audit only; NOT a result"
       },
-      "worker_epoch": 2
+      "worker_epoch": 2,
+      "close_marker_observed": {
+        "cost_usd": 12.364225,
+        "cache_read_tokens": 17302560,
+        "cache_write_tokens": 231104,
+        "input_tokens": 706,
+        "output_tokens": 55935
+      },
+      "mission_cost_observed": {
+        "cost_usd": 12.004329,
+        "cache_read_tokens": 17112298,
+        "cache_write_tokens": 206099,
+        "input_tokens": 698,
+        "output_tokens": 55348,
+        "note": "OBSERVED ONLY \u2014 VOID run. Not a result, not averaged, not cited."
+      }
     },
     {
       "id": "A3",
@@ -206,7 +221,8 @@
       },
       "worker_epoch": 2,
       "completed_and_pushed": true,
-      "void_reason": "worker_epoch=2 (restart during mission turn). Completed and pushed. Voided only by the disputed criterion-1 reading."
+      "void_reason": "worker_epoch=2 (restart during mission turn). Completed and pushed. Voided only by the disputed criterion-1 reading.",
+      "note": "Contested void. Baseline run at $19.49 \u2014 admitting contested runs adds a HIGH figure to baseline, so the disputed amendment does not favour the hypothesis."
     },
     {
       "id": "B2r",
@@ -241,5 +257,16 @@
       "completed_and_pushed": false,
       "void_reason": "UNCONTESTED: did not complete the mission. Blocked by a permission classifier on `git commit`; 15 files staged, never committed or pushed. Fails acceptance criterion 4 (mission complete, verified against the committed diff) independently of the worker_epoch question. Also epoch 2."
     }
-  ]
+  ],
+  "outcome": {
+    "status": "stopped short of pre-registered threshold",
+    "verified": {
+      "A": 2,
+      "B": 1
+    },
+    "required_per_condition": 3,
+    "evidence_record": "EV-SDE-2026-0007",
+    "hypothesis_disposition": "HY-SDE-2026-0009 remains untested",
+    "note": "Every completed run placed baseline above hardened, six of six. Suggestive, not evidence, and not cited as a result."
+  }
 }

@@ -2,7 +2,7 @@
 id: EX-SDE-2026-0001
 title: Agent token and monetary cost under mechanical boundary hardening, with uninterrupted per-condition telemetry
 research_area: sde
-status: proposed
+status: blocked
 created: 2026-09-17
 author_agent: claude-code
 tests_hypotheses: [HY-SDE-2026-0009]
@@ -14,7 +14,8 @@ inputs:
   - kemiller2002/helix-note-application@experiment/agent-cost-hardened-v3 (58fcbc1)
   - kemiller2002/helix-note-application@experiment/agent-cost-comparison-v3 (8ac05fd)
 outputs:
-  - research/evidence/EV-SDE-2026-00NN (on completion)
+  - research/evidence/EV-SDE-2026-0007
+  - research/runs/EX-SDE-2026-0001/run-manifest.json
 ---
 
 # Experiment
@@ -232,16 +233,48 @@ than being generic hygiene.
 
 ## Results
 
-Not yet run. See **Execution feasibility** below.
+**Stopped short of the pre-registered threshold. See EV-SDE-2026-0007.**
+
+Six runs executed; three verified, three void. Verified: A1 $19.94, A2
+$15.92 (baseline), B1 $12.66 (hardened). Void: A3 $19.49 and B2 $12.00 on
+the contested interruption criterion, B2r $14.09 for never completing (a
+permission classifier blocked `git commit` with 15 files staged).
+
+That is **n=2 baseline, n=1 hardened**. The falsification criteria require
+≥3 per condition with separation exceeding within-condition spread; with one
+hardened run there is no spread to compare against, so the test cannot be
+evaluated. The two verified baseline runs span **$4.02** on identical inputs,
+against a between-condition gap of $3.25–$7.28: one condition's noise is the
+same order as the apparent effect.
+
+Every completed run placed baseline above hardened, six for six. That agrees
+with Experiment 3's disqualified figures and is **suggestive, not evidence**.
+It is not cited as a result.
+
+Full per-run figures and token classes: `research/runs/EX-SDE-2026-0001/`.
 
 ## Analysis
 
-To be completed. The analysis plan is fixed now: per-run `cost_usd` by
-condition, token classes reported separately, wall clock reported as a
-secondary measure carrying the build-count covariate, and Required Change
-Sites reported to confirm the mutation's size did not differ between
-conditions (Experiment 3 measured 19 and 19; a departure from that would
-itself need explaining before any cost comparison is read).
+Not performed. The analysis plan required a complete set and the set is
+incomplete; running it on n=2 versus n=1 would produce a figure that looks
+like an analysis and is not one.
+
+Two defects surfaced in execution, and they are the experiment's actual
+output:
+
+1. **The interruption criterion is mis-specified.** It voids runs on
+   `worker_epoch` increments — three of six mission turns — which cannot
+   cause the telemetry truncation it guards against, because usage is
+   server-side and cumulative and the start marker precedes the mission. The
+   session event record it names is also unreachable: no `list_events` tool
+   exists in the orchestrating session. **The criterion was not amended**;
+   this record freezes at first run, and loosening a pre-registered criterion
+   to recover data is the failure this programme exists to prevent.
+2. **An unanticipated failure mode.** A permission classifier blocked
+   `git commit`, killing a completed implementation at the final step.
+
+The measurement apparatus itself worked, and its constraints are now known
+rather than assumed — see EV-SDE-2026-0007 §1.
 
 ## Threats to validity
 
@@ -345,7 +378,18 @@ published as though it were.
 
 ## Conclusion
 
-Pending execution.
+**No conclusion on the research question.** HY-SDE-2026-0009 remains
+untested, and the doctrine entry holding Experiment 3's cost reduction
+Unsupported (Open) stands unchanged.
+
+This experiment does not resume in its present form. Its acceptance criteria
+cannot be evaluated with the tools available, and a successor must fix the
+criterion, pre-authorise the commit path, size its sample against an observed
+$4 run-to-run variance, and provide a Docker daemon so "completed the
+mission" means more than "compiled and passed unit tests".
+
+Stopping here rather than amending mid-flight, or reporting a direction from
+an underpowered set, is the outcome.
 
 ## Registry updates required
 

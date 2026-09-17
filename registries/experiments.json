@@ -11,7 +11,8 @@
       "kemiller2002/helix-note-application@experiment/agent-cost-comparison-v3 (8ac05fd)"
     ],
     "outputs": [
-      "research/evidence/EV-SDE-2026-00NN (on completion)"
+      "research/evidence/EV-SDE-2026-0007",
+      "research/runs/EX-SDE-2026-0001/run-manifest.json"
     ],
     "path": "research/experiments/EX-SDE-2026-0001--agent-cost-under-boundary-hardening-uninterrupted.md",
     "related_theories": [
@@ -20,7 +21,7 @@
       "TH-SDE-2026-0005"
     ],
     "research_area": "sde",
-    "status": "proposed",
+    "status": "blocked",
     "tests_hypotheses": [
       "HY-SDE-2026-0009"
     ],

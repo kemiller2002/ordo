@@ -203,5 +203,34 @@
     "title": "Structural locality, agent navigation, and SDE v0.2 proposal notes",
     "type": "evidence",
     "updated": "2026-09-05"
+  },
+  {
+    "collection_date": "2026-09-17",
+    "created": "2026-09-17",
+    "id": "EV-SDE-2026-0007",
+    "method": "direct orchestration of six isolated Claude Code Remote sessions, per-session usage telemetry read externally at turn boundaries, every completed run re-verified against its committed diff",
+    "observation_type": "direct-observation, instrumented telemetry plus independent re-verification of each run's claimed test results",
+    "path": "research/evidence/EV-SDE-2026-0007--agent-cost-trial-stopped-method-defect.md",
+    "related_evidence": [
+      "EV-HN-2026-0005"
+    ],
+    "source_paths": [
+      "research/experiments/EX-SDE-2026-0001--agent-cost-under-boundary-hardening-uninterrupted.md",
+      "research/runs/EX-SDE-2026-0001/run-manifest.json",
+      "research/runs/EX-SDE-2026-0001/README.md"
+    ],
+    "source_repository": "kemiller2002/state-directed-engineering",
+    "status": "accepted",
+    "tags": [
+      "agent-cost",
+      "experiment-3",
+      "method-defect",
+      "telemetry",
+      "preregistered",
+      "inconclusive"
+    ],
+    "title": "EX-SDE-2026-0001 stopped short — working cost telemetry, a mis-specified acceptance criterion, and no answer on agent cost",
+    "type": "evidence",
+    "updated": "2026-09-17"
   }
 ]
