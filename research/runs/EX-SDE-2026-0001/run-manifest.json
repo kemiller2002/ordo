@@ -1,0 +1,245 @@
+{
+  "experiment": "EX-SDE-2026-0001",
+  "orchestrator_session": "session_01UjkFnW7ZRis2jcVHXP66rE",
+  "verified_setup_cost_usd_probe": 0.584559,
+  "rate_limit_at_wave1_launch": {
+    "type": "five_hour",
+    "status": "allowed",
+    "isUsingOverage": false,
+    "resetsAt": 1789630200
+  },
+  "conditions": {
+    "A": {
+      "name": "baseline",
+      "start_commit": "48795374b2a433a7ce3658df1df2a0112d0cfc4a"
+    },
+    "B": {
+      "name": "hardened",
+      "start_commit": "8d2d789deb63cb2078d93436eedfcd5e625d550c"
+    }
+  },
+  "runs": [
+    {
+      "id": "A1",
+      "condition": "A",
+      "session": "session_016aovZpUgZRzohjeo2F6QSt",
+      "wave": 1,
+      "start_marker": {
+        "cost_usd": 0.3598415,
+        "cache_read_tokens": 190243,
+        "cache_write_tokens": 24998,
+        "input_tokens": 8,
+        "output_tokens": 588
+      },
+      "close_marker": {
+        "cost_usd": 20.2960885,
+        "cache_read_tokens": 30453587,
+        "cache_write_tokens": 302015,
+        "input_tokens": 774,
+        "output_tokens": 81811
+      },
+      "status": "complete-verified",
+      "mission_fired_at": "2026-09-17T07:24Z",
+      "sdks": "8.0.131, 10.0.112",
+      "mission_cost": {
+        "cost_usd": 19.936247,
+        "cache_read_tokens": 30263344,
+        "cache_write_tokens": 277017,
+        "input_tokens": 766,
+        "output_tokens": 81223
+      },
+      "branch": "experiment/ex-sde-0001-a1",
+      "rate_limit_at_close": "allowed",
+      "independent_verification": {
+        "semantic": "157/157",
+        "routecontract": "6/6",
+        "apihttp": "6 passed 21 skipped /27",
+        "wasm": "4/4",
+        "postgres": "3 passed 59 skipped /62",
+        "api": "36 passed 3 failed /39",
+        "regressions": "none",
+        "commit": "5b69671",
+        "files": 18,
+        "insertions": 1283
+      }
+    },
+    {
+      "id": "B1",
+      "condition": "B",
+      "session": "session_01KHvLEv9ftFYBDQ4NrQ2Xzp",
+      "wave": 1,
+      "start_marker": {
+        "cost_usd": 0.359955,
+        "cache_read_tokens": 190280,
+        "cache_write_tokens": 25010,
+        "input_tokens": 8,
+        "output_tokens": 587
+      },
+      "close_marker": {
+        "cost_usd": 13.0235485,
+        "cache_read_tokens": 17813097,
+        "cache_write_tokens": 250821,
+        "input_tokens": 698,
+        "output_tokens": 64212
+      },
+      "status": "complete-verified",
+      "mission_fired_at": "2026-09-17T07:24Z",
+      "sdks": "8.0.131, 10.0.112",
+      "mission_cost": {
+        "cost_usd": 12.6635935,
+        "cache_read_tokens": 17622817,
+        "cache_write_tokens": 225811,
+        "input_tokens": 690,
+        "output_tokens": 63625
+      },
+      "branch": "experiment/ex-sde-0001-b1",
+      "commit": "ecce4a4",
+      "files_changed": 16,
+      "insertions": 1062,
+      "rate_limit_at_close": "allowed",
+      "independent_verification": {
+        "semantic": "158/158",
+        "routecontract": "6/6",
+        "apihttp": "6 passed 19 skipped /25",
+        "wasm": "4/4",
+        "postgres": "3 passed 57 skipped /60",
+        "api": "36 passed 3 failed /39",
+        "regressions": "none",
+        "commit": "ecce4a4",
+        "files": 16,
+        "insertions": 1062
+      }
+    },
+    {
+      "id": "A2",
+      "condition": "A",
+      "session": "session_01LL9u6mqPu7UE3H9WjhsawN",
+      "wave": 2,
+      "start_marker": {
+        "cost_usd": 0.342163,
+        "cache_read_tokens": 201496,
+        "cache_write_tokens": 22640,
+        "input_tokens": 8,
+        "output_tokens": 599
+      },
+      "close_marker": {
+        "cost_usd": 16.258109,
+        "cache_read_tokens": 24096858,
+        "cache_write_tokens": 237080,
+        "input_tokens": 766,
+        "output_tokens": 73402
+      },
+      "status": "complete-verified",
+      "mission_fired_at": "2026-09-17T08:03Z",
+      "mission_cost": {
+        "cost_usd": 15.915946,
+        "cache_read_tokens": 23895362,
+        "cache_write_tokens": 214440,
+        "input_tokens": 758,
+        "output_tokens": 72803
+      },
+      "branch": "experiment/ex-sde-0001-a2",
+      "worker_epoch": 1,
+      "rate_limit_at_close": "allowed",
+      "independent_verification": {
+        "semantic": "160/160",
+        "routecontract": "6/6",
+        "apihttp": "6 passed 19 skipped /25",
+        "wasm": "4/4",
+        "postgres": "3 passed 54 skipped /57",
+        "api": "36 passed 3 failed /39",
+        "regressions": "none",
+        "commit": "8bb2f1f",
+        "files": 16,
+        "insertions": 1121
+      }
+    },
+    {
+      "id": "B2",
+      "condition": "B",
+      "session": "session_01VGosSLdJgfrLp1ZSsisAhX",
+      "wave": 2,
+      "start_marker": {
+        "cost_usd": 0.359896,
+        "cache_read_tokens": 190262,
+        "cache_write_tokens": 25005,
+        "input_tokens": 8,
+        "output_tokens": 587
+      },
+      "close_marker": null,
+      "status": "VOID",
+      "mission_fired_at": "2026-09-17T08:03Z",
+      "void_reason": "worker_epoch=2 indicates a worker restart during the session. Acceptance criterion 1 requires establishing the run completed without interruption or resume, checked against the session's event record. No list_events tool is available in this session, so absence of interruption cannot be established, and the epoch increment is positive evidence of a restart. Figures not reported, not averaged, not cited.",
+      "void_observed_close_marker": {
+        "cost_usd": 12.364225,
+        "note": "recorded for audit only; NOT a result"
+      },
+      "worker_epoch": 2
+    },
+    {
+      "id": "A3",
+      "condition": "A",
+      "session": "session_01RgbH2hh1U5s9gDPR5y6EVs",
+      "wave": 3,
+      "start_marker": {
+        "cost_usd": 0.245565,
+        "cache_read_tokens": 211600,
+        "cache_write_tokens": 12510,
+        "input_tokens": 8,
+        "output_tokens": 585
+      },
+      "close_marker": {
+        "cost_usd": 19.7371895,
+        "cache_read_tokens": 30818989,
+        "cache_write_tokens": 258622,
+        "input_tokens": 300,
+        "output_tokens": 69599
+      },
+      "status": "VOID-pending-criterion-decision",
+      "worker_epoch_at_start": 1,
+      "mission_cost": {
+        "cost_usd": 19.4916245,
+        "cache_read_tokens": 30607389,
+        "cache_write_tokens": 246112,
+        "input_tokens": 292,
+        "output_tokens": 69014
+      },
+      "worker_epoch": 2,
+      "completed_and_pushed": true,
+      "void_reason": "worker_epoch=2 (restart during mission turn). Completed and pushed. Voided only by the disputed criterion-1 reading."
+    },
+    {
+      "id": "B2r",
+      "condition": "B",
+      "session": "session_0114bdU6cjaz3ETgPwi77zXM",
+      "wave": 3,
+      "replaces": "B2",
+      "start_marker": {
+        "cost_usd": 0.3599735,
+        "cache_read_tokens": 190257,
+        "cache_write_tokens": 25013,
+        "input_tokens": 8,
+        "output_tokens": 587
+      },
+      "close_marker": {
+        "cost_usd": 14.4479575,
+        "cache_read_tokens": 20692505,
+        "cache_write_tokens": 244022,
+        "input_tokens": 222,
+        "output_tokens": 66415
+      },
+      "status": "VOID",
+      "worker_epoch_at_start": 1,
+      "mission_cost": {
+        "cost_usd": 14.087984,
+        "cache_read_tokens": 20502248,
+        "cache_write_tokens": 219009,
+        "input_tokens": 214,
+        "output_tokens": 65828
+      },
+      "worker_epoch": 2,
+      "completed_and_pushed": false,
+      "void_reason": "UNCONTESTED: did not complete the mission. Blocked by a permission classifier on `git commit`; 15 files staged, never committed or pushed. Fails acceptance criterion 4 (mission complete, verified against the committed diff) independently of the worker_epoch question. Also epoch 2."
+    }
+  ]
+}
