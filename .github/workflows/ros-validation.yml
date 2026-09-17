@@ -21,3 +21,13 @@ jobs:
       - run: ./ros validate
         env:
           ROS_BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+
+      # A research record is only as good as the tool that produced its
+      # numbers. EV-SDE-2026-0008 cites per-run complexity figures; these tests
+      # hand-count every rule the measure applies, including the two cases
+      # where it is knowingly wrong, so a silent change to the measure cannot
+      # reach a published figure unnoticed.
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - run: dotnet test tests/Ordo.Complexity.Tests/Ordo.Complexity.Tests.fsproj --nologo

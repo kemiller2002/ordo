@@ -61,6 +61,13 @@
         "commit": "5b69671",
         "files": 18,
         "insertions": 1283
+      },
+      "complexity": {
+        "branch_points_added": 140,
+        "lines_added": 1019,
+        "files_touched": 16,
+        "branch_points_per_100_lines_added": 13.7,
+        "measured_against": "4879537"
       }
     },
     {
@@ -108,6 +115,13 @@
         "commit": "ecce4a4",
         "files": 16,
         "insertions": 1062
+      },
+      "complexity": {
+        "branch_points_added": 111,
+        "lines_added": 791,
+        "files_touched": 14,
+        "branch_points_per_100_lines_added": 14.0,
+        "measured_against": "8d2d789"
       }
     },
     {
@@ -152,6 +166,13 @@
         "commit": "8bb2f1f",
         "files": 16,
         "insertions": 1121
+      },
+      "complexity": {
+        "branch_points_added": 131,
+        "lines_added": 863,
+        "files_touched": 14,
+        "branch_points_per_100_lines_added": 15.2,
+        "measured_against": "4879537"
       }
     },
     {
@@ -189,6 +210,13 @@
         "input_tokens": 698,
         "output_tokens": 55348,
         "note": "OBSERVED ONLY \u2014 VOID run. Not a result, not averaged, not cited."
+      },
+      "complexity": {
+        "branch_points_added": 102,
+        "lines_added": 746,
+        "files_touched": 14,
+        "branch_points_per_100_lines_added": 13.7,
+        "measured_against": "8d2d789"
       }
     },
     {
@@ -222,7 +250,14 @@
       "worker_epoch": 2,
       "completed_and_pushed": true,
       "void_reason": "worker_epoch=2 (restart during mission turn). Completed and pushed. Voided only by the disputed criterion-1 reading.",
-      "note": "Contested void. Baseline run at $19.49 \u2014 admitting contested runs adds a HIGH figure to baseline, so the disputed amendment does not favour the hypothesis."
+      "note": "Contested void. Baseline run at $19.49 \u2014 admitting contested runs adds a HIGH figure to baseline, so the disputed amendment does not favour the hypothesis.",
+      "complexity": {
+        "branch_points_added": 128,
+        "lines_added": 791,
+        "files_touched": 13,
+        "branch_points_per_100_lines_added": 16.2,
+        "measured_against": "4879537"
+      }
     },
     {
       "id": "B2r",
@@ -255,7 +290,10 @@
       },
       "worker_epoch": 2,
       "completed_and_pushed": false,
-      "void_reason": "UNCONTESTED: did not complete the mission. Blocked by a permission classifier on `git commit`; 15 files staged, never committed or pushed. Fails acceptance criterion 4 (mission complete, verified against the committed diff) independently of the worker_epoch question. Also epoch 2."
+      "void_reason": "UNCONTESTED: did not complete the mission. Blocked by a permission classifier on `git commit`; 15 files staged, never committed or pushed. Fails acceptance criterion 4 (mission complete, verified against the committed diff) independently of the worker_epoch question. Also epoch 2.",
+      "complexity": {
+        "not_measured": "no committed branch to measure"
+      }
     }
   ],
   "outcome": {
@@ -279,5 +317,44 @@
       "A1": "epoch 2 only after orchestrator archived it \u2014 artifact of cleanup, not the run"
     },
     "successor_requirement": "Read worker_epoch at the start marker and again at the close marker; treat only a change between those readings as evidence about the run. Do not archive a session before its final reading."
+  },
+  "complexity_measurement": {
+    "metric": "cyclomatic complexity, McCabe decision-counting form: 1 + branch points",
+    "reported_as": "DELTA against the run's own condition start commit, never an absolute total",
+    "why_delta": "Condition A starts at 4879537 and Condition B at 8d2d789. They are different trees, so absolute totals are not comparable. A file a run never touched contributes zero by construction.",
+    "tool": "tools/Ordo.Complexity (F#, FSharp.Compiler.Service lexer)",
+    "counted": [
+      "if",
+      "elif",
+      "when",
+      "while",
+      "while!",
+      "for",
+      "|",
+      "&&",
+      "||"
+    ],
+    "not_counted": {
+      "match": "its clauses are already counted through '|'; counting both would double-count every match expression",
+      "| null": "a lexer cannot distinguish the nullable type annotation 'string | null' from the match clause '| null ->'. All are excluded. This loses real null clauses and removes a disagreement between FCS versions; verified identical across all nine runs."
+    },
+    "known_imprecision": "'|' fires on discriminated-union case declarations as well as match clauses, inflating files that declare many cases. Identical across conditions, so unbiased for the between-condition comparison; it would bias an absolute claim, and none is made.",
+    "preregistered": false,
+    "preregistration_note": "Taken after every run finished. Outside this experiment's falsification criteria. It is descriptive and cannot move HY-SDE-2026-0009, which concerns monetary cost.",
+    "per_file_data": "complexity/<run>.csv",
+    "evidence_record": "EV-SDE-2026-0008",
+    "start_tree_complexity": {
+      "4879537_baseline": {
+        "files": 93,
+        "branch_points": 4671,
+        "lines": 35849
+      },
+      "8d2d789_hardened": {
+        "files": 95,
+        "branch_points": 4718,
+        "lines": 36262
+      },
+      "note": "Measured across every .fs and .fsi file. A 1.0% difference in branch points, so 'the hardened tree already contained the complexity' is not supported at tree scale."
+    }
   }
 }

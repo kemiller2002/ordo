@@ -232,5 +232,37 @@
     "title": "EX-SDE-2026-0001 stopped short — working cost telemetry, a mis-specified acceptance criterion, and no answer on agent cost",
     "type": "evidence",
     "updated": "2026-09-17"
+  },
+  {
+    "collection_date": "2026-09-17",
+    "confidence": "medium",
+    "created": "2026-09-17",
+    "evidence_type": "derived",
+    "id": "EV-SDE-2026-0008",
+    "method": "token-accurate cyclomatic complexity from the F# compiler service lexer, computed as the delta between each run's committed branch tip and its own condition's start commit",
+    "observation_type": "derived measurement over committed diffs, computed after the runs finished and not part of any pre-registered analysis",
+    "path": "research/evidence/EV-SDE-2026-0008--decision-point-complexity-added-per-run.md",
+    "related_evidence": [
+      "EV-SDE-2026-0007"
+    ],
+    "research_area": "state-directed-engineering",
+    "source_paths": [
+      "research/runs/EX-SDE-2026-0001/complexity/",
+      "research/runs/EX-SDE-2026-0002/complexity/",
+      "tools/Ordo.Complexity/Complexity.fs"
+    ],
+    "source_repository": "kemiller2002/helix-note-application",
+    "status": "accepted",
+    "tags": [
+      "complexity",
+      "cyclomatic",
+      "agent-cost",
+      "post-hoc",
+      "exploratory",
+      "not-preregistered"
+    ],
+    "title": "Decision-point complexity added per run across the agent-cost trials — hardened runs added fewer branch points, measured post hoc",
+    "type": "evidence",
+    "updated": "2026-09-17"
   }
 ]

@@ -85,7 +85,14 @@
         "files": 17,
         "insertions": 1278
       },
-      "process_caveat": "A4's summary claims it never compiled during its run. Its committed output compiles and passes. Whether it ran the verification sequence itself is UNESTABLISHED. The criterion requires orchestrator verification against the committed diff, which it passes."
+      "process_caveat": "A4's summary claims it never compiled during its run. Its committed output compiles and passes. Whether it ran the verification sequence itself is UNESTABLISHED. The criterion requires orchestrator verification against the committed diff, which it passes.",
+      "complexity": {
+        "branch_points_added": 140,
+        "lines_added": 983,
+        "files_touched": 15,
+        "branch_points_per_100_lines_added": 14.2,
+        "measured_against": "4879537"
+      }
     },
     {
       "id": "B4",
@@ -129,6 +136,13 @@
         "commit": "f4b22a3",
         "files": 15,
         "insertions": 888
+      },
+      "complexity": {
+        "branch_points_added": 82,
+        "lines_added": 638,
+        "files_touched": 14,
+        "branch_points_per_100_lines_added": 12.9,
+        "measured_against": "8d2d789"
       }
     },
     {
@@ -170,7 +184,14 @@
         "insertions": 1225,
         "note": "Complete and sound. Voided solely on the epoch criterion."
       },
-      "note": "Baseline void at $18.83 \u2014 this one removes a BASELINE point, where B5's removed a hardened one. The voids are not falling on one side."
+      "note": "Baseline void at $18.83 \u2014 this one removes a BASELINE point, where B5's removed a hardened one. The voids are not falling on one side.",
+      "complexity": {
+        "branch_points_added": 126,
+        "lines_added": 957,
+        "files_touched": 16,
+        "branch_points_per_100_lines_added": 13.2,
+        "measured_against": "4879537"
+      }
     },
     {
       "id": "B5",
@@ -216,7 +237,14 @@
         "insertions": 920,
         "note": "Complete and sound. Voided solely on the epoch criterion, not on quality."
       },
-      "FLAG": "This void REMOVES THE STRONGEST COUNTER-EVIDENCE. At $20.62 B5 is the most expensive hardened run and the second most expensive run overall. Keeping it would push the hardened condition's mean ABOVE two baseline runs and likely erase the remaining gap. The criterion is pre-registered and applied unchanged, but a reader must be able to see that it fell this way."
+      "FLAG": "This void REMOVES THE STRONGEST COUNTER-EVIDENCE. At $20.62 B5 is the most expensive hardened run and the second most expensive run overall. Keeping it would push the hardened condition's mean ABOVE two baseline runs and likely erase the remaining gap. The criterion is pre-registered and applied unchanged, but a reader must be able to see that it fell this way.",
+      "complexity": {
+        "branch_points_added": 97,
+        "lines_added": 667,
+        "files_touched": 14,
+        "branch_points_per_100_lines_added": 14.5,
+        "measured_against": "8d2d789"
+      }
     },
     {
       "id": "A6",
@@ -232,7 +260,10 @@
       },
       "epoch_at_start": 1,
       "status": "mission-running",
-      "mission_fired_at": "2026-09-17T13:23Z"
+      "mission_fired_at": "2026-09-17T13:23Z",
+      "complexity": {
+        "not_measured": "no committed branch to measure"
+      }
     },
     {
       "id": "B6",
@@ -248,7 +279,10 @@
       },
       "epoch_at_start": 1,
       "status": "mission-running",
-      "mission_fired_at": "2026-09-17T13:23Z"
+      "mission_fired_at": "2026-09-17T13:23Z",
+      "complexity": {
+        "not_measured": "no committed branch to measure"
+      }
     }
   ],
   "operational_log": [
@@ -279,5 +313,31 @@
       "consequence": "With n small this bias need not fall evenly across conditions. The pre-registered analysis stays primary, but a sensitivity analysis over ALL complete, verified runs must be reported beside it, clearly labelled.",
       "not_an_amendment": "The criterion is NOT changed. B5 stays void. This is recorded so the reader can judge the criterion, not so the data can be rescued."
     }
-  ]
+  ],
+  "complexity_measurement": {
+    "metric": "cyclomatic complexity, McCabe decision-counting form: 1 + branch points",
+    "reported_as": "DELTA against the run's own condition start commit, never an absolute total",
+    "why_delta": "Condition A starts at 4879537 and Condition B at 8d2d789. They are different trees, so absolute totals are not comparable. A file a run never touched contributes zero by construction.",
+    "tool": "tools/Ordo.Complexity (F#, FSharp.Compiler.Service lexer)",
+    "counted": [
+      "if",
+      "elif",
+      "when",
+      "while",
+      "while!",
+      "for",
+      "|",
+      "&&",
+      "||"
+    ],
+    "not_counted": {
+      "match": "its clauses are already counted through '|'; counting both would double-count every match expression",
+      "| null": "a lexer cannot distinguish the nullable type annotation 'string | null' from the match clause '| null ->'. All are excluded. This loses real null clauses and removes a disagreement between FCS versions; verified identical across all nine runs."
+    },
+    "known_imprecision": "'|' fires on discriminated-union case declarations as well as match clauses, inflating files that declare many cases. Identical across conditions, so unbiased for the between-condition comparison; it would bias an absolute claim, and none is made.",
+    "preregistered": false,
+    "preregistration_note": "Taken after every run finished. Outside this experiment's falsification criteria. It is descriptive and cannot move HY-SDE-2026-0009, which concerns monetary cost.",
+    "per_file_data": "complexity/<run>.csv",
+    "evidence_record": "EV-SDE-2026-0008"
+  }
 }

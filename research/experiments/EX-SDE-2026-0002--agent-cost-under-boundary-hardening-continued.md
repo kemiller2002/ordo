@@ -137,6 +137,23 @@ family.
 
 Pending.
 
+## A post-hoc measurement, kept separate from the analysis
+
+Decision-point complexity added by each run was measured after the runs above
+had finished, on a question nobody registered in advance [EV-SDE-2026-0008].
+It is recorded in the run manifests and in that evidence record, and it is
+**not** part of this experiment's analysis:
+
+- It is not one of the dependent variables named above.
+- It does not test `HY-SDE-2026-0009`, which concerns monetary cost.
+- It cannot change this experiment's outcome, whatever it shows.
+
+It is noted here rather than filed quietly elsewhere because a reader deserves
+to know that an additional measure was taken over the same runs, and because
+the separation it shows is cleaner than the cost separation — which is exactly
+the circumstance in which an unregistered measure is most tempting to promote
+and least entitled to be.
+
 ## Registry updates required
 
 - On completion: `EV-` record, and update `HY-SDE-2026-0009` from untested
