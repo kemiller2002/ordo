@@ -114,6 +114,44 @@ This does not make the figure immune to interruption — it makes interruption
 **detectable and disqualifying** rather than invisible, which is precisely
 what Experiment 3 lacked.
 
+### How the reading is actually taken, verified before any run
+
+A throwaway probe session established three facts that the first draft of
+this method got wrong. They are recorded because the protocol depends on
+them, and because guessing at a measurement apparatus is how Experiment 3
+produced figures that had to be withdrawn.
+
+1. **A run cannot read its own usage.** The probe called `get_session` on
+   itself and got nothing: session usage is not exposed to the session it
+   belongs to. An earlier draft of this record had each run taking its own
+   start and close readings. It cannot. **The orchestrator takes every
+   reading**, from outside.
+2. **Usage is frozen while a turn is running** and updates when the session
+   goes idle. Readings therefore land on turn boundaries and nowhere else.
+3. **Usage accumulates across turns within a session**, so a difference
+   between two readings is that turn's cost. Verified on the probe: after
+   turn 1, `cost_usd` 0.584559 / cache-read 247,278 / output 2,352; after
+   turn 2, 0.759935 / 513,230 / 2,770. Every field increased, giving a
+   turn-2 cost of **$0.175376**.
+
+The run protocol follows directly:
+
+| Step | Session state | Orchestrator action |
+|---|---|---|
+| Turn 1 | Setup only: install SDKs, restore packages. **No mission text delivered.** | — |
+| → idle | | Read usage. This is the **start marker**. |
+| Turn 2 | The frozen mission, delivered verbatim. | — |
+| → idle | | Read usage. This is the **close marker**. |
+
+Mission cost is close minus start. Setup lands entirely before the start
+marker and is reported separately — measured at roughly **$0.58** for a cold
+container, SDK install and one suite.
+
+A run whose mission spans more than the one turn is not disqualified: the
+close marker is simply the reading after its final turn. What disqualifies a
+run is an interruption inside it, which the session's own event record
+exposes.
+
 ## Acceptance criteria
 
 A run counts only if all hold:
@@ -121,8 +159,10 @@ A run counts only if all hold:
 1. The session completed the mission without a rate-limit interruption or
    resume. Checked against the session's own event record, not the agent's
    self-report.
-2. A usage reading was taken at run start and at run close, and the session
-   performed no work outside that window.
+2. The orchestrator took a start marker after setup and a close marker after
+   the mission's final turn, and the session did no other work between them.
+   Readings are taken from outside the run, because a run cannot read its own
+   usage.
 3. The fixed verification sequence was executed exactly once, in full.
 4. All acceptance criteria of the frozen mission were met, verified by the
    orchestrator against the committed diff, not accepted on self-report.
@@ -172,8 +212,13 @@ than being generic hygiene.
    identified the risk area and were wrong about the specific failure inside
    it, which is only knowable because they were written first.
 4. For each of the ≥3 pairs, in counterbalanced order:
-   a. Spawn a fresh session on the condition's branch. Record session id,
-      container, model, effort, rate-limit window state, and start usage.
+   a. Spawn a fresh session on the condition's **start commit** (4879537 for
+      A, 8d2d789 for B — full SHAs required; a short SHA is rejected as
+      `ref_not_found`). Turn 1 installs the SDKs only. When it idles, record
+      session id, model, rate-limit window state, and the start marker.
+      Pairs run concurrently — one condition each — so both meet identical
+      account-level conditions, and neither can inherit the other's warm
+      container.
    b. Deliver the frozen mission. No orchestrator intervention during the
       run.
    c. On completion, read close usage and the session event record.
