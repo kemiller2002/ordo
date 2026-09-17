@@ -44,7 +44,7 @@
       "condition": "A",
       "session": "session_01KVdaZPxndNQuHUeoPHuZ1S",
       "wave": 4,
-      "status": "mission-running",
+      "status": "VOID",
       "start_marker": {
         "cost_usd": 0.455929,
         "cache_read_tokens": 180148,
@@ -54,7 +54,23 @@
         "worker_epoch": 1
       },
       "epoch_at_start": 1,
-      "mission_fired_at": "2026-09-17T10:57Z"
+      "mission_fired_at": "2026-09-17T10:57Z",
+      "close_marker_observed": {
+        "cost_usd": 20.8751015,
+        "cache_read_tokens": 31850513,
+        "cache_write_tokens": 298466,
+        "input_tokens": 792,
+        "output_tokens": 78449
+      },
+      "mission_cost_observed": {
+        "cost_usd": 20.4191725,
+        "cache_read_tokens": 31670365,
+        "cache_write_tokens": 263347,
+        "input_tokens": 784,
+        "output_tokens": 77864
+      },
+      "epoch_at_close": 1,
+      "void_reason": "Container recycled between the setup turn and the mission turn. The setup turn reported SDKs 8.0.131 and 10.0.112 installed; the mission turn found no SDK, attempted the blocked Microsoft CDN, and never compiled or ran the verification sequence. Code was drafted but uncompiled and unexecuted, so the run fails the completed-and-verified criterion. Epoch was 1 at both markers, so the interruption criterion is NOT what voids it."
     },
     {
       "id": "B4",
@@ -81,6 +97,13 @@
       "decision": "Hold wave 5 until after the window resets. Launching into a warning state risks interrupting wave 4 and wave 5 together, and the corrected criterion voids any interrupted run.",
       "affects_stopping_rule": false,
       "note": "Timing only. The sample size stays fixed at n=4 per condition and every planned run still executes. This is the failure mode that destroyed Experiment 3's Condition B, so it is recorded rather than worked around."
+    },
+    {
+      "at": "2026-09-17T11:40Z",
+      "finding": "Containers are NOT guaranteed to persist between the setup turn and the mission turn.",
+      "evidence": "A4's setup turn reported both SDKs installed; its mission turn found none and reached for the blocked CDN.",
+      "consequence_for_this_experiment": "A4 void. The mission prompt must carry the SDK install instructions so a recycled container can recover via the permitted Ubuntu archive instead of the denied CDN.",
+      "consequence_for_EX_0001": "The claim that setup cost 'lands entirely before the start marker' is not guaranteed by the design. Where a container recycled, reinstall cost fell INSIDE the measured mission window. Setup measured $0.25-$0.46 against missions of $12-$20, so this is noise of roughly 2-4%, not a reversal - but the exclusion claim as written is stronger than the design supports and EV-SDE-2026-0007 is corrected."
     }
   ]
 }

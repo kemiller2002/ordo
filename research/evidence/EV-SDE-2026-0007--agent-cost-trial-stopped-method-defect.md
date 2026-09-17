@@ -36,8 +36,23 @@ partial run.
 Six runs against the HelixNote conditions, each in its own session and
 container: Condition A from `4879537` (baseline), Condition B from
 `8d2d789` (hardened). Setup and mission were separate turns, with usage read
-externally at each idle boundary, so setup cost falls outside the reported
-figure.
+externally at each idle boundary.
+
+**Correction, added 2026-09-17 after a later run exposed it.** An earlier
+version of this record said setup cost "falls outside the reported figure".
+That is stronger than the design supports. Containers are **not guaranteed to
+persist between the setup turn and the mission turn**: a subsequent run (A4
+of EX-SDE-2026-0002) had its setup turn report both SDKs installed and its
+mission turn find none. Where a container recycled, the agent reinstalled
+inside the measured window, so that reinstall cost landed in the mission
+figure rather than before it.
+
+Magnitude: setup measured $0.25–$0.46 against missions of $12–$20, so this is
+noise of roughly 2–4%, and it applies to whichever runs recycled in either
+condition rather than to one condition systematically. It does not reverse
+anything here. It is corrected because the record claimed a guarantee the
+apparatus does not provide, and because it inflates the run-to-run variance
+this record uses to argue the sample was too small.
 
 | Run | Condition | Mission cost | Cache reads | Output tokens | Worker epoch | Completed | Status |
 |---|---|---|---|---|---|---|---|
