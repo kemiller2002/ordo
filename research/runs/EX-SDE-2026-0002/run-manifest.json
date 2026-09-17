@@ -44,14 +44,34 @@
       "condition": "A",
       "session": "session_01KVdaZPxndNQuHUeoPHuZ1S",
       "wave": 4,
-      "status": "setup-running"
+      "status": "mission-running",
+      "start_marker": {
+        "cost_usd": 0.455929,
+        "cache_read_tokens": 180148,
+        "cache_write_tokens": 35119,
+        "input_tokens": 8,
+        "output_tokens": 585,
+        "worker_epoch": 1
+      },
+      "epoch_at_start": 1,
+      "mission_fired_at": "2026-09-17T10:57Z"
     },
     {
       "id": "B4",
       "condition": "B",
       "session": "session_01SeqKF8WT8pnv8iH6FSaWb3",
       "wave": 4,
-      "status": "setup-running"
+      "status": "mission-running",
+      "start_marker": {
+        "cost_usd": 0.360339,
+        "cache_read_tokens": 190268,
+        "cache_write_tokens": 25014,
+        "input_tokens": 8,
+        "output_tokens": 601,
+        "worker_epoch": 1
+      },
+      "epoch_at_start": 1,
+      "mission_fired_at": "2026-09-17T10:57Z"
     }
   ]
 }
