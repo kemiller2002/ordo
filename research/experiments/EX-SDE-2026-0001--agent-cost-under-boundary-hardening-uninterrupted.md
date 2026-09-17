@@ -73,7 +73,7 @@ hardened architecture costing more to work in.
 
 | Role | Variable | Operationalisation |
 |---|---|---|
-| Independent | Boundary architecture | Condition A: `experiment/agent-cost-baseline-v3` (76d6c25). Condition B: `experiment/agent-cost-hardened-v3` (58fcbc1). Unmodified. |
+| Independent | Boundary architecture | Condition A starts at **4879537**, Condition B at **8d2d789** — each branch's "freeze Experiment 3 mission" commit, which is the state *before* that condition implemented anything. The branch tips (76d6c25, 58fcbc1) are the finished trials and are the answer key, not the starting point. Unmodified. |
 | Dependent (primary) | Monetary cost | `external_metadata.usage.cost_usd` for the condition's own session |
 | Dependent (secondary) | Token cost | `input_tokens`, `output_tokens`, `cache_read_tokens`, `cache_write_tokens`, reported **separately, never summed** |
 | Dependent (secondary) | Wall clock | Session `created_at` to completion timestamp |
@@ -219,39 +219,76 @@ itself need explaining before any cost comparison is read).
    construction, but it is not free. It is recorded separately for honesty
    about what the experiment cost to run.
 
-## Execution feasibility
+## Execution environment
 
-**This experiment cannot be executed in the environment that authored it,
-and the blocker is external to the design.**
+**Resolved. The experiment is runnable.** An earlier draft of this record
+stated it was blocked; that is corrected here rather than quietly edited
+away, because the blocker was real and the resolution changes what this
+record commits to.
 
-HelixNote is an F#/Bolero application; both conditions must build and run
-tests. The .NET SDK cannot be installed here — the agent proxy returns a
-policy denial for the Microsoft CDN:
+The .NET SDK cannot be fetched from the Microsoft CDN —
+`builds.dotnet.microsoft.com` returns a policy denial (403 to CONNECT), and
+that denial stands. It was not retried or routed around. The Ubuntu archive
+and `packages.microsoft.com` are permitted hosts, and Ubuntu 24.04 ships the
+SDKs directly:
 
 ```
-kind:   connect_rejected
-detail: gateway answered 403 to CONNECT (policy denial or upstream failure)
-host:   builds.dotnet.microsoft.com:443
+apt-get install -y dotnet-sdk-8.0 dotnet-sdk-10.0
 ```
 
-This is a deliberate egress policy, not a transient failure, and it is not
-something to route around. Only one environment is available to this account
-("Default — trusted network access"), so a spawned child session inherits
-the same policy. Node and npm *are* reachable, which does not help: the
-baseline/hardened architecture pair exists only in the F# codebase.
+Both installed; `dotnet --list-sdks` reports 8.0.131 and 10.0.112. The .NET
+10 SDK is required — the test projects target `net10.0`, and .NET 8 alone
+fails them with NETSDK1045.
 
-What *is* confirmed available, and would work the moment the toolchain does:
+### Verified starting state of both conditions
 
-- Both condition branches are reachable and intact —
-  `experiment/agent-cost-baseline-v3` at 76d6c25 and
-  `experiment/agent-cost-hardened-v3` at 58fcbc1, with the comparison branch
-  at 8ac05fd matching EV-HN-2026-0005's recorded commit exactly.
-- Per-session usage telemetry is exposed and verified.
-- Fresh isolated containers per run are available.
+Measured directly at each condition's start commit, before any run:
 
-**Unblocking requires one of:** permitting `builds.dotnet.microsoft.com` for
-the environment running the trial; providing an environment with the .NET 8
-SDK preinstalled; or running the trial where the SDK is already available.
+| Suite | Condition A (4879537) | Condition B (8d2d789) |
+|---|---|---|
+| `HelixNote.Semantic.Tests` | 149 passed | 149 passed |
+| `HelixNote.RouteContract.Tests` | 6 passed | 6 passed |
+| `HelixNote.Api.Http.Tests` | 6 passed, 19 skipped | 6 passed, 19 skipped |
+| `HelixNote.Semantic.Host.Wasm.Tests` | 4 passed | 4 passed |
+| `HelixNote.Semantic.Host.Postgres.Tests` | 3 passed, 52 skipped (55) | 3 passed, 55 skipped (58) |
+| `HelixNote.Api.Tests` | 36 passed, **3 failed** | 36 passed, **3 failed** |
+
+Two facts to carry into the analysis rather than discover mid-run:
+
+1. **The 3 API failures are pre-existing and environmental, not code.** All
+   three are Testcontainers tests that cannot reach a Docker daemon: the
+   `docker` binary exists but `/var/run/docker.sock` does not. They fail
+   identically at both start commits, so they are a constant across
+   conditions, not a difference. They are excluded from the fixed
+   verification sequence and their status is re-checked at each run close.
+2. **Condition B's Postgres suite has 3 more tests than Condition A's** (58
+   vs 55). That is the hardening itself — Experiment 2 added constraint
+   agreement tests. It is expected, and it is why total test count is not a
+   dependent variable here.
+
+### What the missing Docker daemon costs this experiment
+
+Neither condition can run database integration tests. The mission requires
+persistence, so **neither agent can verify its persistence work against a
+live database.** This is identical for both conditions, so the *internal*
+comparison — the dependent variable is agent cost — remains valid.
+
+It narrows external validity, and it does so in a direction worth stating
+plainly: across this evidence base, a live integration test is the mechanism
+that has repeatedly caught the semantic no-op when every other mechanism
+missed it. An agent that cannot run one may finish cheaper and wronger. Cost
+is therefore reported **alongside** each run's verification outcome, never as
+a standalone figure, and no run is described as "completed the mission" on
+the strength of a cost figure.
+
+### Setup cost is excluded by construction
+
+Installing the SDKs and restoring NuGet packages happens inside the
+condition's session and would otherwise land in that session's `cost_usd`.
+Each run therefore takes its **start usage reading after setup completes and
+before the mission is delivered**, and its close reading immediately after
+the mission ends. The reported cost is the difference. Setup cost is
+recorded separately, not silently absorbed and not silently discarded.
 
 ## Replication notes
 
