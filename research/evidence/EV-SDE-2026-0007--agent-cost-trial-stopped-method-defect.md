@@ -63,8 +63,9 @@ this record uses to argue the sample was too small.
 | B2 | hardened | $12.00 | 17.30M | 55,935 | 2 | yes | void, contested |
 | B2r | hardened | $14.09 | 20.50M | 65,828 | 2 | **no** | void, uncontested |
 
-Token classes are reported separately and never summed. Setup costs, all
-excluded, ranged $0.25–$0.36.
+Token classes are reported separately and never summed. Setup turns measured
+$0.25–$0.36 and were excluded **where the container persisted** — see the
+correction above for the cases where it did not.
 
 ## Why this does not answer the question
 
