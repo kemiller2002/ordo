@@ -1,0 +1,57 @@
+{
+  "experiment": "EX-SDE-2026-0002",
+  "orchestrator_session": "session_01UjkFnW7ZRis2jcVHXP66rE",
+  "stopping_rule": {
+    "target_n_per_condition": 4,
+    "fixed_before_any_new_run": true,
+    "no_interim_analysis_decides_continuation": true,
+    "commitment": "All planned runs execute regardless of interim figures. The outcome is reported whatever it is, including a reversal or a null.",
+    "known_limitation": "The orchestrator already knows the pilot direction and cannot unsee it."
+  },
+  "corrected_criterion": "worker_epoch read at the start marker AND at the close marker; a change between those two readings voids the run. A change at any other time, including after archiving, is not evidence about the run.",
+  "pooled_from_EX_0001": [
+    {
+      "id": "A1",
+      "condition": "A",
+      "mission_cost_usd": 19.936247,
+      "epoch_at_close": 1
+    },
+    {
+      "id": "A2",
+      "condition": "A",
+      "mission_cost_usd": 15.915946,
+      "epoch_at_close": 1
+    },
+    {
+      "id": "B1",
+      "condition": "B",
+      "mission_cost_usd": 12.6635935,
+      "epoch_at_close": 1
+    }
+  ],
+  "not_pooled": {
+    "A3": "restart observed mid-mission",
+    "B2": "restart timing never established",
+    "B2r": "never completed"
+  },
+  "still_needed": {
+    "A": 2,
+    "B": 3
+  },
+  "runs": [
+    {
+      "id": "A4",
+      "condition": "A",
+      "session": "session_01KVdaZPxndNQuHUeoPHuZ1S",
+      "wave": 4,
+      "status": "setup-running"
+    },
+    {
+      "id": "B4",
+      "condition": "B",
+      "session": "session_01SeqKF8WT8pnv8iH6FSaWb3",
+      "wave": 4,
+      "status": "setup-running"
+    }
+  ]
+}

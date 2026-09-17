@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "repository": "state-directed-engineering",
-  "nextSeq": 37,
+  "nextSeq": 38,
   "items": [
     {
       "id": "WI-0001",
@@ -617,6 +617,22 @@
       "attachments": [],
       "createdAt": "2026-09-17T06:52:24.280Z",
       "updatedAt": "2026-09-17T06:52:24.448Z",
+      "createdBy": "unknown",
+      "source": "manual",
+      "sourceReference": null
+    },
+    {
+      "id": "WI-0037",
+      "title": "Continue the agent-cost experiment as EX-SDE-2026-0002",
+      "description": "Run 2 further baseline and 3 further hardened trials under a corrected interruption criterion, with sample size and stopping rule fixed in advance.",
+      "tags": [
+        "research"
+      ],
+      "priority": "medium",
+      "status": "ready",
+      "attachments": [],
+      "createdAt": "2026-09-17T10:54:07.750Z",
+      "updatedAt": "2026-09-17T10:54:07.911Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
