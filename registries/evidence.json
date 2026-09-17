@@ -259,9 +259,11 @@
       "agent-cost",
       "post-hoc",
       "exploratory",
-      "not-preregistered"
+      "not-preregistered",
+      "fsharp-only",
+      "partial-coverage"
     ],
-    "title": "Decision-point complexity added per run across the agent-cost trials — hardened runs added fewer branch points, measured post hoc",
+    "title": "F# decision-point complexity added per run across the agent-cost trials — hardened runs added fewer branch points, measured post hoc and F#-only",
     "type": "evidence",
     "updated": "2026-09-17"
   }

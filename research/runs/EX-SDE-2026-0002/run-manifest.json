@@ -91,7 +91,14 @@
         "lines_added": 983,
         "files_touched": 15,
         "branch_points_per_100_lines_added": 14.2,
-        "measured_against": "4879537"
+        "measured_against": "4879537",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total.",
+        "uncounted_sql": {
+          "files": 2,
+          "lines_added": 263,
+          "decision_bearing_constructs_crude_keyword_count": 11,
+          "note": "Crude keyword matching, which is the technique the F# measure exists to avoid. Indicates scale only; not comparable to branch_points_added."
+        }
       }
     },
     {
@@ -142,7 +149,14 @@
         "lines_added": 638,
         "files_touched": 14,
         "branch_points_per_100_lines_added": 12.9,
-        "measured_against": "8d2d789"
+        "measured_against": "8d2d789",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total.",
+        "uncounted_sql": {
+          "files": 1,
+          "lines_added": 238,
+          "decision_bearing_constructs_crude_keyword_count": 9,
+          "note": "Crude keyword matching, which is the technique the F# measure exists to avoid. Indicates scale only; not comparable to branch_points_added."
+        }
       }
     },
     {
@@ -190,7 +204,14 @@
         "lines_added": 957,
         "files_touched": 16,
         "branch_points_per_100_lines_added": 13.2,
-        "measured_against": "4879537"
+        "measured_against": "4879537",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total.",
+        "uncounted_sql": {
+          "files": 1,
+          "lines_added": 235,
+          "decision_bearing_constructs_crude_keyword_count": 10,
+          "note": "Crude keyword matching, which is the technique the F# measure exists to avoid. Indicates scale only; not comparable to branch_points_added."
+        }
       }
     },
     {
@@ -243,7 +264,14 @@
         "lines_added": 667,
         "files_touched": 14,
         "branch_points_per_100_lines_added": 14.5,
-        "measured_against": "8d2d789"
+        "measured_against": "8d2d789",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total.",
+        "uncounted_sql": {
+          "files": 1,
+          "lines_added": 228,
+          "decision_bearing_constructs_crude_keyword_count": 9,
+          "note": "Crude keyword matching, which is the technique the F# measure exists to avoid. Indicates scale only; not comparable to branch_points_added."
+        }
       }
     },
     {
@@ -352,6 +380,15 @@
     "preregistered": false,
     "preregistration_note": "Taken after every run finished. Outside this experiment's falsification criteria. It is descriptive and cannot move HY-SDE-2026-0009, which concerns monetary cost.",
     "per_file_data": "complexity/<run>.csv",
-    "evidence_record": "EV-SDE-2026-0008"
+    "evidence_record": "EV-SDE-2026-0008",
+    "languages_covered": [
+      ".fs",
+      ".fsi"
+    ],
+    "languages_NOT_covered": {
+      "sql": "Every run added 228-263 lines of SQL containing triggers, CREATE OR REPLACE FUNCTION bodies, CHECK constraints and COALESCE defaults - decision logic that lives in the database. None of it is counted. The omission is close to uniform across runs and does not differ between conditions, so it does not account for the separation, but every branch_points_added figure below is a LOWER BOUND covering one of the two languages the run wrote in.",
+      "md": "Markdown carries no control flow; its exclusion costs nothing."
+    },
+    "correction_2026_09_17": "The first version of this block described its figures as the complexity each run added. They are the complexity each run added IN F#. Corrected in place rather than reworded, and EV-SDE-2026-0008 carries the same correction."
   }
 }

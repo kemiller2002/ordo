@@ -29,6 +29,13 @@
 /// A `Bar` immediately followed by `Null` is excluded — see `isNullTypeBar` for
 /// why, and for what that exclusion costs.
 ///
+/// SCOPE: F# only. This tool measures `.fs` and `.fsi` and nothing else. The
+/// codebases it has been pointed at are not F#-only — the agent-cost runs also
+/// wrote SQL containing triggers, function bodies and CHECK constraints, and
+/// the effort experiment elsewhere in this programme has two C# arms. A total
+/// produced here is a LOWER BOUND on the complexity of a change, never the
+/// whole of it, and anything citing it must say which languages it covers.
+///
 /// `deltaOf` is the function the experiment needs. Each run starts from its own
 /// condition's start commit, and the two conditions are structurally different
 /// codebases, so their absolute totals are not comparable. What is comparable is

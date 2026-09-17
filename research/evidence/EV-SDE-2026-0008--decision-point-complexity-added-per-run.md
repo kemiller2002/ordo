@@ -1,6 +1,6 @@
 ---
 id: EV-SDE-2026-0008
-title: Decision-point complexity added per run across the agent-cost trials — hardened runs added fewer branch points, measured post hoc
+title: F# decision-point complexity added per run across the agent-cost trials — hardened runs added fewer branch points, measured post hoc and F#-only
 research_area: state-directed-engineering
 evidence_type: derived
 status: accepted
@@ -16,11 +16,60 @@ observation_type: derived measurement over committed diffs, computed after the r
 confidence: medium
 created: 2026-09-17
 updated: 2026-09-17
-tags: [complexity, cyclomatic, agent-cost, post-hoc, exploratory, not-preregistered]
+tags: [complexity, cyclomatic, agent-cost, post-hoc, exploratory, not-preregistered, fsharp-only, partial-coverage]
 related_evidence: [EV-SDE-2026-0007]
 ---
 
 # Evidence: decision-point complexity added by each agent-cost run
+
+## Correction, 2026-09-17: this measures F# only, and the runs are not F# only
+
+**Added after the record was first published, in response to the question
+being asked directly.** The first version of this record called its figures
+"the complexity each run added." They are not. They are **the complexity each
+run added in F#**, and every run also wrote SQL that was never counted.
+
+| Run | Cond | SQL files | SQL lines added | Decision-bearing constructs (crude count) |
+|---|---|---|---|---|
+| A1 | baseline | 1 | 234 | 9 |
+| A2 | baseline | 1 | 230 | 9 |
+| A3 | baseline | 1 | 236 | 10 |
+| A4 | baseline | 2 | 263 | 11 |
+| A5 | baseline | 1 | 235 | 10 |
+| B1 | hardened | 2 | 258 | 11 |
+| B2 | hardened | 1 | 239 | 9 |
+| B4 | hardened | 1 | 238 | 9 |
+| B5 | hardened | 1 | 228 | 9 |
+
+This is not inert schema. The added SQL declares triggers, `CREATE OR REPLACE
+FUNCTION` bodies, `CHECK` constraints and `COALESCE` defaults — decision logic
+that happens to live in the database rather than in the domain project. The
+counts above come from matching keywords in the added lines, which is exactly
+the technique the F# measure was built to avoid, so they are an indication of
+scale and **not** comparable to the F# figures. They are given so the size of
+the gap is visible rather than implied.
+
+**What the correction does and does not change:**
+
+- It does **not** change the separation. The uncounted SQL is close to uniform
+  across every run — 228 to 263 lines, 9 to 11 constructs — and does not
+  differ between conditions. It cannot account for baseline's 126–140 against
+  hardened's 82–111.
+- It does **not** change the density finding. Recomputed with SQL lines in the
+  denominator, baseline runs 10.6–12.5 and hardened 9.4–10.8 branch points per
+  100 added lines: still overlapping. That ratio mixes F# branch points over
+  F#-plus-SQL lines and is therefore incoherent as a measure; it is shown only
+  to demonstrate that the conclusion does not turn on the denominator.
+- It **does** mean every per-run total in this record is **incomplete**. None
+  of them is "the complexity that run added." Each is a lower bound covering
+  one of the two languages the run wrote in.
+
+The wider evidence base is further from F#-only still. The effort experiment
+underlying this programme's most-cited figures has three arms, two of them in
+C# (`effort-experiment/c-sharp`, `effort-experiment/c-sharp-state`) against
+one in F# (`effort-experiment/f-sharp-state`). This tool cannot measure those
+arms at all, and no cross-language complexity comparison is made anywhere in
+this record.
 
 ## This measurement was not pre-registered
 
@@ -36,6 +85,9 @@ of result that looks like a finding and is not one, so the separation below is
 stated and then left alone.
 
 ## What was measured
+
+**F# sources only** — `.fs` and `.fsi`. See the correction above for what that
+leaves out.
 
 Cyclomatic complexity in McCabe's decision-counting form — one plus the number
 of branch points — computed per file from the F# compiler service's own token
@@ -142,6 +194,8 @@ measurement does not isolate.
   checked against a fixed sequence, not proven identical in scope.
 - **One codebase, one mutation, one model family.** Same scope limit as every
   other result in this programme.
+- **One language out of two.** The SQL each run wrote is uncounted, so every
+  figure is a lower bound. See the correction at the top.
 - **Void runs are included.** They are included because the void criterion
   concerns session telemetry rather than code, and excluding sound code on a
   telemetry ground would be a selection made after seeing the numbers. The

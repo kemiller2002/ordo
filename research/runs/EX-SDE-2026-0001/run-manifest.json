@@ -67,7 +67,14 @@
         "lines_added": 1019,
         "files_touched": 16,
         "branch_points_per_100_lines_added": 13.7,
-        "measured_against": "4879537"
+        "measured_against": "4879537",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total.",
+        "uncounted_sql": {
+          "files": 1,
+          "lines_added": 234,
+          "decision_bearing_constructs_crude_keyword_count": 9,
+          "note": "Crude keyword matching, which is the technique the F# measure exists to avoid. Indicates scale only; not comparable to branch_points_added."
+        }
       }
     },
     {
@@ -121,7 +128,14 @@
         "lines_added": 791,
         "files_touched": 14,
         "branch_points_per_100_lines_added": 14.0,
-        "measured_against": "8d2d789"
+        "measured_against": "8d2d789",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total.",
+        "uncounted_sql": {
+          "files": 2,
+          "lines_added": 258,
+          "decision_bearing_constructs_crude_keyword_count": 11,
+          "note": "Crude keyword matching, which is the technique the F# measure exists to avoid. Indicates scale only; not comparable to branch_points_added."
+        }
       }
     },
     {
@@ -172,7 +186,14 @@
         "lines_added": 863,
         "files_touched": 14,
         "branch_points_per_100_lines_added": 15.2,
-        "measured_against": "4879537"
+        "measured_against": "4879537",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total.",
+        "uncounted_sql": {
+          "files": 1,
+          "lines_added": 230,
+          "decision_bearing_constructs_crude_keyword_count": 9,
+          "note": "Crude keyword matching, which is the technique the F# measure exists to avoid. Indicates scale only; not comparable to branch_points_added."
+        }
       }
     },
     {
@@ -216,7 +237,14 @@
         "lines_added": 746,
         "files_touched": 14,
         "branch_points_per_100_lines_added": 13.7,
-        "measured_against": "8d2d789"
+        "measured_against": "8d2d789",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total.",
+        "uncounted_sql": {
+          "files": 1,
+          "lines_added": 239,
+          "decision_bearing_constructs_crude_keyword_count": 9,
+          "note": "Crude keyword matching, which is the technique the F# measure exists to avoid. Indicates scale only; not comparable to branch_points_added."
+        }
       }
     },
     {
@@ -256,7 +284,14 @@
         "lines_added": 791,
         "files_touched": 13,
         "branch_points_per_100_lines_added": 16.2,
-        "measured_against": "4879537"
+        "measured_against": "4879537",
+        "scope": "F# only (.fs, .fsi). This is a lower bound, not the run's total.",
+        "uncounted_sql": {
+          "files": 1,
+          "lines_added": 236,
+          "decision_bearing_constructs_crude_keyword_count": 10,
+          "note": "Crude keyword matching, which is the technique the F# measure exists to avoid. Indicates scale only; not comparable to branch_points_added."
+        }
       }
     },
     {
@@ -355,6 +390,15 @@
         "lines": 36262
       },
       "note": "Measured across every .fs and .fsi file. A 1.0% difference in branch points, so 'the hardened tree already contained the complexity' is not supported at tree scale."
-    }
+    },
+    "languages_covered": [
+      ".fs",
+      ".fsi"
+    ],
+    "languages_NOT_covered": {
+      "sql": "Every run added 228-263 lines of SQL containing triggers, CREATE OR REPLACE FUNCTION bodies, CHECK constraints and COALESCE defaults - decision logic that lives in the database. None of it is counted. The omission is close to uniform across runs and does not differ between conditions, so it does not account for the separation, but every branch_points_added figure below is a LOWER BOUND covering one of the two languages the run wrote in.",
+      "md": "Markdown carries no control flow; its exclusion costs nothing."
+    },
+    "correction_2026_09_17": "The first version of this block described its figures as the complexity each run added. They are the complexity each run added IN F#. Corrected in place rather than reworded, and EV-SDE-2026-0008 carries the same correction."
   }
 }

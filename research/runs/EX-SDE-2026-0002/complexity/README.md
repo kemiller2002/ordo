@@ -21,3 +21,9 @@ they do not show, is `research/evidence/EV-SDE-2026-0008--decision-point-complex
 
 **These figures were measured after the runs finished and were not
 pre-registered.** They are descriptive. They test nothing.
+
+**They cover F# only.** Every run also added 228–263 lines of SQL holding
+triggers, function bodies and `CHECK` constraints, none of it counted here.
+Each total is a lower bound over one of the two languages the run wrote in.
+The omission is near-uniform across runs and conditions; `EV-SDE-2026-0008`
+carries the measured detail.
