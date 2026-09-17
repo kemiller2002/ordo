@@ -35,8 +35,9 @@
     "B2r": "never completed"
   },
   "still_needed": {
-    "A": 2,
-    "B": 3
+    "A": 0,
+    "B": 1,
+    "note": "After wave 5 completes: baseline reaches n=4, hardened reaches n=3. One further hardened run (B6) then completes the fixed sample."
   },
   "runs": [
     {
@@ -129,6 +130,20 @@
         "files": 15,
         "insertions": 888
       }
+    },
+    {
+      "id": "A5",
+      "condition": "A",
+      "session": "session_018wxLZENyUD64SL4uq2B71x",
+      "wave": 5,
+      "status": "setup-running"
+    },
+    {
+      "id": "B5",
+      "condition": "B",
+      "session": "session_01PnkyE5MotjxWDUqppBjuqs",
+      "wave": 5,
+      "status": "setup-running"
     }
   ],
   "operational_log": [
@@ -145,6 +160,11 @@
       "evidence": "A4's setup turn reported both SDKs installed; its mission turn found none and reached for the blocked CDN.",
       "consequence_for_this_experiment": "A4 void. The mission prompt must carry the SDK install instructions so a recycled container can recover via the permitted Ubuntu archive instead of the denied CDN.",
       "consequence_for_EX_0001": "The claim that setup cost 'lands entirely before the start marker' is not guaranteed by the design. Where a container recycled, reinstall cost fell INSIDE the measured mission window. Setup measured $0.25-$0.46 against missions of $12-$20, so this is noise of roughly 2-4%, not a reversal - but the exclusion claim as written is stronger than the design supports and EV-SDE-2026-0007 is corrected."
+    },
+    {
+      "at": "2026-09-17T12:31Z",
+      "event": "Wave 5 launched after the five-hour rate-limit window reset at 12:30Z.",
+      "note": "Held 68 minutes rather than launch into allowed_warning."
     }
   ]
 }
