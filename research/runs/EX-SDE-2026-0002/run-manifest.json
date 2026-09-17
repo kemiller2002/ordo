@@ -44,7 +44,7 @@
       "condition": "A",
       "session": "session_01KVdaZPxndNQuHUeoPHuZ1S",
       "wave": 4,
-      "status": "VOID",
+      "status": "complete-verified",
       "start_marker": {
         "cost_usd": 0.455929,
         "cache_read_tokens": 180148,
@@ -55,29 +55,43 @@
       },
       "epoch_at_start": 1,
       "mission_fired_at": "2026-09-17T10:57Z",
-      "close_marker_observed": {
+      "epoch_at_close": 1,
+      "void_reason": "Container recycled between the setup turn and the mission turn. The setup turn reported SDKs 8.0.131 and 10.0.112 installed; the mission turn found no SDK, attempted the blocked Microsoft CDN, and never compiled or ran the verification sequence. Code was drafted but uncompiled and unexecuted, so the run fails the completed-and-verified criterion. Epoch was 1 at both markers, so the interruption criterion is NOT what voids it.",
+      "close_marker": {
         "cost_usd": 20.8751015,
         "cache_read_tokens": 31850513,
         "cache_write_tokens": 298466,
         "input_tokens": 792,
         "output_tokens": 78449
       },
-      "mission_cost_observed": {
+      "mission_cost": {
         "cost_usd": 20.4191725,
         "cache_read_tokens": 31670365,
         "cache_write_tokens": 263347,
         "input_tokens": 784,
         "output_tokens": 77864
       },
-      "epoch_at_close": 1,
-      "void_reason": "Container recycled between the setup turn and the mission turn. The setup turn reported SDKs 8.0.131 and 10.0.112 installed; the mission turn found no SDK, attempted the blocked Microsoft CDN, and never compiled or ran the verification sequence. Code was drafted but uncompiled and unexecuted, so the run fails the completed-and-verified criterion. Epoch was 1 at both markers, so the interruption criterion is NOT what voids it."
+      "void_reason_RETRACTED": "RETRACTED. A4 was voided on its own post-turn summary, which claimed the SDK install was blocked and nothing was compiled or executed. That summary is false: the branch holds 17 files and 1,278 insertions, and independent re-verification against the committed diff gives 154/154 semantic, 6/6 route contract, 6 of 25 api-http, 4/4 wasm, 3 of 63 postgres, and 36 passed with the 3 pre-existing Docker failures \u2014 zero regressions. Voiding it relied on a self-report, which is precisely what this design says not to trust. Epoch read 1 at both markers.",
+      "independent_verification": {
+        "semantic": "154/154",
+        "routecontract": "6/6",
+        "apihttp": "6 passed 19 skipped /25",
+        "wasm": "4/4",
+        "postgres": "3 passed 60 skipped /63",
+        "api": "36 passed 3 failed /39",
+        "regressions": "none",
+        "commit": "f57d9be",
+        "files": 17,
+        "insertions": 1278
+      },
+      "process_caveat": "A4's summary claims it never compiled during its run. Its committed output compiles and passes. Whether it ran the verification sequence itself is UNESTABLISHED. The criterion requires orchestrator verification against the committed diff, which it passes."
     },
     {
       "id": "B4",
       "condition": "B",
       "session": "session_01SeqKF8WT8pnv8iH6FSaWb3",
       "wave": 4,
-      "status": "mission-running",
+      "status": "complete-verified",
       "start_marker": {
         "cost_usd": 0.360339,
         "cache_read_tokens": 190268,
@@ -87,7 +101,34 @@
         "worker_epoch": 1
       },
       "epoch_at_start": 1,
-      "mission_fired_at": "2026-09-17T10:57Z"
+      "mission_fired_at": "2026-09-17T10:57Z",
+      "close_marker": {
+        "cost_usd": 15.092526,
+        "cache_read_tokens": 22434792,
+        "cache_write_tokens": 234517,
+        "input_tokens": 752,
+        "output_tokens": 61048
+      },
+      "epoch_at_close": 1,
+      "mission_cost": {
+        "cost_usd": 14.732187,
+        "cache_read_tokens": 22244524,
+        "cache_write_tokens": 209503,
+        "input_tokens": 744,
+        "output_tokens": 60447
+      },
+      "independent_verification": {
+        "semantic": "152/152",
+        "routecontract": "6/6",
+        "apihttp": "6 passed 19 skipped /25",
+        "wasm": "4/4",
+        "postgres": "3 passed 57 skipped /60",
+        "api": "36 passed 3 failed /39",
+        "regressions": "none",
+        "commit": "f4b22a3",
+        "files": 15,
+        "insertions": 888
+      }
     }
   ],
   "operational_log": [
