@@ -633,11 +633,11 @@
       }
     },
     "M-TE-CS-TOOLING": {
-      "claim": "C# mistakes caught by the compiler: 4 of 6",
-      "definition": "How many of the conventional C# rebuild's mistakes the compiler caught by itself.",
-      "measurement": "Classified per mistake as it was found.",
+      "claim": "C# mistakes caught by the compiler: 3 of 6",
+      "definition": "How many of the conventional C# rebuild's six rework-driving mistakes the compiler caught by itself: a csproj ImplicitUsings error, a var-hidden signature change, and F7's CS1628.",
+      "measurement": "Classified per mistake as it was found, then re-derived from the log's own enumeration of the six. CORRECTED from '4 of 6'. The source log's tally of 4 includes F1's eight compiler-reported rename sites, which are the compiler propagating an INTENDED change rather than catching a mistake, and which the log's own F1 row records as '0 shipped'. That figure is published separately as M-TE-CS-RIPPLE, where it belongs.",
       "provenance": "self-reported",
-      "doesNotEstablish": "Every one of the sharpest bugs — swapped string arguments, a stale revision in a loop, a signature change hidden behind var — was outside what the compiler could catch even in principle, and was found only by a person re-reading a diff.",
+      "doesNotEstablish": "Two caveats a reader should have. First, the mechanism tallies do not partition cleanly: F7 was caught twice, by a pre-build read-through and then by the compiler, so seven catch-events cover six mistakes. Second, and more important: every one of the sharpest bugs — swapped string arguments, a stale revision in a loop, a signature change hidden behind var — was outside what the compiler could catch even in principle, and was found only by a person re-reading a diff.",
       "experiment": {
         "id": "te-conventional-csharp",
         "title": "Conventional C# rebuild — ordinary practice, requirement by requirement",
@@ -704,6 +704,78 @@
         "section": "F1 — exact-minute recording + derived billing"
       }
     },
+    "M-TE-CS-TEST": {
+      "claim": "C# mistakes caught by a test run: 1 of 6",
+      "definition": "Mistakes in the conventional C# rebuild first surfaced by running the test suite rather than by the compiler or a person.",
+      "measurement": "Classified per mistake as it was found. The one case was C1's test arithmetic.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "A single case. It is published so the mechanism columns add up in public rather than only in the log.",
+      "experiment": {
+        "id": "te-conventional-csharp",
+        "title": "Conventional C# rebuild — ordinary practice, requirement by requirement",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "ref": null,
+        "section": "Totals — the complete hodgepodge build"
+      }
+    },
+    "M-TE-CS-SELF": {
+      "claim": "C# mistakes caught only by a person re-reading the diff: 3 of 6",
+      "definition": "Mistakes in the conventional C# rebuild caught by a deliberate pre-build read-through, with no mechanism involved.",
+      "measurement": "Classified per mistake as it was found: a missing label-active check, F2's argument-order swap, and F7's stale revision in a loop.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "This is the figure the whole comparison turns on. The read-through discipline held for the entire build by design, and a developer under deadline pressure — the persona this trial set out to simulate — is the least likely to apply it consistently. F7 also appears in the compiler count, having been caught twice.",
+      "experiment": {
+        "id": "te-conventional-csharp",
+        "title": "Conventional C# rebuild — ordinary practice, requirement by requirement",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "ref": null,
+        "section": "Totals — the complete hodgepodge build"
+      }
+    },
+    "M-TE-CS-RIPPLE": {
+      "claim": "Call sites the C# compiler reported on the unit change: 8 of ~22",
+      "definition": "Sites the compiler named when duration changed from six-minute units to exact minutes, out of roughly twenty-two that needed attention.",
+      "measurement": "Counted during the change. Eight were direct member accesses the compiler reported; the rest were bare positional integers it could not see.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "This is the compiler propagating an intended change, not catching a mistake — a distinction the source log's mistake tally blurred and this record separates. Its complement is M-TE-CS-SILENT.",
+      "experiment": {
+        "id": "te-conventional-csharp",
+        "title": "Conventional C# rebuild — ordinary practice, requirement by requirement",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "ref": null,
+        "section": "F1 — exact-minute recording + derived billing"
+      }
+    },
+    "M-TE-CS-SIZE": {
+      "claim": "Conventional C# rebuild size: 1,645 lines",
+      "definition": "Final size of the conventional C# rebuild across five files, with 59 passing tests.",
+      "measurement": "Counted at the end of the build.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "Published so the mistake counts can be read against comparable volume rather than in the abstract.",
+      "experiment": {
+        "id": "te-conventional-csharp",
+        "title": "Conventional C# rebuild — ordinary practice, requirement by requirement",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "ref": null,
+        "section": "Totals — the complete hodgepodge build"
+      }
+    },
     "M-TE-JS-LANGUAGE": {
       "claim": "Mistakes caught by the language: 0",
       "definition": "Mistakes in the conventional JavaScript rebuild caught by the language or its tooling rather than by a test or a person.",
@@ -719,6 +791,96 @@
         "repository": "time-entry",
         "path": "effort-experiment/EFFORT-LOG.md",
         "ref": "73a63f1ac319b97965d4a9e1607a975ebbe2bd81",
+        "section": "Totals — the complete hodgepodge JavaScript build"
+      }
+    },
+    "M-TE-JS-RIPPLE": {
+      "claim": "Call sites the JavaScript language reported on the same change: 0 of ~22",
+      "definition": "Sites the language or its tooling named when the identical unit change was applied to the JavaScript rebuild.",
+      "measurement": "Counted during the change. The property rename produced zero errors, zero warnings and zero crashes.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "A property of JavaScript with no type checker configured, not a claim about JavaScript projects that use one.",
+      "experiment": {
+        "id": "te-conventional-js",
+        "title": "Conventional JavaScript rebuild — the same domain with no type checker at all",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "ref": null,
+        "section": "F1 — exact-minute recording + derived billing (JavaScript trial)"
+      }
+    },
+    "M-TE-JS-TESTFAIL": {
+      "claim": "JavaScript test failures that caught the change instead: 8, from one root cause",
+      "definition": "Test failures produced by the unit change in the JavaScript rebuild, all tracing to unfixed duration literals.",
+      "measurement": "Counted on the first run after the production rename, before any test literal was touched.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "These caught the change because the assertions compare numbers, not because anything referenced a renamed property that no longer existed — that class of bug stays invisible. A real safety net, and the only one available.",
+      "experiment": {
+        "id": "te-conventional-js",
+        "title": "Conventional JavaScript rebuild — the same domain with no type checker at all",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "ref": null,
+        "section": "F1 — exact-minute recording + derived billing (JavaScript trial)"
+      }
+    },
+    "M-TE-JS-SELF": {
+      "claim": "JavaScript mistakes caught only by a person: 1 of 2",
+      "definition": "Mistakes in the JavaScript rebuild caught by a suspicion-driven search rather than by any mechanism.",
+      "measurement": "C9's five dead `.error` references, one root cause, found by a grep run on suspicion after the identical failure shape had already been documented once.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "Found because the same failure had been seen before in this trial series. That is hindsight, not a repeatable mechanism.",
+      "experiment": {
+        "id": "te-conventional-js",
+        "title": "Conventional JavaScript rebuild — the same domain with no type checker at all",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "ref": null,
+        "section": "Totals — the complete hodgepodge JavaScript build"
+      }
+    },
+    "M-TE-JS-NOMECH": {
+      "claim": "JavaScript mistakes caught by no mechanism at all: 1 of 2",
+      "definition": "Mistakes in the JavaScript rebuild that neither the language, the test suite, nor a deliberate review caught.",
+      "measurement": "C6's look-ahead violation, found only because the next requirement's author happened to reopen the file it lived in.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "Found by luck. Under the trial's own rules it would otherwise have shipped, and it is recorded that way.",
+      "experiment": {
+        "id": "te-conventional-js",
+        "title": "Conventional JavaScript rebuild — the same domain with no type checker at all",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "ref": null,
+        "section": "Totals — the complete hodgepodge JavaScript build"
+      }
+    },
+    "M-TE-JS-SIZE": {
+      "claim": "Conventional JavaScript rebuild size: 1,540 lines",
+      "definition": "Final size of the conventional JavaScript rebuild across five files, with 60 passing tests.",
+      "measurement": "Counted at the end of the build.",
+      "provenance": "self-reported",
+      "doesNotEstablish": "Within 7% of the C# rebuild, which is why the two mistake counts are comparable at all.",
+      "experiment": {
+        "id": "te-conventional-js",
+        "title": "Conventional JavaScript rebuild — the same domain with no type checker at all",
+        "status": "Complete"
+      },
+      "source": {
+        "repository": "time-entry",
+        "path": "effort-experiment/EFFORT-LOG.md",
+        "ref": null,
         "section": "Totals — the complete hodgepodge JavaScript build"
       }
     },

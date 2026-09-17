@@ -96,7 +96,7 @@ summary: Where the two approaches actually differ, and where they measurably do 
       <p class="card-kicker">Conventional C#</p>
       <h3>Eight caught, fourteen silent</h3>
       <p>
-        The compiler reported eight direct member accesses. Roughly
+        The compiler reported {{metric:M-TE-CS-RIPPLE}} — direct member accesses. Roughly
         {{metric:M-TE-CS-SILENT}} more passed duration as a bare positional integer, so the
         literal <code>10</code> silently went from meaning sixty minutes to meaning ten. Each had
         to be found by hand and its intent re-read. Two ended up correct
@@ -107,9 +107,11 @@ summary: Where the two approaches actually differ, and where they measurably do 
       <p class="card-kicker">Conventional JavaScript</p>
       <h3>Nothing caught, program ran</h3>
       <p>
-        {{metric:M-TE-JS-LANGUAGE}} mistakes were caught by the language across the whole rebuild.
-        The rename produced no errors, no warnings and no crashes. Eight of twenty-one existing
-        tests did fail — a real safety net, and the only one available.
+        {{metric:M-TE-JS-LANGUAGE}} mistakes were caught by the language across the whole rebuild,
+        and {{metric:M-TE-JS-RIPPLE}} call sites were named on the unit change. The rename produced
+        no errors, no warnings and no crashes. {{metric:M-TE-JS-TESTFAIL}} did fail — a real safety
+        net, the only one available, and one that worked because those assertions compare numbers
+        rather than reference the renamed property.
       </p>
     </div>
     <div class="card callout">
@@ -208,11 +210,70 @@ summary: Where the two approaches actually differ, and where they measurably do 
 <section>
   <h2>What this leaves</h2>
   <p>
-    A narrower claim than "Ordo produces better software," and a more useful one. Conventional
-    practice and Ordo make comparable numbers of mistakes. They differ in <em>which mechanism</em>
-    catches them — a compiler that reports every affected site, or a person who has to notice.
-    Under the conditions the industry now measures, where change volume outruns review capacity,
-    that difference is the one that determines whether the volume is absorbable.
+    A narrower claim than "Ordo produces better software," and a more useful one. Here it is with
+    the numbers attached, because "they differ in which mechanism catches them" is not something a
+    reader can check.
+  </p>
+  <div class="table-scroll">
+    <table class="matrix">
+      <caption>The difference, at its smallest defensible size</caption>
+      <thead>
+        <tr>
+          <th scope="col"></th>
+          <th scope="col">Conventional C#</th>
+          <th scope="col">Conventional JavaScript</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Size</th>
+          <td>{{value:M-TE-CS-SIZE}}</td>
+          <td>{{value:M-TE-JS-SIZE}}</td>
+        </tr>
+        <tr>
+          <th scope="row">Rework-driving mistakes</th>
+          <td>{{value:M-TE-CS}}</td>
+          <td>{{value:M-TE-JS}}</td>
+        </tr>
+        <tr>
+          <th scope="row">Caught by compiler or language</th>
+          <td>{{value:M-TE-CS-TOOLING}}</td>
+          <td>{{value:M-TE-JS-LANGUAGE}}</td>
+        </tr>
+        <tr class="row-highlight">
+          <th scope="row">Caught only by a person re-reading the diff</th>
+          <td>{{value:M-TE-CS-SELF}}</td>
+          <td>{{value:M-TE-JS-SELF}}</td>
+        </tr>
+        <tr>
+          <th scope="row">Sites named by the machine on one identical change</th>
+          <td>{{value:M-TE-CS-RIPPLE}}</td>
+          <td>{{value:M-TE-JS-RIPPLE}}</td>
+        </tr>
+        <tr class="row-highlight">
+          <th scope="row">Sites a person had to find on that change</th>
+          <td>{{value:M-TE-CS-SILENT}}</td>
+          <td>All of them</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Mistake counts do not separate the two: {{value:M-TE-CS}} against {{value:M-TE-JS}}, and the
+    build with <em>less</em> static checking scored better. The highlighted rows are where the
+    separation actually lives. Of the C# rebuild's six mistakes,
+    {{value:M-TE-CS-SELF}} were invisible to every mechanism — swapped string arguments, a stale
+    revision inside a loop, a signature change hidden behind <code>var</code> — and were caught
+    only because someone re-read a diff before running it. None of those three is catchable by a
+    compiler <strong>even in principle</strong>. In the state-structured builds, the substitution
+    that produced the fourteen silent sites cannot be written down, because a duration and a time
+    are distinct types.
+  </p>
+  <p>
+    That is the claim: not fewer failures, but a smaller set of failures that depend on a person
+    noticing. Under the conditions the industry now measures, where change volume outruns review
+    capacity, that is the difference that decides whether the volume is absorbable.
+    <a href="{{link:/results/}}#difference">Both tables in full, with every figure's source →</a>
   </p>
   <div class="actions">
     <a class="button primary" href="{{link:/results/}}">The measurements</a>

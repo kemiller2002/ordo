@@ -85,6 +85,226 @@ summary: Every recorded trial, organised by what it concluded.
 </section>
 
 <section>
+  <h2 id="difference">The difference, stated as numbers</h2>
+  <p>
+    The two tables below are the whole comparison. Everything else on this page is context for
+    them. Every figure links to its own record — definition, how it was measured, what it does not
+    show, and the file and section to check it against.
+  </p>
+
+  <h3>1. The same intended change, propagated four ways</h3>
+  <p>
+    The unit of measure changed: recording became exact to the minute, six-minute rounding moved to
+    a derived billing view. The identical change was applied to the same domain in four
+    implementations. The question is how many of the affected call sites the machine named, and how
+    many a person had to find.
+  </p>
+  <div class="table-scroll">
+    <table class="matrix">
+      <caption>Call sites named by the machine versus found by hand, on one identical change</caption>
+      <thead>
+        <tr>
+          <th scope="col">Implementation</th>
+          <th scope="col">Size</th>
+          <th scope="col">Sites the machine named</th>
+          <th scope="col">Sites a person had to find</th>
+          <th scope="col">Manual searches needed</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Conventional C#</th>
+          <td>{{value:M-TE-CS-SIZE}}</td>
+          <td>{{value:M-TE-CS-RIPPLE}}</td>
+          <td>{{value:M-TE-CS-SILENT}}</td>
+          <td>Every one of them, by hand</td>
+        </tr>
+        <tr>
+          <th scope="row">Conventional JavaScript</th>
+          <td>{{value:M-TE-JS-SIZE}}</td>
+          <td>{{value:M-TE-JS-RIPPLE}}</td>
+          <td>All of them</td>
+          <td>A grep, run on suspicion</td>
+        </tr>
+        <tr class="row-highlight">
+          <th scope="row">Ordo, C#</th>
+          <td>—</td>
+          <td>{{value:M-TE-CSSTATE-RIPPLE}}</td>
+          <td>None</td>
+          <td>None</td>
+        </tr>
+        <tr class="row-highlight">
+          <th scope="row">Ordo, F#</th>
+          <td>—</td>
+          <td>{{value:M-TE-FSSTATE-RIPPLE}}, in a single build</td>
+          <td>None</td>
+          <td>None</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    <strong>The C# row is the one to read carefully.</strong> Eight of roughly twenty-two sites were
+    direct member accesses the compiler reported. The other fourteen passed duration as a bare
+    positional integer, so the literal <code>10</code> went from meaning sixty minutes to meaning
+    ten — <strong>identical source text, six times the duration, clean build, all tests
+    passing.</strong> Two of those were correct by coincidence
+    ({{value:M-TE-CS-COINCIDENCE}} of them). In the JavaScript rebuild the language named nothing at
+    all; {{value:M-TE-JS-TESTFAIL}} test failures caught the change instead, and only because those
+    assertions compare numbers rather than reference the renamed property.
+  </p>
+
+  <p class="muted">
+    The two Ordo rows show no manual searching <em>for this change</em>. As whole-trial context
+    rather than a cell in the table above: the C# state-system trial ran
+    {{value:M-TE-CSSTATE-SEARCH}} repository searches in total, for every purpose combined, with
+    {{value:M-TE-CSSTATE-CONTEXT}} context expansions beyond its planned reading list.
+  </p>
+
+  <h3>2. Mistakes, by the mechanism that caught each one</h3>
+  <p>
+    This is where the popular version of the claim breaks. Raw mistake counts do
+    <strong>not</strong> favour more static checking — the build with the least of it scored best.
+    What differs is which mechanism did the catching.
+  </p>
+  <div class="table-scroll">
+    <table class="matrix">
+      <caption>Rework-driving mistakes and their catching mechanism, two conventional rebuilds</caption>
+      <thead>
+        <tr>
+          <th scope="col">Caught by</th>
+          <th scope="col">Conventional C#</th>
+          <th scope="col">Conventional JavaScript</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Total rework-driving mistakes</th>
+          <td>{{value:M-TE-CS}}</td>
+          <td>{{value:M-TE-JS}}</td>
+        </tr>
+        <tr>
+          <th scope="row">The compiler or the language</th>
+          <td>{{value:M-TE-CS-TOOLING}}</td>
+          <td>{{value:M-TE-JS-LANGUAGE}}</td>
+        </tr>
+        <tr>
+          <th scope="row">A test run</th>
+          <td>{{value:M-TE-CS-TEST}}</td>
+          <td>None counted — {{value:M-TE-JS-TESTFAIL}} on the unit change, caught pre-green</td>
+        </tr>
+        <tr>
+          <th scope="row">A person re-reading the diff</th>
+          <td>{{value:M-TE-CS-SELF}}</td>
+          <td>{{value:M-TE-JS-SELF}}</td>
+        </tr>
+        <tr>
+          <th scope="row">Nothing — found by luck</th>
+          <td>0</td>
+          <td>{{value:M-TE-JS-NOMECH}}</td>
+        </tr>
+        <tr>
+          <th scope="row">Shipped undetected</th>
+          <td>0</td>
+          <td>0</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <p>
+      <strong>Two things about this table that we corrected rather than presented cleanly.</strong>
+    </p>
+    <p>
+      The C# mechanism rows sum to seven catch-events over six mistakes, because F7's stale revision
+      was caught twice — first by a pre-build read-through, then by the compiler. The rows do not
+      partition, and are not presented as if they do.
+    </p>
+    <p>
+      The compiler figure was also <strong>published here as 4 of 6 and is now 3 of 6.</strong> The
+      source log's tally of four included the eight rename sites from the unit change, which are the
+      compiler propagating an <em>intended</em> change rather than catching a mistake — the log's own
+      row for that requirement records <em>zero</em> mistakes shipped. Those eight are real and
+      belong in table 1, where they now are. They were never a mistake count.
+    </p>
+  </div>
+  <p>
+    <strong>What the two tables together support</strong>, and nothing more: the conventional C#
+    rebuild made {{value:M-TE-CS}} mistakes and the JavaScript one {{value:M-TE-JS}}, at comparable
+    size. Of the C# six, {{value:M-TE-CS-SELF}} were invisible to every mechanism and were caught
+    only because someone deliberately re-read a diff before running it. Swapped string arguments, a
+    stale revision inside a loop, a signature change hidden behind <code>var</code> — none of these
+    is catchable by a compiler <em>even in principle</em>. In the state-structured builds the
+    equivalent substitution is unwritable, because a duration and a time are different types. That
+    is the claim. It is a claim about which failures remain possible, not about how many occur.
+  </p>
+  <p class="muted">
+    <strong>Why this table has two columns and not four.</strong> The two state-system trials did not
+    log mistakes in this format — their records classify defects by class and report
+    {{metric:M-TE-CSSTATE-DEFECTS}} and {{metric:M-TE-FSSTATE-DEFECTS}} runtime domain defects
+    respectively, which is not the same measurement. Rather than convert between formats and present
+    the result as like-for-like, the columns are left absent. Table 1 is the four-way comparison,
+    because propagation was recorded the same way in all four.
+  </p>
+</section>
+
+<section>
+  <h2 id="caught-nothing">Where the machine caught nothing</h2>
+  <p>
+    Five measured cases, all from experiments designed to find them. These are the boundaries of the
+    claim above, and they are listed with numbers for the same reason the numbers above are: so the
+    limit can be checked rather than taken on trust.
+  </p>
+  <div class="table-scroll">
+    <table class="matrix">
+      <caption>Measured cases where mechanical checking did not help</caption>
+      <thead>
+        <tr>
+          <th scope="col">What was tested</th>
+          <th scope="col">Result</th>
+          <th scope="col">What it rules out</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">A boundary arm deliberately deleted</th>
+          <td>{{value:M-HN1-SILENT}} checks objected</td>
+          <td>That the architecture notices missing handling</td>
+        </tr>
+        <tr>
+          <th scope="row">A boundary arm present but inert, against five purpose-built mechanisms</th>
+          <td>{{value:M-HN2-NOOP}} caught it</td>
+          <td>That mechanisms built for this class catch this class</td>
+        </tr>
+        <tr>
+          <th scope="row">A wrong divisor in an arithmetic business rule</th>
+          <td>{{value:M-TE-BASELINE-ARITH}} from either type system</td>
+          <td>The strong form of the typing claim outright</td>
+        </tr>
+        <tr>
+          <th scope="row">A field rename, explicit domain versus competent baseline</th>
+          <td>{{value:M-TE-BASELINE-RENAME}}</td>
+          <td>That explicit types propagate renames better in general</td>
+        </tr>
+        <tr>
+          <th scope="row">A pattern search for conversion sites</th>
+          <td>{{value:M-TE-BASELINE-MISSED}} missed</td>
+          <td>Searching as a substitute for compiler-reported propagation</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    And the one that cuts hardest, because it runs against the direction the method predicts: in the
+    third controlled experiment, as-experienced mechanical discovery went {{value:M-HN3-MDR}} —
+    <strong>lower after hardening, not higher</strong> — across {{value:M-HN3-RCS}} required change
+    sites, while search operations fell {{value:M-HN3-SEARCH}} and repair loops
+    {{value:M-HN3-REPAIR}}. Discovery rate and engineering cost moved in opposite directions. The site does not have a resolved explanation for that, and
+    the hypothesis it belongs to is open.
+  </p>
+</section>
+
+<section>
   <h2 id="structural">Some things are not measured — they are guaranteed</h2>
   <p>
     These are properties of the code, verifiable by reading it. They carry no confidence interval

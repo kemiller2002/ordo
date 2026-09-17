@@ -276,6 +276,23 @@ main > section:first-child { margin-top: 0; }
 .metric-ref-value { font-weight: 700; }
 .metric-ref-label { font-family: var(--mono); font-size: .68rem; color: var(--ef-text-secondary); }
 
+/* A figure inside a table cell, where the column heading already names it.
+   Same underline as .metric-ref so a reader learns one affordance: an
+   underlined number is a number you can click through to its own record. */
+.metric-value-ref {
+  font-weight: 700;
+  border-bottom: 2px solid var(--ef-accent-primary);
+  color: var(--ef-text-primary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.metric-value-ref:hover { background: var(--ef-surface-secondary); }
+
+/* Marks the rows a comparison table exists to contrast, without relying on
+   colour alone to carry it. */
+.matrix .row-highlight > th[scope="row"] { border-left: 3px solid var(--ef-accent-primary); }
+.matrix .row-highlight { background: var(--ef-surface-secondary); }
+
 /* --- Provenance --------------------------------------------------------- */
 
 .src { display: block; margin-top: 1rem; font-family: var(--mono); font-size: .67rem; line-height: 1.5; overflow-wrap: anywhere; }

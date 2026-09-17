@@ -214,3 +214,101 @@ let ``every concept page keeps the promise the concepts index makes`` () =
         promised
         |> List.iter (fun heading ->
             Assert.True(page.Text.Contains heading, page.Path + " is missing the \"" + heading + "\" section")))
+
+/// `{{value:}}` exists so a table cell can carry a figure without repeating the
+/// column heading as a label. If it ever rendered the label too, every
+/// comparison table on the site would become unreadable, so the distinction
+/// from `{{metric:}}` is pinned rather than assumed.
+[<Fact>]
+let ``the value token renders the figure without its label`` () =
+    let metric =
+        manifest().Metrics
+        |> List.find (fun m -> m.Id = "M-TE-CS-SELF")
+
+    let results = find "results/index.html" |> Option.get
+
+    Assert.Contains("metric-value-ref", results.Text)
+    Assert.Contains(">" + metric.Value + "<", results.Text)
+    // The label belongs to `{{metric:}}`; inside a table it would be noise.
+    Assert.DoesNotContain("metric-value-ref\" href=\"#\"", results.Text)
+
+/// The figure was published as "4 of 6" and corrected to "3 of 6" after the
+/// source log's tally turned out to include eight compiler-reported sites from
+/// an intended change rather than eight caught mistakes. A regression here would
+/// silently restore an overstatement in the site's favour, which is the exact
+/// direction of error this programme is most at risk of, so it is guarded.
+[<Fact>]
+let ``the compiler-caught mistake count is the corrected figure, not the overstated one`` () =
+    let metric =
+        manifest().Metrics
+        |> List.find (fun m -> m.Id = "M-TE-CS-TOOLING")
+
+    Assert.Equal("3 of 6", metric.Value)
+
+    Assert.True(
+        metric.Measurement.Contains "CORRECTED",
+        "M-TE-CS-TOOLING carries a corrected value, so its measurement note must say so"
+    )
+
+    // The eight sites are real and belong to the propagation figure instead.
+    let ripple =
+        manifest().Metrics
+        |> List.find (fun m -> m.Id = "M-TE-CS-RIPPLE")
+
+    Assert.Contains("8", ripple.Value)
+
+/// Several cards spell a figure into their heading — "Eight caught, fourteen
+/// silent", "Seventeen at once" — which reads far better than a numeral and
+/// cannot be token-substituted. So the spelled words are checked against the
+/// manifest values they describe. One of these headings was already wrong once,
+/// in a different form, and nothing noticed.
+[<Fact>]
+let ``headings that spell a figure still agree with the manifest`` () =
+    let metrics = manifest().Metrics
+    let valueOfMetric id = (metrics |> List.find (fun m -> m.Id = id)).Value
+
+    // heading word, the page it appears on, the metric it claims
+    let claims =
+        [ "Eight caught", "comparison/index.html", "M-TE-CS-RIPPLE", "8"
+          "fourteen silent", "comparison/index.html", "M-TE-CS-SILENT", "14"
+          "Seventeen at once", "comparison/index.html", "M-TE-FSSTATE-RIPPLE", "17" ]
+
+    claims
+    |> List.iter (fun (heading, path, metricId, digits) ->
+        let page = find path |> Option.get
+
+        Assert.True(
+            page.Text.Contains heading,
+            path + " no longer contains the heading \"" + heading + "\"; update this test with it"
+        )
+
+        let value = valueOfMetric metricId
+
+        Assert.True(
+            value.Contains digits,
+            path
+            + " spells \""
+            + heading
+            + "\" but "
+            + metricId
+            + " now reads \""
+            + value
+            + "\""
+        ))
+
+/// The two tables the comparison rests on are the ones a reader is sent to. If
+/// either loses its anchor the links from the comparison page go nowhere, and
+/// the numbers become unfindable again — the problem they were added to solve.
+[<Fact>]
+let ``the explicit comparison tables keep the anchors that link to them`` () =
+    let results = find "results/index.html" |> Option.get
+    let comparison = find "comparison/index.html" |> Option.get
+
+    [ "id=\"difference\""; "id=\"caught-nothing\"" ]
+    |> List.iter (fun anchor ->
+        Assert.True(results.Text.Contains anchor, "results/ lost " + anchor))
+
+    Assert.True(
+        comparison.Text.Contains "/results/#difference",
+        "comparison/ no longer links to the table it summarises"
+    )

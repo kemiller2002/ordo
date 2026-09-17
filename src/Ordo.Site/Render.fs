@@ -92,6 +92,21 @@ let metricInline (context: Context) (metric: Metric) : string =
             [ text "span" [ "class", "metric-ref-value" ] metric.Value
               text "span" [ "class", "metric-ref-label" ] metric.Label ])
 
+/// Just the figure, still linked to its own record.
+///
+/// `metricInline` carries the label beside the value, which reads well in a
+/// sentence and badly in a table cell where the column heading already says
+/// what the figure is. This renders the number alone so a dense comparison
+/// table stays readable, and keeps the link and the title attribute so every
+/// cell is still one click from its definition, measurement and limitation.
+let metricValue (context: Context) (metric: Metric) : string =
+    element
+        "a"
+        [ "class", "metric-value-ref"
+          "href", metricAnchor context metric
+          "title", metric.Label + " — " + provenanceLabel metric.Provenance ]
+        metric.Value
+
 /// The full record: value, what it measures, how it was collected, what it
 /// does not show, and where to check it.
 let metricCard (context: Context) (metric: Metric) : string =
@@ -504,6 +519,12 @@ let resolveToken (context: Context) (token: string) : Validation<string> =
             match metrics with
             | [ metric ] -> ok (metricInline context metric)
             | _ -> error "'metric' takes exactly one id; use 'metrics' for several")
+    | "value" ->
+        resolveMetrics context argument
+        |> bind (fun metrics ->
+            match metrics with
+            | [ metric ] -> ok (metricValue context metric)
+            | _ -> error "'value' takes exactly one id")
     | "metrics" -> resolveMetrics context argument |> map (metricGrid context)
     | "claims" ->
         let claims =
