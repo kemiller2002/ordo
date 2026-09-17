@@ -153,7 +153,7 @@
       "condition": "B",
       "session": "session_01PnkyE5MotjxWDUqppBjuqs",
       "wave": 5,
-      "status": "mission-running",
+      "status": "VOID",
       "start_marker": {
         "cost_usd": 0.360277,
         "cache_read_tokens": 190264,
@@ -163,7 +163,36 @@
       },
       "epoch_at_start": 1,
       "mission_fired_at": "2026-09-17T12:38Z",
-      "prompt_revision": "Mission prompt now carries SDK-recovery instructions (verify dotnet --list-sdks; reinstall from Ubuntu archive if the container recycled; never touch the blocked CDN)."
+      "prompt_revision": "Mission prompt now carries SDK-recovery instructions (verify dotnet --list-sdks; reinstall from Ubuntu archive if the container recycled; never touch the blocked CDN).",
+      "close_marker_observed": {
+        "cost_usd": 20.97921,
+        "cache_read_tokens": 31867510,
+        "cache_write_tokens": 299647,
+        "input_tokens": 292,
+        "output_tokens": 81901
+      },
+      "epoch_at_close": 2,
+      "mission_cost_observed": {
+        "cost_usd": 20.618933,
+        "cache_read_tokens": 31677246,
+        "cache_write_tokens": 274634,
+        "input_tokens": 284,
+        "output_tokens": 81302
+      },
+      "void_reason": "worker_epoch changed 1 -> 2 between the start and close markers. Voided by the pre-registered corrected criterion.",
+      "independent_verification_despite_void": {
+        "semantic": "152/152",
+        "routecontract": "6/6",
+        "wasm": "4/4",
+        "postgres": "3 passed 57 skipped /60",
+        "api": "36 passed 3 failed /39",
+        "regressions": "none",
+        "commit": "a442976",
+        "files": 16,
+        "insertions": 920,
+        "note": "Complete and sound. Voided solely on the epoch criterion, not on quality."
+      },
+      "FLAG": "This void REMOVES THE STRONGEST COUNTER-EVIDENCE. At $20.62 B5 is the most expensive hardened run and the second most expensive run overall. Keeping it would push the hardened condition's mean ABOVE two baseline runs and likely erase the remaining gap. The criterion is pre-registered and applied unchanged, but a reader must be able to see that it fell this way."
     }
   ],
   "operational_log": [
@@ -185,6 +214,14 @@
       "at": "2026-09-17T12:31Z",
       "event": "Wave 5 launched after the five-hour rate-limit window reset at 12:30Z.",
       "note": "Held 68 minutes rather than launch into allowed_warning."
+    },
+    {
+      "at": "2026-09-17T13:10Z",
+      "finding": "THE INTERRUPTION CRITERION PREFERENTIALLY VOIDS EXPENSIVE RUNS.",
+      "argument": "A worker restart is a time-exposed event: the longer a run lasts, the more likely it experiences one. Run duration correlates with cost. So voiding on worker_epoch change systematically removes the longest and therefore most expensive runs from BOTH conditions, biasing every surviving cost estimate downward.",
+      "evidence": "Void rate is now 4 of 9 completed runs (~44%). The voided set includes A3 $19.49, B5 $20.62 and B2 $12.00 - skewed toward the expensive end.",
+      "consequence": "With n small this bias need not fall evenly across conditions. The pre-registered analysis stays primary, but a sensitivity analysis over ALL complete, verified runs must be reported beside it, clearly labelled.",
+      "not_an_amendment": "The criterion is NOT changed. B5 stays void. This is recorded so the reader can judge the criterion, not so the data can be rescued."
     }
   ]
 }
