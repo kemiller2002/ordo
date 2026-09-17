@@ -268,5 +268,16 @@
     "evidence_record": "EV-SDE-2026-0007",
     "hypothesis_disposition": "HY-SDE-2026-0009 remains untested",
     "note": "Every completed run placed baseline above hardened, six of six. Suggestive, not evidence, and not cited as a result."
+  },
+  "worker_epoch_observation_note": {
+    "finding": "worker_epoch is perturbed by session-lifecycle events, including the orchestrator archiving a session.",
+    "evidence": "A1 read epoch 1 at its close marker and epoch 2 immediately after being archived, with no work between. B1, left unarchived, still reads 1.",
+    "per_run": {
+      "A3": "epoch 2 observed at 09:04 while RUNNING mid-mission \u2014 genuine mid-run restart",
+      "B2": "epoch 2 observed only at close \u2014 timing unknown, voided on an observation that cannot distinguish mid-run from post-run",
+      "B2r": "epoch 2 at close, irrelevant; void is uncontested (never committed)",
+      "A1": "epoch 2 only after orchestrator archived it \u2014 artifact of cleanup, not the run"
+    },
+    "successor_requirement": "Read worker_epoch at the start marker and again at the close marker; treat only a change between those readings as evidence about the run. Do not archive a session before its final reading."
   }
 }

@@ -111,6 +111,29 @@ execution:
   precedes the mission. B2 carried an increment while completing a full
   implementation (15 files, 1,002 insertions, pushed) at a cost beside B1's.
 
+**The counter is also perturbed by the orchestrator's own actions, which was
+discovered during cleanup.** A1 read `worker_epoch: 1` at its close marker
+and `worker_epoch: 2` immediately after the orchestrator archived it, with no
+work in between. B1, left unarchived, still reads 1. So an increment can come
+from a session-lifecycle event rather than from anything that happened during
+a run.
+
+That does not overturn the voids, and the distinction is recorded per run
+rather than generalised:
+
+| Run | When epoch 2 was observed | What that supports |
+|---|---|---|
+| A3 | at 09:04 while the session was RUNNING, mid-mission | a genuine mid-run restart |
+| B2 | only at close | timing unknown |
+| B2r | only at close | irrelevant — void is uncontested, it never committed |
+| A1 | only after the orchestrator archived it | an artifact of cleanup, not the run |
+
+A3's restart is real. B2's is unestablished, and was voided on an observation
+that could not distinguish a mid-run restart from a boundary or post-run one.
+A successor must read the epoch at the start marker and again at the close
+marker, and treat only a change between those two readings as evidence about
+the run — and must not archive a session before its final reading.
+
 The criterion therefore disqualifies runs for an infrastructure event rather
 than for the failure it was written to exclude. **It was not amended.** The
 experiment record freezes at first run, and loosening a pre-registered
