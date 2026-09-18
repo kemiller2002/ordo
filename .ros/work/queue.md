@@ -40,4 +40,5 @@
 | WI-0035 | Register the agent-cost experiment and its hypothesis | active | research | medium |
 | WI-0036 | Register the agent-cost experiment and its hypothesis | complete | research | medium |
 | WI-0037 | Continue the agent-cost experiment as EX-SDE-2026-0002 | active | research | medium |
-| WI-0038 | Executable Ordo v0.1: bounded decision vertical slice | ready | ordo, executable-intelligence | high |
+| WI-0038 | Executable Ordo v0.1: bounded decision vertical slice | complete | ordo, executable-intelligence | high |
+| WI-0039 | Bring the executable-intelligence input documents onto main and map them | ready | ordo, provenance | medium |

@@ -1,0 +1,956 @@
+# Ordo Executable Intelligence Requirements — Pass 3
+
+Status: Third-pass consolidation and implementation requirements
+Purpose: Convert the first two Ordo executable-intelligence requirement passes into a buildable, prioritized, implementation-ready plan without introducing unnecessary framework scope.
+
+This document supplements Pass 1 and Pass 2. It focuses on consolidation, canonical terminology, release boundaries, implementation sequencing, minimum viable public API, and the first production vertical slice.
+
+If this document conflicts with an earlier requirement, the conflict must be surfaced explicitly. This document does not silently supersede earlier semantic requirements unless stated.
+
+======================================================================
+1. PASS 3 OBJECTIVE
+======================================================================
+
+### ORDO-3-001 — Pass 3 shall reduce ambiguity
+Pass 3 exists to make implementation choices explicit enough that an agent does not need to invent architecture.
+
+### ORDO-3-002 — Pass 3 shall not add speculative platform scope
+The purpose of this pass is consolidation and implementation readiness, not feature expansion.
+
+### ORDO-3-003 — Existing Ordo methodology remains authoritative
+Executable Ordo remains subordinate to existing Ordo methodology, construction rules, verification rules, navigation rules, structural-locality rules, and research practices.
+
+### ORDO-3-004 — Executable Ordo shall remain small
+If a requirement can be satisfied with a small set of discriminated unions, records, functions, and narrow interfaces, do not introduce a larger abstraction.
+
+### ORDO-3-005 — The first implementation must prove value vertically
+The first release must demonstrate one complete resolution path from domain state through decision resolution to accepted/rejected/escalated transition and observable execution evidence.
+
+======================================================================
+2. CANONICAL TERMINOLOGY
+======================================================================
+
+### ORDO-3-010 — ResolutionMode
+Canonical values:
+- Compute
+- Decide
+- Deliberate
+
+Do not use SystemOne/SystemTwo/Fast/Slow as public API types.
+Those terms may appear in research documentation as conceptual inspiration only.
+
+### ORDO-3-011 — DecisionContract
+Represents a bounded semantic question with a legal typed output space.
+
+### ORDO-3-012 — DecisionRequest
+Represents a specific invocation of a DecisionContract against specific state/evidence.
+
+### ORDO-3-013 — DecisionOutcome
+Represents the provider-neutral resolution result of a DecisionRequest.
+
+Expected categories:
+- Decided
+- InsufficientEvidence
+- Ambiguous
+- RequiresDeliberation
+- ProviderFailure
+
+Exact F# case names may vary only if repository conventions strongly justify alternatives.
+
+### ORDO-3-014 — DeliberationRequest
+Represents an explicitly scoped open-ended reasoning request.
+
+### ORDO-3-015 — Evidence
+Represents information available to support computation, decision, verification, or transition policy.
+
+### ORDO-3-016 — EvidenceRequirement
+Represents evidence required but not necessarily available.
+
+### ORDO-3-017 — Capability
+Represents authority to request or perform an action.
+
+### ORDO-3-018 — Obligation
+Represents required unresolved work.
+
+### ORDO-3-019 — Transition
+Represents an explicit legal domain-state change.
+
+### ORDO-3-020 — Policy
+Represents deterministic interpretation of state, evidence, capability, decision, consequence, and other domain facts.
+
+### ORDO-3-021 — Provider
+Represents an implementation capable of satisfying some resolution contract.
+
+Providers may be:
+- deterministic
+- human
+- remote AI
+- local AI
+- replay
+- test/fake
+
+### ORDO-3-022 — Decision and transition shall remain distinct
+A DecisionOutcome never directly means that a domain transition has occurred.
+
+### ORDO-3-023 — Decision and outcome shall remain distinct
+A decision made now and an observed real-world outcome later are different records.
+
+### ORDO-3-024 — Confidence and calibration shall remain distinct
+Provider-reported confidence is not empirical calibration.
+
+======================================================================
+3. AUTHORITY BOUNDARIES
+======================================================================
+
+### ORDO-3-030 — Application authority
+Applications own:
+- domain state
+- domain transitions
+- business decisions
+- legal choices
+- consequence definitions
+- business policy
+- state invariants
+- domain evidence semantics
+
+### ORDO-3-031 — Ordo authority
+Executable Ordo owns reusable semantics for:
+- resolution modes
+- bounded decision contracts
+- structured outcomes
+- evidence references
+- capabilities
+- obligations
+- escalation semantics
+- provider-neutral execution boundaries
+- transition precondition mechanics
+
+### ORDO-3-032 — ROS authority
+ROS owns:
+- execution history
+- task/run association
+- provider measurement
+- cost
+- latency
+- replay orchestration
+- calibration analysis
+- provider comparison
+- experimentation
+- optimization recommendations
+
+ROS shall not redefine Ordo semantics.
+
+### ORDO-3-033 — Provider authority
+Providers may return information or judgments.
+
+Providers do not own:
+- domain state
+- domain capability
+- policy
+- legal transitions
+- authorization
+- truth
+
+### ORDO-3-034 — Human authority is domain-scoped
+Human review does not automatically imply universal override permission.
+
+======================================================================
+4. RELEASE PRIORITY CLASSES
+======================================================================
+
+### ORDO-3-040 — Class A: v0.1 Core
+Required before executable Ordo is considered real.
+
+### ORDO-3-041 — Class B: Before ROS Integration
+Required before ROS should consume executable Ordo as a stable dependency.
+
+### ORDO-3-042 — Class C: Hardening
+Required before broad production adoption.
+
+### ORDO-3-043 — Class D: Deferred Research
+Architecture should not block these capabilities, but they must not inflate v0.1.
+
+### ORDO-3-044 — Class E: Explicit Non-Goal
+Must not be implemented unless a later approved requirement changes scope.
+
+======================================================================
+5. V0.1 CORE SCOPE
+======================================================================
+
+### ORDO-3-050 — v0.1 shall implement ResolutionMode
+Required cases:
+- Compute
+- Decide
+- Deliberate
+
+### ORDO-3-051 — v0.1 shall implement stable semantic identifiers
+At minimum support stable identity for:
+- DecisionContract
+- DecisionRequest
+- Evidence
+- resolution execution
+
+Use strong F# types rather than raw strings where practical.
+
+### ORDO-3-052 — v0.1 shall implement Evidence
+Evidence shall minimally support:
+- stable identity
+- source/provenance
+- optional external reference
+
+Do not overbuild evidence scoring in v0.1.
+
+### ORDO-3-053 — v0.1 shall implement EvidenceRequirement
+Missing required evidence must be distinguishable from a negative or uncertain decision.
+
+### ORDO-3-054 — v0.1 shall implement DecisionContract<'T>
+The contract shall include at minimum:
+- stable contract ID
+- semantic version
+- legal typed choices
+- required evidence
+
+### ORDO-3-055 — v0.1 shall implement DecisionRequest<'T>
+The request shall associate:
+- contract
+- relevant state snapshot or state reference
+- evidence
+- request identity
+- state/version identity where concurrency matters
+
+### ORDO-3-056 — v0.1 shall implement DecisionResult<'T>
+At minimum:
+- choice
+- provider identity
+- evidence references
+- optional confidence
+
+### ORDO-3-057 — v0.1 shall implement DecisionOutcome<'T>
+At minimum support:
+- Decided
+- InsufficientEvidence
+- RequiresDeliberation
+- ProviderFailure
+
+Ambiguous may be implemented in v0.1 if it remains simple; otherwise it is Class B.
+
+### ORDO-3-058 — v0.1 shall implement confidence provenance
+If confidence is present, it must identify whether it is:
+- provider-reported
+- derived
+- empirically calibrated
+
+v0.1 does not need to calculate calibration.
+
+### ORDO-3-059 — v0.1 shall implement a provider-neutral decision interface
+The interface must not reference concrete provider SDK types.
+
+### ORDO-3-060 — v0.1 shall implement a deterministic fake provider
+Normal unit tests shall not require paid/network AI calls.
+
+### ORDO-3-061 — v0.1 shall implement one real provider adapter
+The adapter shall remain outside Ordo.Core.
+
+### ORDO-3-062 — v0.1 shall implement explicit transition evaluation
+A decision may contribute to transition eligibility but shall not execute a transition implicitly.
+
+### ORDO-3-063 — v0.1 shall implement typed transition failure
+At minimum distinguish:
+- invalid state
+- missing capability
+- missing evidence
+- policy rejection
+- stale state/version
+
+### ORDO-3-064 — v0.1 shall implement one explicit escalation path
+At minimum:
+Decide → RequiresDeliberation
+or:
+Decide → RequiresHumanReview
+
+### ORDO-3-065 — v0.1 shall support replay without mutation
+A historical DecisionRequest may be reevaluated without executing a domain transition.
+
+### ORDO-3-066 — v0.1 shall expose observation facts
+Ordo must expose enough execution facts for ROS later to record:
+- resolution ID
+- contract ID/version
+- provider
+- decision
+- confidence
+- start/end timing
+- escalation
+- state/version identity
+
+Ordo shall not depend on ROS.
+
+======================================================================
+6. V0.1 F# IMPLEMENTATION SHAPE
+======================================================================
+
+### ORDO-3-070 — F# is mandatory for first-party production code
+Do not introduce C# unless an unavoidable external boundary requires it.
+
+### ORDO-3-071 — Prefer discriminated unions for closed semantic states
+Examples include ResolutionMode and DecisionOutcome<'T>.
+
+### ORDO-3-072 — Prefer records for immutable structured data
+Examples include:
+- Evidence
+- DecisionContract
+- DecisionRequest
+- DecisionResult
+- ProviderIdentity
+
+### ORDO-3-073 — Prefer pure functions in core logic
+Policy and transition evaluation should generally be input → result/output with no hidden side effects.
+
+### ORDO-3-074 — Use Result for expected failure
+Expected failure is data, not an exception.
+
+### ORDO-3-075 — Use Async/Task only at side-effect boundaries
+Provider calls may be asynchronous.
+
+### ORDO-3-076 — Use CancellationToken for provider and deliberation boundaries
+Cancellation support must follow normal .NET patterns.
+
+### ORDO-3-077 — Avoid reflection-heavy design
+
+### ORDO-3-078 — Avoid dependency injection frameworks
+Use explicit composition.
+
+### ORDO-3-079 — Avoid framework-style service locators
+Provider selection/configuration should be explicit.
+
+======================================================================
+7. INITIAL PROJECT STRUCTURE
+======================================================================
+
+### ORDO-3-080 — Ordo.Core
+Contains:
+- identifiers
+- Evidence
+- EvidenceRequirement
+- Capability
+- Obligation primitives
+- ResolutionMode
+- transition result/failure types
+- provider-neutral shared primitives
+
+No provider SDK dependencies.
+No ROS dependencies.
+
+### ORDO-3-081 — Ordo.Decisions
+Contains:
+- DecisionContract
+- DecisionRequest
+- DecisionResult
+- DecisionOutcome
+- confidence types
+- provider abstraction
+- deliberation request/result types where needed
+
+### ORDO-3-082 — Ordo.Execution
+Create only if coordination logic is substantial enough to justify a separate project.
+
+### ORDO-3-083 — Provider projects
+Provider integrations shall be isolated.
+
+### ORDO-3-084 — Ordo.Testing
+Create only if reusable test utilities justify it.
+
+### ORDO-3-085 — Do not create a project per concept
+Semantic separation does not automatically justify physical assembly separation.
+
+======================================================================
+8. BEFORE ROS INTEGRATION
+======================================================================
+
+### ORDO-3-090 — Stable execution identity
+
+### ORDO-3-091 — Parent-child causality
+
+### ORDO-3-092 — Contract version must survive persistence
+
+### ORDO-3-093 — Policy version must be representable
+
+### ORDO-3-094 — State fingerprint/version must be representable
+
+### ORDO-3-095 — Provider metadata must be exposed
+Expose provider, model/system identifier, version where available, and adapter version where relevant.
+
+### ORDO-3-096 — Usage metadata hook
+Expose provider usage where available without hardcoding pricing into Ordo.Core.
+
+### ORDO-3-097 — Latency timing boundaries
+
+### ORDO-3-098 — Replay must be stable
+
+### ORDO-3-099 — Outcome linkage must be possible
+
+### ORDO-3-100 — Human override must preserve original result
+
+### ORDO-3-101 — Escalation chain must be observable
+
+### ORDO-3-102 — Observation API shall expose facts, not analytics conclusions
+
+======================================================================
+9. ROS INTEGRATION CONTRACT
+======================================================================
+
+### ORDO-3-110 — Ordo must not reference ROS
+Dependency direction is one-way:
+ROS → Ordo
+
+### ORDO-3-111 — ROS shall record Ordo resolution events
+ROS should eventually record:
+- resolution ID
+- task/work-item parent
+- mode
+- contract ID/version
+- state fingerprint/version
+- provider/model
+- start/end
+- latency
+- usage
+- cost
+- decision
+- confidence
+- confidence provenance
+- evidence references
+- escalation
+- verification
+- later outcome
+- override
+
+### ORDO-3-112 — ROS owns empirical calibration
+
+### ORDO-3-113 — ROS owns provider comparison
+
+### ORDO-3-114 — ROS owns replay orchestration
+
+### ORDO-3-115 — ROS may recommend optimization
+Examples:
+- Deliberate → Decide candidate
+- Decide → Compute candidate
+- provider improvement opportunity
+- repeated low-confidence contract
+- repeated evidence deficiency
+
+### ORDO-3-116 — ROS shall not automatically rewrite Ordo contracts
+
+======================================================================
+10. FIRST VERTICAL SLICE
+======================================================================
+
+### ORDO-3-120 — The first vertical slice shall be narrow
+
+### ORDO-3-121 — The slice shall use a real bounded decision
+Recommended characteristics:
+- 3 or fewer legal choices
+- objective required evidence
+- meaningful state/version identity
+- clear escalation path
+- low-risk execution consequence
+
+### ORDO-3-122 — The slice shall execute end-to-end
+Required path:
+DomainState
+→ build DecisionRequest
+→ provider
+→ validate DecisionOutcome
+→ evaluate policy/capability/evidence
+→ accept/reject/escalate transition
+→ emit observation facts
+
+### ORDO-3-123 — The slice shall have one fake provider
+
+### ORDO-3-124 — The slice shall have one live provider adapter
+
+### ORDO-3-125 — The slice shall prove invalid output rejection
+
+### ORDO-3-126 — The slice shall prove stale-state rejection
+
+### ORDO-3-127 — The slice shall prove missing-evidence handling
+
+### ORDO-3-128 — The slice shall prove escalation
+
+### ORDO-3-129 — The slice shall prove replay without execution
+
+### ORDO-3-130 — The slice shall emit ROS-ready observation data
+
+======================================================================
+11. HARDENING CLASS C
+======================================================================
+
+### ORDO-3-140 — Contract lifecycle
+Support Draft, Active, Deprecated, Retired or equivalent.
+
+### ORDO-3-141 — Contract replacement/supersession
+
+### ORDO-3-142 — Evidence staleness
+
+### ORDO-3-143 — Evidence conflict
+
+### ORDO-3-144 — Derived evidence provenance
+
+### ORDO-3-145 — Human review lifecycle
+
+### ORDO-3-146 — Cancellation
+
+### ORDO-3-147 — Timeouts
+
+### ORDO-3-148 — Retry distinction
+Differentiate transport retry from semantic retry.
+
+### ORDO-3-149 — No retry-until-desired-answer
+
+### ORDO-3-150 — Provider disagreement
+
+### ORDO-3-151 — Consensus remains domain/orchestration policy
+
+### ORDO-3-152 — Partial failure
+
+### ORDO-3-153 — Side-effect distinction
+
+### ORDO-3-154 — Prompt injection resistance
+
+### ORDO-3-155 — Provider output is untrusted
+
+### ORDO-3-156 — Hidden provider fallback is prohibited
+
+### ORDO-3-157 — Sensitive data minimization
+
+### ORDO-3-158 — Replay access control
+
+### ORDO-3-159 — Audit reconstruction
+
+### ORDO-3-160 — Historical correction is additive
+
+### ORDO-3-161 — Schema evolution tests
+
+### ORDO-3-162 — Parallel evaluation safety
+
+### ORDO-3-163 — Cache safety
+Decision caching shall not exist by default.
+
+======================================================================
+12. SECURITY REQUIREMENTS
+======================================================================
+
+### ORDO-3-170 — Secrets are never decision evidence by default
+
+### ORDO-3-171 — Provider credentials stay outside core contracts
+
+### ORDO-3-172 — Provider output cannot grant capability
+
+### ORDO-3-173 — Provider output cannot create authoritative identity
+
+### ORDO-3-174 — Tool access during deliberation must be capability-scoped
+
+### ORDO-3-175 — Provider prose shall never be executed directly
+
+### ORDO-3-176 — Evidence may contain malicious instructions
+
+### ORDO-3-177 — At least one adversarial evidence test is required before production use
+
+======================================================================
+13. VERSIONING AND SERIALIZATION
+======================================================================
+
+### ORDO-3-180 — Version semantics, not implementation noise
+
+### ORDO-3-181 — F# type names are not wire contracts
+
+### ORDO-3-182 — Stable serialized unions
+
+### ORDO-3-183 — Unknown variants must fail safely or be preserved deliberately
+
+### ORDO-3-184 — Backward compatibility tests are mandatory for persisted public contracts
+
+### ORDO-3-185 — Cross-language wire formats should be language-neutral
+F# remains the reference implementation.
+
+======================================================================
+14. TESTING REQUIREMENTS
+======================================================================
+
+### ORDO-3-190 — Core unit tests are mandatory
+
+### ORDO-3-191 — Normal tests require no network
+
+### ORDO-3-192 — Decision contract tests
+Must include:
+- legal choice
+- illegal choice
+- missing evidence
+- no confidence
+- valid confidence
+- provider failure
+- escalation
+
+### ORDO-3-193 — Transition tests
+Must include:
+- valid transition
+- invalid source state
+- missing capability
+- missing evidence
+- policy rejection
+- stale state
+
+### ORDO-3-194 — Provider conformance tests
+
+### ORDO-3-195 — Replay tests
+
+### ORDO-3-196 — Serialization round-trip tests
+
+### ORDO-3-197 — Compatibility tests for supported historical schemas
+
+### ORDO-3-198 — Cancellation tests before production adoption
+
+### ORDO-3-199 — Timeout tests before production adoption
+
+### ORDO-3-200 — Corrupt provider-response tests
+
+### ORDO-3-201 — Prompt-injection tests for model providers
+
+### ORDO-3-202 — Concurrency/stale-state tests
+
+### ORDO-3-203 — Invariant/property-style tests should be used where valuable
+
+======================================================================
+15. DOCUMENTATION REQUIREMENTS
+======================================================================
+
+### ORDO-3-210 — Document executable Ordo purpose
+
+### ORDO-3-211 — Document authority boundaries
+
+### ORDO-3-212 — Document Compute / Decide / Deliberate
+
+### ORDO-3-213 — Document decision vs transition
+
+### ORDO-3-214 — Document decision vs outcome
+
+### ORDO-3-215 — Document confidence vs calibration
+
+### ORDO-3-216 — Document Ordo vs ROS
+
+### ORDO-3-217 — Provide a complete bounded-decision example
+
+### ORDO-3-218 — Provide a Deliberate escalation example
+
+### ORDO-3-219 — Provide a stale-state example
+
+### ORDO-3-220 — Provide anti-pattern examples
+
+======================================================================
+16. BUILD AND REPOSITORY REQUIREMENTS
+======================================================================
+
+### ORDO-3-230 — Inspect repository before modification
+
+### ORDO-3-231 — Establish baseline before implementation
+Record commit SHA, build result, test result, architecture checks, and relevant current metrics.
+
+### ORDO-3-232 — Follow existing Ordo repository conventions
+
+### ORDO-3-233 — Do not perform unrelated refactoring
+
+### ORDO-3-234 — Create new projects only when boundaries justify them
+
+### ORDO-3-235 — Build must remain clean
+
+### ORDO-3-236 — Existing passing tests must remain passing
+
+### ORDO-3-237 — New warnings must not be suppressed casually
+
+### ORDO-3-238 — Provider secrets are never required for normal build/test
+
+### ORDO-3-239 — Live-provider tests are opt-in
+
+======================================================================
+17. API MINIMIZATION
+======================================================================
+
+### ORDO-3-240 — Public API shall be deliberately small
+
+### ORDO-3-241 — Internal implementation types remain internal unless reuse requires otherwise
+
+### ORDO-3-242 — Do not expose provider SDK types through public Ordo contracts
+
+### ORDO-3-243 — Avoid base classes where discriminated unions or interfaces suffice
+
+### ORDO-3-244 — Avoid generic repositories
+
+### ORDO-3-245 — Avoid service locators
+
+### ORDO-3-246 — Avoid event-bus abstractions unless a real consumer requires them
+
+### ORDO-3-247 — Avoid DSL creation in v0.1
+
+======================================================================
+18. DEFERRED RESEARCH CLASS D
+======================================================================
+
+### ORDO-3-250 — Automatic provider ranking
+Deferred.
+
+### ORDO-3-251 — Automatic provider routing
+Deferred.
+
+### ORDO-3-252 — Empirical calibration dashboards
+Deferred to ROS.
+
+### ORDO-3-253 — Automatic Deliberate → Decide detection
+Deferred.
+
+### ORDO-3-254 — Automatic Decide → Compute detection
+Deferred.
+
+### ORDO-3-255 — Specialized local decision model
+Deferred.
+
+### ORDO-3-256 — Jev integration
+Deferred until the generic provider boundary is proven.
+
+### ORDO-3-257 — Echelon-trained decision model
+Deferred.
+
+### ORDO-3-258 — RL/RLCD experimentation
+Deferred.
+
+### ORDO-3-259 — Decision-corpus export/training pipeline
+Deferred.
+
+### ORDO-3-260 — Adaptive confidence thresholds
+Deferred.
+
+### ORDO-3-261 — Automatic contract discovery
+Deferred.
+
+### ORDO-3-262 — Automatic policy modification
+Deferred.
+
+### ORDO-3-263 — Cross-application decision marketplaces/libraries
+Deferred.
+
+======================================================================
+19. EXPLICIT NON-GOALS CLASS E
+======================================================================
+
+### ORDO-3-270 — No generic workflow engine
+
+### ORDO-3-271 — No generic rules engine
+
+### ORDO-3-272 — No autonomous-agent framework
+
+### ORDO-3-273 — No model-training platform in executable Ordo
+
+### ORDO-3-274 — No enterprise authorization platform
+
+### ORDO-3-275 — No generic event-sourcing framework
+
+### ORDO-3-276 — No vector database requirement
+
+### ORDO-3-277 — No semantic-memory platform
+
+### ORDO-3-278 — No provider marketplace
+
+### ORDO-3-279 — No required database
+
+### ORDO-3-280 — No required web server
+
+### ORDO-3-281 — No required UI
+
+======================================================================
+20. IMPLEMENTATION SEQUENCE
+======================================================================
+
+### ORDO-3-290 — Step 1: Inspect
+Inspect current:
+- Ordo methodology files
+- F# solution/projects
+- test structure
+- package structure
+- serialization conventions
+- ROS integration points
+- provider abstractions, if any
+
+### ORDO-3-291 — Step 2: Baseline
+Record current SHA, build status, tests, architecture checks.
+
+### ORDO-3-292 — Step 3: Define minimal semantic types
+
+### ORDO-3-293 — Step 4: Implement fake provider
+
+### ORDO-3-294 — Step 5: Implement first bounded decision
+
+### ORDO-3-295 — Step 6: Implement transition gating
+
+### ORDO-3-296 — Step 7: Implement escalation
+
+### ORDO-3-297 — Step 8: Implement stale-state protection
+
+### ORDO-3-298 — Step 9: Implement observation facts
+
+### ORDO-3-299 — Step 10: Implement one real provider adapter
+
+### ORDO-3-300 — Step 11: Implement replay
+
+### ORDO-3-301 — Step 12: Verify
+Run build, existing tests, new tests, architecture checks, and provider conformance tests using fake/recorded providers.
+
+### ORDO-3-302 — Step 13: Report
+Report:
+- requirements satisfied
+- requirements deferred
+- files changed
+- tests added
+- build/test results
+- architecture changes
+- known limitations
+- unresolved questions
+
+======================================================================
+21. DEFINITION OF DONE — v0.1
+======================================================================
+
+Executable Ordo v0.1 is complete only when:
+
+1. Ordo still functions as a methodology without requiring the executable package.
+2. Production executable code is F#.
+3. Core has no ROS dependency.
+4. Core has no concrete AI-provider dependency.
+5. Compute, Decide, and Deliberate exist as explicit concepts.
+6. DecisionContract<'T> exists.
+7. DecisionRequest<'T> exists.
+8. DecisionOutcome<'T> exists.
+9. Evidence exists as a first-class concept.
+10. Missing evidence is distinct from low confidence.
+11. Confidence is optional.
+12. Confidence provenance exists.
+13. Provider-reported confidence is not labeled calibrated probability.
+14. A provider-neutral interface exists.
+15. A fake provider exists.
+16. One real provider adapter exists.
+17. Provider output is validated against legal choices.
+18. Invalid provider output is rejected.
+19. Decision does not execute transition directly.
+20. Capability remains independent from confidence.
+21. One escalation path works.
+22. One stale-state decision is correctly rejected.
+23. Replay works without mutation.
+24. Observation facts are exposed.
+25. Historical contract version is identifiable.
+26. Normal tests do not require paid/network AI.
+27. Existing tests still pass.
+28. Build remains clean.
+29. Documentation contains at least one complete example.
+30. Documentation contains explicit anti-patterns.
+31. No workflow engine was introduced.
+32. No rules engine was introduced.
+33. No agent framework was introduced.
+34. No unrelated refactoring was performed.
+35. Another engineer or agent can understand the v0.1 execution model without hidden conversational context.
+
+======================================================================
+22. DEFINITION OF DONE — READY FOR ROS
+======================================================================
+
+Ordo is ready for first-class ROS integration only when:
+
+1. Stable resolution IDs exist.
+2. Parent-child causality exists.
+3. Contract version is preserved.
+4. State/version identity is preserved.
+5. Provider/model identity is preserved.
+6. Latency is observable.
+7. Usage metadata is exposed where available.
+8. Escalation history is observable.
+9. Replay is non-mutating.
+10. Decision and later outcome are separately linkable.
+11. Human override can preserve original provider result.
+12. Observation schemas are stable enough for persistence.
+13. Ordo still has no ROS dependency.
+
+======================================================================
+23. DESIGN INVARIANTS
+======================================================================
+
+### ORDO-3-320 — Provider information is not domain authority
+### ORDO-3-321 — Decision is not transition
+### ORDO-3-322 — Decision is not outcome
+### ORDO-3-323 — Confidence is not capability
+### ORDO-3-324 — Evidence is not automatically truth
+### ORDO-3-325 — Missing evidence is not low confidence
+### ORDO-3-326 — Replay is not execution
+### ORDO-3-327 — Deliberation is not permission
+### ORDO-3-328 — Human review is not automatically authorization
+### ORDO-3-329 — Repeated agreement does not prove determinism
+### ORDO-3-330 — Newer contract does not imply compatibility
+### ORDO-3-331 — Provider disagreement is not consensus
+### ORDO-3-332 — External effect request is not effect completion
+### ORDO-3-333 — Application owns domain truth
+### ORDO-3-334 — Ordo owns reusable resolution semantics
+### ORDO-3-335 — ROS owns observation and optimization
+
+======================================================================
+24. GOVERNING PRINCIPLE
+======================================================================
+
+The implementation shall preserve this authority chain:
+
+Domain State
+    ↓
+Domain Contract
+    ↓
+Resolution Requirement
+    ↓
+Compute / Decide / Deliberate
+    ↓
+Structured Result
+    ↓
+Evidence + Capability + Policy + State-Version Check
+    ↓
+Legal Transition
+    ↓
+New Domain State
+
+The intelligence provider does not appear in the authority chain as an owner.
+
+It supplies information.
+It may contribute judgment.
+It may identify uncertainty.
+It may request escalation.
+
+It does not own:
+- truth
+- state
+- authority
+- capability
+- policy
+- transition legality
+
+======================================================================
+25. FINAL PASS 3 CONSTRAINT
+======================================================================
+
+When implementation convenience conflicts with semantic explicitness, semantic explicitness wins.
+
+The system must not hide:
+- uncertainty
+- missing evidence
+- authority
+- state version
+- contract version
+- provider identity
+- policy identity where relevant
+- failure
+- escalation
+- side effects
+- causality
+
+The goal of executable Ordo is not to make complexity disappear.
+
+The goal is to make important complexity explicit, typed, testable, observable, and difficult to misuse.

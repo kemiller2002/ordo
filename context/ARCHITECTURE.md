@@ -15,6 +15,7 @@ root README links here rather than creating a competing `SDE-MAP.md`.
 | Distribution package | generated execution package and installer/verifier | `distribution/` | `distribution/DISTRIBUTION-MAP.json` and `distribution/README.md` |
 | Public website | the Ordo site: content, evidence manifest, generator, validator | `site/`, `src/Ordo.Site/`, `tests/Ordo.Site.Tests/` | `site/README.md` |
 | Executable Ordo | runtime primitives for resolution modes, evidence, capabilities, obligations, bounded decisions, transitions and observation | `src/Ordo.Core/`, `src/Ordo.Decisions/`, `src/Ordo.Providers.Anthropic/`, `tests/Ordo.Tests/` | `docs/architecture/executable-ordo.md` |
+| Supplied source documents | verbatim externally supplied inputs this repository executed, kept as provenance rather than as governance | `input-documents/` | `input-documents/README.md` |
 
 This repository contains methodology domains rather than application
 features. Separate feature manifests would duplicate the indexes above and are

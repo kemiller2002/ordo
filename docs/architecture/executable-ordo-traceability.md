@@ -8,16 +8,26 @@ updated: 2026-09-18
 related_documents:
   - docs/architecture/executable-ordo.md
   - research/decisions/DF-SDE-2026-0006--introduce-executable-ordo-primitives.md
+  - input-documents/README.md
 tags: [architecture, ordo, traceability]
 ---
 
 # Executable Ordo v0.1 — requirement traceability
 
-Source requirements: *Ordo Executable Intelligence Requirements* Pass 1
-(`ORDO-nnnn`), Pass 2 (`ORDO-5501`–`ORDO-111xx`) and Pass 3
-(`ORDO-3-nnn`), plus the *Agent Implementation Script — Ordo Executable
-Intelligence v0.1*. Pass 3 is the scope authority for what v0.1 contains
-(`ORDO-3-040`).
+Source requirements, kept verbatim under
+[`input-documents/`](../../input-documents/README.md): Pass 1
+([`structured-requiredments-1.md`](../../input-documents/structured-requiredments-1.md),
+IDs `ORDO-nnnn`), Pass 2
+([`…-requirements-pass-2.txt`](../../input-documents/ordo-executable-intelligence-requirements-pass-2.txt),
+IDs `ORDO-5501`–`ORDO-111xx`), Pass 3
+([`…-requirements-pass-3.txt`](../../input-documents/ordo-executable-intelligence-requirements-pass-3.txt),
+IDs `ORDO-3-nnn`) and the
+[implementation script](../../input-documents/ordo-executable-intelligence-v0.1-agent-implementation-script.txt).
+Pass 3 is the scope authority for what v0.1 contains (`ORDO-3-040`).
+
+Those documents record what was asked for. This one records what was built;
+where they disagree, this one and `DF-SDE-2026-0006` are the accepted
+records.
 
 Classes, per `ORDO-3-040`–`ORDO-3-044`:
 
