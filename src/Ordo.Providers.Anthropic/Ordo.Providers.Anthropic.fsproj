@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <AssemblyName>Ordo.Providers.Anthropic</AssemblyName>
+    <RootNamespace>Ordo.Providers.Anthropic</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!--
+    `Contract.fs` holds everything that can be decided without a network: the
+    tool schema sent to the model and the interpretation of what comes back.
+    It references no SDK type, so the corrupt-response and adversarial-evidence
+    tests run offline against the same code the live adapter uses.
+
+    `Adapter.fs` is the only file that touches the provider SDK or the network.
+  -->
+  <ItemGroup>
+    <Compile Include="Contract.fs" />
+    <Compile Include="Adapter.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Ordo.Decisions/Ordo.Decisions.fsproj" />
+  </ItemGroup>
+
+  <!--
+    The one third-party production dependency in this repository. Justified
+    under ORDO-0203 because the alternative is hand-maintaining request
+    shaping, retry classification and error mapping against an API that
+    changes; and permitted under ORDO-0204 because it lives in an adapter,
+    never in Ordo.Core or Ordo.Decisions.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Anthropic" Version="12.49.0" />
+  </ItemGroup>
+
+</Project>

@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "repository": "state-directed-engineering",
-  "nextSeq": 38,
+  "nextSeq": 39,
   "items": [
     {
       "id": "WI-0001",
@@ -633,6 +633,23 @@
       "attachments": [],
       "createdAt": "2026-09-17T10:54:07.750Z",
       "updatedAt": "2026-09-17T10:54:07.911Z",
+      "createdBy": "unknown",
+      "source": "manual",
+      "sourceReference": null
+    },
+    {
+      "id": "WI-0038",
+      "title": "Executable Ordo v0.1: bounded decision vertical slice",
+      "description": null,
+      "tags": [
+        "ordo",
+        "executable-intelligence"
+      ],
+      "priority": "high",
+      "status": "ready",
+      "attachments": [],
+      "createdAt": "2026-09-18T17:15:43.758Z",
+      "updatedAt": "2026-09-18T17:15:47.302Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null

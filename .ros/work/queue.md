@@ -39,4 +39,5 @@
 | WI-0034 | Reposition the Ordo website as an outcome-led marketing site grounded in independent AI-engineering research and the five time-entry implementation trials | complete |  | medium |
 | WI-0035 | Register the agent-cost experiment and its hypothesis | active | research | medium |
 | WI-0036 | Register the agent-cost experiment and its hypothesis | complete | research | medium |
-| WI-0037 | Continue the agent-cost experiment as EX-SDE-2026-0002 | ready | research | medium |
+| WI-0037 | Continue the agent-cost experiment as EX-SDE-2026-0002 | active | research | medium |
+| WI-0038 | Executable Ordo v0.1: bounded decision vertical slice | ready | ordo, executable-intelligence | high |

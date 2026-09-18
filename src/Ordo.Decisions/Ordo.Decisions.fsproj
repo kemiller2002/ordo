@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <AssemblyName>Ordo.Decisions</AssemblyName>
+    <RootNamespace>Ordo.Decisions</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!--
+    Compile order is the dependency order. `Validation` sits above `Provider`
+    and below `Resolve` on purpose: validating a provider response is a pure
+    function of the contract and the response, so it is testable without ever
+    constructing a provider.
+
+    This project depends on Ordo.Core and on nothing else. No provider SDK is
+    referenced here; adapters live in their own projects and depend inward
+    (ORDO-8602).
+  -->
+  <ItemGroup>
+    <Compile Include="Confidence.fs" />
+    <Compile Include="Contract.fs" />
+    <Compile Include="Outcome.fs" />
+    <Compile Include="Request.fs" />
+    <Compile Include="Provider.fs" />
+    <Compile Include="Validation.fs" />
+    <Compile Include="Escalation.fs" />
+    <Compile Include="Deliberation.fs" />
+    <Compile Include="Observation.fs" />
+    <Compile Include="Resolve.fs" />
+    <Compile Include="Gate.fs" />
+    <Compile Include="Replay.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Ordo.Core/Ordo.Core.fsproj" />
+  </ItemGroup>
+
+</Project>

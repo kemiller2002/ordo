@@ -35,3 +35,12 @@ jobs:
       # hand-classified numbers that cannot be audited. Two defects in it were
       # found by running it against real history; these tests pin both.
       - run: dotnet test tests/Ordo.Churn.Tests/Ordo.Churn.Tests.fsproj --nologo
+
+      # Executable Ordo's own suite. It is the mechanical statement of the
+      # architecture's invariants — a provider cannot invent a choice, a
+      # decision is not a transition, confidence is not capability, a stale
+      # decision cannot authorise a change — plus the assembly-reference
+      # checks that keep Ordo.Core free of provider SDKs and of ROS. Nothing
+      # in it needs a network or an API key; the one live-provider test skips
+      # itself unless ORDO_LIVE_PROVIDER_TESTS is set.
+      - run: dotnet test tests/Ordo.Tests/Ordo.Tests.fsproj --nologo

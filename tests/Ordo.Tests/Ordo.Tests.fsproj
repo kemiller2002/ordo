@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>Ordo.Tests</AssemblyName>
+    <RootNamespace>Ordo.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <GenerateProgramFile>true</GenerateProgramFile>
+  </PropertyGroup>
+
+  <!--
+    One suite over all three production projects. The alternative — a test
+    project per production project — would duplicate the fixture domain and
+    the fake provider three times, and the architecture tests need to load
+    all three assemblies at once anyway.
+  -->
+  <ItemGroup>
+    <Compile Include="Fixtures.fs" />
+    <Compile Include="CoreTests.fs" />
+    <Compile Include="DecisionTests.fs" />
+    <Compile Include="SliceTests.fs" />
+    <Compile Include="ReplayTests.fs" />
+    <Compile Include="WireTests.fs" />
+    <Compile Include="AdapterTests.fs" />
+    <Compile Include="LiveAdapterTests.fs" />
+    <Compile Include="ArchitectureTests.fs" />
+    <Compile Include="InvariantTests.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Ordo.Core/Ordo.Core.fsproj" />
+    <ProjectReference Include="../../src/Ordo.Decisions/Ordo.Decisions.fsproj" />
+    <ProjectReference Include="../../src/Ordo.Providers.Anthropic/Ordo.Providers.Anthropic.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+</Project>
