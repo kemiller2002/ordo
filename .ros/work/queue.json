@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "repository": "state-directed-engineering",
-  "nextSeq": 39,
+  "nextSeq": 40,
   "items": [
     {
       "id": "WI-0001",
@@ -650,6 +650,23 @@
       "attachments": [],
       "createdAt": "2026-09-18T17:15:43.758Z",
       "updatedAt": "2026-09-18T17:15:47.302Z",
+      "createdBy": "unknown",
+      "source": "manual",
+      "sourceReference": null
+    },
+    {
+      "id": "WI-0039",
+      "title": "Bring the executable-intelligence input documents onto main and map them",
+      "description": null,
+      "tags": [
+        "ordo",
+        "provenance"
+      ],
+      "priority": "medium",
+      "status": "ready",
+      "attachments": [],
+      "createdAt": "2026-09-18T18:54:07.967Z",
+      "updatedAt": "2026-09-18T18:54:12.887Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null

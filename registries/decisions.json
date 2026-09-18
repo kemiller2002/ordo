@@ -100,6 +100,7 @@
     "id": "DF-SDE-2026-0006",
     "path": "research/decisions/DF-SDE-2026-0006--introduce-executable-ordo-primitives.md",
     "related_documents": [
+      "input-documents/README.md",
       "docs/architecture/executable-ordo.md",
       "docs/architecture/executable-ordo-traceability.md",
       "doctrine/FOUR-TIER-ARCHITECTURE.md",

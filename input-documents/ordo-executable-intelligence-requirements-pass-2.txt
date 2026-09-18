@@ -1,0 +1,1527 @@
+# Ordo Executable Intelligence Requirements — Pass 2
+
+Status: Second-pass requirements baseline
+Purpose: Extend and harden the first-pass executable Ordo requirements by identifying hidden assumptions, edge cases, failure modes, lifecycle concerns, and architectural boundaries that could otherwise be left to implementation guesswork.
+
+This document supplements Pass 1. It does not replace it.
+
+The implementation must satisfy both Pass 1 and Pass 2 unless a later explicitly approved requirement supersedes an earlier one.
+
+---
+
+## 55. Requirement Precedence and Authority
+
+### ORDO-5501 — Requirements must have explicit precedence
+
+When two requirements appear to conflict, the implementation agent shall not invent precedence.
+
+Precedence shall be:
+
+1. Explicitly approved newer Ordo requirements
+2. Existing authoritative Ordo methodology documents
+3. This Pass 2 document
+4. Pass 1 executable Ordo requirements
+5. Existing implementation behavior where not contradicted
+6. Implementation convenience
+
+Any unresolved conflict must be surfaced as an explicit design issue.
+
+### ORDO-5502 — No implementation-created policy
+
+Implementation code shall not create new policy simply because a case is unspecified.
+
+Unspecified behavior shall remain explicit through typed failure, unsupported state, or unresolved obligation rather than silent inference.
+
+### ORDO-5503 — Defaults must be deliberate
+
+Any default value that affects behavior, security, authority, routing, evidence, confidence, retries, escalation, or transition legality must be documented and tested.
+
+Avoid semantic defaults when omission itself is meaningful.
+
+---
+
+## 56. Contract Lifecycle
+
+### ORDO-5601 — Decision contracts have lifecycle state
+
+Decision contracts shall be able to distinguish lifecycle states such as:
+
+- Draft
+- Active
+- Deprecated
+- Retired
+
+Exact names may vary, but lifecycle must be explicit where contracts are persisted or reused across versions.
+
+### ORDO-5602 — Deprecated contracts remain interpretable
+
+Historical records created under a deprecated contract must remain understandable.
+
+Deprecation shall not erase historical semantics.
+
+### ORDO-5603 — Retired contracts cannot silently accept new work
+
+A retired contract must not continue receiving new decision requests unless an explicit compatibility rule allows it.
+
+### ORDO-5604 — Contract replacement must be explicit
+
+If Contract A is replaced by Contract B, the relationship should be representable.
+
+Examples:
+
+- supersedes
+- compatible replacement
+- incompatible replacement
+- migration required
+
+### ORDO-5605 — Contract identity is semantic, not physical
+
+Moving a contract between files, assemblies, packages, or namespaces shall not automatically create a new semantic contract identity.
+
+---
+
+## 57. Policy Lifecycle
+
+### ORDO-5701 — Policies may evolve independently of contracts
+
+A decision contract and the policy interpreting that decision are separate concerns.
+
+A contract version change shall not be required merely because a policy threshold changed.
+
+### ORDO-5702 — Policy changes affecting outcomes must be traceable
+
+Historical execution records shall identify the policy version or equivalent policy identity used at decision-acceptance time.
+
+### ORDO-5703 — Policy rollback must be possible
+
+Where policy is externalized or persisted, reverting to a prior approved policy version must be possible without rewriting historical records.
+
+### ORDO-5704 — Policy experiments shall not contaminate production semantics
+
+Experimental policy variants must be explicitly identified and must not silently become production defaults.
+
+---
+
+## 58. State Snapshot Semantics
+
+### ORDO-5801 — Snapshot contents must be intentional
+
+A state snapshot used for decision-making shall contain only state necessary to evaluate the contract.
+
+Do not serialize an entire application object graph merely for convenience.
+
+### ORDO-5802 — Snapshot identity must be stable enough for replay
+
+A snapshot used in a replayable decision must have a stable fingerprint, version, revision, or equivalent identity.
+
+### ORDO-5803 — Snapshot normalization must be deterministic
+
+If snapshots are normalized before hashing or persistence, normalization rules must be deterministic and tested.
+
+### ORDO-5804 — Snapshot hashing must not imply semantic equality
+
+Equal hashes imply equal serialized normalized input, not necessarily equal real-world meaning.
+
+### ORDO-5805 — Sensitive fields may require redaction
+
+A state snapshot may have:
+
+- full internal representation
+- provider-safe representation
+- persisted audit representation
+
+These need not be identical.
+
+Redaction rules must be explicit.
+
+---
+
+## 59. Evidence Quality
+
+### ORDO-5901 — Evidence may carry quality metadata
+
+Where useful, evidence may identify:
+
+- source authority
+- freshness
+- confidence
+- completeness
+- direct vs inferred
+- machine-generated vs human-generated
+
+These fields are optional unless required by a domain.
+
+### ORDO-5902 — Evidence quality must not be universally scored by Ordo
+
+Ordo shall not impose a global "evidence score."
+
+Domains define what evidence is trustworthy enough for a decision.
+
+### ORDO-5903 — Derived evidence must identify derivation
+
+If evidence is derived from other evidence, the relationship should be representable.
+
+### ORDO-5904 — Inferred evidence is not direct evidence
+
+A model inference shall not be mislabeled as an observed fact.
+
+### ORDO-5905 — Conflicting evidence must be representable
+
+The evidence model must allow mutually inconsistent evidence to coexist until resolved.
+
+### ORDO-5906 — Evidence supersession must not erase history
+
+New evidence may supersede prior evidence for current decisions, but historical decision context must remain reconstructable.
+
+---
+
+## 60. Decision Input Discipline
+
+### ORDO-6001 — Inputs shall be deterministic when possible
+
+The process that constructs a DecisionRequest from domain state shall be deterministic unless explicitly documented otherwise.
+
+### ORDO-6002 — Prompt rendering is not the contract
+
+If an AI provider requires textual prompting, the generated prompt is an adapter representation of the contract, not the contract itself.
+
+### ORDO-6003 — Provider prompts must be reproducible where practical
+
+Given the same:
+
+- contract version
+- state snapshot
+- evidence
+- provider adapter version
+
+the adapter should be able to recreate the same logical request representation.
+
+### ORDO-6004 — Hidden provider instructions must be controlled
+
+Provider adapters shall not contain undocumented behavioral instructions that materially alter domain semantics.
+
+### ORDO-6005 — Prompt changes affecting semantics require version awareness
+
+If provider prompt construction materially changes the interpretation of a decision contract, the change must be observable through adapter or request versioning.
+
+---
+
+## 61. Decision Output Discipline
+
+### ORDO-6101 — Parsing failures are contract failures
+
+If a provider returns an answer that cannot be safely parsed into the required typed result, the operation fails explicitly.
+
+Do not repair arbitrary provider output through guesswork.
+
+### ORDO-6102 — Repair behavior must be explicit
+
+If structured-output repair is supported, it must be:
+
+- bounded
+- deterministic where possible
+- observable
+- non-semantic
+
+Repair may fix syntax.
+
+Repair may not choose a domain answer on the provider's behalf.
+
+### ORDO-6103 — Provider explanations are secondary artifacts
+
+A provider may optionally return explanation or rationale.
+
+The authoritative result remains the typed decision outcome.
+
+### ORDO-6104 — Explanations must not override typed results
+
+If prose explanation conflicts with the typed result, the conflict must be surfaced.
+
+Do not reinterpret the typed result from prose.
+
+---
+
+## 62. Provider Disagreement
+
+### ORDO-6201 — Multiple provider results may coexist
+
+Ordo shall permit multiple decisions to be recorded against the same request.
+
+### ORDO-6202 — Provider disagreement must be explicit
+
+If providers disagree, Ordo shall not silently merge their answers.
+
+### ORDO-6203 — Consensus is domain policy
+
+Voting, majority rule, weighted consensus, unanimity, adjudication, and tie-breaking are domain or orchestration policies.
+
+Ordo shall not define a universal consensus algorithm.
+
+### ORDO-6204 — Independent verification must identify independence
+
+If a second provider is used for verification, the system should record whether it is:
+
+- same provider, same model
+- same provider, different model
+- different provider
+- deterministic verifier
+- human verifier
+
+### ORDO-6205 — Correlated providers are not assumed independent
+
+Using two frontier models does not prove independent evidence.
+
+---
+
+## 63. Confidence Semantics
+
+### ORDO-6301 — Confidence scale must be defined
+
+If confidence uses a numeric scale, the valid range and interpretation must be explicit.
+
+### ORDO-6302 — Confidence absence is valid
+
+Providers incapable of meaningful confidence must be allowed to return no confidence.
+
+### ORDO-6303 — Confidence must not be fabricated by adapters
+
+An adapter shall not synthesize a confidence value merely to satisfy a downstream schema.
+
+### ORDO-6304 — Transformed confidence must preserve provenance
+
+If a provider score is mapped or normalized, the transformed value must identify that transformation.
+
+### ORDO-6305 — Confidence thresholds require enough evidence before optimization
+
+Thresholds should not be tuned from tiny samples without recording the evidence base used to justify them.
+
+### ORDO-6306 — Confidence is scoped to a contract/domain
+
+A model calibrated for one decision contract must not be assumed calibrated for another.
+
+---
+
+## 64. Outcome Semantics
+
+### ORDO-6401 — Outcome type must be domain-defined
+
+Ordo shall not assume every decision has a binary correct/incorrect outcome.
+
+### ORDO-6402 — Outcome may remain unresolved forever
+
+Some decisions may never receive objective ground truth.
+
+This must be representable.
+
+### ORDO-6403 — Outcome source must be explicit
+
+An outcome should identify whether it came from:
+
+- human judgment
+- automated verification
+- observed production state
+- subsequent event
+- external authoritative source
+- consensus process
+
+### ORDO-6404 — Outcome disagreement must be representable
+
+Two outcome sources may disagree.
+
+Do not overwrite one with another.
+
+### ORDO-6405 — Outcome correction must preserve history
+
+If a previously recorded outcome is later corrected, the original must remain auditable.
+
+---
+
+## 65. Human Review
+
+### ORDO-6501 — Human review is a typed state
+
+"Waiting for human review" shall be represented explicitly.
+
+### ORDO-6502 — Human reviewers require capability
+
+Not every human user is automatically authorized to override every decision.
+
+### ORDO-6503 — Human override requires reason capture where consequential
+
+Domains may require an override reason.
+
+The mechanism must support this.
+
+### ORDO-6504 — Human confidence is optional
+
+Human reviewers shall not be forced to invent a numerical confidence value.
+
+### ORDO-6505 — Human review must distinguish decision from authorization
+
+A human may agree with a decision yet lack authority to execute the resulting transition.
+
+### ORDO-6506 — Human review latency is observable
+
+Systems such as ROS may measure time waiting for human review.
+
+Ordo shall expose the necessary lifecycle events.
+
+---
+
+## 66. Cancellation and Timeouts
+
+### ORDO-6601 — Long-running operations must support cancellation
+
+Provider and deliberation operations should support cancellation through standard .NET cancellation mechanisms.
+
+### ORDO-6602 — Cancellation is distinct from failure
+
+Cancelled work shall not be recorded as provider failure unless the provider itself failed.
+
+### ORDO-6603 — Timeouts must be explicit
+
+Provider adapters may define timeouts.
+
+Timeouts must be configurable or policy-driven where appropriate.
+
+### ORDO-6604 — Timeout behavior must not silently escalate
+
+A timeout may trigger an escalation policy, but the escalation must be recorded explicitly.
+
+### ORDO-6605 — Partial results must not be assumed valid
+
+If cancellation or timeout occurs after partial provider output, that output is invalid unless the provider contract explicitly supports partial results.
+
+---
+
+## 67. Retry Semantics
+
+### ORDO-6701 — Transport retries and semantic retries differ
+
+Transport retry:
+
+- retries equivalent request due to transient infrastructure failure.
+
+Semantic retry:
+
+- asks for a new decision because the first answer was unacceptable.
+
+These must not be conflated.
+
+### ORDO-6702 — Semantic retry requires explicit policy
+
+Repeatedly asking until the desired answer appears is prohibited.
+
+### ORDO-6703 — Retry counts must be observable
+
+Adapters should expose retry activity for ROS/telemetry.
+
+### ORDO-6704 — Retry must preserve causality
+
+Each retry shall remain linked to the original request.
+
+---
+
+## 68. Side Effects
+
+### ORDO-6801 — Decision evaluation is side-effect free with respect to domain state
+
+Evaluating a decision must not directly mutate authoritative domain state.
+
+### ORDO-6802 — Deliberation capabilities may cause side effects only when explicitly granted
+
+For example, a deliberative agent may be allowed to:
+
+- read repository files
+- run tests
+- query systems
+
+but not necessarily:
+
+- deploy
+- delete
+- write production data
+
+Capabilities must control these boundaries.
+
+### ORDO-6803 — Side-effect requests must be distinguishable from side-effect completion
+
+A request to perform an effect is not proof the effect occurred.
+
+### ORDO-6804 — External effect failure must not corrupt domain transition semantics
+
+Applications must be able to represent:
+
+- transition succeeded, effect pending
+- effect failed
+- compensation required
+- transition rolled back where supported
+
+Ordo shall provide compatible primitives without becoming a saga/workflow framework.
+
+---
+
+## 69. Partial Failure
+
+### ORDO-6901 — Multi-step resolution may partially succeed
+
+The model shall support cases where:
+
+- evidence was acquired
+- one decision completed
+- another failed
+- transition was not executed
+
+### ORDO-6902 — Partial progress must remain observable
+
+Do not collapse partially completed work into a single generic failure.
+
+### ORDO-6903 — Recovery obligations may be generated
+
+A partial failure may create obligations such as:
+
+- retry provider
+- reacquire stale evidence
+- human review
+- compensate external effect
+- abandon operation
+
+---
+
+## 70. Idempotency and Duplicate Processing
+
+### ORDO-7001 — Decision request identity must support duplicate detection where needed
+
+Ordo shall permit applications or ROS to recognize repeated processing of the same logical request.
+
+### ORDO-7002 — Duplicate decision execution is not automatically an error
+
+Replay, verification, and comparison intentionally duplicate evaluation.
+
+Purpose must be explicit.
+
+### ORDO-7003 — Duplicate transitions must be prevented or handled by domain policy
+
+Ordo shall not assume transitions are idempotent.
+
+---
+
+## 71. Causality
+
+### ORDO-7101 — Every derived operation should be linkable to its cause
+
+Examples:
+
+- decision caused by task
+- deliberation caused by low confidence
+- human review caused by policy
+- transition caused by accepted decision
+
+### ORDO-7102 — Correlation and causation IDs should remain distinct
+
+A broad execution correlation ID may contain multiple causal branches.
+
+### ORDO-7103 — Causal chains must survive persistence boundaries
+
+If ROS stores the execution history, enough identity must survive to reconstruct causal structure.
+
+---
+
+## 72. Event and Observation Model
+
+### ORDO-7201 — Observation events describe facts
+
+Observation events shall state what happened.
+
+They shall not embed analytics conclusions such as:
+
+- model is best
+- decision was wasteful
+- should retrain
+
+Those are downstream interpretations.
+
+### ORDO-7202 — Observation event schemas require versioning
+
+Persisted observation events need stable schemas.
+
+### ORDO-7203 — Observation must not change behavior
+
+Instrumentation failures shall not normally change domain behavior unless an application explicitly requires audit persistence before proceeding.
+
+### ORDO-7204 — Required audit and optional telemetry must be distinguishable
+
+Some domains may require audit records for legal or operational reasons.
+
+Optional performance telemetry is not equivalent.
+
+---
+
+## 73. Auditability
+
+### ORDO-7301 — Critical decisions must be explainable through recorded facts
+
+Audit reconstruction should be able to answer:
+
+- what state was evaluated
+- what contract was used
+- what evidence was available
+- who/what made the decision
+- what result was returned
+- what policy evaluated it
+- what transition followed
+- what verification occurred
+
+### ORDO-7302 — Audit history must be append-oriented
+
+Historical decision records should not be casually overwritten.
+
+### ORDO-7303 — Corrections must be additive
+
+Corrections should append a correction/supersession relationship rather than mutate historical truth invisibly.
+
+### ORDO-7304 — Auditability must not require retaining hidden chain-of-thought
+
+The system shall not depend on private model reasoning traces.
+
+Typed outputs, evidence references, provider metadata, and optional concise rationale are sufficient.
+
+---
+
+## 74. Privacy and Data Minimization
+
+### ORDO-7401 — Provider-bound data must be minimized
+
+The decision request sent to a provider should contain no more sensitive data than required.
+
+### ORDO-7402 — Audit retention and provider transmission may differ
+
+Information needed internally for audit may still be prohibited from external-provider transmission.
+
+### ORDO-7403 — Redaction must be deterministic where possible
+
+If data is redacted before provider use, redaction behavior should be testable.
+
+### ORDO-7404 — Replays must respect current access controls
+
+The ability to replay a historical decision does not automatically grant access to all original sensitive evidence.
+
+---
+
+## 75. Security Boundary
+
+### ORDO-7501 — Provider output is untrusted input
+
+All provider responses shall be validated against the contract.
+
+### ORDO-7502 — Provider prose shall never be executed as code or commands by default
+
+Any executable action proposed by a provider must pass through typed capability and policy boundaries.
+
+### ORDO-7503 — Tool invocation from deliberation must be capability-scoped
+
+If a deliberative provider can call tools, the set of allowed tools/actions must be explicit.
+
+### ORDO-7504 — Provider-generated identifiers are not trusted identities
+
+Provider output cannot establish authoritative user IDs, resource IDs, capabilities, or credentials without verification.
+
+---
+
+## 76. Prompt Injection and Untrusted Evidence
+
+### ORDO-7601 — Evidence may contain adversarial instructions
+
+Text contained in evidence must be treated as data unless the contract explicitly says otherwise.
+
+### ORDO-7602 — External content must not override system authority
+
+Repository files, emails, documents, web pages, issue text, and similar sources cannot alter Ordo policy merely by containing instructions.
+
+### ORDO-7603 — Provider adapters should separate instructions from evidence
+
+Where provider APIs permit it, system instructions, contract instructions, and evidence content should be structurally separated.
+
+### ORDO-7604 — Injection-sensitive operations require tests
+
+At least one provider conformance test should include malicious or misleading evidence content.
+
+---
+
+## 77. Deliberation Scope Control
+
+### ORDO-7701 — Deliberation has a bounded objective
+
+A deliberation request must specify what problem it is authorized to investigate.
+
+### ORDO-7702 — Deliberation context expansion must be observable
+
+If an agent expands from local context to broader repository/system context, that expansion should be recorded where practical.
+
+### ORDO-7703 — Deliberation must terminate with a typed status
+
+Examples:
+
+- Resolved
+- RequiresDecision
+- RequiresEvidence
+- RequiresHuman
+- Blocked
+- Failed
+- Cancelled
+
+### ORDO-7704 — Deliberation shall not silently create new objectives
+
+Newly discovered work should become an explicit obligation or proposed work item.
+
+---
+
+## 78. Deliberation Budgeting
+
+### ORDO-7801 — Deliberation may have resource budgets
+
+Requests may define limits such as:
+
+- time
+- provider cost
+- tool calls
+- context expansion
+- retries
+
+### ORDO-7802 — Budget exhaustion is distinct from reasoning failure
+
+A task that stops because it reached its budget must be represented separately from an unresolved logical failure.
+
+### ORDO-7803 — Budget extension requires explicit authority
+
+A provider may request more budget but cannot silently expand it.
+
+---
+
+## 79. Deterministic Computation Registry
+
+### ORDO-7901 — Computations should be named where reused
+
+Reusable deterministic computations should have stable identities where they participate in decision evidence or replay.
+
+### ORDO-7902 — Computation version may matter
+
+If a computation algorithm materially changes, historical decisions may need to identify which version produced evidence.
+
+### ORDO-7903 — Computation output can be evidence
+
+Mechanically derived values may be attached as evidence with derivation provenance.
+
+### ORDO-7904 — Do not create a generic rule engine
+
+Named deterministic computation support shall not evolve into a universal DSL/rules engine without explicit justification.
+
+---
+
+## 80. Deliberate → Decide Promotion
+
+### ORDO-8001 — Promotion requires evidence
+
+A repeated deliberative pattern shall not automatically become a DecisionContract.
+
+Before promotion, document:
+
+- repeated task shape
+- bounded output space
+- required evidence
+- observed outcomes
+- failure modes
+- residual ambiguity
+
+### ORDO-8002 — Promotion creates a new explicit contract
+
+A promoted bounded decision must have its own contract identity/version.
+
+### ORDO-8003 — Deliberation fallback may remain
+
+Promoting a problem to Decide does not require eliminating Deliberate as an escalation path.
+
+---
+
+## 81. Decide → Compute Promotion
+
+### ORDO-8101 — Deterministic promotion requires stronger evidence
+
+A bounded decision should only become Compute if the result can be mechanically derived from stable inputs.
+
+High observed model accuracy alone is insufficient.
+
+### ORDO-8102 — Deterministic rule must be explainable
+
+The deterministic condition must be representable in code/tests independently from historical model outputs.
+
+### ORDO-8103 — Promotion should reduce provider dependency
+
+Once safely deterministic, the normal path should no longer require AI for that computation.
+
+---
+
+## 82. Experimentation Boundaries
+
+### ORDO-8201 — Experimental behavior must be labeled
+
+Experimental contracts, providers, policies, and routing behavior shall be identifiable.
+
+### ORDO-8202 — Experiment execution must not alter production policy silently
+
+A/B or replay experiments should default to non-mutating execution unless explicitly authorized.
+
+### ORDO-8203 — Experimental outputs remain separate from authoritative decisions
+
+Shadow-provider results must not silently become production decisions.
+
+### ORDO-8204 — Experiment metadata may be attached externally
+
+Ordo shall support experiment identifiers without depending on the research/ROS implementation.
+
+---
+
+## 83. Reproducibility
+
+### ORDO-8301 — Perfect provider replay must not be promised
+
+External model providers may change behavior even with identical input.
+
+### ORDO-8302 — Logical replay and exact replay are distinct
+
+Logical replay means:
+
+- same contract
+- same recorded state/evidence
+- new provider invocation
+
+Exact replay may be impossible.
+
+### ORDO-8303 — Deterministic fixtures support exact regression tests
+
+Tests requiring stable outputs shall use fake/recorded providers rather than live AI.
+
+---
+
+## 84. Serialization and Schema Evolution
+
+### ORDO-8401 — Union serialization must be stable
+
+Discriminated unions crossing persistence boundaries require explicit stable representations.
+
+### ORDO-8402 — F# type names are not sufficient wire contracts
+
+Renaming a CLR/F# type shall not necessarily break persisted data.
+
+### ORDO-8403 — Schema migrations must be tested
+
+Persisted records from prior supported versions must have compatibility tests.
+
+### ORDO-8404 — Unknown future variants require explicit handling
+
+Older consumers must either:
+
+- safely reject unknown variants
+- preserve them opaquely
+- use a documented compatibility strategy
+
+They must not silently reinterpret them.
+
+---
+
+## 85. Cross-Language Consumption
+
+### ORDO-8501 — F# is the reference implementation
+
+The authoritative implementation is F#.
+
+### ORDO-8502 — Wire contracts should remain language-neutral
+
+Persisted/public schemas should not require F# runtime semantics to interpret.
+
+### ORDO-8503 — Cross-language clients must not weaken semantics
+
+If C#, TypeScript, Python, or other consumers are added, they must preserve:
+
+- contract identity
+- legal choices
+- uncertainty states
+- evidence semantics
+- authority boundaries
+
+### ORDO-8504 — Cross-language SDKs are deferred
+
+Do not build SDKs until a real consumer requires them.
+
+---
+
+## 86. Package and Dependency Boundaries
+
+### ORDO-8601 — Core dependency graph must remain acyclic
+
+Project/package dependencies shall be simple and documented.
+
+### ORDO-8602 — Provider adapters depend inward
+
+Provider packages may depend on Ordo abstractions.
+
+Core abstractions shall never depend outward on provider packages.
+
+### ORDO-8603 — Testing helpers must not become runtime dependencies
+
+Production packages shall not depend on test packages.
+
+### ORDO-8604 — ROS integration must remain optional
+
+An application can use executable Ordo without installing ROS.
+
+---
+
+## 87. Public API Stability
+
+### ORDO-8701 — Public API is smaller than implementation API
+
+Only stable, reusable concepts should be public.
+
+### ORDO-8702 — Internal experimentation remains internal
+
+Do not publish types simply because tests or experiments use them.
+
+### ORDO-8703 — Breaking API changes require explicit versioning/migration
+
+NuGet or equivalent package versioning shall follow existing Echelon Foundry release conventions.
+
+---
+
+## 88. Performance Isolation
+
+### ORDO-8801 — Core primitives must not allocate excessively
+
+Hot-path state/decision primitives should be reviewed for unnecessary allocations where relevant.
+
+### ORDO-8802 — Performance optimization must follow measurement
+
+Do not compromise semantic clarity for hypothetical micro-optimization.
+
+### ORDO-8803 — Provider latency must not block unrelated computations unnecessarily
+
+The architecture should permit asynchronous provider operations.
+
+### ORDO-8804 — Parallel decisions require explicit independence
+
+Multiple decisions may execute concurrently only when domain dependencies permit it.
+
+---
+
+## 89. Parallelism
+
+### ORDO-8901 — Parallel evaluation must not imply parallel transitions
+
+Decisions may be evaluated concurrently while transitions remain ordered by domain rules.
+
+### ORDO-8902 — Shared mutable state must be avoided
+
+Parallel provider evaluation should operate against immutable snapshots.
+
+### ORDO-8903 — Conflicting parallel results require explicit reconciliation
+
+Do not choose "last completed" as an implicit winner.
+
+---
+
+## 90. Caching
+
+### ORDO-9001 — Decision caching is not universally safe
+
+Ordo shall not cache provider decisions by default.
+
+### ORDO-9002 — Cache eligibility is contract/domain policy
+
+Caching may be allowed only when:
+
+- relevant state/evidence is identical
+- contract semantics are identical
+- provider/model differences are acceptable
+- freshness constraints are satisfied
+
+### ORDO-9003 — Cached result provenance must remain visible
+
+Consumers must know whether a decision was newly evaluated or reused.
+
+### ORDO-9004 — Cache must not bypass state-version checks
+
+---
+
+## 91. Fallback Providers
+
+### ORDO-9101 — Fallback must be explicit
+
+Provider fallback chains must be configured, not hidden inside adapters.
+
+### ORDO-9102 — Fallback may change semantics
+
+Switching providers may change:
+
+- confidence availability
+- calibration
+- latency
+- cost
+- output behavior
+
+These differences must remain observable.
+
+### ORDO-9103 — Security boundary must be checked before fallback
+
+A fallback provider may have a different data-processing trust boundary.
+
+Evidence must not be sent automatically if policy prohibits it.
+
+---
+
+## 92. Provider Capability Negotiation
+
+### ORDO-9201 — Adapters expose supported features
+
+Provider adapters should declare capabilities explicitly.
+
+### ORDO-9202 — Unsupported capability fails early
+
+If a contract requires a capability a provider lacks, fail before sending the request where possible.
+
+### ORDO-9203 — Feature degradation must be explicit
+
+Example:
+
+A provider lacking calibrated probability support may still supply a decision if the policy permits confidence to be absent.
+
+This must not be silently transformed into equivalent functionality.
+
+---
+
+## 93. Domain Consequence Modeling
+
+### ORDO-9301 — Consequence can influence policy
+
+Applications may classify operations by consequence/risk.
+
+### ORDO-9302 — Ordo shall not define universal risk levels
+
+If Ordo provides a generic consequence abstraction, domain-specific interpretation remains external.
+
+### ORDO-9303 — High consequence may require stronger verification
+
+Applications may require:
+
+- independent verification
+- human approval
+- multiple capabilities
+- fresh evidence
+
+regardless of provider confidence.
+
+---
+
+## 94. Obligation Lifecycle
+
+### ORDO-9401 — Obligations require stable identity
+
+Persistent obligations shall have IDs.
+
+### ORDO-9402 — Obligation states must be explicit
+
+Examples:
+
+- Open
+- Satisfied
+- Cancelled
+- Superseded
+- Blocked
+
+### ORDO-9403 — Satisfied obligations preserve completion evidence
+
+Completion should record how the obligation was satisfied.
+
+### ORDO-9404 — Obligations may depend on other obligations
+
+Dependency relationships may be represented, but Ordo shall not become a generic project-management engine.
+
+---
+
+## 95. Staleness
+
+### ORDO-9501 — Evidence may become stale
+
+Contracts/policies may define freshness requirements.
+
+### ORDO-9502 — Stale evidence is distinct from missing evidence
+
+### ORDO-9503 — Provider decision may become stale independently
+
+Even if evidence remains valid, domain state may change and invalidate the decision.
+
+### ORDO-9504 — Freshness should be domain-defined
+
+Ordo shall not impose universal time-based expiration rules.
+
+---
+
+## 96. Clock and Time Semantics
+
+### ORDO-9601 — Time-sensitive rules need an injectable clock
+
+Core behavior that depends on time should use an explicit clock abstraction or function.
+
+### ORDO-9602 — Tests must not depend on wall-clock time
+
+### ORDO-9603 — Persist timestamps in unambiguous form
+
+Use UTC/offset-aware representations according to existing .NET conventions.
+
+### ORDO-9604 — Timestamp is not ordering proof in distributed systems
+
+Use revisions/causal identifiers where ordering correctness matters.
+
+---
+
+## 97. Deterministic IDs
+
+### ORDO-9701 — ID generation strategy must be deliberate
+
+Some identifiers may be random.
+
+Others may benefit from deterministic derivation.
+
+The reason shall be explicit.
+
+### ORDO-9702 — IDs shall not encode sensitive data
+
+### ORDO-9703 — Human-readable labels are not primary identity
+
+Contract names may change without losing identity.
+
+---
+
+## 98. Logging
+
+### ORDO-9801 — Core shall not require a logging framework
+
+### ORDO-9802 — Structured observation is preferred over textual logging for semantic events
+
+### ORDO-9803 — Logs must not be required to reconstruct authoritative domain state
+
+### ORDO-9804 — Sensitive decision/evidence content must not be blindly logged
+
+---
+
+## 99. Diagnostics
+
+### ORDO-9901 — Diagnostic information must distinguish semantic and infrastructure failures
+
+### ORDO-9902 — Diagnostic detail should support agents and humans
+
+Errors should include enough structured context to determine:
+
+- what failed
+- contract involved
+- state/version
+- missing requirements
+- whether retry is safe
+
+### ORDO-9903 — Diagnostics must not leak secrets
+
+---
+
+## 100. Testing Depth
+
+### ORDO-10001 — Property-style tests should be considered for invariants
+
+Examples:
+
+- provider cannot produce illegal choice accepted by core
+- stale decision cannot authorize changed state
+- missing capability always blocks protected transition
+- replay never mutates domain state
+
+### ORDO-10002 — Mutation testing may be used where already supported
+
+Do not introduce a heavy mutation framework solely for this feature unless justified.
+
+### ORDO-10003 — Concurrency tests are required for stale-state protection
+
+### ORDO-10004 — Cancellation and timeout tests are required
+
+### ORDO-10005 — Contract-version compatibility tests are required
+
+### ORDO-10006 — Prompt-injection/adversarial evidence tests are required for AI adapters
+
+### ORDO-10007 — Provider response corruption tests are required
+
+Test cases should include:
+
+- malformed JSON
+- invalid enum
+- extra fields
+- missing required fields
+- contradictory explanation
+- no confidence
+- invalid confidence range
+
+---
+
+## 101. Failure Injection
+
+### ORDO-10101 — Provider adapters should be testable under injected failure
+
+Simulate:
+
+- timeout
+- rate limit
+- authentication failure
+- malformed response
+- connection failure
+- cancellation
+
+### ORDO-10102 — Persistence/observation failure should be testable
+
+### ORDO-10103 — State-conflict failure should be testable
+
+---
+
+## 102. Documentation Requirements
+
+### ORDO-10201 — Every public primitive needs semantic documentation
+
+Documentation must explain what the primitive means, not merely repeat the type name.
+
+### ORDO-10202 — Document authority chain
+
+The docs must make clear:
+
+Provider result
+→ policy
+→ capability/evidence checks
+→ transition
+
+not:
+
+Provider result
+→ action
+
+### ORDO-10203 — Document confidence limitations
+
+### ORDO-10204 — Document replay limitations
+
+### ORDO-10205 — Document security and prompt-injection assumptions
+
+### ORDO-10206 — Document migration examples
+
+Include examples of:
+
+Deliberate → Decide
+Decide → Compute
+
+### ORDO-10207 — Document misuse scenarios
+
+At minimum:
+
+- LLM used for arithmetic
+- model confidence treated as authorization
+- provider output parsed from prose
+- stale decision reused
+- hidden fallback provider
+- retry-until-desired-answer
+- AI response treated as evidence of real-world fact
+
+---
+
+## 103. Repository Conventions
+
+### ORDO-10301 — Existing repository layout is authoritative unless clearly deficient
+
+The implementation agent shall inspect the current repository before introducing new top-level folders.
+
+### ORDO-10302 — New physical projects require justification
+
+Logical concepts do not automatically require separate projects/packages.
+
+### ORDO-10303 — File size and locality follow current Ordo structural rules
+
+### ORDO-10304 — Public contract definitions should be easy to discover mechanically
+
+---
+
+## 104. Build and Release
+
+### ORDO-10401 — Build must be reproducible from repository instructions
+
+### ORDO-10402 — Provider-specific secrets are never required for core build/test
+
+### ORDO-10403 — Real-provider integration tests must be opt-in
+
+### ORDO-10404 — Package publishing must be automated only after contracts are stable enough
+
+### ORDO-10405 — Release notes must identify semantic contract changes
+
+---
+
+## 105. Upgrade Safety
+
+### ORDO-10501 — Existing consumers must receive an explicit migration path
+
+### ORDO-10502 — Serialized historical data must not be abandoned by package upgrades
+
+### ORDO-10503 — Adapter upgrades must not silently alter domain policy
+
+### ORDO-10504 — Provider model aliases should be avoided for reproducible experiments where versioned identifiers are available
+
+---
+
+## 106. Agent Implementation Guardrails
+
+### ORDO-10601 — Agent must inspect before modifying
+
+Before implementation, the agent must inspect:
+
+- repository structure
+- existing Ordo contracts
+- current tests
+- package conventions
+- current serialization approach
+- existing provider abstractions, if any
+- ROS integration points, if any
+
+### ORDO-10602 — Agent must create a baseline
+
+Record:
+
+- commit SHA
+- build status
+- test status
+- architecture checks
+- relevant metrics
+
+before changes.
+
+### ORDO-10603 — Agent must not invent missing requirements silently
+
+Ambiguities that can materially change architecture must be recorded as open design questions or resolved from existing authoritative documents.
+
+### ORDO-10604 — Agent must implement vertical slices
+
+Prefer:
+
+contract
+→ provider
+→ outcome
+→ policy
+→ transition
+→ observation
+→ tests
+
+over broad horizontal scaffolding with no end-to-end behavior.
+
+### ORDO-10605 — Agent must minimize unrelated changes
+
+### ORDO-10606 — Agent must preserve working behavior
+
+### ORDO-10607 — Agent must provide evidence of completion
+
+Completion report shall include:
+
+- files changed
+- contracts added
+- tests added
+- build result
+- test result
+- architecture verification
+- known limitations
+- deferred items
+- any requirement not fully satisfied
+
+---
+
+## 107. First Hardening Milestone
+
+The second-pass hardening milestone is complete when the initial vertical slice from Pass 1 additionally demonstrates:
+
+1. Contract lifecycle/version handling.
+2. Typed timeout/cancellation behavior.
+3. Typed provider retry behavior.
+4. Provider output validation.
+5. Malformed response rejection.
+6. Missing confidence support.
+7. Explicit provider disagreement representation.
+8. Human-review state.
+9. State staleness rejection.
+10. Evidence staleness representation.
+11. Prompt-injection-resistant evidence treatment.
+12. No hidden fallback provider.
+13. No domain mutation during replay.
+14. Causality identifiers survive observation.
+15. Decision and outcome can disagree without record mutation.
+16. Historical correction is additive.
+17. Sensitive state can be redacted for provider use.
+18. A contract can be deprecated without destroying replay.
+19. Concurrency tests pass.
+20. Cancellation tests pass.
+21. Provider corruption tests pass.
+22. Security boundary tests pass.
+23. Core still has no ROS dependency.
+24. Core still has no concrete provider dependency.
+25. No workflow engine has emerged.
+26. No generic rules engine has emerged.
+27. No agent framework has emerged.
+28. Public API remains small.
+29. Existing Ordo behavior remains intact.
+30. Documentation explains the new hardening semantics.
+
+---
+
+## 108. Explicitly Deferred from Pass 2
+
+Do not implement the following merely because this pass discusses the boundaries needed for them:
+
+- automatic provider ranking
+- automatic provider switching
+- reinforcement learning
+- fine tuning
+- RLCD implementation
+- model training
+- vector databases
+- semantic memory systems
+- autonomous policy generation
+- autonomous threshold tuning
+- autonomous contract creation
+- automatic Deliberate → Decide promotion
+- automatic Decide → Compute promotion
+- generic workflow orchestration
+- distributed consensus
+- event sourcing framework
+- generic rules DSL
+- enterprise authorization framework
+- cross-language SDK suite
+- provider marketplace
+- UI/dashboard implementation
+- ROS analytics implementation
+
+These may be supported later through explicit requirements.
+
+---
+
+## 109. Architectural Invariants
+
+The implementation shall preserve all of the following invariants.
+
+### Invariant A
+
+A provider may suggest information.
+
+A provider does not own domain state.
+
+### Invariant B
+
+A decision is not a transition.
+
+### Invariant C
+
+Confidence is not authority.
+
+### Invariant D
+
+Evidence is not automatically truth.
+
+### Invariant E
+
+A successful provider call is not a successful domain operation.
+
+### Invariant F
+
+Deliberation is not permission.
+
+### Invariant G
+
+Human review is not automatically authorization.
+
+### Invariant H
+
+Replay is not execution.
+
+### Invariant I
+
+Historical correction does not erase history.
+
+### Invariant J
+
+Missing evidence is not low confidence.
+
+### Invariant K
+
+Provider disagreement is not consensus.
+
+### Invariant L
+
+Repeated AI agreement is not proof that a rule is deterministic.
+
+### Invariant M
+
+A newer contract is not automatically semantically compatible with an older contract.
+
+### Invariant N
+
+Ordo defines reusable semantics.
+
+Applications define domain truth.
+
+ROS observes and optimizes execution.
+
+---
+
+## 110. Second-Pass Design Principle
+
+The second-pass implementation shall optimize for containment of uncertainty and failure.
+
+The desired architecture is:
+
+Domain state
+    ↓
+Explicit contract
+    ↓
+Controlled resolution boundary
+    ↓
+Validated structured result
+    ↓
+Evidence + policy + capability + state-version checks
+    ↓
+Authorized transition
+    ↓
+Observed outcome
+
+Failures must remain typed and local.
+
+Uncertainty must remain visible.
+
+External intelligence must remain replaceable.
+
+Historical behavior must remain reconstructable.
+
+No provider, agent, retry mechanism, fallback path, or convenience abstraction may bypass domain authority.
+
+---
+
+## 111. Final Pass-2 Constraint
+
+Any implementation choice that makes the system easier to use by hiding one of the following must be presumed incorrect until explicitly justified:
+
+- uncertainty
+- missing evidence
+- authority
+- state version
+- provider identity
+- contract version
+- policy version
+- failure
+- escalation
+- side effects
+- historical causality
+
+Convenience is not sufficient reason to hide semantic state.

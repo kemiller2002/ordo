@@ -9,6 +9,7 @@ tags: [architecture, ordo, executable-intelligence, dependencies]
 supersedes: []
 superseded_by: []
 related_documents:
+  - input-documents/README.md
   - docs/architecture/executable-ordo.md
   - docs/architecture/executable-ordo-traceability.md
   - doctrine/FOUR-TIER-ARCHITECTURE.md
@@ -24,7 +25,10 @@ Three approved requirement passes (*Ordo Executable Intelligence
 Requirements* Pass 1, Pass 2 and Pass 3) and an implementation script
 directed this repository to extend Ordo from a methodology into a
 methodology with a small set of executable primitives, and to prove them
-with one narrow end-to-end decision path.
+with one narrow end-to-end decision path. All four are kept verbatim under
+[`input-documents/`](../../input-documents/README.md) so that the
+requirement IDs cited throughout this record and the traceability artifact
+resolve to a source in the repository.
 
 Until now this repository contained no application architecture at all —
 `context/ARCHITECTURE.md` says so explicitly: it holds methodology, not

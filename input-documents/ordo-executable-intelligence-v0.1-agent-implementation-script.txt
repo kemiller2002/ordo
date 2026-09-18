@@ -1,0 +1,802 @@
+# Agent Implementation Script — Ordo Executable Intelligence v0.1
+
+Purpose:
+Implement the first executable Ordo vertical slice from the approved Pass 1, Pass 2, and Pass 3 requirements.
+
+This script is intentionally conservative.
+
+Do not redesign Ordo.
+Do not broadly refactor the repository.
+Do not build ROS integration yet.
+Do not build automatic provider routing.
+Do not train models.
+Do not build a workflow engine.
+Do not build an agent framework.
+Do not build a generic rules engine.
+
+The goal is to make Ordo executable in a small, typed, testable, provider-neutral way, then stop.
+
+======================================================================
+0. AUTHORITATIVE INPUTS
+======================================================================
+
+Before making changes, locate and read all relevant Ordo methodology documents and the following executable-intelligence requirements:
+
+- Ordo Executable Intelligence Requirements — Pass 1
+- Ordo Executable Intelligence Requirements — Pass 2
+- Ordo Executable Intelligence Requirements — Pass 3
+
+If these files are not already in the repository, ask for their location before implementation.
+
+Also locate current authoritative Ordo documents, including where present:
+
+- structural-locality rules
+- construction method
+- navigation/context rules
+- feature manifest rules
+- verification method
+- semantic authority rules
+- existing agent execution guidance
+- package/release conventions
+- current ROS integration conventions
+
+Do not assume this script supersedes existing Ordo methodology.
+
+Where requirements conflict:
+1. explicit newer approved Ordo requirement
+2. current authoritative Ordo methodology
+3. Pass 3
+4. Pass 2
+5. Pass 1
+6. existing implementation behavior
+7. implementation convenience
+
+If a material conflict remains unresolved, record it as an explicit blocking design issue.
+
+Do not invent precedence silently.
+
+======================================================================
+1. INSPECT THE REPOSITORY
+======================================================================
+
+Inspect before modifying.
+
+Record:
+
+- repository root
+- solution/project structure
+- all F# projects
+- target .NET SDK/version
+- package conventions
+- test projects
+- test framework
+- serialization approach
+- existing abstractions related to:
+  - state
+  - transitions
+  - evidence
+  - obligations
+  - policy
+  - decisioning
+  - provider abstractions
+  - observation/telemetry
+- existing npm/NuGet/OCI publishing
+- existing init/bootstrap tooling
+- existing ROS integration points
+- existing architecture checks
+- repository naming conventions
+- existing public API conventions
+- current documentation layout
+
+Search commit history when necessary to understand intent.
+
+Do not create new top-level folders until current repository structure is understood.
+
+======================================================================
+2. ESTABLISH A BASELINE
+======================================================================
+
+Before modifying code:
+
+1. Record current branch.
+2. Record current commit SHA.
+3. Record git status.
+4. Ensure unrelated local changes are identified.
+5. Do not overwrite unrelated work.
+6. Run the standard build.
+7. Run all existing tests.
+8. Run existing architecture/verification checks.
+9. Record baseline counts:
+   - passing tests
+   - failing tests
+   - skipped tests
+   - warnings
+   - project count
+10. Record relevant existing package versions.
+
+If repository practice calls for a checkpoint tag, create one before implementation.
+
+Use the existing naming convention.
+
+If no convention exists, create a clearly documented baseline tag only if permitted by project practice.
+
+Do not continue if the repository is already broken in a way that prevents distinguishing new failures from existing failures.
+
+If pre-existing failures exist but implementation can safely continue, document them exactly and never claim they were introduced by this work.
+
+======================================================================
+3. RECONCILE REQUIREMENTS INTO WORK ITEMS
+======================================================================
+
+Do not immediately code.
+
+Create a requirement-to-work mapping for the v0.1 scope.
+
+At minimum classify requirements into:
+
+A. v0.1 implementation
+B. required before ROS integration
+C. hardening later
+D. deferred research
+E. explicit non-goals
+
+Use Pass 3 as the implementation scope authority.
+
+For every Class A requirement:
+- identify likely implementation location
+- identify tests required
+- identify dependencies
+- identify whether existing code already satisfies it
+- identify any open question
+
+Do not implement Class C or D work merely because it is interesting.
+
+Create work items using current ROS/Ordo repository conventions if the repository already uses them.
+
+Do not create a parallel planning system.
+
+======================================================================
+4. CONFIRM THE MINIMUM V0.1 ARCHITECTURE
+======================================================================
+
+The target architecture must remain small.
+
+Prefer the smallest viable physical structure.
+
+Candidate logical components:
+
+- Ordo.Core
+- Ordo.Decisions
+- optional Ordo.Execution
+- one provider adapter
+- tests
+
+Do not create a separate project for every concept.
+
+Only create Ordo.Execution if coordination logic is substantial enough to justify the boundary.
+
+Do not create:
+- workflow engine
+- event bus
+- plugin framework
+- rules DSL
+- service locator
+- dependency injection container
+- generic repository abstraction
+- provider registry framework
+
+unless an existing authoritative Ordo design already requires one.
+
+======================================================================
+5. IMPLEMENT THE CORE TYPES FIRST
+======================================================================
+
+Implement the minimum semantic types needed by the vertical slice.
+
+Production code must be F#.
+
+Prefer:
+- discriminated unions
+- records
+- pattern matching
+- Result
+- pure functions
+- explicit composition
+
+Avoid:
+- inheritance-heavy design
+- mutable global state
+- hidden side effects
+- reflection-heavy generic infrastructure
+
+Implement or reuse equivalents of:
+
+ResolutionMode:
+- Compute
+- Decide
+- Deliberate
+
+Strong identifiers for:
+- DecisionContract
+- DecisionRequest
+- Evidence
+- Resolution/Execution
+
+Evidence:
+- stable identity
+- provenance/source
+- optional external reference
+
+EvidenceRequirement:
+- identity
+- description or equivalent semantic requirement
+
+Confidence provenance:
+- ProviderReported
+- Derived
+- EmpiricallyCalibrated
+
+Confidence:
+- bounded numeric value where numeric confidence is used
+- provenance
+- validation of range
+
+DecisionContract<'T>:
+- stable contract identity
+- semantic version
+- legal typed choices
+- required evidence
+
+DecisionRequest<'T>:
+- request identity
+- contract
+- state snapshot/reference
+- state version/fingerprint
+- available evidence
+
+DecisionResult<'T>:
+- selected choice
+- provider identity
+- evidence references
+- optional confidence
+
+DecisionOutcome<'T>:
+at minimum:
+- Decided
+- InsufficientEvidence
+- RequiresDeliberation
+- ProviderFailure
+
+If Ambiguous can be added cleanly without increasing architecture substantially, include it.
+Otherwise document it as Class B.
+
+Transition failure:
+at minimum:
+- InvalidState
+- MissingCapability
+- MissingEvidence
+- PolicyRejected
+- VersionConflict
+
+Do not encode application-specific states or choices in Ordo Core.
+
+======================================================================
+6. IMPLEMENT PROVIDER-NEUTRAL DECISION BOUNDARY
+======================================================================
+
+Create the smallest provider-neutral abstraction capable of executing a typed decision request.
+
+The abstraction must not reference:
+- OpenAI SDK types
+- Anthropic SDK types
+- Jev SDK types
+- ROS types
+- provider-specific JSON schemas
+
+The boundary must support:
+- request
+- cancellation
+- typed provider failure
+- structured outcome
+
+Do not force every provider to supply confidence.
+
+Do not fabricate confidence in adapters.
+
+Do not make a provider call mutate domain state.
+
+======================================================================
+7. IMPLEMENT A FAKE/DETERMINISTIC PROVIDER
+======================================================================
+
+Before implementing a live provider, create a deterministic fake provider.
+
+It must support tests for:
+- valid decision
+- missing evidence
+- provider failure
+- requires deliberation
+- no confidence
+- confidence present
+- invalid/unsupported behavior
+
+Normal unit tests must use the fake provider.
+
+Normal unit tests must not require:
+- internet
+- API key
+- paid model call
+- external provider availability
+
+======================================================================
+8. SELECT THE FIRST BOUNDED DECISION
+======================================================================
+
+Use one real, narrow decision from the existing Ordo repository/domain if one exists.
+
+Preferred characteristics:
+- three or fewer legal choices
+- low consequence
+- clear evidence requirements
+- clear state/version identity
+- meaningful escalation
+- easy to test
+- useful enough to prove the architecture
+
+If no suitable existing domain decision exists, create a minimal example domain inside tests/examples rather than inventing a new production business feature.
+
+Do not build broad infrastructure around a toy example.
+
+The decision must prove:
+- typed legal choices
+- evidence requirement
+- provider execution
+- policy evaluation
+- transition gating
+- escalation
+- observation facts
+- replay safety
+
+======================================================================
+9. IMPLEMENT TRANSITION GATING
+======================================================================
+
+A DecisionOutcome must not directly mutate domain state.
+
+Implement a pure or near-pure transition evaluation boundary.
+
+The transition gate must evaluate relevant:
+- current state
+- state version/fingerprint
+- decision
+- evidence
+- capabilities
+- policy
+
+A positive decision does not automatically mean transition allowed.
+
+Confidence does not grant capability.
+
+Provider identity does not grant capability.
+
+High confidence does not bypass policy.
+
+Implement stale-state protection.
+
+A decision made against state A must not silently authorize a transition against materially changed state B.
+
+======================================================================
+10. IMPLEMENT ESCALATION
+======================================================================
+
+Implement at least one explicit escalation path.
+
+Preferred:
+Decide → RequiresDeliberation
+
+Also represent human review if this can be done with a small, clean type without expanding scope.
+
+Escalation must be explicit data.
+
+Do not hide escalation behind repeated provider retries.
+
+Do not retry semantic decisions until a desired answer appears.
+
+======================================================================
+11. IMPLEMENT OBSERVATION FACTS
+======================================================================
+
+Expose provider-neutral observation facts sufficient for future ROS consumption.
+
+At minimum support observation of:
+
+- resolution/execution ID
+- parent/correlation identity if available
+- ResolutionMode
+- DecisionContract ID/version
+- DecisionRequest ID
+- state version/fingerprint
+- provider identity
+- model/system identifier where available
+- adapter version where relevant
+- start time
+- end time or duration
+- selected decision
+- confidence
+- confidence provenance
+- evidence references
+- escalation result
+- transition result
+
+Do not calculate:
+- provider ranking
+- calibration
+- optimization recommendation
+- cost ranking
+
+inside Ordo.
+
+Expose facts only.
+
+Ordo must not reference ROS.
+
+======================================================================
+12. IMPLEMENT ONE REAL PROVIDER ADAPTER
+======================================================================
+
+After fake-provider tests are green, implement one real provider adapter.
+
+Choose the provider based on:
+- existing repository/provider dependencies
+- current Echelon Foundry conventions
+- lowest additional dependency cost
+- ability to produce structured bounded output
+
+Do not introduce multiple live providers in v0.1.
+
+The real provider adapter must:
+- remain outside Ordo.Core
+- translate DecisionContract into provider request
+- validate provider response
+- reject illegal choices
+- support cancellation
+- expose provider identity
+- expose usage metadata where available
+- expose confidence only when meaningful and actually supplied/derived with provenance
+- never repair semantic output by guessing
+
+If structured-output repair is needed:
+- it may repair syntax only
+- it may not select a domain answer on the model's behalf
+
+Provider explanations may be retained as supplemental diagnostics but must not override the typed result.
+
+======================================================================
+13. IMPLEMENT REPLAY
+======================================================================
+
+Implement replay semantics sufficient to reevaluate a DecisionRequest without applying a domain transition.
+
+Replay must:
+- preserve contract version
+- preserve logical state/evidence inputs
+- preserve historical provider result separately
+- permit a new provider result
+- never execute transition automatically
+
+Do not build a replay analytics platform.
+
+ROS will own orchestration later.
+
+======================================================================
+14. SERIALIZATION
+======================================================================
+
+Implement only serialization required by the v0.1 vertical slice and future ROS interoperability.
+
+Requirements:
+- language-neutral external representation
+- explicit schema/version where persisted
+- deliberate discriminated-union encoding
+- do not depend accidentally on CLR/F# type names
+- unsupported schema versions fail safely
+- public persisted shape has round-trip tests
+
+Do not build a general serialization framework.
+
+======================================================================
+15. TESTING
+======================================================================
+
+Add thorough unit tests.
+
+Required test categories:
+
+Core:
+- ResolutionMode representation
+- identifier validation where applicable
+- confidence validation
+- confidence provenance
+- evidence identity/provenance
+
+DecisionContract:
+- legal choices
+- illegal choice rejection
+- required evidence
+- missing evidence
+- no confidence
+- confidence present
+
+Provider:
+- fake provider success
+- fake provider failure
+- requires deliberation
+- provider contract violation
+- malformed response for real adapter parser
+- unsupported capability if relevant
+
+Transition:
+- valid transition
+- invalid source state
+- missing capability
+- missing evidence
+- policy rejection
+- stale state/version conflict
+
+Replay:
+- replay does not mutate state
+- historical result preserved
+- new result can coexist
+
+Serialization:
+- round trip
+- schema/version preservation
+- union case representation
+
+Architecture:
+- Core has no ROS dependency
+- Core has no concrete provider dependency
+- provider project may depend inward
+- test packages do not leak into production
+
+If the repository already supports property-based testing, use it for key invariants.
+
+Do not introduce a heavy new property-test dependency solely for this feature unless justified.
+
+======================================================================
+16. INVARIANTS TO ENFORCE IN TESTS
+======================================================================
+
+At minimum prove these invariants:
+
+1. Provider output cannot create an illegal domain choice.
+2. Decision is not transition.
+3. Decision is not outcome.
+4. Confidence does not grant capability.
+5. Missing evidence is not low confidence.
+6. Replay does not execute.
+7. Stale state cannot silently authorize a transition.
+8. Provider failure does not become a domain decision.
+9. Provider-specific types do not leak into Ordo.Core.
+10. Ordo.Core does not depend on ROS.
+
+======================================================================
+17. DOCUMENTATION
+======================================================================
+
+Update documentation after implementation.
+
+Document:
+
+- why executable Ordo exists
+- what remains methodology
+- Compute / Decide / Deliberate
+- application vs Ordo vs ROS authority
+- DecisionContract
+- DecisionRequest
+- DecisionOutcome
+- decision vs transition
+- decision vs outcome
+- confidence vs calibration
+- evidence semantics
+- stale-state behavior
+- replay
+- provider adapter boundary
+
+Provide:
+- one complete bounded decision example
+- one escalation example
+- one stale-state example
+- one replay example
+
+Add anti-patterns:
+- LLM for deterministic arithmetic
+- parsing prose for authoritative choice
+- treating model confidence as permission
+- retrying until preferred answer
+- treating model inference as observed fact
+- applying stale decisions
+- provider-specific types in Core
+
+======================================================================
+18. PACKAGE AND PUBLIC API REVIEW
+======================================================================
+
+Before considering v0.1 complete:
+
+Review every public type/member.
+
+For each public surface ask:
+- must external consumers use this?
+- is it stable?
+- is it provider-neutral?
+- is it semantic rather than implementation detail?
+
+Make internal anything that does not need to be public.
+
+Do not publish packages merely because projects exist.
+
+Follow current Echelon Foundry release/package conventions.
+
+Do not invent a competing distribution mechanism.
+
+======================================================================
+19. VERIFICATION
+======================================================================
+
+After implementation:
+
+1. Run formatting/linting if repository uses it.
+2. Run full build.
+3. Run all existing tests.
+4. Run all new tests.
+5. Run architecture checks.
+6. Run serialization compatibility tests.
+7. Run fake-provider conformance tests.
+8. Run live-provider integration test only if:
+   - credentials are available
+   - it is explicitly opt-in
+   - it does not become part of normal unit-test requirements
+9. Compare results to baseline.
+
+No new warning may be casually suppressed.
+
+No existing failure may be hidden.
+
+======================================================================
+20. REQUIREMENT TRACEABILITY
+======================================================================
+
+Produce a requirement traceability artifact for the Class A / v0.1 requirements.
+
+For each requirement include:
+
+- requirement ID
+- status:
+  - Implemented
+  - Already satisfied
+  - Deferred by approved scope
+  - Blocked
+- implementation file(s)
+- test(s)
+- notes
+
+Do not mark a requirement complete without evidence.
+
+======================================================================
+21. STOP CONDITIONS
+======================================================================
+
+Stop and report rather than expanding scope if implementation appears to require:
+
+- workflow engine
+- general rules engine
+- agent framework
+- generic plugin architecture
+- provider marketplace
+- model-training pipeline
+- broad ROS redesign
+- broad Ordo repository rewrite
+- unrelated modernization
+- new distributed system
+- generic event sourcing
+- database requirement
+- UI requirement
+- multiple live providers
+- automatic provider routing
+- automatic calibration
+- automatic contract generation
+- automatic policy modification
+
+These are signals that the v0.1 boundary is being exceeded.
+
+======================================================================
+22. DEFINITION OF DONE
+======================================================================
+
+The implementation is complete only when all are true:
+
+1. Existing Ordo methodology remains usable independently.
+2. Production code for executable Ordo is F#.
+3. Build is clean.
+4. Existing tests remain passing except documented pre-existing failures.
+5. New unit tests pass.
+6. ResolutionMode exists.
+7. DecisionContract<'T> exists.
+8. DecisionRequest<'T> exists.
+9. DecisionOutcome<'T> exists.
+10. Evidence is first-class.
+11. Missing evidence is distinct from uncertainty.
+12. Confidence is optional.
+13. Confidence provenance exists.
+14. Provider-reported confidence is not called calibrated probability.
+15. Provider-neutral decision boundary exists.
+16. Fake provider exists.
+17. One real provider adapter exists.
+18. Illegal provider choices are rejected.
+19. Provider failures remain typed.
+20. Decision cannot directly execute transition.
+21. Capability remains independent from confidence.
+22. At least one escalation path works.
+23. Stale-state protection works.
+24. Replay works without domain mutation.
+25. Observation facts are available for future ROS consumption.
+26. Ordo has no ROS dependency.
+27. Ordo.Core has no concrete provider dependency.
+28. Normal tests require no live provider/network.
+29. Serialization is deliberate and tested where persisted.
+30. Documentation explains the architecture.
+31. A complete example exists.
+32. Anti-pattern documentation exists.
+33. Requirement traceability exists.
+34. No workflow engine was created.
+35. No agent framework was created.
+36. No generic rules engine was created.
+37. No unrelated refactor was performed.
+38. The implementation is understandable without hidden chat context.
+
+======================================================================
+23. FINAL REPORT FORMAT
+======================================================================
+
+Return a final implementation report with these sections:
+
+1. Baseline
+   - starting SHA
+   - starting build/test status
+
+2. Architecture implemented
+   - projects/modules added or changed
+   - public API summary
+
+3. Vertical slice
+   - chosen DecisionContract
+   - provider behavior
+   - transition gating
+   - escalation
+   - replay
+
+4. Requirement traceability
+   - implemented
+   - already satisfied
+   - deferred
+   - blocked
+
+5. Verification
+   - final build result
+   - test counts
+   - architecture checks
+   - warnings
+
+6. Compatibility
+   - breaking changes, if any
+   - migration requirements, if any
+
+7. Known limitations
+
+8. Deferred work
+   - specifically call out Class B, C, and D items not implemented
+
+9. Final SHA
+
+Do not claim completion for work not actually implemented and verified.
