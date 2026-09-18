@@ -84,7 +84,9 @@ It is verified to contain none of `StartTimer`, `MergedFrom`, `AddEvidence`,
 `Attest` or `Restore`.
 
 **Condition B's baseline does not exist and must be built. This is the single
-largest threat to validity in this design, and it is handled as follows:**
+largest threat to validity in this design** — larger than the requirement
+provenance, which has now been audited and largely cleared — **and it is handled
+as follows:**
 
 1. It is built by an agent from `csharp-business-requirements.md` under a
    state-structured instruction — **not hand-authored**, and not tuned by
@@ -194,11 +196,45 @@ No effect size will be claimed beyond this domain and this requirement sequence.
 
 - **The requirements are reverse-engineered from implementations**, and
   asymmetrically: the baseline document from the C# implementation, the
-  extension document from the F# one. Wave 2 may therefore follow F#-shaped
-  seams. The reconstruction README states the documents describe rules rather
-  than code structure, which mitigates this and does not remove it. **This
-  asymmetry favours the state-structured condition if it bites at all**, and is
-  recorded here so that a supported result is read with it in view.
+  extension document from the F# one.
+
+  **Tested, and the F#-seam version of this worry is refuted**
+  [`research/runs/EX-SDE-2026-0003/wave-2-provenance-audit.md`]. The wave-2
+  document contains **zero** occurrences of `discriminated union`, `module`,
+  `Option`, `class`, `interface`, `nullable` or `enum`. The three apparent hits
+  for `record`, `result` and `type` are ordinary English ("both remain on
+  record", "supplied for the result", "a type (a URL, a LinkedIn…)"). The
+  document is written in domain language throughout. This limitation is
+  downgraded from a standing caveat to a measured negative.
+
+  **Re-deriving wave 2 from `prompts/` was considered and is impossible.** That
+  specification set predates both implementations and would be uncontaminated,
+  but it does not contain the wave-2 scope: recording granularity, business
+  purpose, daily attestation and timer have **zero** mentions in it, and the
+  three documents its own index calls authoritative for business requirements do
+  not exist in the repository. `prompts/` is also mostly architecture contract,
+  so using it would prescribe structure to both conditions and destroy the
+  independent variable.
+
+- **A narrower asymmetry does exist, and it favours condition B.** The wave-2
+  document is written differentially against the C# baseline — six references,
+  three of the nine requirements, including both marked **Changed**. Five of the
+  six describe **wave-1 rules**, which condition B's baseline implements by
+  construction because it is built from the same wave-1 document, so they
+  describe it correctly.
+
+  The sixth is the defect: requirement 2 asks the agent to fix *"the C#
+  implementation's own inconsistency between its rejection message and its
+  actual unconditional behavior"* — a property of that implementation, not of
+  the rules. Condition B's baseline, built fresh, may not reproduce it, leaving
+  condition A with strictly more to do on that one clause.
+
+  **Precondition, binding before any run:** check whether condition B's baseline
+  reproduces that inconsistency. If it does, there is no asymmetry. If it does
+  not, requirement 2's rework figures are reported with that clause's
+  contribution to condition A identified separately. Nothing in the wave-2
+  document is edited — it stays as authored, before this experiment was
+  conceived.
 - **Condition B's baseline is made for the experiment**; condition A's is not.
 - **One domain, one requirement sequence, one model family.**
 - **The orchestrator has seen the conventional arm's hand-kept rework table** and
