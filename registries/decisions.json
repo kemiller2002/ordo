@@ -94,5 +94,29 @@
     "title": "Adopt Ordo as the public name of the methodology while preserving State-Directed Engineering in the research record",
     "type": "decision-record",
     "updated": "2026-09-16"
+  },
+  {
+    "created": "2026-09-18",
+    "id": "DF-SDE-2026-0006",
+    "path": "research/decisions/DF-SDE-2026-0006--introduce-executable-ordo-primitives.md",
+    "related_documents": [
+      "docs/architecture/executable-ordo.md",
+      "docs/architecture/executable-ordo-traceability.md",
+      "doctrine/FOUR-TIER-ARCHITECTURE.md",
+      "method/CHANGE-CLASSIFICATION.md",
+      "research/decisions/DF-SDE-2026-0005--adopt-ordo-as-the-public-methodology-name.md"
+    ],
+    "status": "accepted",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "architecture",
+      "ordo",
+      "executable-intelligence",
+      "dependencies"
+    ],
+    "title": "Introduce executable Ordo primitives as three F# projects, with the decision boundary provider-neutral and one adapter",
+    "type": "decision-record",
+    "updated": "2026-09-18"
   }
 ]

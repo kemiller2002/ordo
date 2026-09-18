@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <AssemblyName>Ordo.Core</AssemblyName>
+    <RootNamespace>Ordo.Core</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!--
+    Compile order is the dependency order, listed most primitive first, so a
+    module can only use what is above it and a cycle cannot be written.
+
+    Nothing in this project references a model-provider SDK, an HTTP client,
+    a serializer framework, a logging framework, a DI container or ROS.
+    `Ordo.Tests`' architecture tests assert that mechanically rather than
+    trusting this comment.
+  -->
+  <ItemGroup>
+    <Compile Include="Identifiers.fs" />
+    <Compile Include="Json.fs" />
+    <Compile Include="Clock.fs" />
+    <Compile Include="Resolution.fs" />
+    <Compile Include="Evidence.fs" />
+    <Compile Include="Capability.fs" />
+    <Compile Include="Obligation.fs" />
+    <Compile Include="StateIdentity.fs" />
+    <Compile Include="Policy.fs" />
+    <Compile Include="Transition.fs" />
+    <Compile Include="Wire.fs" />
+  </ItemGroup>
+
+</Project>

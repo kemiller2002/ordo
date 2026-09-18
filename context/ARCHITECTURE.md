@@ -14,6 +14,7 @@ root README links here rather than creating a competing `SDE-MAP.md`.
 | Reusable project artifacts | work/execution/trial/map/manifest templates | `templates/sde/` | this table; templates are individually named |
 | Distribution package | generated execution package and installer/verifier | `distribution/` | `distribution/DISTRIBUTION-MAP.json` and `distribution/README.md` |
 | Public website | the Ordo site: content, evidence manifest, generator, validator | `site/`, `src/Ordo.Site/`, `tests/Ordo.Site.Tests/` | `site/README.md` |
+| Executable Ordo | runtime primitives for resolution modes, evidence, capabilities, obligations, bounded decisions, transitions and observation | `src/Ordo.Core/`, `src/Ordo.Decisions/`, `src/Ordo.Providers.Anthropic/`, `tests/Ordo.Tests/` | `docs/architecture/executable-ordo.md` |
 
 This repository contains methodology domains rather than application
 features. Separate feature manifests would duplicate the indexes above and are
@@ -23,9 +24,20 @@ real bounded features.
 
 ## Current architecture
 
-No SDE-*product* architecture is accepted yet (SDE is a methodology
-repository, not an application repository). The repository's own knowledge
-architecture, established by this migration, is:
+SDE remains a methodology repository. It now also ships one runtime library
+— executable Ordo — whose architecture is accepted in
+[`DF-SDE-2026-0006`](../research/decisions/DF-SDE-2026-0006--introduce-executable-ordo-primitives.md)
+and described in
+[`docs/architecture/executable-ordo.md`](../docs/architecture/executable-ordo.md).
+It is the first code in this repository to which the Four-Tier Architecture
+applies as its own architecture rather than as advice to adopters:
+`Ordo.Core` is Tier 1 vocabulary, `Ordo.Core.Transition` and
+`Ordo.Decisions.Gate` are Tier 2, and `Ordo.Providers.Anthropic` is the only
+Tier 4 component. The methodology remains usable without it, and nothing
+that existed before gained a dependency on it.
+
+The repository's own knowledge architecture, established by the SDE
+migration, is unchanged:
 
 ```
 research/   evidence, hypotheses, theories, decisions, journals, packages,
@@ -80,3 +92,6 @@ belongs to whichever ROS work item executes the validation.
   prohibited per `framework/policies/OUTPUT-POLICY.md`).
 - Feature manifests and nested agent instructions are navigation layers. They
   point to semantic authority and must not restate it.
+- Executable Ordo must not depend on ROS, and `Ordo.Core` must not depend on
+  any model-provider SDK. Both are asserted against the loaded assemblies in
+  `tests/Ordo.Tests/ArchitectureTests.fs` rather than by review.
