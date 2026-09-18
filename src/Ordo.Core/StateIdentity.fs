@@ -69,7 +69,7 @@ module StateFingerprint =
     /// cannot become a fingerprint that silently matches nothing.
     let parse (raw: string) : StateFingerprint option =
         if
-            not (isNull raw)
+            not (String.IsNullOrEmpty raw)
             && raw.StartsWith("sha256:", StringComparison.Ordinal)
             && raw.Length = 7 + 64
             && raw.Substring 7 |> Seq.forall (fun c -> (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'))

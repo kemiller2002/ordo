@@ -26,7 +26,12 @@ type IdentifierError =
 let MaxIdentifierLength = 200
 
 let private validate (raw: string) : Result<string, IdentifierError> =
-    if isNull raw || raw = "" then Error IdentifierEmpty
+    // The emptiness check is written against `String.IsNullOrEmpty` rather
+    // than `isNull`: identifiers are constructed from persisted records and
+    // from callers in other languages, where a null can genuinely arrive, and
+    // F#'s own nullness analysis rightly refuses `isNull` on a `string` that
+    // its signature says cannot be one.
+    if System.String.IsNullOrEmpty raw then Error IdentifierEmpty
     elif raw.Trim() <> raw then Error(IdentifierNotTrimmed raw)
     elif raw.Length > MaxIdentifierLength then Error(IdentifierTooLong(raw.Length, MaxIdentifierLength))
     elif raw |> Seq.exists System.Char.IsControl then Error(IdentifierHasControlCharacter raw)

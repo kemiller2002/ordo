@@ -175,8 +175,8 @@ let private fromElement (element: JsonElement) : Result<JsonValue, JsonError> =
 /// records both arrive through here, and both are untrusted until a decoder
 /// has checked them against a contract (ORDO-7501).
 let parse (text: string) : Result<JsonValue, JsonError> =
-    if isNull text then
-        Error(MalformedJson "input was null")
+    if String.IsNullOrEmpty text then
+        Error(MalformedJson "input was null or empty")
     else
         try
             use document = JsonDocument.Parse(text, JsonDocumentOptions(AllowTrailingCommas = false))

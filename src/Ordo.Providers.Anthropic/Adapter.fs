@@ -49,7 +49,11 @@ module AnthropicOptions =
           TransportRetries = 2 }
 
 let private toJsonElement (value: JsonValue) : JsonElement =
-    JsonSerializer.Deserialize<JsonElement>(render value)
+    // Parsed rather than deserialized: `Deserialize<JsonElement>` is typed as
+    // returning a nullable, which a schema fragment never is. `Clone` detaches
+    // the element from the document before the document is disposed.
+    use document = JsonDocument.Parse(render value)
+    document.RootElement.Clone()
 
 let private schemaProperties (request: ProviderRequest) =
     match Contract.toolInputSchema request with
@@ -99,7 +103,11 @@ let private toolInputOf (message: Message) : Result<JsonValue, ProviderResponse>
         message.Content
         |> Seq.tryPick (fun block ->
             match block.TryPickToolUse() with
-            | true, toolUse when toolUse.Name = Contract.ToolName -> Some toolUse
+            | true, value ->
+                // The out parameter is nullable even when the pick succeeds,
+                // so it is narrowed before anything reads a member of it.
+                Option.ofObj value
+                |> Option.filter (fun toolUse -> toolUse.Name = Contract.ToolName)
             | _ -> None)
 
     match toolUse with

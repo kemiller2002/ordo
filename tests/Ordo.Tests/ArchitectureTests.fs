@@ -11,15 +11,20 @@ let private core = typeof<Ordo.Core.Json.JsonValue>.Assembly
 let private decisions = typeof<Ordo.Decisions.Outcome.ProviderError>.Assembly
 let private adapter = typeof<Ordo.Providers.Anthropic.Adapter.AnthropicOptions>.Assembly
 
+/// An assembly name's `Name` is nullable, so it is narrowed here rather than
+/// at each of the call sites below.
+let private nameOf (name: AssemblyName) =
+    Option.ofObj name.Name |> Option.defaultValue "<unnamed>"
+
 let private references (assembly: Assembly) =
-    assembly.GetReferencedAssemblies() |> Array.map (fun name -> name.Name) |> Set.ofArray
+    assembly.GetReferencedAssemblies() |> Array.map nameOf |> Set.ofArray
 
 let private assertNoReferenceMatching (predicate: string -> bool) (description: string) (assembly: Assembly) =
     let offending = references assembly |> Set.filter predicate
 
     Assert.True(
         Set.isEmpty offending,
-        sprintf "%s must not reference %s, but references %A" (assembly.GetName().Name) description (Set.toList offending)
+        sprintf "%s must not reference %s, but references %A" (nameOf (assembly.GetName())) description (Set.toList offending)
     )
 
 [<Fact>]
