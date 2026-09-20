@@ -126,6 +126,14 @@ is never recorded as an observation: `EvidenceKind` separates `Direct`,
 `Derived` and `Inferred`, and a requirement may refuse to be satisfied by
 anything but a direct observation.
 
+**Derived evidence is reconstructable or it is structurally invalid.**
+`EvidenceDependency` validates only the `Derived(... fromEvidence)`
+relation. A supplied evidence set must contain every referenced input, must
+not contain duplicate evidence identities, and must not contain a derivation
+cycle. Its closure is deterministic and dependency-first. This says nothing
+about whether the derivation is *correct*; it says only that its declared
+provenance is structurally reconstructable.
+
 **Replay is not execution.** `Replay.execute` re-evaluates a recorded
 request and returns a record. It never calls the gate, so there is no path
 from a replay to a state change.
@@ -273,8 +281,8 @@ GH-18 accepted six next-pass semantic requirements after repository-backed valid
 Implementation status:
 
 - **implemented in GH-20:** explicit state-view schema/version identity, full-view fingerprinting, schema-v1 historical decode, and mechanical refusal of legacy snapshots for new decisions/transitions;
+- **implemented in GH-21:** deterministic Derived-evidence closure, missing-input/duplicate/cycle refusal, and request-boundary enforcement for structurally invalid provenance;
 - pending: a scoped coverage representation chosen by an implementation comparison;
-- Derived-evidence closure and cycle validation;
 - explicit reconciliation-obligation semantics for unknown external effects;
 - public/type-comment clarification of Capability's trust boundary;
 - reusable negative-observation support only if the implementation comparison shows a common wire value is warranted.

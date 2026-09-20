@@ -47,7 +47,9 @@ GH-20 implementation notes:
 
 ## Phase 2 - Derived evidence closure
 
-Implement DF-SDE-2026-0009 as a pure utility over supplied evidence.
+**Status: implemented by GH-21.**
+
+DF-SDE-2026-0009 is implemented as a pure utility over supplied evidence.
 
 Required outcomes:
 
@@ -59,6 +61,14 @@ Required outcomes:
 - deterministic transitive closure.
 
 Do not generalize the validator to correction/history relationships.
+
+GH-21 implementation notes:
+
+- `EvidenceDependency.closure` returns deterministic dependency-first closure;
+- missing references, duplicate IDs, self-cycles, and multi-node cycles are typed failures;
+- shared dependencies are legal;
+- `DecisionRequest.create` rejects structurally invalid Derived provenance;
+- no graph storage, generic relationship abstraction, or correction/history rule was added.
 
 ## Phase 3 - Scoped coverage representation spike
 
