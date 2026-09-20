@@ -18,6 +18,7 @@ open Ordo.Core.Json
 open Ordo.Core.Identifiers
 open Ordo.Core.Evidence
 open Ordo.Core.Coverage
+open Ordo.Core.NegativeKnowledge
 open Ordo.Core.Obligation
 open Ordo.Core.StateIdentity
 
@@ -368,6 +369,76 @@ let decodeContextCoverageClaim (document: JsonValue) : Result<ContextCoverageCla
         | Error error, _, _ -> Error error
         | _, Error error, _ -> Error error
         | _, _, Error error -> Error error)
+
+// ---------------------------------------------------- negative observation
+
+let encodeNegativeObservation (observation: NegativeObservation) =
+    envelope
+        "ordo.negative-observation"
+        [ field "target" (JString observation.Target)
+          field "scope" (JString(CoverageScope.value observation.Scope))
+          field "method" (JString observation.Method)
+          field
+              "query"
+              (match observation.Query with
+               | Some query -> JString query
+               | None -> JNull)
+          field "stateReference" (JString observation.StateReference)
+          field "exclusions" (JArray(observation.Exclusions |> List.map JString))
+          field "errors" (JArray(observation.Errors |> List.map JString)) ]
+
+let decodeNegativeObservation (document: JsonValue) : Result<NegativeObservation, WireError> =
+    let decodeStringList fieldName document =
+        required fieldName document
+        |> Result.bind (asArray ("$." + fieldName) >> Result.mapError MalformedDocument)
+        |> Result.bind (fun items ->
+            items
+            |> List.fold
+                (fun state item ->
+                    match state with
+                    | Error error -> Error error
+                    | Ok values ->
+                        asString ("$." + fieldName + "[]") item
+                        |> Result.mapError MalformedDocument
+                        |> Result.map (fun value -> value :: values))
+                (Ok [])
+            |> Result.map List.rev)
+
+    readEnvelope "ordo.negative-observation" document
+    |> Result.bind (fun document ->
+        let target = requiredString "target" document
+
+        let scope =
+            requiredString "scope" document
+            |> Result.bind (fun raw ->
+                CoverageScope.create raw
+                |> Result.mapError (fun error -> InvalidField("$.scope", sprintf "%A" error)))
+
+        let methodName = requiredString "method" document
+
+        let query =
+            optional "query" document
+            |> Result.bind (function
+                | None
+                | Some JNull -> Ok None
+                | Some(JString value) -> Ok(Some value)
+                | Some other -> Error(MalformedDocument(TypeMismatch("$.query", "string or null", Json.kind other))))
+
+        let stateReference = requiredString "stateReference" document
+        let exclusions = decodeStringList "exclusions" document
+        let errors = decodeStringList "errors" document
+
+        match target, scope, methodName, query, stateReference, exclusions, errors with
+        | Ok target, Ok scope, Ok methodName, Ok query, Ok stateReference, Ok exclusions, Ok errors ->
+            NegativeObservation.create target scope methodName query stateReference exclusions errors
+            |> Result.mapError (fun error -> InvalidField("$", sprintf "%A" error))
+        | Error error, _, _, _, _, _, _
+        | _, Error error, _, _, _, _, _
+        | _, _, Error error, _, _, _, _
+        | _, _, _, Error error, _, _, _
+        | _, _, _, _, Error error, _, _
+        | _, _, _, _, _, Error error, _
+        | _, _, _, _, _, _, Error error -> Error error)
 
 // ---------------------------------------------------------- state snapshot
 
