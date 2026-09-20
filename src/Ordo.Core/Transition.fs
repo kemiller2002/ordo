@@ -34,6 +34,9 @@ type TransitionFailure =
     | StaleEvidence of (EvidenceRequirement * TimeSpan) list
     | WrongEvidenceKind of EvidenceRequirement list
     | PolicyRejected of PolicyIdentity * reason: string
+    /// Historical schema-v1 state can be audited, but cannot be the current
+    /// state used to authorize a new real-world transition.
+    | UnversionedCurrentState
     /// The state changed between the decision being formed and the change
     /// being attempted. Not a provider error and not a defect — the world
     /// moved (ORDO-2802).
@@ -146,6 +149,9 @@ module Transition =
         let stateFailures =
             [ if not (source.IsSatisfiedBy context.CurrentState) then
                   InvalidState(source.Expected, StateFingerprint.value context.CurrentState.Fingerprint)
+
+              if not (StateSnapshot.isVersioned context.CurrentState) then
+                  UnversionedCurrentState
 
               if StateSnapshot.hasChangedSince context.FormedAgainst context.CurrentState then
                   StaleState(context.FormedAgainst, context.CurrentState.Fingerprint) ]
