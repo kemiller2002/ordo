@@ -41,7 +41,7 @@ The production requirements were governed independently:
 | ORDO-RESEARCH-01 assumptions | remains research/prototype only | deferred |
 | ORDO-RESEARCH-02 hypothetical snapshot | remains deferred until a real application requires it | deferred |
 
-The accepted semantic authority is now `doctrine/DECISION-AND-EVIDENCE-SEMANTICS.md` plus the six decision records above. Executable support is a subsequent implementation step.
+The accepted semantic authority is now `doctrine/DECISION-AND-EVIDENCE-SEMANTICS.md` plus the six requirement decisions above. Release and migration governance is recorded separately in `DF-SDE-2026-0013`. Executable support is a subsequent implementation step.
 
 The original research copy remains in `kemiller2002/research-documents` at commit `6f69ad93f5f410d19499cce9d49c5e15888b67aa` for provenance.
 
