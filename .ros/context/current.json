@@ -4,7 +4,7 @@
   "repository": "state-directed-engineering",
   "actor": "ChatGPT",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-09-20T06:58:40.866Z",
+  "updatedAt": "2026-09-20T11:58:41.887Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -630,10 +630,44 @@
     {
       "id": "GH-22",
       "type": "task",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-09-20T06:58:40.866Z"
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "research-record",
+          "path": "research/experiments/EX-SDE-2026-0006--scoped-coverage-representation-spike.md"
+        },
+        {
+          "type": "decision-record",
+          "path": "research/decisions/DF-SDE-2026-0014--represent-context-coverage-as-first-class-claims.md"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/Coverage.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Decisions/Contract.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Decisions/Request.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Decisions/Resolve.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/CoreTests.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/SliceTests.fs"
+        }
+      ],
+      "updatedAt": "2026-09-20T11:58:41.887Z",
+      "completedAt": "2026-09-20T11:58:41.887Z"
     }
   ]
 }
