@@ -398,6 +398,40 @@ let ``legacy state cannot authorize a new transition even when its fingerprint m
     | other -> failwithf "expected legacy current state to be refused, got %A" other
 
 [<Fact>]
+let ``outstanding reconciliation can block a later transition until explicitly discharged`` () =
+    let effectId = ok (ExternalEffectId.create "deploy-42")
+    let obligationId = ok (ObligationId.create "reconcile-deploy-42")
+
+    let obligation =
+        match ExternalEffect.recordOutcome obligationId effectId now (Unknown "deployment response lost") with
+        | ReconciliationRequired(_, obligation) -> obligation
+        | other -> failwithf "expected reconciliation obligation, got %A" other
+
+    let requirement =
+        TransitionRequirement.create "publish-follow-up"
+        |> TransitionRequirement.requiringObligations [ obligationId ]
+
+    let baseContext =
+        { CurrentState = snapshotOf (JString "current")
+          FormedAgainst = (snapshotOf (JString "current")).Fingerprint
+          Held = CapabilitySet.empty
+          Available = []
+          Obligations = [ obligation ]
+          Policy = fastPathPolicy.Identity, Ordo.Core.Policy.PolicyAllows
+          Now = now }
+
+    match Transition.evaluate requirement baseContext with
+    | TransitionRefused failures ->
+        Assert.Contains(UnsatisfiedObligation [ obligationId ], failures)
+    | other -> failwithf "expected reconciliation obligation to block transition, got %A" other
+
+    let reconciled = obligation |> Obligation.satisfy "observed external system" (now.AddMinutes 1.0)
+
+    match Transition.evaluate requirement { baseContext with Obligations = [ reconciled ] } with
+    | TransitionAllowed _ -> ()
+    | other -> failwithf "expected reconciled obligation to allow transition, got %A" other
+
+[<Fact>]
 let ``json survives a round trip through text`` () =
     let value =
         JObject
