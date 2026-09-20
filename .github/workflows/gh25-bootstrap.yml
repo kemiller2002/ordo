@@ -1,0 +1,33 @@
+name: GH-25 ROS bootstrap
+
+on:
+  push:
+    branches:
+      - work/gh-25-release-integration
+
+permissions:
+  contents: write
+
+jobs:
+  start:
+    if: ${{ !contains(github.event.head_commit.message, '[gh25-started]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Start GH-25 through ROS
+        run: |
+          ./ros work begin GH-25 --type task --actor ChatGPT
+          ./ros work context GH-25
+      - name: Commit ROS-generated state and remove bootstrap
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/gh25-bootstrap.yml
+          git add .ros/context/current.json .ros/events/events.jsonl
+          git commit -m "chore: start GH-25 under ROS [gh25-started]"
+          git push
