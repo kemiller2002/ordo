@@ -23,6 +23,7 @@
     <Compile Include="Resolution.fs" />
     <Compile Include="Evidence.fs" />
     <Compile Include="Coverage.fs" />
+    <Compile Include="NegativeKnowledge.fs" />
     <Compile Include="Capability.fs" />
     <Compile Include="Obligation.fs" />
     <Compile Include="ExternalEffect.fs" />
