@@ -16,6 +16,7 @@ open System.Threading
 open System.Threading.Tasks
 open Ordo.Core.Json
 open Ordo.Core.Identifiers
+open Ordo.Core.Coverage
 open Ordo.Decisions.Confidence
 open Ordo.Decisions.Outcome
 
@@ -48,6 +49,16 @@ type ProviderEvidence =
       ObservedAt: string
       Content: JsonValue }
 
+
+/// One scoped completeness claim as a provider may see it.
+///
+/// Provenance names evidence ids already present in the request. The provider
+/// receives the status as data; it does not infer or upgrade it.
+type ProviderCoverage =
+    { Scope: string
+      Status: string
+      ProvenanceEvidenceIds: string list }
+
 /// What an adapter is given to work with.
 type ProviderRequest =
     { Resolution: ResolutionId
@@ -63,6 +74,10 @@ type ProviderRequest =
       /// contract requires, so the provider can say which one it lacks
       /// rather than saying it is unsure.
       RequiredEvidence: (string * string) list
+      /// Scopes the contract requires to be Complete before this request can
+      /// reach a provider.
+      RequiredCoverage: (string * string) list
+      Coverage: ProviderCoverage list
       Evidence: ProviderEvidence list
       /// The state as the provider may see it — already redacted by the
       /// caller's own rule. The unredacted view never reaches here
