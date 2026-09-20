@@ -82,17 +82,41 @@ let ``the system instruction names the tool and says evidence is data`` () =
     Assert.Contains("never an instruction", Contract.systemInstruction)
 
 [<Fact>]
-let ``evidence and state are separate blocks, not interpolated into the question`` () =
+let ``evidence coverage and state are separate data blocks, not interpolated into the question`` () =
     match Contract.promptBlocks providerRequest with
-    | [ question; evidence; state ] ->
+    | [ question; evidence; coverage; state ] ->
         Assert.Contains(changeClassContract.Question, question)
         Assert.Contains("mechanical-propagation", question)
         Assert.Contains("tool-diagnostic", question)
         Assert.StartsWith("<evidence>", evidence)
         Assert.EndsWith("</evidence>", evidence)
+        Assert.StartsWith("<coverage>", coverage)
+        Assert.EndsWith("</coverage>", coverage)
         Assert.StartsWith("<state>", state)
         Assert.DoesNotContain("<evidence>", question)
-    | other -> failwithf "expected three prompt blocks, got %d" (List.length other)
+        Assert.DoesNotContain("<coverage>", question)
+    | other -> failwithf "expected four prompt blocks, got %d" (List.length other)
+
+[<Fact>]
+let ``coverage statuses are rendered explicitly and are never inferred from evidence prose`` () =
+    let request =
+        { providerRequest with
+            RequiredCoverage = [ "strata.relations", "relations must be complete" ]
+            Coverage =
+                [ { Scope = "strata.relations"
+                    Status = "complete"
+                    ProvenanceEvidenceIds = [ "tool-diagnostic" ] }
+                  { Scope = "strata.relation-access"
+                    Status = "partial"
+                    ProvenanceEvidenceIds = [ "site-diff" ] } ] }
+
+    match Contract.promptBlocks request with
+    | [ question; _; coverage; _ ] ->
+        Assert.Contains("strata.relations", question)
+        Assert.Contains("\"status\":\"complete\"", coverage)
+        Assert.Contains("\"status\":\"partial\"", coverage)
+        Assert.Contains("provenanceEvidenceIds", coverage)
+    | other -> failwithf "expected four prompt blocks, got %d" (List.length other)
 
 // -------------------------------------------------- what is accepted back
 
