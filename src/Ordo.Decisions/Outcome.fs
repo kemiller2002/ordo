@@ -11,6 +11,7 @@ module Ordo.Decisions.Outcome
 open System
 open Ordo.Core.Identifiers
 open Ordo.Core.Evidence
+open Ordo.Core.Coverage
 open Ordo.Core.StateIdentity
 open Ordo.Decisions.Confidence
 
@@ -109,6 +110,10 @@ type DecisionOutcome<'choice> =
     /// Required evidence is absent, stale or of the wrong kind. Not a low
     /// confidence, not a negative answer (ORDO-0504 / ORDO-1003).
     | InsufficientEvidence of EvidenceRequirement list
+    /// One or more contract-required context scopes were missing, Partial, or
+    /// Unknown. Distinct from evidence absence because the remedy is to
+    /// establish scope completeness, not merely acquire another fact.
+    | InsufficientCoverage of CoverageFailure list
     | RequiresDeliberation of DeliberationReason
     | RequiresHumanReview of HumanReviewReason
     | ProviderFailure of ProviderError
@@ -165,6 +170,7 @@ module DecisionOutcome =
         match outcome with
         | Decided _ -> "decided"
         | InsufficientEvidence _ -> "insufficient-evidence"
+        | InsufficientCoverage _ -> "insufficient-coverage"
         | RequiresDeliberation _ -> "requires-deliberation"
         | RequiresHumanReview _ -> "requires-human-review"
         | ProviderFailure _ -> "provider-failure"
@@ -177,6 +183,7 @@ module DecisionOutcome =
         match outcome with
         | Decided result -> Some result
         | InsufficientEvidence _
+        | InsufficientCoverage _
         | RequiresDeliberation _
         | RequiresHumanReview _
         | ProviderFailure _
