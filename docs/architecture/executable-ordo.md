@@ -282,7 +282,8 @@ Pending executable changes include:
 The implementation must preserve the existing assembly and Four-Tier boundaries. None of these requirements permits `Ordo.Core` to acquire I/O, provider SDK, persistence, or ROS dependencies.
 
 Authoritative semantics: `doctrine/DECISION-AND-EVIDENCE-SEMANTICS.md`.
-Governance decisions: `DF-SDE-2026-0007` through `DF-SDE-2026-0012`.
+Governance decisions: `DF-SDE-2026-0007` through `DF-SDE-2026-0013`.
+Implementation/migration plan: `docs/architecture/ordo-next-pass-implementation-plan.md`.
 
 ## Reading the code
 
