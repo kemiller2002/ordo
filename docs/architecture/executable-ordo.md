@@ -136,6 +136,8 @@ provenance is structurally reconstructable.
 
 **Coverage is not evidence.** Evidence records what was observed; a coverage claim records how completely a declared observation method covered one named scope. Coverage cites Evidence IDs for provenance. A contract can require Complete coverage for one scope while the same request carries Partial or Unknown claims for others. No global completeness flag exists, and Ordo never infers Complete.
 
+**Not found is not absent.** A `NegativeObservation` records that one declared method ran against one named scope/state and did not find one target. Evidence supplies source/time/basis; coverage supplies completeness. Only matching Complete coverage that cites the observation Evidence is structurally eligible to support a domain absence conclusion. Searches that did not run, failed reads, not-compared, not-modelled, unsupported, unverifiable, and source-field omission remain different states.
+
 **Unknown external effect is not failure.** If a state-changing effect may or may not have occurred, `ExternalEffect.recordOutcome` returns `ReconciliationRequired` and creates a named `ReconcileExternalEffect` obligation. Retry safety is a separate host-supplied fact and never removes that obligation. Ordo does not execute, retry, compensate, or probe the effect.
 
 **Capability is semantic authority, not authentication.** A Capability is supplied by the host/application after its own identity and authorization checks. It is not a token, credential, signature, object capability, identity proof, or cryptographic grant.
@@ -290,7 +292,7 @@ Implementation status:
 - **implemented in GH-21:** deterministic Derived-evidence closure, missing-input/duplicate/cycle refusal, and request-boundary enforcement for structurally invalid provenance;
 - **implemented in GH-22:** first-class scoped coverage claims, Complete-required contract scopes, provider-boundary coverage data, and pre-provider `InsufficientCoverage`;
 - **implemented in GH-23:** explicit `Succeeded | Failed | Unknown` external-effect semantics, mandatory `ReconcileExternalEffect` obligation for Unknown, host-supplied retry-safety proof, and Capability trust-boundary clarification;
-- reusable negative-observation support only if the implementation comparison shows a common wire value is warranted.
+- **implemented in GH-24:** typed `NegativeObservation` Evidence content, stable wire shape, and Complete-coverage/provenance validation before a negative observation may structurally support absence.
 
 GH-20 preserved the existing assembly and Four-Tier boundaries. `Ordo.Core` still acquires no I/O, provider SDK, persistence, or ROS dependency.
 
