@@ -141,10 +141,13 @@ module ContextCoverage =
         : Result<unit, CoverageClaimError> =
         let evidenceIds = availableEvidence |> List.map (fun evidence -> evidence.Id) |> Set.ofList
 
-        let rec validate seen remaining =
+        let rec validate
+            (seen: Set<CoverageScope>)
+            (remaining: ContextCoverageClaim list)
+            : Result<unit, CoverageClaimError> =
             match remaining with
             | [] -> Ok ()
-            | claim :: rest ->
+            | (claim: ContextCoverageClaim) :: rest ->
                 if Set.contains claim.Scope seen then
                     Error(DuplicateCoverageScope claim.Scope)
                 else
@@ -155,7 +158,7 @@ module ContextCoverage =
         validate Set.empty claims
 
     let tryFind (scope: CoverageScope) (claims: ContextCoverageClaim list) =
-        claims |> List.tryFind (fun claim -> claim.Scope = scope)
+        claims |> List.tryFind (fun (claim: ContextCoverageClaim) -> claim.Scope = scope)
 
     let checkRequirement
         (claims: ContextCoverageClaim list)
