@@ -134,6 +134,8 @@ cycle. Its closure is deterministic and dependency-first. This says nothing
 about whether the derivation is *correct*; it says only that its declared
 provenance is structurally reconstructable.
 
+**Coverage is not evidence.** Evidence records what was observed; a coverage claim records how completely a declared observation method covered one named scope. Coverage cites Evidence IDs for provenance. A contract can require Complete coverage for one scope while the same request carries Partial or Unknown claims for others. No global completeness flag exists, and Ordo never infers Complete.
+
 **Replay is not execution.** `Replay.execute` re-evaluates a recorded
 request and returns a record. It never calls the gate, so there is no path
 from a replay to a state change.
@@ -282,7 +284,7 @@ Implementation status:
 
 - **implemented in GH-20:** explicit state-view schema/version identity, full-view fingerprinting, schema-v1 historical decode, and mechanical refusal of legacy snapshots for new decisions/transitions;
 - **implemented in GH-21:** deterministic Derived-evidence closure, missing-input/duplicate/cycle refusal, and request-boundary enforcement for structurally invalid provenance;
-- pending: a scoped coverage representation chosen by an implementation comparison;
+- **implemented in GH-22:** first-class scoped coverage claims, Complete-required contract scopes, provider-boundary coverage data, and pre-provider `InsufficientCoverage`;
 - explicit reconciliation-obligation semantics for unknown external effects;
 - public/type-comment clarification of Capability's trust boundary;
 - reusable negative-observation support only if the implementation comparison shows a common wire value is warranted.
