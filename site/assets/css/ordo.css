@@ -423,3 +423,153 @@ ol.flow li:last-child::before { display: none; }
   .table-scroll { overflow: visible; }
   a[href^="http"]::after { content: " (" attr(href) ")"; font-family: var(--mono); font-size: .7em; }
 }
+
+
+/* --- Echelon Foundry-aligned composition ------------------------------- */
+/*
+   These layout primitives mirror the parent Echelon Foundry site's visual
+   grammar: oversized editorial hero, asymmetric hero grid, bordered stat and
+   content grids, restrained signal blocks, and wide section rhythm.
+*/
+
+.nav-shell {
+  width: min(1440px, 100%);
+  padding: .85rem clamp(1rem, 4vw, 4.5rem);
+}
+
+main {
+  width: min(1440px, 100%);
+  padding: 0 clamp(1rem, 4vw, 4.5rem) 6rem;
+}
+
+main > section {
+  margin: clamp(5rem, 10vw, 10rem) 0;
+}
+
+.stack > * + * { margin-top: 1.35rem; }
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(18rem, .8fr);
+  gap: clamp(2rem, 7vw, 8rem);
+  align-items: end;
+}
+
+.hero h1 {
+  margin: 1rem 0 2rem;
+  font-size: clamp(3.5rem, 8vw, 7.4rem);
+  max-width: 12ch;
+  line-height: .98;
+}
+
+.signal {
+  padding-top: 1.25rem;
+  border-top: 5px solid var(--ef-accent-primary);
+  color: var(--ef-text-primary);
+  font-family: var(--display);
+  font-size: clamp(1.4rem, 2.4vw, 2.2rem);
+  line-height: 1.2;
+}
+
+.helix-card {
+  background: var(--ef-surface-secondary);
+  color: var(--ef-text-primary);
+  padding: 1.25rem;
+  font-weight: 600;
+}
+
+.stat-blocks {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  margin-top: 3rem;
+  border-top: 1px solid var(--ef-border-decorative);
+  border-left: 1px solid var(--ef-border-decorative);
+}
+
+.stat {
+  padding: 1.1rem;
+  border-right: 1px solid var(--ef-border-decorative);
+  border-bottom: 1px solid var(--ef-border-decorative);
+  color: var(--ef-text-primary);
+  font-weight: 700;
+}
+
+.stat span {
+  display: block;
+  margin-top: .25rem;
+  font-size: .72rem;
+  font-weight: 400;
+}
+
+.section-heading {
+  display: grid;
+  grid-template-columns: 1fr minmax(14rem, .32fr);
+  gap: 2rem;
+  align-items: end;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--ef-border-functional);
+}
+
+.section-heading h2 { margin: .5rem 0 0; }
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  border-top: 1px solid var(--ef-border-decorative);
+  border-left: 1px solid var(--ef-border-decorative);
+}
+
+.decision-flow,
+.tier-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--ef-border-decorative);
+  border-left: 1px solid var(--ef-border-decorative);
+  margin-top: 2rem;
+}
+
+.flow-step {
+  min-width: 0;
+  padding: clamp(1.25rem, 2.2vw, 2rem);
+  border-right: 1px solid var(--ef-border-decorative);
+  border-bottom: 1px solid var(--ef-border-decorative);
+  background: var(--ef-surface-secondary);
+}
+
+.flow-step h3 { margin-top: .55rem; }
+.flow-step p { color: var(--ef-text-primary); margin-bottom: 0; }
+
+.flow-index {
+  color: var(--ef-accent-secondary);
+  font-family: var(--mono);
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.architecture-note {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ef-border-functional);
+  font-size: .88rem;
+  font-weight: 600;
+}
+
+.closing-cta { max-width: 60rem; }
+.closing-cta h2 { margin: .7rem 0 1.5rem; }
+
+@media (max-width: 900px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .decision-flow,
+  .tier-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 680px) {
+  .stat-blocks,
+  .decision-flow,
+  .tier-grid { grid-template-columns: 1fr; }
+
+  .section-heading { grid-template-columns: 1fr; }
+}
