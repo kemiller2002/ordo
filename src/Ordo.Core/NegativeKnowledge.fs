@@ -17,6 +17,7 @@ open System
 open Ordo.Core.Identifiers
 open Ordo.Core.Evidence
 open Ordo.Core.Coverage
+open Ordo.Core.Json
 
 type NegativeObservationError =
     | NegativeTargetRequired
@@ -94,12 +95,30 @@ module NegativeObservation =
         | _, _, _, _, Error error, _
         | _, _, _, _, _, Error error -> Error error
 
+    /// Stable content form used when a NegativeObservation is carried by Evidence.
+    /// Kept here so semantic validation and the public wire encoder cannot drift.
+    let toWireContent (observation: NegativeObservation) =
+        JObject
+            [ "schema", JString "ordo.negative-observation"
+              "schemaVersion", JInt 1L
+              "target", JString observation.Target
+              "scope", JString(CoverageScope.value observation.Scope)
+              "method", JString observation.Method
+              "query",
+                  (match observation.Query with
+                   | Some query -> JString query
+                   | None -> JNull)
+              "stateReference", JString observation.StateReference
+              "exclusions", JArray(observation.Exclusions |> List.map JString)
+              "errors", JArray(observation.Errors |> List.map JString) ]
+
 /// Why one negative observation is not structurally sufficient to support a
 /// scoped absence conclusion.
 type AbsenceSupportFailure =
     | NegativeObservationScopeMismatch of observation: CoverageScope * coverage: CoverageScope
     | NegativeObservationNotCoverageProvenance of evidence: EvidenceId
     | NegativeObservationCoverageNotComplete of CoverageStatus
+    | NegativeObservationEvidenceContentMismatch of evidence: EvidenceId
 
 [<RequireQualifiedAccess>]
 module NegativeKnowledge =
@@ -118,6 +137,8 @@ module NegativeKnowledge =
             Error(NegativeObservationScopeMismatch(observation.Scope, coverage.Scope))
         elif not (coverage.Provenance |> List.contains evidence.Id) then
             Error(NegativeObservationNotCoverageProvenance evidence.Id)
+        elif evidence.Content <> NegativeObservation.toWireContent observation then
+            Error(NegativeObservationEvidenceContentMismatch evidence.Id)
         else
             match coverage.Status with
             | Complete -> Ok ()
