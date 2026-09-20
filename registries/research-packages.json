@@ -168,7 +168,7 @@
     },
     "confidence": {
       "label": "high",
-      "rationale": "Derived from deep literature review and repository-backed validation across Chrona, Time Entry State Machine, Time Tracking Application, Strata, and HelixNote; executable baselines still need to be run before implementation."
+      "rationale": "Derived from deep literature review and repository-backed validation across Chrona, Time Entry State Machine, Time Tracking Application, Strata, and HelixNote; the pre-upgrade executable baseline is recorded in EV-SDE-2026-0011 and each production requirement now has an accepted governance decision."
     },
     "created": "2026-09-20",
     "discipline": [
@@ -187,7 +187,7 @@
     "source_commit": "6f69ad93f5f410d19499cce9d49c5e15888b67aa",
     "source_document": "research/ordo-foundations/deep-research-program/requirement-candidates/ordo-next-pass.md",
     "source_repository": "kemiller2002/research-documents",
-    "status": "review",
+    "status": "accepted",
     "superseded_by": [],
     "supersedes": [],
     "tags": [
@@ -201,6 +201,6 @@
     ],
     "title": "Ordo next-pass validated requirements intake",
     "updated": "2026-09-20",
-    "version": "0.1.0"
+    "version": "1.0.0"
   }
 ]

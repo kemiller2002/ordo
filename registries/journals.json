@@ -94,5 +94,27 @@
     ],
     "theory_ids": [],
     "title": "Ordo next-pass governance start and pre-upgrade baseline"
+  },
+  {
+    "author_agent": "ChatGPT",
+    "created": "2026-09-20",
+    "evidence_ids": [
+      "EV-SDE-2026-0011"
+    ],
+    "hypothesis_ids": [],
+    "id": "JR-SDE-2026-0005",
+    "path": "research/journals/JR-SDE-2026-0005--ordo-next-pass-requirements-governance.md",
+    "related_mission": {},
+    "related_package": "RP-SDE-2026-0004",
+    "research_area": "state-directed-engineering",
+    "tags": [
+      "ordo",
+      "gh-18",
+      "governance",
+      "requirements",
+      "four-tier"
+    ],
+    "theory_ids": [],
+    "title": "Govern ORDO-NEXT-01 through ORDO-NEXT-06"
   }
 ]
