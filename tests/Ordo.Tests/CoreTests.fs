@@ -104,16 +104,36 @@ let ``an obligation records how it was discharged`` () =
     | other -> failwithf "expected Satisfied, got %A" other
 
 [<Fact>]
-let ``a fingerprint depends on meaning rather than on field order`` () =
+let ``a fingerprint depends on the complete semantic view rather than on field order`` () =
     let one = JObject [ "a", JInt 1L; "b", JInt 2L ]
     let other = JObject [ "b", JInt 2L; "a", JInt 1L ]
 
-    Assert.Equal(StateFingerprint.ofView one, StateFingerprint.ofView other)
-    Assert.NotEqual(StateFingerprint.ofView one, StateFingerprint.ofView (JObject [ "a", JInt 1L; "b", JInt 3L ]))
+    Assert.Equal(StateFingerprint.ofView changeSiteViewSchema one, StateFingerprint.ofView changeSiteViewSchema other)
+
+    Assert.NotEqual(
+        StateFingerprint.ofView changeSiteViewSchema one,
+        StateFingerprint.ofView changeSiteViewSchema (JObject [ "a", JInt 1L; "b", JInt 3L ])
+    )
+
+[<Fact>]
+let ``the same view under a different semantic schema is a different state identity`` () =
+    let view = JObject [ "a", JInt 1L ]
+    let nextSchema = ok (StateViewSchema.create "sde.change-site-state" 2)
+    let otherSchema = ok (StateViewSchema.create "sde.other-state" 1)
+
+    Assert.NotEqual(
+        StateFingerprint.ofView changeSiteViewSchema view,
+        StateFingerprint.ofView nextSchema view
+    )
+
+    Assert.NotEqual(
+        StateFingerprint.ofView changeSiteViewSchema view,
+        StateFingerprint.ofView otherSchema view
+    )
 
 [<Fact>]
 let ``a fingerprint read back from a record must have the shape this build writes`` () =
-    let fingerprint = StateFingerprint.ofView (JString "x")
+    let fingerprint = StateFingerprint.ofView changeSiteViewSchema (JString "x")
 
     Assert.Equal(Some fingerprint, StateFingerprint.parse (StateFingerprint.value fingerprint))
     Assert.Equal(None, StateFingerprint.parse "sha256:not-hex")
@@ -136,7 +156,7 @@ let ``redacting for a provider does not change which state was judged`` () =
     let providerView = StateSnapshot.providerView redact snapshot
 
     Assert.Equal(Ok None, tryMember "reviewerEmail" providerView)
-    Assert.Equal(StateFingerprint.ofView view, snapshot.Fingerprint)
+    Assert.Equal(StateFingerprint.ofView changeSiteViewSchema view, snapshot.Fingerprint)
 
 [<Fact>]
 let ``json survives a round trip through text`` () =
