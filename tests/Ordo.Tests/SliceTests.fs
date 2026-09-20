@@ -69,6 +69,8 @@ let ``the observation records what happened and nothing it would have to conclud
     Assert.Equal(changeClassContract.Version, observation.ContractVersion)
     Assert.Equal(request.Id, observation.Request)
     Assert.Equal(unclassified.Fingerprint, observation.State)
+    Assert.Equal(changeSiteViewSchema, observation.StateViewSchema)
+    Assert.Empty(observation.Coverage)
     Assert.Equal(Decide, observation.Mode)
     Assert.Equal("decided", observation.Outcome)
     Assert.Equal(Some "mechanical-propagation", observation.SelectedChoice)
@@ -86,7 +88,13 @@ let ``the observation records what happened and nothing it would have to conclud
     match parse (render (ResolutionObservation.encode observation)) with
     | Ok encoded ->
         Assert.Equal(Ok(Some(JString "ordo.resolution-observation")), tryMember "schema" encoded)
-        Assert.Equal(Ok(Some(JInt 1L)), tryMember "schemaVersion" encoded)
+        Assert.Equal(Ok(Some(JInt 2L)), tryMember "schemaVersion" encoded)
+        match tryMember "stateViewSchema" encoded with
+        | Ok(Some(JObject schema)) ->
+            Assert.Contains(("id", JString "sde.change-site-state"), schema)
+            Assert.Contains(("version", JInt 1L), schema)
+        | other -> failwithf "expected state-view schema identity in observation v2, got %A" other
+        Assert.Equal(Ok(Some(JArray [])), tryMember "coverage" encoded)
     | Error error -> failwithf "the observation did not render as readable JSON: %A" error
 
 [<Fact>]
@@ -152,6 +160,7 @@ let ``partial required coverage stops resolution before a provider is asked`` ()
 
     Assert.Equal(None, record.Observation.Provider)
     Assert.Equal("insufficient-coverage", record.Observation.Outcome)
+    Assert.Equal<ContextCoverageClaim list>([ claim ], record.Observation.Coverage)
 
 [<Fact>]
 let ``complete required coverage permits resolution while other scopes may remain partial`` () =
@@ -181,6 +190,15 @@ let ``complete required coverage permits resolution while other scopes may remai
     match record.Outcome with
     | Decided result -> Assert.Equal(MechanicalPropagation, result.Choice)
     | other -> failwithf "expected the complete required scope to permit resolution, got %A" other
+
+    Assert.Equal<ContextCoverageClaim list>(claims, record.Observation.Coverage)
+
+    match parse (render (ResolutionObservation.encode record.Observation)) with
+    | Ok encoded ->
+        match tryMember "coverage" encoded with
+        | Ok(Some(JArray encodedClaims)) -> Assert.Equal(2, encodedClaims.Length)
+        | other -> failwithf "expected scoped coverage in observation v2, got %A" other
+    | Error error -> failwithf "the coverage observation did not render as readable JSON: %A" error
 
     let providerRequest = Resolve.toProviderRequest options request
     Assert.Equal<(string * string) list>(

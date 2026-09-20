@@ -4,7 +4,7 @@
   "repository": "state-directed-engineering",
   "actor": "ChatGPT",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-09-20T13:06:54.929Z",
+  "updatedAt": "2026-09-20T14:55:07.272Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -736,6 +736,52 @@
       ],
       "updatedAt": "2026-09-20T13:06:54.929Z",
       "completedAt": "2026-09-20T13:06:54.929Z"
+    },
+    {
+      "id": "GH-25",
+      "type": "task",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Decisions/Observation.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Decisions/Resolve.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/SliceTests.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "distribution/DISTRIBUTION-MAP.json"
+        },
+        {
+          "type": "implementation",
+          "path": "distribution/package.json"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Sde.Core.Tests/LifecycleTests.fs"
+        },
+        {
+          "type": "tests",
+          "path": "distribution/scripts/test-package.mjs"
+        },
+        {
+          "type": "documentation",
+          "path": "docs/architecture/executable-ordo-traceability.md"
+        },
+        {
+          "type": "documentation",
+          "path": "docs/releases/SDE-1.3.0-ROS-HANDOFF.md"
+        }
+      ],
+      "updatedAt": "2026-09-20T14:55:07.272Z",
+      "completedAt": "2026-09-20T14:55:07.272Z"
     }
   ]
 }

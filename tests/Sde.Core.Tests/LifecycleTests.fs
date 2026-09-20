@@ -319,6 +319,49 @@ let ``strict verify fails an installation that has not adopted the current confi
 // ---------------------------------------------------------------------------
 
 [<Fact>]
+let ``1.2.0 dry run exposes the additive decision semantics doctrine without writing`` () =
+    withProject (fun project ->
+        let doctrinePath = "architecture/DECISION-AND-EVIDENCE-SEMANTICS.md"
+        let historical = packageAtVersionWithoutManagedFile "1.2.0" doctrinePath
+
+        try
+            match Execution.installPayload historical project with
+            | Error detail -> failwith detail
+            | Ok _ -> ()
+
+            let record = InstallationRecord.create Packaging.packageName "1.2.0"
+            let recordPath = InstallationRecord.recordPath project
+            Directory.CreateDirectory(Paths.directoryName recordPath) |> ignore
+            File.WriteAllText(recordPath, InstallationRecord.serialize record)
+
+            Assert.False(File.Exists(Path.Combine(installDirFor project, Paths.toNativePath doctrinePath)))
+            let before = snapshotWithTimestamps project
+
+            let dryRun = performUpgrade project payload true
+
+            match dryRun.Outcome with
+            | ChangeOutcome.Planned changes ->
+                Assert.Contains(
+                    changes,
+                    function
+                    | Planning.ReplacePayload("1.2.0", "1.3.0", _) -> true
+                    | _ -> false
+                )
+            | other -> failwithf "expected an additive 1.2.0 -> 1.3.0 upgrade plan, got %A" other
+
+            Assert.Equal<(string * string * System.DateTime) list>(before, snapshotWithTimestamps project)
+
+            let applied = performUpgrade project payload false
+
+            match applied.Outcome with
+            | Applied(_, "1.3.0") -> ()
+            | other -> failwithf "expected 1.3.0 to apply, got %A" other
+
+            Assert.True(File.Exists(Path.Combine(installDirFor project, Paths.toNativePath doctrinePath)))
+        finally
+            cleanup [ historical ])
+
+[<Fact>]
 let ``upgrade moves an older unmodified installation to the packaged version`` () =
     withProject (fun project ->
         installHistoricalVersion "0.0.1" project

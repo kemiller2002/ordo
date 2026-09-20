@@ -171,6 +171,8 @@ The representation decision is DF-SDE-2026-0015:
 
 ## Phase 7 - Observation and wire updates
 
+**Status: implemented by GH-25; final release verification pending.**
+
 Any new state-view/coverage facts needed for audit must be emitted in versioned wire records.
 
 Rules:
@@ -184,6 +186,8 @@ Rules:
 Update `docs/architecture/executable-ordo-traceability.md` with exact implementation status.
 
 ## Phase 8 - SDE distribution
+
+**Status: implemented by GH-25; final release verification pending.**
 
 Add `doctrine/DECISION-AND-EVIDENCE-SEMANTICS.md` to `distribution/DISTRIBUTION-MAP.json`.
 

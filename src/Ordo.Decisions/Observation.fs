@@ -15,6 +15,7 @@ open Ordo.Core.Json
 open Ordo.Core.Identifiers
 open Ordo.Core.Clock
 open Ordo.Core.Resolution
+open Ordo.Core.Coverage
 open Ordo.Core.Policy
 open Ordo.Core.StateIdentity
 open Ordo.Decisions.Confidence
@@ -22,7 +23,7 @@ open Ordo.Decisions.Outcome
 open Ordo.Decisions.Escalation
 
 [<Literal>]
-let SchemaVersion = 1
+let SchemaVersion = 2
 
 /// One resolution execution, as facts.
 ///
@@ -40,6 +41,12 @@ type ResolutionObservation =
       /// Which state was judged. Without this an observer cannot tell a
       /// stale decision from a wrong one.
       State: StateFingerprint
+      /// Domain-defined identity of the semantically complete state view used
+      /// for this execution. New live requests always carry one.
+      StateViewSchema: StateViewSchema
+      /// Scoped completeness claims supplied to this execution. These remain
+      /// audit facts even when incomplete coverage stops the provider call.
+      Coverage: ContextCoverageClaim list
       /// Absent when no provider was called — a request refused for missing
       /// evidence or a missing capability never reaches one.
       Provider: ProviderIdentity option
@@ -105,6 +112,20 @@ module ResolutionObservation =
               "contractVersion", JInt(int64 (ContractVersion.value observation.ContractVersion))
               "requestId", JString(DecisionRequestId.value observation.Request)
               "stateFingerprint", JString(StateFingerprint.value observation.State)
+              "stateViewSchema",
+              JObject
+                  [ "id", JString(StateViewSchema.id observation.StateViewSchema)
+                    "version", JInt(int64 (StateViewSchema.version observation.StateViewSchema)) ]
+              "coverage",
+              JArray(
+                  observation.Coverage
+                  |> List.map (fun claim ->
+                      JObject
+                          [ "scope", JString(CoverageScope.value claim.Scope)
+                            "status", JString(CoverageStatus.toWire claim.Status)
+                            "provenanceEvidenceIds",
+                            JArray(claim.Provenance |> List.map (EvidenceId.value >> JString)) ])
+              )
               "provider",
               (match observation.Provider with
                | None -> JNull

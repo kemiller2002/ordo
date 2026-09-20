@@ -94,6 +94,24 @@ let packageAtVersion (version: string) =
 
             fixtureDir
 
+let packageAtVersionWithoutManagedFile (version: string) (relativePath: string) =
+    let fixture = packageAtVersion version
+    let target = Paths.safeJoinOrFail fixture relativePath
+
+    if not (File.Exists target) then
+        failwithf "historical fixture does not contain %s" relativePath
+
+    File.Delete target
+
+    match Manifest.build Packaging.packageName version (Some "0.2") (Some "fixture") fixture with
+    | Error detail -> failwith detail
+    | Ok manifest ->
+        FileSystem.writeFileInto
+            (Paths.safeJoinOrFail fixture Ownership.manifestName)
+            (Manifest.serialize manifest)
+
+        fixture
+
 /// Installs a package fixture into a project, producing an installation that
 /// looks exactly like one a release of that version would have left behind:
 /// a .sde/ payload and NO .echelon record, which is configuration version 1.

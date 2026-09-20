@@ -296,6 +296,13 @@ check("init installs the execution package", () => {
   assert.ok(fs.existsSync(path.join(project, ".echelon", "sde.json")));
 });
 
+check("decision-and-evidence doctrine is installed", () => {
+  assert.ok(
+    fs.existsSync(path.join(project, ".sde", "architecture", "DECISION-AND-EVIDENCE-SEMANTICS.md")),
+    "1.3.0 must install the governed decision/evidence semantics"
+  );
+});
+
 check("a second init produces no meaningful change", () => {
   const before = snapshot(project);
   const result = sde(["init"], project);

@@ -40,6 +40,10 @@
       "destination": "architecture/STRUCTURAL-LOCALITY.md"
     },
     {
+      "source": "doctrine/DECISION-AND-EVIDENCE-SEMANTICS.md",
+      "destination": "architecture/DECISION-AND-EVIDENCE-SEMANTICS.md"
+    },
+    {
       "source": "doctrine/GLOSSARY.md",
       "destination": "reference/GLOSSARY.md"
     },
