@@ -9,6 +9,7 @@ open Ordo.Core.Evidence
 open Ordo.Core.Coverage
 open Ordo.Core.Capability
 open Ordo.Core.Obligation
+open Ordo.Core.ExternalEffect
 open Ordo.Core.Resolution
 open Ordo.Core.StateIdentity
 open Ordo.Core.Transition
@@ -222,6 +223,47 @@ let ``a capability set answers only what it was granted`` () =
     Assert.True(CapabilitySet.grants authorizeVerificationPath.Id held)
     Assert.False(CapabilitySet.grants other held)
     Assert.Equal<CapabilityId list>([ other ], CapabilitySet.missing [ authorizeVerificationPath.Id; other ] held)
+
+[<Fact>]
+let ``unknown external effect creates an outstanding reconciliation obligation`` () =
+    let effectId = ok (ExternalEffectId.create "github-write-42")
+    let obligationId = ok (ObligationId.create "reconcile-github-write-42")
+
+    match ExternalEffect.recordOutcome obligationId effectId now (Unknown "connection dropped after send") with
+    | ReconciliationRequired(Unknown reason, obligation) ->
+        Assert.Equal("connection dropped after send", reason)
+        Assert.True(Obligation.isOutstanding obligation)
+        Assert.Equal(ReconcileExternalEffect effectId, obligation.Kind)
+    | other -> failwithf "expected reconciliation-required outcome, got %A" other
+
+[<Fact>]
+let ``known success and known failure do not invent reconciliation work`` () =
+    let effectId = ok (ExternalEffectId.create "effect-1")
+    let obligationId = ok (ObligationId.create "ob-1")
+
+    match ExternalEffect.recordOutcome obligationId effectId now Succeeded with
+    | Settled Succeeded -> ()
+    | other -> failwithf "expected settled success, got %A" other
+
+    match ExternalEffect.recordOutcome obligationId effectId now (Failed "definite rejection") with
+    | Settled(Failed "definite rejection") -> ()
+    | other -> failwithf "expected settled failure, got %A" other
+
+[<Fact>]
+let ``retry before reconciliation is never inferred and never removes the obligation`` () =
+    let effectId = ok (ExternalEffectId.create "create-only-write")
+    let obligationId = ok (ObligationId.create "reconcile-create-only-write")
+
+    Assert.False(ExternalEffect.mayRepeatBeforeReconciliation RetrySafetyNotEstablished)
+
+    Assert.True(
+        ExternalEffect.mayRepeatBeforeReconciliation
+            (RetrySafeByExternalContract "stable create-only operation identity")
+    )
+
+    match ExternalEffect.recordOutcome obligationId effectId now (Unknown "response lost") with
+    | ReconciliationRequired(_, obligation) -> Assert.True(Obligation.isOutstanding obligation)
+    | other -> failwithf "retry safety must not erase reconciliation, got %A" other
 
 [<Fact>]
 let ``an obligation records how it was discharged`` () =
