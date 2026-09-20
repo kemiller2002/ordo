@@ -17,6 +17,7 @@ open System
 open Ordo.Core.Json
 open Ordo.Core.Identifiers
 open Ordo.Core.Evidence
+open Ordo.Core.Coverage
 open Ordo.Core.Obligation
 open Ordo.Core.StateIdentity
 
@@ -292,6 +293,81 @@ let decodeEvidenceRequirement (document: JsonValue) : Result<EvidenceRequirement
         | _, Error e, _, _
         | _, _, Error e, _
         | _, _, _, Error e -> Error e)
+
+// ------------------------------------------------------------- coverage
+
+let encodeCoverageRequirement (requirement: CoverageRequirement) =
+    envelope
+        "ordo.coverage-requirement"
+        [ field "scope" (JString(CoverageScope.value requirement.Scope))
+          field "description" (JString requirement.Description) ]
+
+let decodeCoverageRequirement (document: JsonValue) : Result<CoverageRequirement, WireError> =
+    readEnvelope "ordo.coverage-requirement" document
+    |> Result.bind (fun document ->
+        let scope =
+            requiredString "scope" document
+            |> Result.bind (fun raw ->
+                CoverageScope.create raw
+                |> Result.mapError (fun error -> InvalidField("$.scope", sprintf "%A" error)))
+
+        let description = requiredString "description" document
+
+        match scope, description with
+        | Ok scope, Ok description -> Ok(CoverageRequirement.complete scope description)
+        | Error error, _ -> Error error
+        | _, Error error -> Error error)
+
+let encodeContextCoverageClaim (claim: ContextCoverageClaim) =
+    envelope
+        "ordo.context-coverage"
+        [ field "scope" (JString(claim.Scope |> CoverageScope.value))
+          field "status" (JString(claim.Status |> CoverageStatus.toWire))
+          field "provenanceEvidenceIds" (JArray(claim.Provenance |> List.map (EvidenceId.value >> JString))) ]
+
+let decodeContextCoverageClaim (document: JsonValue) : Result<ContextCoverageClaim, WireError> =
+    readEnvelope "ordo.context-coverage" document
+    |> Result.bind (fun document ->
+        let scope =
+            requiredString "scope" document
+            |> Result.bind (fun raw ->
+                CoverageScope.create raw
+                |> Result.mapError (fun error -> InvalidField("$.scope", sprintf "%A" error)))
+
+        let status =
+            requiredString "status" document
+            |> Result.bind (fun raw ->
+                match CoverageStatus.fromWire raw with
+                | Some status -> Ok status
+                | None -> Error(UnknownVariant("status", raw)))
+
+        let provenance =
+            required "provenanceEvidenceIds" document
+            |> Result.bind (asArray "$.provenanceEvidenceIds" >> Result.mapError MalformedDocument)
+            |> Result.bind (fun items ->
+                items
+                |> List.fold
+                    (fun state item ->
+                        match state with
+                        | Error error -> Error error
+                        | Ok ids ->
+                            asString "$.provenanceEvidenceIds[]" item
+                            |> Result.mapError MalformedDocument
+                            |> Result.bind (fun raw ->
+                                EvidenceId.create raw
+                                |> Result.mapError (fun error ->
+                                    InvalidField("$.provenanceEvidenceIds[]", sprintf "%A" error)))
+                            |> Result.map (fun id -> id :: ids))
+                    (Ok [])
+                |> Result.map List.rev)
+
+        match scope, status, provenance with
+        | Ok scope, Ok status, Ok provenance ->
+            ContextCoverageClaim.create scope status provenance
+            |> Result.mapError (fun error -> InvalidField("$.provenanceEvidenceIds", sprintf "%A" error))
+        | Error error, _, _ -> Error error
+        | _, Error error, _ -> Error error
+        | _, _, Error error -> Error error)
 
 // ---------------------------------------------------------- state snapshot
 
