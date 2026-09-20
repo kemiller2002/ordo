@@ -194,11 +194,11 @@ let ``Strata-style coverage keeps complete and partial dimensions separate`` () 
 let ``Time Tracking unreadable reference catalog is Unknown rather than empty or Partial`` () =
     let scope = ok (CoverageScope.create "chrona.reference-catalog")
     let failedPull = evidence "reference-pull" Direct now (JString "network error while reading reference.json")
-    let claim = ok (ContextCoverageClaim.create scope Unknown [ failedPull.Id ])
+    let claim = ok (ContextCoverageClaim.create scope CoverageStatus.Unknown [ failedPull.Id ])
     let requirement = CoverageRequirement.complete scope "the current reference catalog must be established"
 
     match ContextCoverage.checkRequirement [ claim ] requirement with
-    | Some(CoverageUnknown(_, actual)) -> Assert.Equal(Unknown, actual.Status)
+    | Some(CoverageUnknown(_, actual)) -> Assert.Equal(CoverageStatus.Unknown, actual.Status)
     | other -> failwithf "expected Unknown reference-catalog coverage, got %A" other
 
 [<Fact>]
