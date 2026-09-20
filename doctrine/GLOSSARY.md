@@ -2,9 +2,9 @@
 id: SDE-DOCTRINE-005
 title: SDE Glossary
 status: accepted
-version: 0.2.0
+version: 0.2.1
 created: 2026-09-02
-updated: 2026-09-05
+updated: 2026-09-20
 tags: [doctrine, glossary]
 ---
 
@@ -107,6 +107,29 @@ picking one meaning.
 - **Discovery Expansion (DE)** — files read outside a declared feature
   boundary, optionally classified as declared dependency, undeclared
   dependency, unrelated, or cross-boundary edit; an experimental diagnostic.
+
+## Executable Ordo decision/evidence terms
+
+- **Semantically complete state view** - the smallest contract/version-specific
+  state projection containing every authoritative fact whose different value
+  could change choice legality, evidence/coverage sufficiency, capability or
+  obligation applicability, policy, or transition legality.
+- **Scoped coverage** - a claim about completeness for one explicitly named
+  domain/contract scope, never a global property of a request.
+- **Partial coverage** - incompleteness is known.
+- **Unknown coverage** - whether sufficient coverage exists has not been
+  established. It is not the same as Partial.
+- **Derived-evidence closure** - the transitive input set reached through
+  `EvidenceKind.Derived` references. This derivation relation must be acyclic.
+- **Unknown effect outcome** - an external effect was attempted but whether it
+  occurred cannot yet be established. It is not failure and may require
+  reconciliation before retry or subsequent action.
+- **Ordo Capability** - a host/application-supplied semantic authority
+  prerequisite. It is not an authentication token, credential, object
+  capability, signature, or identity proof.
+- **Negative observation** - a scoped, method- and state-version-specific
+  observation that a target was not found. It is not an unqualified absence
+  claim.
 
 ## SDE (methodology) terms
 
