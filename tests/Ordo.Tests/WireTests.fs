@@ -7,6 +7,7 @@ open Ordo.Core.Json
 open Ordo.Core.Identifiers
 open Ordo.Core.Evidence
 open Ordo.Core.Coverage
+open Ordo.Core.NegativeKnowledge
 open Ordo.Core.Obligation
 open Ordo.Core.StateIdentity
 open Ordo.Core.Wire
@@ -106,6 +107,51 @@ let ``coverage wire refuses unknown statuses and claims with no provenance`` () 
     match decodeContextCoverageClaim noProvenance with
     | Error(InvalidField("$.provenanceEvidenceIds", _)) -> ()
     | other -> failwithf "expected empty coverage provenance refusal, got %A" other
+
+[<Fact>]
+let ``negative observation preserves target method state exclusions and errors on the wire`` () =
+    let scope = ok (CoverageScope.create "repository.files")
+    let observation =
+        ok (
+            NegativeObservation.create
+                "config.json"
+                scope
+                "git-tree-scan"
+                (Some "path=config.json")
+                "commit:abc123"
+                [ "vendor/" ]
+                [ "submodule unavailable" ]
+        )
+
+    match roundTrip encodeNegativeObservation decodeNegativeObservation observation with
+    | Ok decoded ->
+        Assert.Equal(observation.Target, decoded.Target)
+        Assert.Equal(observation.Scope, decoded.Scope)
+        Assert.Equal(observation.Method, decoded.Method)
+        Assert.Equal(observation.Query, decoded.Query)
+        Assert.Equal(observation.StateReference, decoded.StateReference)
+        Assert.Equal<string list>(observation.Exclusions, decoded.Exclusions)
+        Assert.Equal<string list>(observation.Errors, decoded.Errors)
+    | Error error -> failwithf "negative observation decoding failed: %A" error
+
+[<Fact>]
+let ``negative observation wire refuses malformed minimum fields`` () =
+    let scope = ok (CoverageScope.create "scope")
+    let observation = ok (NegativeObservation.create "target" scope "method" None "state" [] [])
+
+    let noTarget =
+        match encodeNegativeObservation observation with
+        | JObject members ->
+            JObject(
+                members
+                |> List.map (fun (name, value) ->
+                    if name = "target" then name, JString "" else name, value)
+            )
+        | other -> other
+
+    match decodeNegativeObservation noTarget with
+    | Error(InvalidField("$", _)) -> ()
+    | other -> failwithf "expected empty negative target refusal, got %A" other
 
 [<Fact>]
 let ``a state snapshot is refused if its stored fingerprint disagrees with its view`` () =
