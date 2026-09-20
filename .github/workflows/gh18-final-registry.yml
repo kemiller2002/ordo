@@ -1,0 +1,35 @@
+name: GH-18 final governance registry refresh
+
+on:
+  push:
+    branches:
+      - work/gh-18-ordo-next-pass
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    if: ${{ !contains(github.event.head_commit.message, '[gh18-final-indexed]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Rebuild registries and validate final governance
+        run: |
+          ./ros work context GH-18
+          ./ros registry build
+          ./ros registry check
+          ./ros validate
+      - name: Commit generated registries and remove temporary workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/gh18-final-registry.yml
+          git add registries
+          git commit -m "research: index final GH-18 governance [gh18-final-indexed]"
+          git push
