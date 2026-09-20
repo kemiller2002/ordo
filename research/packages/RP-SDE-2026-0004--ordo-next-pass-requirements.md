@@ -5,7 +5,7 @@ research_area: state-directed-engineering
 discipline: [software-engineering-methodology, software-architecture, agentic-engineering]
 author_agent: ChatGPT
 version: 0.1.0
-status: candidate
+status: review
 confidence:
   label: high
   rationale: Derived from deep literature review and repository-backed validation across Chrona, Time Entry State Machine, Time Tracking Application, Strata, and HelixNote; executable baselines still need to be run before implementation.
