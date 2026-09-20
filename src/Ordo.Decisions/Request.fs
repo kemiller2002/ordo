@@ -14,6 +14,7 @@ module Ordo.Decisions.Request
 open System
 open Ordo.Core.Identifiers
 open Ordo.Core.Evidence
+open Ordo.Core.Coverage
 open Ordo.Core.StateIdentity
 open Ordo.Decisions.Contract
 
@@ -32,6 +33,7 @@ type RequestError =
     /// The supplied evidence set is not a closed, acyclic reconstruction of
     /// its Derived-from provenance.
     | InvalidEvidenceDependencies of EvidenceDependencyError
+    | InvalidCoverageClaims of CoverageClaimError
     | NoEvidenceForContractRequiringIt of DecisionContractId
 
 type DecisionRequest<'choice when 'choice: equality> =
@@ -52,6 +54,9 @@ type DecisionRequest<'choice when 'choice: equality> =
       /// The evidence available to the decision. Availability is not truth
       /// and not sufficiency; both are judged elsewhere (ORDO-0505).
       Evidence: Evidence list
+      /// Scoped completeness claims. Multiple scopes may coexist; there is
+      /// deliberately no request-level global completeness flag.
+      Coverage: ContextCoverageClaim list
       CreatedAt: DateTimeOffset }
 
 [<RequireQualifiedAccess>]
@@ -62,12 +67,13 @@ module DecisionRequest =
     /// A retired contract is refused here rather than at execution, because
     /// "this question is no longer asked" is knowable before anything is
     /// sent anywhere (ORDO-5603 / ORDO-9202).
-    let create
+    let createWithCoverage
         (id: DecisionRequestId)
         (resolution: ResolutionId)
         (contract: DecisionContract<'choice>)
         (state: StateSnapshot)
         (evidence: Evidence list)
+        (coverage: ContextCoverageClaim list)
         (now: DateTimeOffset)
         : Result<DecisionRequest<'choice>, RequestError> =
         if not (ContractLifecycle.acceptsNewRequests contract.Lifecycle) then
@@ -78,15 +84,35 @@ module DecisionRequest =
             match EvidenceDependency.validateClosedSet evidence with
             | Error error -> Error(InvalidEvidenceDependencies error)
             | Ok () ->
-                Ok
-                    { Id = id
-                      Resolution = resolution
-                      Correlation = None
-                      CausedBy = None
-                      Contract = contract
-                      State = state
-                      Evidence = evidence
-                      CreatedAt = now }
+                match ContextCoverage.validateClaims evidence coverage with
+                | Error error -> Error(InvalidCoverageClaims error)
+                | Ok () ->
+                    Ok
+                        { Id = id
+                          Resolution = resolution
+                          Correlation = None
+                          CausedBy = None
+                          Contract = contract
+                          State = state
+                          Evidence = evidence
+                          Coverage = coverage
+                          CreatedAt = now }
+
+    /// Backward-compatible constructor for decisions that declare no coverage
+    /// claims. Contracts that require coverage will resolve to
+    /// InsufficientCoverage rather than silently assuming Complete.
+    let create
+        (id: DecisionRequestId)
+        (resolution: ResolutionId)
+        (contract: DecisionContract<'choice>)
+        (state: StateSnapshot)
+        (evidence: Evidence list)
+        (now: DateTimeOffset)
+        : Result<DecisionRequest<'choice>, RequestError> =
+        createWithCoverage id resolution contract state evidence [] now
+
+    let checkCoverage (request: DecisionRequest<'choice>) =
+        ContextCoverage.checkAll request.Coverage request.Contract.RequiredCoverage
 
     let correlatedWith (correlation: CorrelationId) (request: DecisionRequest<'choice>) =
         { request with Correlation = Some correlation }
