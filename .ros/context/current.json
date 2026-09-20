@@ -4,7 +4,7 @@
   "repository": "state-directed-engineering",
   "actor": "ChatGPT",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-09-20T12:09:54.991Z",
+  "updatedAt": "2026-09-20T13:06:54.929Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -706,10 +706,36 @@
     {
       "id": "GH-24",
       "type": "task",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-09-20T12:09:54.991Z"
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "research-record",
+          "path": "research/experiments/EX-SDE-2026-0007--negative-knowledge-representation-spike.md"
+        },
+        {
+          "type": "decision-record",
+          "path": "research/decisions/DF-SDE-2026-0015--represent-negative-search-observations-as-typed-evidence-content.md"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/NegativeKnowledge.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/Wire.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/CoreTests.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/WireTests.fs"
+        }
+      ],
+      "updatedAt": "2026-09-20T13:06:54.929Z",
+      "completedAt": "2026-09-20T13:06:54.929Z"
     }
   ]
 }
