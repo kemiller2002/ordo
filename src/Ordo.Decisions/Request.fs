@@ -25,6 +25,10 @@ open Ordo.Decisions.Contract
 /// outcome into a construction error (ORDO-0504).
 type RequestError =
     | ContractRetired of DecisionContractId * ContractVersion
+    /// A schema-v1 historical snapshot may be inspected or replayed as
+    /// history, but a new live decision must be formed against state captured
+    /// under an explicit current view schema.
+    | UnversionedStateSnapshot of DecisionContractId
     | NoEvidenceForContractRequiringIt of DecisionContractId
 
 type DecisionRequest<'choice when 'choice: equality> =
@@ -65,6 +69,8 @@ module DecisionRequest =
         : Result<DecisionRequest<'choice>, RequestError> =
         if not (ContractLifecycle.acceptsNewRequests contract.Lifecycle) then
             Error(ContractRetired(contract.Id, contract.Version))
+        elif not (StateSnapshot.isVersioned state) then
+            Error(UnversionedStateSnapshot contract.Id)
         else
             Ok
                 { Id = id
