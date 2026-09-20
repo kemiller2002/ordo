@@ -178,7 +178,7 @@ Authority: `DF-SDE-2026-0012`, `DF-SDE-2026-0015`, `EX-SDE-2026-0007`.
 | Coverage owns completeness | Preserved | `ContextCoverageClaim` paired by scope + EvidenceId provenance | `CoreTests` |
 | Partial/Unknown cannot support absence | Implemented | `NegativeObservationCoverageNotComplete` | Strata/Time Tracking scenario tests |
 | Scope mismatch cannot support absence | Implemented | `NegativeObservationScopeMismatch` | `CoreTests` |
-| Unrelated Evidence cannot support absence | Implemented | `NegativeObservationNotCoverageProvenance` | `CoreTests` |
+| Unrelated Evidence cannot support absence | Implemented | provenance must cite the Evidence ID and the Evidence content must equal the supplied `NegativeObservation`; `NegativeObservationNotCoverageProvenance` / `NegativeObservationEvidenceContentMismatch` | `CoreTests` |
 | Stable reusable content wire | Implemented | `ordo.negative-observation` schema v1 | `WireTests` |
 | No universal absence/status ontology | Implemented by scope | no new EvidenceKind or Absent/Unavailable/NotCompared union | source/API surface |
 
