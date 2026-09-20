@@ -58,7 +58,8 @@ Ordo may validate that a NegativeObservation is eligible to support a domain abs
 
 1. the coverage claim scope equals the observation scope;
 2. the coverage claim cites the EvidenceId carrying the observation;
-3. the coverage status is Complete.
+3. the cited Evidence record actually carries the supplied NegativeObservation content;
+4. the coverage status is Complete.
 
 The helper returns structural sufficiency only. It does not create domain truth or authorize a transition.
 
