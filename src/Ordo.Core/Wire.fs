@@ -421,8 +421,10 @@ let decodeNegativeObservation (document: JsonValue) : Result<NegativeObservation
             |> Result.bind (function
                 | None
                 | Some JNull -> Ok None
-                | Some(JString value) -> Ok(Some value)
-                | Some other -> Error(MalformedDocument(TypeMismatch("$.query", "string or null", Json.kind other))))
+                | Some value ->
+                    asString "$.query" value
+                    |> Result.mapError MalformedDocument
+                    |> Result.map Some)
 
         let stateReference = requiredString "stateReference" document
         let exclusions = decodeStringList "exclusions" document
