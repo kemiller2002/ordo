@@ -142,9 +142,9 @@ No security/authentication dependency is added.
 
 ## Phase 6 - Negative-knowledge representation decision
 
-Apply DF-SDE-2026-0012 to at least the Strata-style and Time Tracking-style cases.
+**Status: implemented by GH-24.**
 
-Determine whether a common wire value is actually needed.
+EX-SDE-2026-0007 applied DF-SDE-2026-0012 to Strata, Time Tracking, and HelixNote and determined that a small common wire value is justified.
 
 If domain Evidence + scoped coverage carries all required provenance without ambiguity, do not add a new core type.
 
@@ -159,6 +159,15 @@ If a common value is justified, it must preserve:
 - exclusions/errors.
 
 No universal domain result enum is permitted.
+
+The representation decision is DF-SDE-2026-0015:
+
+- `NegativeObservation` is typed content carried by ordinary Evidence;
+- it stores target, scope, method, optional query, observed state reference, exclusions, and errors;
+- Evidence stores identity, source, observed time, and basis;
+- ContextCoverageClaim stores completeness and cites the Evidence;
+- only matching Complete coverage is structurally eligible to support absence;
+- not-compared, not-modelled, failed reads, unsupported/unverifiable states, and domain source omission are deliberately outside the type.
 
 ## Phase 7 - Observation and wire updates
 
