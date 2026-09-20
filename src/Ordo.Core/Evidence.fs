@@ -61,6 +61,144 @@ type Evidence =
       /// The evidence itself, as a wire value.
       Content: Ordo.Core.Json.JsonValue }
 
+
+/// Why the provenance chain of a supplied evidence set is structurally
+/// invalid.
+///
+/// These are integrity failures, not judgments about whether the evidence is
+/// true or persuasive. Ordo only checks whether a Derived record can be
+/// reconstructed from a closed, acyclic set of identified inputs.
+type EvidenceDependencyError =
+    /// Two records claim the same stable identity, so a reference to that id
+    /// is ambiguous before dependency traversal even begins.
+    | DuplicateEvidenceId of EvidenceId
+    /// A requested closure root was not present in the supplied set.
+    | SelectedEvidenceMissing of EvidenceId
+    /// A Derived record names an input that is not present in the supplied
+    /// closed evidence set.
+    | MissingEvidenceDependency of dependent: EvidenceId * missing: EvidenceId
+    /// A Derived-from chain eventually depends on itself. The cycle repeats
+    /// its first id at the end, for example A -> B -> A.
+    | EvidenceDependencyCycle of EvidenceId list
+
+/// Pure validation and closure over EvidenceKind.Derived relationships.
+///
+/// This is deliberately not a general graph abstraction. Correction,
+/// supersession, historical observation and arbitrary domain relationships
+/// have their own semantics and are not inspected here.
+[<RequireQualifiedAccess>]
+module EvidenceDependency =
+
+    let private key (id: EvidenceId) = EvidenceId.value id
+
+    let private dependencies (evidence: Evidence) =
+        match evidence.Kind with
+        | Derived(_, fromEvidence) ->
+            fromEvidence
+            |> List.distinctBy key
+            |> List.sortBy key
+        | Direct
+        | Inferred _ -> []
+
+    let private index (available: Evidence list) =
+        available
+        |> List.fold
+            (fun state evidence ->
+                match state with
+                | Error error -> Error error
+                | Ok byId ->
+                    let evidenceKey = key evidence.Id
+
+                    if Map.containsKey evidenceKey byId then
+                        Error(DuplicateEvidenceId evidence.Id)
+                    else
+                        Ok(Map.add evidenceKey evidence byId))
+            (Ok Map.empty)
+
+    /// Returns the selected evidence and every transitive Derived input.
+    ///
+    /// Ordering is deterministic and dependency-first. Roots, dependencies
+    /// and caller input order cannot change the result order for the same
+    /// identified evidence relation.
+    let closure
+        (available: Evidence list)
+        (selected: EvidenceId list)
+        : Result<Evidence list, EvidenceDependencyError> =
+        index available
+        |> Result.bind (fun byId ->
+            let rec visit
+                (path: string list)
+                (visited: Set<string>)
+                (ordered: Evidence list)
+                (id: EvidenceId)
+                =
+                let evidenceKey = key id
+
+                if Set.contains evidenceKey visited then
+                    Ok(visited, ordered)
+                elif List.contains evidenceKey path then
+                    let cycleKeys =
+                        path
+                        |> List.skipWhile (fun item -> item <> evidenceKey)
+                        |> fun cycle -> cycle @ [ evidenceKey ]
+
+                    let cycle =
+                        cycleKeys
+                        |> List.map (fun item -> (Map.find item byId).Id)
+
+                    Error(EvidenceDependencyCycle cycle)
+                else
+                    match Map.tryFind evidenceKey byId with
+                    | None -> Error(SelectedEvidenceMissing id)
+                    | Some evidence ->
+                        let nextPath = path @ [ evidenceKey ]
+
+                        let rec visitDependencies deps visited ordered =
+                            match deps with
+                            | [] -> Ok(visited, ordered)
+                            | dependency :: rest ->
+                                let dependencyKey = key dependency
+
+                                if not (Map.containsKey dependencyKey byId) then
+                                    Error(MissingEvidenceDependency(evidence.Id, dependency))
+                                else
+                                    match visit nextPath visited ordered dependency with
+                                    | Error error -> Error error
+                                    | Ok(visited, ordered) ->
+                                        visitDependencies rest visited ordered
+
+                        match visitDependencies (dependencies evidence) visited ordered with
+                        | Error error -> Error error
+                        | Ok(visited, ordered) ->
+                            Ok(Set.add evidenceKey visited, evidence :: ordered)
+
+            let roots =
+                selected
+                |> List.distinctBy key
+                |> List.sortBy key
+
+            let rec visitRoots roots visited ordered =
+                match roots with
+                | [] -> Ok(List.rev ordered)
+                | root :: rest ->
+                    match Map.tryFind (key root) byId with
+                    | None -> Error(SelectedEvidenceMissing root)
+                    | Some _ ->
+                        match visit [] visited ordered root with
+                        | Error error -> Error error
+                        | Ok(visited, ordered) ->
+                            visitRoots rest visited ordered
+
+            visitRoots roots Set.empty [])
+
+    /// Validates that the entire supplied evidence set is closed and acyclic
+    /// under Derived-from references.
+    let validateClosedSet (available: Evidence list) : Result<unit, EvidenceDependencyError> =
+        available
+        |> List.map (fun evidence -> evidence.Id)
+        |> closure available
+        |> Result.map (fun _ -> ())
+
 /// A statement that some evidence is required, whether or not it is
 /// available.
 ///
