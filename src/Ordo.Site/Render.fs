@@ -559,6 +559,11 @@ let resolveToken (context: Context) (token: string) : Validation<string> =
     | "diagram" ->
         (match argument with
          | "transition" -> ok (Diagrams.transition ())
+         | "decision" -> ok (Diagrams.decision ())
+         | "evidence-coverage" -> ok (Diagrams.evidenceCoverage ())
+         | "architecture" -> ok (Diagrams.architecture ())
+         | "effect-outcomes" -> ok (Diagrams.effectOutcomes ())
+         | "context" -> ok (Diagrams.contextRouting ())
          | "engineering" -> ok (Diagrams.engineering ())
          | "verification" -> ok (Diagrams.verification ())
          | "lifecycle" -> ok (Diagrams.lifecycle ())
