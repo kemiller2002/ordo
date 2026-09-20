@@ -4,7 +4,7 @@ title: Executable Ordo v0.1
 status: draft
 version: 0.1.0
 created: 2026-09-18
-updated: 2026-09-18
+updated: 2026-09-20
 related_documents:
   - research/decisions/DF-SDE-2026-0006--introduce-executable-ordo-primitives.md
   - docs/architecture/executable-ordo-traceability.md
@@ -270,16 +270,18 @@ proves it.
 
 GH-18 accepted six next-pass semantic requirements after repository-backed validation. They are authoritative requirements, but executable support must remain distinguishable from current v0.1 behavior until implementation completes.
 
-Pending executable changes include:
+Implementation status:
 
-- explicit state-view schema/version identity and insufficiency/version-forward rules;
-- a scoped coverage representation chosen by an implementation comparison;
+- **implemented in GH-20:** explicit state-view schema/version identity, full-view fingerprinting, schema-v1 historical decode, and mechanical refusal of legacy snapshots for new decisions/transitions;
+- pending: a scoped coverage representation chosen by an implementation comparison;
 - Derived-evidence closure and cycle validation;
 - explicit reconciliation-obligation semantics for unknown external effects;
 - public/type-comment clarification of Capability's trust boundary;
 - reusable negative-observation support only if the implementation comparison shows a common wire value is warranted.
 
-The implementation must preserve the existing assembly and Four-Tier boundaries. None of these requirements permits `Ordo.Core` to acquire I/O, provider SDK, persistence, or ROS dependencies.
+GH-20 preserved the existing assembly and Four-Tier boundaries. `Ordo.Core` still acquires no I/O, provider SDK, persistence, or ROS dependency.
+
+State snapshots written under the new semantics carry a domain-owned `StateViewSchema` identity/version. Their fingerprint covers that schema plus the entire canonical selected view. Schema-v1 snapshots remain readable as historical records, re-encode as v1, and are rejected by both new decision construction and transition authorization until state is recaptured under an explicit current schema.
 
 Authoritative semantics: `doctrine/DECISION-AND-EVIDENCE-SEMANTICS.md`.
 Governance decisions: `DF-SDE-2026-0007` through `DF-SDE-2026-0013`.
