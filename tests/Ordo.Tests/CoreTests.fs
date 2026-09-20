@@ -10,6 +10,7 @@ open Ordo.Core.Capability
 open Ordo.Core.Obligation
 open Ordo.Core.Resolution
 open Ordo.Core.StateIdentity
+open Ordo.Core.Transition
 open Ordo.Tests.Fixtures
 
 [<Fact>]
@@ -28,6 +29,15 @@ let ``an identifier refuses the shapes that are usually a defect`` () =
 let ``a version is a positive revision or it is not a version`` () =
     Assert.Equal(Error(VersionNotPositive 0), ContractVersion.create 0)
     Assert.Equal(1, ContractVersion.value (ok (ContractVersion.create 1)))
+
+[<Fact>]
+let ``a state-view schema requires a name and positive version`` () =
+    Assert.Equal(Error StateViewSchemaIdIsEmpty, StateViewSchema.create "" 1)
+    Assert.Equal(Error(StateViewSchemaVersionMustBePositive 0), StateViewSchema.create "state" 0)
+
+    let schema = ok (StateViewSchema.create "state" 2)
+    Assert.Equal("state", StateViewSchema.id schema)
+    Assert.Equal(2, StateViewSchema.version schema)
 
 [<Fact>]
 let ``resolution modes have wire tokens independent of their case names`` () =
@@ -132,6 +142,36 @@ let ``the same view under a different semantic schema is a different state ident
     )
 
 [<Fact>]
+let ``unrelated ambient state does not change identity when the domain selects the same semantic view`` () =
+    let semanticView = JObject [ "status", JString "ready" ]
+
+    let ambientA =
+        JObject
+            [ "semantic", semanticView
+              "browserWidth", JInt 1024L
+              "selectedTab", JString "one" ]
+
+    let ambientB =
+        JObject
+            [ "semantic", semanticView
+              "browserWidth", JInt 1440L
+              "selectedTab", JString "two" ]
+
+    let project =
+        function
+        | JObject members ->
+            members
+            |> List.pick (fun (name, value) -> if name = "semantic" then Some value else None)
+        | _ -> failwith "ambient state was not an object"
+
+    let a = StateSnapshot.take changeSiteViewSchema now (project ambientA)
+    let b = StateSnapshot.take changeSiteViewSchema now (project ambientB)
+
+    Assert.Equal(a.Fingerprint, b.Fingerprint)
+    Assert.Equal(semanticView, a.View)
+    Assert.Equal(semanticView, b.View)
+
+[<Fact>]
 let ``a fingerprint read back from a record must have the shape this build writes`` () =
     let fingerprint = StateFingerprint.ofView changeSiteViewSchema (JString "x")
 
@@ -157,6 +197,36 @@ let ``redacting for a provider does not change which state was judged`` () =
 
     Assert.Equal(Ok None, tryMember "reviewerEmail" providerView)
     Assert.Equal(StateFingerprint.ofView changeSiteViewSchema view, snapshot.Fingerprint)
+
+[<Fact>]
+let ``legacy state cannot authorize a new transition even when its fingerprint matches formed-against`` () =
+    let legacyDocument =
+        JObject
+            [ "schema", JString "ordo.state-snapshot"
+              "schemaVersion", JInt 1L
+              "fingerprint", JString "sha256:e4c13c4401d43136853edf41d4fa114389d5228b7f01ca06038e4ec9b73796ea"
+              "revision", JNull
+              "takenAt", JString(Ordo.Core.Clock.toWire now)
+              "view", JString "legacy" ]
+
+    let legacy =
+        match Ordo.Core.Wire.decodeStateSnapshot legacyDocument with
+        | Ok snapshot -> snapshot
+        | Error error -> failwithf "legacy snapshot fixture failed to decode: %A" error
+
+    let context =
+        { CurrentState = legacy
+          FormedAgainst = legacy.Fingerprint
+          Held = CapabilitySet.empty
+          Available = []
+          Obligations = []
+          Policy = fastPathPolicy.Identity, Ordo.Core.Policy.PolicyAllows
+          Now = now }
+
+    match Transition.evaluate (TransitionRequirement.create "legacy-refusal") context with
+    | TransitionRefused failures ->
+        Assert.Contains(UnversionedCurrentState, failures)
+    | other -> failwithf "expected legacy current state to be refused, got %A" other
 
 [<Fact>]
 let ``json survives a round trip through text`` () =
