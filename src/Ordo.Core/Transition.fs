@@ -243,5 +243,6 @@ module Transition =
         | StaleEvidence _ -> "stale-evidence"
         | WrongEvidenceKind _ -> "wrong-evidence-kind"
         | PolicyRejected _ -> "policy-rejected"
+        | UnversionedCurrentState -> "unversioned-current-state"
         | StaleState _ -> "stale-state"
         | UnsatisfiedObligation _ -> "unsatisfied-obligation"
