@@ -6,6 +6,7 @@ open Xunit
 open Ordo.Core.Json
 open Ordo.Core.Identifiers
 open Ordo.Core.Evidence
+open Ordo.Core.Coverage
 open Ordo.Decisions.Confidence
 open Ordo.Decisions.Contract
 open Ordo.Decisions.Request
@@ -119,6 +120,27 @@ let ``a new decision request refuses structurally invalid derived provenance`` (
     | other -> failwithf "expected invalid derived provenance to be refused, got %A" other
 
 [<Fact>]
+let ``a request rejects a coverage claim whose provenance is not in the request evidence`` () =
+    let scope = ok (CoverageScope.create "chrona.reference-catalog")
+    let absent = ok (EvidenceId.create "reference-pull")
+    let claim = ok (ContextCoverageClaim.create scope Complete [ absent ])
+
+    match
+        DecisionRequest.createWithCoverage
+            (ok (DecisionRequestId.create "coverage-with-gap"))
+            (ok (ResolutionId.create "coverage-with-gap-resolution"))
+            changeClassContract
+            snapshot
+            fullEvidence
+            [ claim ]
+            now
+    with
+    | Error(InvalidCoverageClaims(MissingCoverageProvenance(actualScope, missing))) ->
+        Assert.Equal(scope, actualScope)
+        Assert.Equal(absent, missing)
+    | other -> failwithf "expected missing coverage provenance to be refused, got %A" other
+
+[<Fact>]
 let ``a deprecated contract still answers`` () =
     let deprecated =
         { changeClassContract with
@@ -197,6 +219,7 @@ let ``escalations and failures each keep their own identity`` () =
 let ``every outcome has a distinct wire token and only one yields a decision`` () =
     let outcomes: DecisionOutcome<ChangeClass> list =
         [ InsufficientEvidence []
+          InsufficientCoverage []
           RequiresDeliberation(OutsideContractScope "x")
           RequiresHumanReview(PolicyRequiresPerson "x")
           ProviderFailure(Unavailable "x")
