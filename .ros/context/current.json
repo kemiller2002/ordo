@@ -4,7 +4,7 @@
   "repository": "state-directed-engineering",
   "actor": "ChatGPT",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-09-20T06:11:06.373Z",
+  "updatedAt": "2026-09-20T06:27:29.059Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -555,10 +555,17 @@
     {
       "id": "GH-18",
       "type": "research",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-09-20T06:11:06.373Z"
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "research-record",
+          "path": "research/journals/JR-SDE-2026-0005--ordo-next-pass-requirements-governance.md"
+        }
+      ],
+      "updatedAt": "2026-09-20T06:27:29.059Z",
+      "completedAt": "2026-09-20T06:27:29.059Z",
+      "conclusion": "accepted"
     }
   ]
 }
