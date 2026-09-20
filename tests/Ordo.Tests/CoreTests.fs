@@ -306,22 +306,22 @@ let ``negative observation must be the provenance for the matching coverage scop
     let otherScope = ok (CoverageScope.create "scope-b")
     let observation =
         ok (NegativeObservation.create "target" observedScope "method" None "state-1" [] [])
-    let evidence = evidence "negative" Direct now (Ordo.Core.Wire.encodeNegativeObservation observation)
-    let unrelated = evidence "unrelated" Direct now JNull
+    let negativeEvidence = evidence "negative" Direct now (Ordo.Core.Wire.encodeNegativeObservation observation)
+    let unrelatedEvidence = evidence "unrelated" Direct now JNull
 
-    let wrongScope = ok (ContextCoverageClaim.create otherScope Complete [ evidence.Id ])
+    let wrongScope = ok (ContextCoverageClaim.create otherScope Complete [ negativeEvidence.Id ])
 
-    match NegativeKnowledge.supportsAbsence evidence wrongScope observation with
+    match NegativeKnowledge.supportsAbsence negativeEvidence wrongScope observation with
     | Error(NegativeObservationScopeMismatch(actual, coverage)) ->
         Assert.Equal(observedScope, actual)
         Assert.Equal(otherScope, coverage)
     | other -> failwithf "expected a scope mismatch, got %A" other
 
-    let wrongProvenance = ok (ContextCoverageClaim.create observedScope Complete [ unrelated.Id ])
+    let wrongProvenance = ok (ContextCoverageClaim.create observedScope Complete [ unrelatedEvidence.Id ])
 
     Assert.Equal(
-        Error(NegativeObservationNotCoverageProvenance evidence.Id),
-        NegativeKnowledge.supportsAbsence evidence wrongProvenance observation
+        Error(NegativeObservationNotCoverageProvenance negativeEvidence.Id),
+        NegativeKnowledge.supportsAbsence negativeEvidence wrongProvenance observation
     )
 
 [<Fact>]
