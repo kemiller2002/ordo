@@ -147,6 +147,17 @@ summary: What Ordo is, how it works, and what it changes for human and AI-assist
       </p>
     </div>
   </div>
+
+  <div class="diagram-intro">
+    <p class="card-kicker">A concrete state example</p>
+    <h3>Explicit state turns business rules into visible routes.</h3>
+    <p>
+      The time-entry experiment is a small example: three named states, four legal transitions,
+      and a terminal state with no route out. The important part is not the domain. It is that the
+      legal graph is inspectable instead of reconstructed from incidental fields and conditionals.
+    </p>
+  </div>
+  {{diagram:lifecycle}}
 </section>
 
 <section>
@@ -160,28 +171,7 @@ summary: What Ordo is, how it works, and what it changes for human and AI-assist
     </div>
   </div>
 
-  <div class="decision-flow">
-    <div class="flow-step">
-      <span class="flow-index">State</span>
-      <h3>Select the semantically complete view</h3>
-      <p>The domain projects exactly the authoritative facts that can change the legal outcome.</p>
-    </div>
-    <div class="flow-step">
-      <span class="flow-index">Evidence</span>
-      <h3>Establish evidence and scoped coverage</h3>
-      <p>Required evidence, provenance, and Complete coverage must exist before the decision proceeds.</p>
-    </div>
-    <div class="flow-step">
-      <span class="flow-index">Authority</span>
-      <h3>Derive the legal choice space</h3>
-      <p>Capabilities, obligations, policy, and transition rules determine which choices are actually legal.</p>
-    </div>
-    <div class="flow-step">
-      <span class="flow-index">Outcome</span>
-      <h3>Interpret the effect honestly</h3>
-      <p>Success, failure, and unknown remain distinct. Unknown state-changing effects create reconciliation work.</p>
-    </div>
-  </div>
+  {{diagram:decision}}
 
   <div class="note">
     <p>
@@ -203,28 +193,7 @@ summary: What Ordo is, how it works, and what it changes for human and AI-assist
     </div>
   </div>
 
-  <div class="tier-grid">
-    <div class="card">
-      <p class="card-kicker">Tier One · Semantic Model</p>
-      <h3>What can be true?</h3>
-      <p>Domain values, closed alternatives, evidence, coverage, capabilities, obligations, and uncertainty.</p>
-    </div>
-    <div class="card">
-      <p class="card-kicker">Tier Two · Domain Execution</p>
-      <h3>What legal change may happen?</h3>
-      <p>Transitions, guards, policy, invariants, decisions, requested effects, and interpretation of effect results.</p>
-    </div>
-    <div class="card">
-      <p class="card-kicker">Tier Three · Application / Orchestration</p>
-      <h3>How is the use case coordinated?</h3>
-      <p>Use-case flow, projections, boundary translation, and coordination without becoming a second semantic authority.</p>
-    </div>
-    <div class="card">
-      <p class="card-kicker">Tier Four · Host / External Effects</p>
-      <h3>What actually happened outside the domain?</h3>
-      <p>Database, network, browser, filesystem, clock, queues, providers, and other external I/O.</p>
-    </div>
-  </div>
+  {{diagram:architecture}}
 
   <p class="architecture-note">
     Dependencies point toward the semantic core. ROS observes engineering execution from outside
@@ -275,6 +244,8 @@ summary: What Ordo is, how it works, and what it changes for human and AI-assist
     </div>
   </div>
 
+  {{diagram:context}}
+
   <div class="note">
     <p>
       Lower cost, fewer tokens, lower latency, and more safely autonomous work are current
@@ -298,6 +269,8 @@ summary: What Ordo is, how it works, and what it changes for human and AI-assist
   </div>
 
   {{metrics:M-GF2B-OVERLAP,M-TE-JS-LANGUAGE,M-GF2A-AC}}
+
+  {{diagram:verification}}
 
   <div class="note">
     <p>
