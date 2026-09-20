@@ -264,5 +264,32 @@
     "title": "Adopt scoped negative-knowledge discipline and refuse unqualified not-found claims",
     "type": "decision-record",
     "updated": "2026-09-20"
+  },
+  {
+    "created": "2026-09-20",
+    "id": "DF-SDE-2026-0013",
+    "path": "research/decisions/DF-SDE-2026-0013--separate-sde-release-and-ordo-wire-versioning.md",
+    "related_documents": [
+      "research/packages/RP-SDE-2026-0004--ordo-next-pass-requirements.md",
+      "doctrine/DECISION-AND-EVIDENCE-SEMANTICS.md",
+      "docs/releasing.md",
+      "distribution/DISTRIBUTION-MAP.json",
+      "docs/architecture/ordo-next-pass-implementation-plan.md"
+    ],
+    "status": "accepted",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "architecture",
+      "ordo",
+      "sde",
+      "gh-18",
+      "distribution",
+      "versioning",
+      "migration"
+    ],
+    "title": "Release governed Ordo methodology additively while versioning executable wire semantics independently",
+    "type": "decision-record",
+    "updated": "2026-09-20"
   }
 ]
