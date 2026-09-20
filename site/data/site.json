@@ -1,13 +1,13 @@
 {
   "name": "Ordo",
-  "tagline": "State-Directed Engineering — Echelon Foundry",
-  "description": "AI writes plausible code faster than teams can absorb it. Ordo is Echelon Foundry's State-Directed Engineering methodology: it makes state, legal actions, ownership and verification explicit, so correctness stops depending on what a human or an agent infers.",
+  "tagline": "State-Directed Engineering · Echelon Foundry",
+  "description": "Ordo is Echelon Foundry's State-Directed Engineering methodology. It makes state, evidence, legal actions, obligations, uncertainty, and external-effect outcomes explicit so humans and AI agents can make bounded changes without reconstructing the system's meaning from incidental code.",
   "baseUrl": "https://ordo.echelonfoundry.com",
   "pathPrefix": "",
   "customDomain": "ordo.echelonfoundry.com",
   "sourceRepository": "kemiller2002/state-directed-engineering",
   "sourceUrl": "https://github.com/kemiller2002/state-directed-engineering",
-  "footerNote": "Ordo is Echelon Foundry's State-Directed Engineering methodology. Every number on this site comes from a recorded measurement, and every limit on those measurements is published alongside them.",
+  "footerNote": "Ordo is Echelon Foundry's State-Directed Engineering methodology. The public site separates implemented semantics, measured evidence, engineering guidance, and open research questions so claims stay inside what the evidence supports.",
   "copyright": "© Echelon Foundry",
   "nav": [
     {
@@ -19,7 +19,7 @@
       "path": "/how-it-works/"
     },
     {
-      "label": "Results",
+      "label": "Evidence",
       "path": "/results/"
     },
     {
