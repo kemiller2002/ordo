@@ -4,7 +4,7 @@ title: Executable Ordo v0.1 requirement traceability
 status: draft
 version: 0.1.0
 created: 2026-09-18
-updated: 2026-09-18
+updated: 2026-09-20
 related_documents:
   - docs/architecture/executable-ordo.md
   - research/decisions/DF-SDE-2026-0006--introduce-executable-ordo-primitives.md
@@ -92,6 +92,22 @@ assembly-level check behind it.
 | ORDO-0205, 3-073, 3-075, 3-076 — functional core, async and cancellation only at the boundary | Implemented | only `Resolve`, `Replay` and the adapter are asynchronous | `SliceTests` — cancellation |
 | ORDO-4101, 4102, 3-077 — no reflection-heavy design | Already satisfied | no reflection outside the architecture tests | `ArchitectureTests` |
 | ORDO-4201, 3-238 — no paid service for build or test | Implemented | the live test skips itself | the suite |
+
+## GH-20 next-pass implementation — versioned state identity
+
+Authority: `DF-SDE-2026-0007`, `DF-SDE-2026-0013`.
+
+| Requirement | Status | Implementation | Test |
+|---|---|---|---|
+| Domain-defined state-view schema identity/version | Implemented | `StateViewSchema` in `src/Ordo.Core/StateIdentity.fs` | `CoreTests` — constructor rules and schema-version identity |
+| Fingerprint entire selected view plus schema identity/version | Implemented | `StateFingerprint.ofView` hashes the canonical schema+view envelope | `CoreTests` — field-order stability, relevant changes, schema changes, ambient-state projection |
+| No selective invalidation/fingerprinting | Implemented by absence | Ordo receives a domain-selected view and hashes all of it | `CoreTests` — ambient state outside the projected view has no effect |
+| State-snapshot wire v2 | Implemented | `StateSnapshotSchemaVersion = 2`; explicit `viewSchema` member | `WireTests` — v2 round trip and tamper rejection |
+| Immutable v1 historical readability | Implemented | v1 decoder verifies the original view-only fingerprint and returns `ViewSchema=None`; re-encoding preserves v1 | `WireTests` — legacy fixture |
+| Legacy history cannot authorize new work | Implemented | `DecisionRequest.create` refuses unversioned state; `Transition.evaluate` emits `UnversionedCurrentState` | `WireTests`, `CoreTests` |
+| Unrelated wire records remain schema v1 | Implemented | state snapshots version independently; evidence/obligation wire schema remains v1 | `WireTests` — existing schema-version refusal test remains scoped to `SchemaVersion` |
+
+The migration is intentionally non-destructive: no v1 record is rewritten or re-fingerprinted under v2 semantics. A new action requires recapturing current state with a current `StateViewSchema`.
 
 ## Class B — before ROS integration
 
