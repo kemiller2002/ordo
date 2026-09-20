@@ -335,5 +335,30 @@
     "title": "State structure did not reduce decision points in domain source — the apparent reduction was a test-authoring artifact",
     "type": "evidence",
     "updated": "2026-09-17"
+  },
+  {
+    "confidence": "high",
+    "contradicts": [],
+    "created_by_agent": "ChatGPT",
+    "evidence_type": "primary",
+    "id": "EV-SDE-2026-0011",
+    "path": "research/evidence/EV-SDE-2026-0011--ordo-next-pass-pre-upgrade-baseline.md",
+    "related_theories": [],
+    "research_area": "state-directed-engineering",
+    "retrieved": "2026-09-20",
+    "source_author": "GitHub Actions",
+    "source_date": "2026-09-20",
+    "source_title": "GitHub Actions baseline for executable Ordo and @echelon-foundry/sde",
+    "source_uri": "https://github.com/kemiller2002/state-directed-engineering/actions/runs/35493473648",
+    "supports": [],
+    "tags": [
+      "ordo",
+      "baseline",
+      "gh-18",
+      "tests",
+      "distribution",
+      "four-tier"
+    ],
+    "title": "Pre-upgrade executable Ordo and SDE distribution baseline for GH-18"
   }
 ]
