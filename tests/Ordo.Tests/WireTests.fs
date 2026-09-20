@@ -274,6 +274,7 @@ let ``every obligation kind has a distinct stable token`` () =
           HumanReview "x"
           RunVerification "x"
           InvestigateFailure "x"
+          ReconcileExternalEffect (ok (ExternalEffectId.create "effect-x"))
           Custom "x" ]
 
     for kind in kinds do
@@ -293,6 +294,15 @@ let ``every obligation kind has a distinct stable token`` () =
             | _ -> failwith "an obligation kind did not encode as an object")
 
     Assert.Equal(List.length tokens, tokens |> List.distinct |> List.length)
+
+[<Fact>]
+let ``reconciliation obligation wire preserves external effect identity`` () =
+    let effectId = ok (ExternalEffectId.create "github-write-42")
+    let kind = ReconcileExternalEffect effectId
+
+    match decodeObligationKind (encodeObligationKind kind) with
+    | Ok(ReconcileExternalEffect decoded) -> Assert.Equal(effectId, decoded)
+    | other -> failwithf "expected reconciliation obligation round trip, got %A" other
 
 [<Fact>]
 let ``wire tokens do not follow the F# case names they were written from`` () =

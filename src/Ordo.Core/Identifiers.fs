@@ -136,6 +136,21 @@ type ObligationId =
 
     override this.ToString() = this.Value
 
+/// Identity of one attempted external effect.
+///
+/// This identifies the semantic operation whose outcome may need
+/// reconciliation. It is not automatically an idempotency key; whether the
+/// external contract treats it that way is a separate fact.
+type ExternalEffectId =
+    private
+    | ExternalEffectId of string
+
+    member this.Value =
+        let (ExternalEffectId value) = this
+        value
+
+    override this.ToString() = this.Value
+
 /// Identity of an authority to request or perform something. Capabilities
 /// are named, granted and checked; they are never derived from confidence
 /// or from provider identity.
@@ -204,6 +219,13 @@ module ObligationId =
         validate raw |> Result.map ObligationId
 
     let value (id: ObligationId) = id.Value
+
+[<RequireQualifiedAccess>]
+module ExternalEffectId =
+    let create (raw: string) : Result<ExternalEffectId, IdentifierError> =
+        validate raw |> Result.map ExternalEffectId
+
+    let value (id: ExternalEffectId) = id.Value
 
 [<RequireQualifiedAccess>]
 module CapabilityId =

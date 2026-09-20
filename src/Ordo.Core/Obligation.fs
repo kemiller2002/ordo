@@ -22,6 +22,10 @@ type ObligationKind =
     | HumanReview of question: string
     | RunVerification of what: string
     | InvestigateFailure of what: string
+    /// The external effect may or may not have happened. Before later work
+    /// that depends on the answer, observe the external system and settle
+    /// this obligation explicitly.
+    | ReconcileExternalEffect of ExternalEffectId
     | Custom of label: string
 
 /// Where an obligation stands.

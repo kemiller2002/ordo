@@ -122,8 +122,11 @@ picking one meaning.
 - **Derived-evidence closure** - the transitive input set reached through
   `EvidenceKind.Derived` references. This derivation relation must be acyclic.
 - **Unknown effect outcome** - an external effect was attempted but whether it
-  occurred cannot yet be established. It is not failure and may require
-  reconciliation before retry or subsequent action.
+  occurred cannot yet be established. It is not failure and creates an
+  explicit reconciliation obligation.
+- **Retry safety** - a host-supplied statement that the actual external
+  contract makes repeating an Unknown attempt semantically safe. Ordo never
+  infers it, and it never removes the reconciliation obligation.
 - **Ordo Capability** - a host/application-supplied semantic authority
   prerequisite. It is not an authentication token, credential, object
   capability, signature, or identity proof.

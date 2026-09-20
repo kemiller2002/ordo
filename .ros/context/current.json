@@ -4,7 +4,7 @@
   "repository": "state-directed-engineering",
   "actor": "ChatGPT",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-09-20T11:58:41.887Z",
+  "updatedAt": "2026-09-20T12:08:29.554Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -668,6 +668,40 @@
       ],
       "updatedAt": "2026-09-20T11:58:41.887Z",
       "completedAt": "2026-09-20T11:58:41.887Z"
+    },
+    {
+      "id": "GH-23",
+      "type": "task",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ExternalEffect.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/Obligation.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/Capability.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/Wire.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/CoreTests.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/WireTests.fs"
+        }
+      ],
+      "updatedAt": "2026-09-20T12:08:29.554Z",
+      "completedAt": "2026-09-20T12:08:29.554Z"
     }
   ]
 }

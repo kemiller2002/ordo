@@ -9,6 +9,7 @@ open Ordo.Core.Evidence
 open Ordo.Core.Coverage
 open Ordo.Core.Capability
 open Ordo.Core.Obligation
+open Ordo.Core.ExternalEffect
 open Ordo.Core.Resolution
 open Ordo.Core.StateIdentity
 open Ordo.Core.Transition
@@ -193,11 +194,11 @@ let ``Strata-style coverage keeps complete and partial dimensions separate`` () 
 let ``Time Tracking unreadable reference catalog is Unknown rather than empty or Partial`` () =
     let scope = ok (CoverageScope.create "chrona.reference-catalog")
     let failedPull = evidence "reference-pull" Direct now (JString "network error while reading reference.json")
-    let claim = ok (ContextCoverageClaim.create scope Unknown [ failedPull.Id ])
+    let claim = ok (ContextCoverageClaim.create scope CoverageStatus.Unknown [ failedPull.Id ])
     let requirement = CoverageRequirement.complete scope "the current reference catalog must be established"
 
     match ContextCoverage.checkRequirement [ claim ] requirement with
-    | Some(CoverageUnknown(_, actual)) -> Assert.Equal(Unknown, actual.Status)
+    | Some(CoverageUnknown(_, actual)) -> Assert.Equal(CoverageStatus.Unknown, actual.Status)
     | other -> failwithf "expected Unknown reference-catalog coverage, got %A" other
 
 [<Fact>]
@@ -222,6 +223,47 @@ let ``a capability set answers only what it was granted`` () =
     Assert.True(CapabilitySet.grants authorizeVerificationPath.Id held)
     Assert.False(CapabilitySet.grants other held)
     Assert.Equal<CapabilityId list>([ other ], CapabilitySet.missing [ authorizeVerificationPath.Id; other ] held)
+
+[<Fact>]
+let ``unknown external effect creates an outstanding reconciliation obligation`` () =
+    let effectId = ok (ExternalEffectId.create "github-write-42")
+    let obligationId = ok (ObligationId.create "reconcile-github-write-42")
+
+    match ExternalEffect.recordOutcome obligationId effectId now (Unknown "connection dropped after send") with
+    | ReconciliationRequired(Unknown reason, obligation) ->
+        Assert.Equal("connection dropped after send", reason)
+        Assert.True(Obligation.isOutstanding obligation)
+        Assert.Equal(ReconcileExternalEffect effectId, obligation.Kind)
+    | other -> failwithf "expected reconciliation-required outcome, got %A" other
+
+[<Fact>]
+let ``known success and known failure do not invent reconciliation work`` () =
+    let effectId = ok (ExternalEffectId.create "effect-1")
+    let obligationId = ok (ObligationId.create "ob-1")
+
+    match ExternalEffect.recordOutcome obligationId effectId now Succeeded with
+    | Settled Succeeded -> ()
+    | other -> failwithf "expected settled success, got %A" other
+
+    match ExternalEffect.recordOutcome obligationId effectId now (Failed "definite rejection") with
+    | Settled(Failed "definite rejection") -> ()
+    | other -> failwithf "expected settled failure, got %A" other
+
+[<Fact>]
+let ``retry before reconciliation is never inferred and never removes the obligation`` () =
+    let effectId = ok (ExternalEffectId.create "create-only-write")
+    let obligationId = ok (ObligationId.create "reconcile-create-only-write")
+
+    Assert.False(ExternalEffect.mayRepeatBeforeReconciliation RetrySafetyNotEstablished)
+
+    Assert.True(
+        ExternalEffect.mayRepeatBeforeReconciliation
+            (RetrySafeByExternalContract "stable create-only operation identity")
+    )
+
+    match ExternalEffect.recordOutcome obligationId effectId now (Unknown "response lost") with
+    | ReconciliationRequired(_, obligation) -> Assert.True(Obligation.isOutstanding obligation)
+    | other -> failwithf "retry safety must not erase reconciliation, got %A" other
 
 [<Fact>]
 let ``an obligation records how it was discharged`` () =
@@ -354,6 +396,40 @@ let ``legacy state cannot authorize a new transition even when its fingerprint m
     | TransitionRefused failures ->
         Assert.Contains(UnversionedCurrentState, failures)
     | other -> failwithf "expected legacy current state to be refused, got %A" other
+
+[<Fact>]
+let ``outstanding reconciliation can block a later transition until explicitly discharged`` () =
+    let effectId = ok (ExternalEffectId.create "deploy-42")
+    let obligationId = ok (ObligationId.create "reconcile-deploy-42")
+
+    let obligation =
+        match ExternalEffect.recordOutcome obligationId effectId now (Unknown "deployment response lost") with
+        | ReconciliationRequired(_, obligation) -> obligation
+        | other -> failwithf "expected reconciliation obligation, got %A" other
+
+    let requirement =
+        TransitionRequirement.create "publish-follow-up"
+        |> TransitionRequirement.requiringObligations [ obligationId ]
+
+    let baseContext =
+        { CurrentState = snapshotOf (JString "current")
+          FormedAgainst = (snapshotOf (JString "current")).Fingerprint
+          Held = CapabilitySet.empty
+          Available = []
+          Obligations = [ obligation ]
+          Policy = fastPathPolicy.Identity, Ordo.Core.Policy.PolicyAllows
+          Now = now }
+
+    match Transition.evaluate requirement baseContext with
+    | TransitionRefused failures ->
+        Assert.Contains(UnsatisfiedObligation [ obligationId ], failures)
+    | other -> failwithf "expected reconciliation obligation to block transition, got %A" other
+
+    let reconciled = obligation |> Obligation.satisfy "observed external system" (now.AddMinutes 1.0)
+
+    match Transition.evaluate requirement { baseContext with Obligations = [ reconciled ] } with
+    | TransitionAllowed _ -> ()
+    | other -> failwithf "expected reconciled obligation to allow transition, got %A" other
 
 [<Fact>]
 let ``json survives a round trip through text`` () =

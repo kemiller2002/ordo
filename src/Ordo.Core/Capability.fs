@@ -10,8 +10,13 @@ module Ordo.Core.Capability
 
 open Ordo.Core.Identifiers
 
-/// A named authority. The name is the whole of it — capabilities are
-/// granted and checked, never computed.
+/// A host/application-supplied semantic authority prerequisite.
+///
+/// This is not an authentication token, credential, signature, object
+/// capability, identity proof, or cryptographic grant. The host establishes
+/// identity and authorization by its own security mechanism and supplies the
+/// semantic capability set to Ordo. Capabilities are granted and checked,
+/// never computed from confidence, evidence, provider identity, or content.
 type Capability = { Id: CapabilityId; Description: string }
 
 /// The set of capabilities held by whoever is acting.

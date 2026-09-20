@@ -25,6 +25,7 @@
     <Compile Include="Coverage.fs" />
     <Compile Include="Capability.fs" />
     <Compile Include="Obligation.fs" />
+    <Compile Include="ExternalEffect.fs" />
     <Compile Include="StateIdentity.fs" />
     <Compile Include="Policy.fs" />
     <Compile Include="Transition.fs" />
