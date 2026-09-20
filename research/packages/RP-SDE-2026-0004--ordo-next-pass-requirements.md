@@ -4,11 +4,11 @@ title: Ordo next-pass validated requirements intake
 research_area: state-directed-engineering
 discipline: [software-engineering-methodology, software-architecture, agentic-engineering]
 author_agent: ChatGPT
-version: 0.1.0
-status: review
+version: 1.0.0
+status: accepted
 confidence:
   label: high
-  rationale: Derived from deep literature review and repository-backed validation across Chrona, Time Entry State Machine, Time Tracking Application, Strata, and HelixNote; executable baselines still need to be run before implementation.
+  rationale: Derived from deep literature review and repository-backed validation across Chrona, Time Entry State Machine, Time Tracking Application, Strata, and HelixNote; the pre-upgrade executable baseline is recorded in EV-SDE-2026-0011 and each production requirement now has an accepted governance decision.
 completion:
   state: complete
   estimate: 1.0
@@ -24,11 +24,24 @@ created: 2026-09-20
 updated: 2026-09-20
 ---
 
-# Intake status
+# Governance status
 
-This package is an **incoming validated requirements package**, not yet canonical doctrine or executable-Ordo authority.
+This package is **accepted as the governed requirements intake and provenance record** for GH-18. Acceptance of the package does not mean its original wording became executable code unchanged.
 
-It must go through this repository's normal governance, decision, baseline, acceptance-criteria, implementation, verification, distribution, and release process before any item becomes authoritative.
+The production requirements were governed independently:
+
+| Requirement | Disposition | Decision |
+|---|---|---|
+| ORDO-NEXT-01 minimal state view | accepted with versioning/insufficiency tightening | DF-SDE-2026-0007 |
+| ORDO-NEXT-02 scoped coverage | accepted semantics; executable representation remains an implementation decision | DF-SDE-2026-0008 |
+| ORDO-NEXT-03 evidence closure | accepted, explicitly limited to Derived-from topology | DF-SDE-2026-0009 |
+| ORDO-NEXT-04 unknown effects | accepted with explicit reconciliation and proven-idempotency exception | DF-SDE-2026-0010 |
+| ORDO-NEXT-05 capability terminology | accepted | DF-SDE-2026-0011 |
+| ORDO-NEXT-06 negative knowledge | accepted discipline; no universal enum required | DF-SDE-2026-0012 |
+| ORDO-RESEARCH-01 assumptions | remains research/prototype only | deferred |
+| ORDO-RESEARCH-02 hypothetical snapshot | remains deferred until a real application requires it | deferred |
+
+The accepted semantic authority is now `doctrine/DECISION-AND-EVIDENCE-SEMANTICS.md` plus the six decision records above. Executable support is a subsequent implementation step.
 
 The original research copy remains in `kemiller2002/research-documents` at commit `6f69ad93f5f410d19499cce9d49c5e15888b67aa` for provenance.
 
