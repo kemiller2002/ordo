@@ -80,11 +80,11 @@ module DecisionRequest =
             | Ok () ->
                 Ok
                     { Id = id
-                  Resolution = resolution
-                  Correlation = None
-                  CausedBy = None
-                  Contract = contract
-                  State = state
+                      Resolution = resolution
+                      Correlation = None
+                      CausedBy = None
+                      Contract = contract
+                      State = state
                       Evidence = evidence
                       CreatedAt = now }
 
