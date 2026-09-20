@@ -90,10 +90,10 @@ let ``an inference is never recorded as a direct observation`` () =
 [<Fact>]
 let ``derived evidence closure is dependency-first and independent of caller order`` () =
     let a = evidence "a" Direct now (JString "a")
-    let b = evidence "b" (Derived("b-from-a", [ a.Id ])) now (JString "b")
-    let c = evidence "c" (Derived("c-from-b", [ b.Id ])) now (JString "c")
+    let b = evidence "b" (EvidenceKind.Derived("b-from-a", [ a.Id ])) now (JString "b")
+    let c = evidence "c" (EvidenceKind.Derived("c-from-b", [ b.Id ])) now (JString "c")
 
-    let ids items = items |> List.map (fun item -> EvidenceId.value item.Id)
+    let ids (items: Evidence list) = items |> List.map (fun item -> EvidenceId.value item.Id)
 
     match EvidenceDependency.closure [ c; a; b ] [ c.Id ] with
     | Ok closure -> Assert.Equal<string list>([ "a"; "b"; "c" ], ids closure)
@@ -102,11 +102,11 @@ let ``derived evidence closure is dependency-first and independent of caller ord
 [<Fact>]
 let ``shared derived dependencies are legal and closure ordering is deterministic`` () =
     let a = evidence "a" Direct now (JString "shared")
-    let b = evidence "b" (Derived("b-from-a", [ a.Id ])) now (JString "b")
-    let c = evidence "c" (Derived("c-from-a", [ a.Id ])) now (JString "c")
-    let d = evidence "d" (Derived("d-from-c-and-b", [ c.Id; b.Id ])) now (JString "d")
+    let b = evidence "b" (EvidenceKind.Derived("b-from-a", [ a.Id ])) now (JString "b")
+    let c = evidence "c" (EvidenceKind.Derived("c-from-a", [ a.Id ])) now (JString "c")
+    let d = evidence "d" (EvidenceKind.Derived("d-from-c-and-b", [ c.Id; b.Id ])) now (JString "d")
 
-    let ids items = items |> List.map (fun item -> EvidenceId.value item.Id)
+    let ids (items: Evidence list) = items |> List.map (fun item -> EvidenceId.value item.Id)
 
     let first = EvidenceDependency.closure [ d; c; a; b ] [ d.Id ]
     let second = EvidenceDependency.closure [ b; a; d; c ] [ d.Id ]
@@ -120,7 +120,7 @@ let ``shared derived dependencies are legal and closure ordering is deterministi
 [<Fact>]
 let ``a derived record naming evidence outside the closed set is refused`` () =
     let missing = ok (EvidenceId.create "missing")
-    let derived = evidence "derived" (Derived("needs-missing", [ missing ])) now JNull
+    let derived = evidence "derived" (EvidenceKind.Derived("needs-missing", [ missing ])) now JNull
 
     match EvidenceDependency.validateClosedSet [ derived ] with
     | Error(MissingEvidenceDependency(dependent, absent)) ->
@@ -131,7 +131,7 @@ let ``a derived record naming evidence outside the closed set is refused`` () =
 [<Fact>]
 let ``a derived record cannot depend on itself`` () =
     let self = ok (EvidenceId.create "self")
-    let derived = evidence "self" (Derived("self-reference", [ self ])) now JNull
+    let derived = evidence "self" (EvidenceKind.Derived("self-reference", [ self ])) now JNull
 
     match EvidenceDependency.validateClosedSet [ derived ] with
     | Error(EvidenceDependencyCycle cycle) ->
@@ -144,9 +144,9 @@ let ``a multi-node derived evidence cycle is refused with its path`` () =
     let bId = ok (EvidenceId.create "b")
     let cId = ok (EvidenceId.create "c")
 
-    let a = evidence "a" (Derived("a-from-b", [ bId ])) now JNull
-    let b = evidence "b" (Derived("b-from-c", [ cId ])) now JNull
-    let cEvidence = evidence "c" (Derived("c-from-a", [ aId ])) now JNull
+    let a = evidence "a" (EvidenceKind.Derived("a-from-b", [ bId ])) now JNull
+    let b = evidence "b" (EvidenceKind.Derived("b-from-c", [ cId ])) now JNull
+    let cEvidence = evidence "c" (EvidenceKind.Derived("c-from-a", [ aId ])) now JNull
 
     match EvidenceDependency.validateClosedSet [ cEvidence; b; a ] with
     | Error(EvidenceDependencyCycle cycle) ->
