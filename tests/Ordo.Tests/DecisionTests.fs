@@ -102,7 +102,7 @@ let ``a retired contract stops receiving questions but stays readable`` () =
 [<Fact>]
 let ``a new decision request refuses structurally invalid derived provenance`` () =
     let missing = ok (EvidenceId.create "missing-input")
-    let malformed = evidence "derived-with-gap" (Derived("gap", [ missing ])) now JNull
+    let malformed = evidence "derived-with-gap" (EvidenceKind.Derived("gap", [ missing ])) now JNull
 
     match
         DecisionRequest.create
