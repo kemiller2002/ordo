@@ -85,7 +85,7 @@ Coverage and negative knowledge also recur, but their exact executable represent
 
 ## Decisions and rationale
 
-See DF-SDE-2026-0007 through DF-SDE-2026-0012.
+See DF-SDE-2026-0007 through DF-SDE-2026-0013.
 
 ## Failures and dead ends
 
@@ -107,9 +107,9 @@ Confidence increased that the next pass can remain small and additive. The main 
 
 ## Highest-value next step
 
-Create the implementation work item(s) under ROS with acceptance tests mapped directly to DF-SDE-2026-0007 through DF-SDE-2026-0012.
+Create the implementation work item(s) under ROS with acceptance tests mapped directly to DF-SDE-2026-0007 through DF-SDE-2026-0013 and `docs/architecture/ordo-next-pass-implementation-plan.md`.
 
-The implementation should start with state-view identity/versioning and evidence closure, then run the coverage representation spike before freezing its public type.
+The implementation should start with state-view identity/versioning and evidence closure, then run the coverage representation spike before freezing its public type. DF-SDE-2026-0013 sets the target SDE distribution release to 1.3.0 and requires independent Ordo wire-schema evolution rather than rewriting v1 history.
 
 ## Governance validation handoff
 
