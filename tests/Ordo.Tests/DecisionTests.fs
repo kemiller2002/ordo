@@ -5,6 +5,7 @@ open System
 open Xunit
 open Ordo.Core.Json
 open Ordo.Core.Identifiers
+open Ordo.Core.Evidence
 open Ordo.Decisions.Confidence
 open Ordo.Decisions.Contract
 open Ordo.Decisions.Request
@@ -97,6 +98,25 @@ let ``a retired contract stops receiving questions but stays readable`` () =
     // record with.
     Assert.Equal(changeClassContract.Question, retired.Question)
     Assert.Equal<string list>(ChoiceSpace.tokens changeClassContract.Choices, ChoiceSpace.tokens retired.Choices)
+
+[<Fact>]
+let ``a new decision request refuses structurally invalid derived provenance`` () =
+    let missing = ok (EvidenceId.create "missing-input")
+    let malformed = evidence "derived-with-gap" (Derived("gap", [ missing ])) now JNull
+
+    match
+        DecisionRequest.create
+            (ok (DecisionRequestId.create "bad-provenance"))
+            (ok (ResolutionId.create "bad-provenance-resolution"))
+            changeClassContract
+            snapshot
+            (malformed :: fullEvidence)
+            now
+    with
+    | Error(InvalidEvidenceDependencies(MissingEvidenceDependency(dependent, absent))) ->
+        Assert.Equal(malformed.Id, dependent)
+        Assert.Equal(missing, absent)
+    | other -> failwithf "expected invalid derived provenance to be refused, got %A" other
 
 [<Fact>]
 let ``a deprecated contract still answers`` () =
