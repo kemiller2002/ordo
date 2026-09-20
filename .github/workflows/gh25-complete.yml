@@ -1,0 +1,43 @@
+name: GH-25 ROS completion
+
+on:
+  push:
+    branches:
+      - work/gh-25-release-integration
+
+permissions:
+  contents: write
+
+jobs:
+  complete:
+    if: ${{ !contains(github.event.head_commit.message, '[gh25-complete]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Complete GH-25 through ROS
+        run: |
+          ./ros work context GH-25
+          ./ros work complete GH-25 --actor ChatGPT --conclusion implemented \
+            --evidence implementation=src/Ordo.Decisions/Observation.fs \
+            --evidence implementation=src/Ordo.Decisions/Resolve.fs \
+            --evidence tests=tests/Ordo.Tests/SliceTests.fs \
+            --evidence implementation=distribution/DISTRIBUTION-MAP.json \
+            --evidence implementation=distribution/package.json \
+            --evidence tests=tests/Sde.Core.Tests/LifecycleTests.fs \
+            --evidence tests=distribution/scripts/test-package.mjs \
+            --evidence documentation=docs/architecture/executable-ordo-traceability.md \
+            --evidence documentation=docs/releases/SDE-1.3.0-ROS-HANDOFF.md
+          ./ros validate
+      - name: Commit ROS-generated completion and remove temporary workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/gh25-complete.yml
+          git add .ros/context/current.json .ros/events/events.jsonl
+          git commit -m "chore: complete GH-25 under ROS [gh25-complete]"
+          git push
