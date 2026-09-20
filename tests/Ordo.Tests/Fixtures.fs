@@ -81,7 +81,9 @@ let siteState (path: string) (verification: SiteVerification) (revision: string)
           "verification", JString(siteVerificationToken verification)
           "revision", JString revision ]
 
-let snapshotOf view = StateSnapshot.take now view
+let changeSiteViewSchema = ok (StateViewSchema.create "sde.change-site-state" 1)
+
+let snapshotOf view = StateSnapshot.take changeSiteViewSchema now view
 
 let toolDiagnostic =
     EvidenceRequirement.create "tool-diagnostic" "The compiler or architecture-check output that exposed this site."

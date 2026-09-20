@@ -62,9 +62,16 @@ let ``a state snapshot is refused if its stored fingerprint disagrees with its v
 
     match roundTrip encodeStateSnapshot decodeStateSnapshot snapshot with
     | Ok decoded ->
+        Assert.Equal(snapshot.ViewSchema, decoded.ViewSchema)
         Assert.Equal(snapshot.Fingerprint, decoded.Fingerprint)
         Assert.Equal(snapshot.View, decoded.View)
     | Error error -> failwithf "decoding failed: %A" error
+
+    match encodeStateSnapshot snapshot with
+    | JObject members ->
+        Assert.Contains(("schemaVersion", JInt(int64 StateSnapshotSchemaVersion)), members)
+        Assert.Contains(members, fun (name, _) -> name = "viewSchema")
+    | other -> failwithf "expected a state snapshot object, got %A" other
 
     let tampered =
         match encodeStateSnapshot snapshot with
@@ -82,6 +89,93 @@ let ``a state snapshot is refused if its stored fingerprint disagrees with its v
     match decodeStateSnapshot tampered with
     | Error(InvalidField("$.fingerprint", _)) -> ()
     | other -> failwithf "expected the tampered view to be refused, got %A" other
+
+
+[<Fact>]
+let ``changing only the declared view schema invalidates a stored current fingerprint`` () =
+    let snapshot = snapshotOf (siteState "Transition.fs" Unclassified "r1")
+
+    let tampered =
+        match encodeStateSnapshot snapshot with
+        | JObject members ->
+            JObject(
+                members
+                |> List.map (fun (name, value) ->
+                    if name = "viewSchema" then
+                        match value with
+                        | JObject schemaMembers ->
+                            name,
+                            JObject(
+                                schemaMembers
+                                |> List.map (fun (schemaName, schemaValue) ->
+                                    if schemaName = "version" then schemaName, JInt 2L else schemaName, schemaValue)
+                            )
+                        | _ -> name, value
+                    else
+                        name, value)
+            )
+        | other -> other
+
+    match decodeStateSnapshot tampered with
+    | Error(InvalidField("$.fingerprint", _)) -> ()
+    | other -> failwithf "expected the changed view schema to invalidate the fingerprint, got %A" other
+
+[<Fact>]
+let ``a schema-v1 state snapshot stays readable as legacy history and stays schema-v1 when re-encoded`` () =
+    // sha256 over the schema-v1 canonical view: renderCanonical (JString "legacy")
+    let legacy =
+        JObject
+            [ "schema", JString "ordo.state-snapshot"
+              "schemaVersion", JInt 1L
+              "fingerprint", JString "sha256:e4c13c4401d43136853edf41d4fa114389d5228b7f01ca06038e4ec9b73796ea"
+              "revision", JNull
+              "takenAt", JString(Ordo.Core.Clock.toWire now)
+              "view", JString "legacy" ]
+
+    match decodeStateSnapshot legacy with
+    | Ok decoded ->
+        Assert.Equal(None, decoded.ViewSchema)
+        Assert.False(StateSnapshot.isVersioned decoded)
+        Assert.Equal(JString "legacy", decoded.View)
+
+        match encodeStateSnapshot decoded with
+        | JObject members ->
+            Assert.Contains(("schemaVersion", JInt 1L), members)
+            Assert.DoesNotContain(members, fun (name, _) -> name = "viewSchema")
+        | other -> failwithf "expected a legacy state snapshot object, got %A" other
+
+        match
+            Ordo.Decisions.Request.DecisionRequest.create
+                (ok (DecisionRequestId.create "legacy-request"))
+                (ok (ResolutionId.create "legacy-resolution"))
+                changeClassContract
+                decoded
+                fullEvidence
+                now
+        with
+        | Error(Ordo.Decisions.Request.UnversionedStateSnapshot contract) ->
+            Assert.Equal(changeClassContract.Id, contract)
+        | other -> failwithf "expected a legacy state snapshot to be refused for a new decision, got %A" other
+    | Error error -> failwithf "legacy decoding failed: %A" error
+
+[<Fact>]
+let ``a future state-snapshot wire version is refused without affecting v1 evidence records`` () =
+    let snapshot = snapshotOf (siteState "Transition.fs" Unclassified "r1")
+
+    let future =
+        match encodeStateSnapshot snapshot with
+        | JObject members ->
+            JObject(
+                members
+                |> List.map (fun (name, value) ->
+                    if name = "schemaVersion" then name, JInt 99L else name, value)
+            )
+        | other -> other
+
+    match decodeStateSnapshot future with
+    | Error(UnsupportedSchemaVersion(99, supported)) ->
+        Assert.Equal<int list>([ 1; StateSnapshotSchemaVersion ], supported)
+    | other -> failwithf "expected the future state-snapshot schema to be refused, got %A" other
 
 [<Fact>]
 let ``a schema version this build does not understand is refused, not guessed at`` () =

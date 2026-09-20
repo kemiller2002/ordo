@@ -20,15 +20,18 @@ open Ordo.Core.Evidence
 open Ordo.Core.Obligation
 open Ordo.Core.StateIdentity
 
-/// The schema version this build writes, and the only one it reads.
-///
-/// A single number for the whole module: these records are written and read
-/// together, and per-record versions would be version proliferation without
-/// a semantic difference to justify it (ORDO-2202).
+/// Schema version for core records whose semantics have not changed.
 [<Literal>]
 let SchemaVersion = 1
 
+/// State snapshots gained explicit domain view-schema identity in GH-20.
+/// That is a semantic wire change, so state snapshots evolve independently
+/// rather than making unrelated evidence/obligation records pretend to be v2.
+[<Literal>]
+let StateSnapshotSchemaVersion = 2
+
 let private supportedVersions = [ SchemaVersion ]
+let private stateSnapshotSupportedVersions = [ 1; StateSnapshotSchemaVersion ]
 
 /// Why a record could not be encoded or decoded.
 type WireError =
@@ -43,14 +46,21 @@ type WireError =
 
 let private field name value = (name, value)
 
-let private envelope (schema: string) (members: (string * JsonValue) list) =
+let private envelopeAt (version: int) (schema: string) (members: (string * JsonValue) list) =
     JObject(
         [ field "schema" (JString schema)
-          field "schemaVersion" (JInt(int64 SchemaVersion)) ]
+          field "schemaVersion" (JInt(int64 version)) ]
         @ members
     )
 
-let private readEnvelope (expectedSchema: string) (document: JsonValue) : Result<JsonValue, WireError> =
+let private envelope (schema: string) (members: (string * JsonValue) list) =
+    envelopeAt SchemaVersion schema members
+
+let private readEnvelopeWithVersions
+    (expectedSchema: string)
+    (versions: int list)
+    (document: JsonValue)
+    : Result<int * JsonValue, WireError> =
     let bind f r = Result.bind f r
     let json e = MalformedDocument e
 
@@ -65,10 +75,14 @@ let private readEnvelope (expectedSchema: string) (document: JsonValue) : Result
             |> Result.mapError json
             |> bind (asInt "$.schemaVersion" >> Result.mapError json)
             |> bind (fun version ->
-                if List.contains version supportedVersions then
-                    Ok document
+                if List.contains version versions then
+                    Ok(version, document)
                 else
-                    Error(UnsupportedSchemaVersion(version, supportedVersions))))
+                    Error(UnsupportedSchemaVersion(version, versions))))
+
+let private readEnvelope (expectedSchema: string) (document: JsonValue) : Result<JsonValue, WireError> =
+    readEnvelopeWithVersions expectedSchema supportedVersions document
+    |> Result.map snd
 
 let private required (name: string) (document: JsonValue) =
     requiredMember name document |> Result.mapError MalformedDocument
@@ -281,29 +295,67 @@ let decodeEvidenceRequirement (document: JsonValue) : Result<EvidenceRequirement
 
 // ---------------------------------------------------------- state snapshot
 
-let encodeStateSnapshot (snapshot: StateSnapshot) =
-    envelope
-        "ordo.state-snapshot"
-        [ field "fingerprint" (JString(StateFingerprint.value snapshot.Fingerprint))
-          field
-              "revision"
-              (match snapshot.Revision with
-               | Some r -> JString r
-               | None -> JNull)
-          field "takenAt" (JString(Clock.toWire snapshot.TakenAt))
-          field "view" snapshot.View ]
+let private encodeStateViewSchema (schema: StateViewSchema) =
+    JObject
+        [ field "id" (JString(StateViewSchema.id schema))
+          field "version" (JInt(int64 (StateViewSchema.version schema))) ]
 
-/// Decoding recomputes the fingerprint from the view and refuses a record
-/// whose stored fingerprint disagrees.
+let private decodeStateViewSchema (document: JsonValue) : Result<StateViewSchema, WireError> =
+    let id = requiredString "id" document
+
+    let version =
+        required "version" document
+        |> Result.bind (asInt "$.viewSchema.version" >> Result.mapError MalformedDocument)
+
+    match id, version with
+    | Ok id, Ok version ->
+        StateViewSchema.create id version
+        |> Result.mapError (fun error -> InvalidField("$.viewSchema", sprintf "%A" error))
+    | Error error, _ -> Error error
+    | _, Error error -> Error error
+
+let private stateSnapshotMembers (snapshot: StateSnapshot) =
+    [ field "fingerprint" (JString(StateFingerprint.value snapshot.Fingerprint))
+      field
+          "revision"
+          (match snapshot.Revision with
+           | Some r -> JString r
+           | None -> JNull)
+      field "takenAt" (JString(Clock.toWire snapshot.TakenAt))
+      field "view" snapshot.View ]
+
+let encodeStateSnapshot (snapshot: StateSnapshot) =
+    match snapshot.ViewSchema with
+    | Some schema ->
+        envelopeAt
+            StateSnapshotSchemaVersion
+            "ordo.state-snapshot"
+            (field "viewSchema" (encodeStateViewSchema schema) :: stateSnapshotMembers snapshot)
+    | None ->
+        // Legacy schema-v1 records stay schema-v1 when re-encoded. Audit
+        // tooling may preserve them, but no new live snapshot is constructed
+        // this way.
+        envelopeAt 1 "ordo.state-snapshot" (stateSnapshotMembers snapshot)
+
+/// Decoding recomputes the fingerprint from the exact semantics of the wire
+/// version and refuses a record whose stored fingerprint disagrees.
 ///
-/// The alternative — trusting the stored value — would let a tampered or
-/// corrupted view travel under the identity of the state that was actually
-/// judged, which is the one thing state identity exists to prevent.
+/// Schema-v1 snapshots decode with ViewSchema=None. They remain readable
+/// historical facts but are not valid current authorisation input.
 let decodeStateSnapshot (document: JsonValue) : Result<StateSnapshot, WireError> =
-    readEnvelope "ordo.state-snapshot" document
-    |> Result.bind (fun document ->
+    readEnvelopeWithVersions "ordo.state-snapshot" stateSnapshotSupportedVersions document
+    |> Result.bind (fun (wireVersion, document) ->
         let stored = requiredString "fingerprint" document
         let view = required "view" document
+
+        let viewSchema =
+            match wireVersion with
+            | 1 -> Ok None
+            | version when version = StateSnapshotSchemaVersion ->
+                required "viewSchema" document
+                |> Result.bind decodeStateViewSchema
+                |> Result.map Some
+            | other -> Error(UnsupportedSchemaVersion(other, stateSnapshotSupportedVersions))
 
         let takenAt =
             requiredString "takenAt" document
@@ -320,22 +372,27 @@ let decodeStateSnapshot (document: JsonValue) : Result<StateSnapshot, WireError>
                     | _ -> None)
             )
 
-        match stored, view, takenAt, revision with
-        | Ok stored, Ok view, Ok takenAt, Ok revision ->
-            let recomputed = StateFingerprint.ofView view
+        match stored, viewSchema, view, takenAt, revision with
+        | Ok stored, Ok viewSchema, Ok view, Ok takenAt, Ok revision ->
+            let recomputed =
+                match viewSchema with
+                | Some schema -> StateFingerprint.ofView schema view
+                | None -> StateFingerprint.ofLegacyV1View view
 
             if StateFingerprint.value recomputed <> stored then
-                Error(InvalidField("$.fingerprint", "stored fingerprint does not match the stored view"))
+                Error(InvalidField("$.fingerprint", "stored fingerprint does not match the stored view and view schema"))
             else
                 Ok
-                    { View = view
+                    { ViewSchema = viewSchema
+                      View = view
                       Fingerprint = recomputed
                       Revision = revision
                       TakenAt = takenAt }
-        | Error e, _, _, _
-        | _, Error e, _, _
-        | _, _, Error e, _
-        | _, _, _, Error e -> Error e)
+        | Error e, _, _, _, _
+        | _, Error e, _, _, _
+        | _, _, Error e, _, _
+        | _, _, _, Error e, _
+        | _, _, _, _, Error e -> Error e)
 
 // -------------------------------------------------------------- obligation
 
