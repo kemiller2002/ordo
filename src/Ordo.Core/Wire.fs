@@ -373,19 +373,7 @@ let decodeContextCoverageClaim (document: JsonValue) : Result<ContextCoverageCla
 // ---------------------------------------------------- negative observation
 
 let encodeNegativeObservation (observation: NegativeObservation) =
-    envelope
-        "ordo.negative-observation"
-        [ field "target" (JString observation.Target)
-          field "scope" (JString(CoverageScope.value observation.Scope))
-          field "method" (JString observation.Method)
-          field
-              "query"
-              (match observation.Query with
-               | Some query -> JString query
-               | None -> JNull)
-          field "stateReference" (JString observation.StateReference)
-          field "exclusions" (JArray(observation.Exclusions |> List.map JString))
-          field "errors" (JArray(observation.Errors |> List.map JString)) ]
+    NegativeObservation.toWireContent observation
 
 let decodeNegativeObservation (document: JsonValue) : Result<NegativeObservation, WireError> =
     let decodeStringList fieldName document =
