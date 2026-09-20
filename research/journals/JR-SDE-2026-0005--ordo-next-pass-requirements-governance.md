@@ -110,3 +110,7 @@ Confidence increased that the next pass can remain small and additive. The main 
 Create the implementation work item(s) under ROS with acceptance tests mapped directly to DF-SDE-2026-0007 through DF-SDE-2026-0012.
 
 The implementation should start with state-view identity/versioning and evidence closure, then run the coverage representation spike before freezing its public type.
+
+## Governance validation handoff
+
+The six decision records and doctrine updates were indexed with `./ros registry build`, followed by successful `./ros registry check` and `./ros validate` in the GH-18 governance indexing job. Normal repository CI is run again on this final indexed state before implementation begins.
