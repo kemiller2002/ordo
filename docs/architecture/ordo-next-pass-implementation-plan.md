@@ -101,7 +101,9 @@ GH-22 implementation notes:
 
 ## Phase 4 - Unknown-effect reconciliation semantics
 
-Implement DF-SDE-2026-0010 without adding an effect engine.
+**Status: implemented by GH-23.**
+
+DF-SDE-2026-0010 is implemented without adding an effect engine.
 
 Minimum executable addition:
 
@@ -117,9 +119,20 @@ Required examples/tests:
 - a proven retry-safe external contract may permit a retry request, but later actions that require knowing the actual effect still require reconciliation;
 - Tier 1/2 code performs no probe/I/O.
 
+GH-23 implementation notes:
+
+- `ExternalEffectOutcome` preserves Succeeded, Failed and Unknown;
+- Unknown always produces a named `ReconcileExternalEffect` obligation;
+- retry safety is explicit host-supplied evidence about the external contract, never inferred;
+- retry safety never removes reconciliation;
+- existing obligation-aware transition rules can block later action until reconciliation is discharged;
+- no network, persistence, retry loop, compensation engine, or probe was added to Ordo.Core.
+
 ## Phase 5 - Capability trust-boundary clarification
 
-Implement DF-SDE-2026-0011 in:
+**Status: implemented by GH-23.**
+
+DF-SDE-2026-0011 is implemented in:
 
 - `src/Ordo.Core/Capability.fs` comments;
 - executable-Ordo architecture documentation;
