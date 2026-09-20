@@ -12,7 +12,9 @@ This plan is implementation guidance, not a substitute for the decision records.
 
 ## Phase 1 - State identity and view versioning
 
-Implement DF-SDE-2026-0007 first because coverage and later observations need stable state-view identity.
+**Status: implemented by GH-20.**
+
+DF-SDE-2026-0007 is implemented first because coverage and later observations need stable state-view identity.
 
 Required behavior:
 
@@ -33,6 +35,15 @@ Required tests:
 - unrelated ambient state outside the selected view has no effect;
 - tampered view/fingerprint is refused;
 - legacy v1 record cannot be treated as current-version authorization input without recapture.
+
+GH-20 implementation notes:
+
+- `StateViewSchema` is domain-owned and explicit;
+- state-snapshot wire schema advanced independently to v2;
+- v1 historical snapshots decode as unversioned audit records and re-encode as v1;
+- `DecisionRequest.create` refuses legacy snapshots for new decisions;
+- `Transition.evaluate` refuses legacy current state;
+- no selective fingerprinting or dependency graph was added.
 
 ## Phase 2 - Derived evidence closure
 
