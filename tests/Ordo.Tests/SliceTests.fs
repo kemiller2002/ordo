@@ -11,11 +11,13 @@ open Xunit
 open Ordo.Core.Json
 open Ordo.Core.Identifiers
 open Ordo.Core.Evidence
+open Ordo.Core.Coverage
 open Ordo.Core.Capability
 open Ordo.Core.Resolution
 open Ordo.Core.StateIdentity
 open Ordo.Core.Transition
 open Ordo.Decisions.Contract
+open Ordo.Decisions.Request
 open Ordo.Decisions.Outcome
 open Ordo.Decisions.Provider
 open Ordo.Decisions.Escalation
@@ -119,6 +121,101 @@ let ``missing required evidence stops the request before a provider is asked`` (
 
     Assert.Equal(None, record.Observation.Provider)
     Assert.Equal("insufficient-evidence", record.Observation.Outcome)
+
+[<Fact>]
+let ``partial required coverage stops resolution before a provider is asked`` () =
+    let scope = ok (CoverageScope.create "strata.relation-access")
+    let requirement = CoverageRequirement.complete scope "relation access must be fully established"
+    let contract = changeClassContract |> DecisionContract.requiringCoverage [ requirement ]
+    let observation = evidence "relation-access-observation" Direct now (JString "hidden.secret is visible but unreadable")
+    let claim = ok (ContextCoverageClaim.create scope Partial [ observation.Id ])
+
+    let request =
+        ok (
+            DecisionRequest.createWithCoverage
+                (ok (DecisionRequestId.create "coverage-partial"))
+                (ok (ResolutionId.create "coverage-partial-resolution"))
+                contract
+                unclassified
+                (observation :: fullEvidence)
+                [ claim ]
+                now
+        )
+
+    let record = run (scriptedProvider allCapabilities []) request
+
+    match record.Outcome with
+    | InsufficientCoverage [ CoveragePartial(actualRequirement, actualClaim) ] ->
+        Assert.Equal(scope, actualRequirement.Scope)
+        Assert.Equal(Partial, actualClaim.Status)
+    | other -> failwithf "expected InsufficientCoverage/Partial, got %A" other
+
+    Assert.Equal(None, record.Observation.Provider)
+    Assert.Equal("insufficient-coverage", record.Observation.Outcome)
+
+[<Fact>]
+let ``complete required coverage permits resolution while other scopes may remain partial`` () =
+    let relations = ok (CoverageScope.create "strata.relations")
+    let access = ok (CoverageScope.create "strata.relation-access")
+    let requirement = CoverageRequirement.complete relations "relations must be fully enumerated"
+    let contract = changeClassContract |> DecisionContract.requiringCoverage [ requirement ]
+    let observation = evidence "strata-scope-observation" Direct now (JString "relations complete; hidden.secret unreadable")
+    let claims =
+        [ ok (ContextCoverageClaim.create relations Complete [ observation.Id ])
+          ok (ContextCoverageClaim.create access Partial [ observation.Id ]) ]
+
+    let request =
+        ok (
+            DecisionRequest.createWithCoverage
+                (ok (DecisionRequestId.create "coverage-mixed"))
+                (ok (ResolutionId.create "coverage-mixed-resolution"))
+                contract
+                unclassified
+                (observation :: fullEvidence)
+                claims
+                now
+        )
+
+    let record = run (answering (ChoiceSelected("mechanical-propagation", None, None))) request
+
+    match record.Outcome with
+    | Decided result -> Assert.Equal(MechanicalPropagation, result.Choice)
+    | other -> failwithf "expected the complete required scope to permit resolution, got %A" other
+
+    let providerRequest = Resolve.toProviderRequest options request
+    Assert.Equal<(string * string) list>(
+        [ "strata.relations", "relations must be fully enumerated" ],
+        providerRequest.RequiredCoverage
+    )
+
+    Assert.Contains(providerRequest.Coverage, fun claim -> claim.Scope = "strata.relations" && claim.Status = "complete")
+    Assert.Contains(providerRequest.Coverage, fun claim -> claim.Scope = "strata.relation-access" && claim.Status = "partial")
+
+[<Fact>]
+let ``unknown Time Tracking reference-catalog coverage is not treated as an empty complete catalog`` () =
+    let scope = ok (CoverageScope.create "chrona.reference-catalog")
+    let requirement = CoverageRequirement.complete scope "current reference.json must be established"
+    let contract = changeClassContract |> DecisionContract.requiringCoverage [ requirement ]
+    let failedPull = evidence "reference-pull" Direct now (JString "network error")
+    let claim = ok (ContextCoverageClaim.create scope Unknown [ failedPull.Id ])
+
+    let request =
+        ok (
+            DecisionRequest.createWithCoverage
+                (ok (DecisionRequestId.create "reference-catalog-unknown"))
+                (ok (ResolutionId.create "reference-catalog-unknown-resolution"))
+                contract
+                unclassified
+                (failedPull :: fullEvidence)
+                [ claim ]
+                now
+        )
+
+    let record = run (scriptedProvider allCapabilities []) request
+
+    match record.Outcome with
+    | InsufficientCoverage [ CoverageUnknown(_, actualClaim) ] -> Assert.Equal(Unknown, actualClaim.Status)
+    | other -> failwithf "expected unknown reference-catalog coverage to stop resolution, got %A" other
 
 [<Fact>]
 let ``a contract needing a capability the provider lacks fails before the call`` () =
