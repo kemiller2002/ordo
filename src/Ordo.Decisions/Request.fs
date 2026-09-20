@@ -29,6 +29,9 @@ type RequestError =
     /// history, but a new live decision must be formed against state captured
     /// under an explicit current view schema.
     | UnversionedStateSnapshot of DecisionContractId
+    /// The supplied evidence set is not a closed, acyclic reconstruction of
+    /// its Derived-from provenance.
+    | InvalidEvidenceDependencies of EvidenceDependencyError
     | NoEvidenceForContractRequiringIt of DecisionContractId
 
 type DecisionRequest<'choice when 'choice: equality> =
@@ -72,15 +75,18 @@ module DecisionRequest =
         elif not (StateSnapshot.isVersioned state) then
             Error(UnversionedStateSnapshot contract.Id)
         else
-            Ok
-                { Id = id
+            match EvidenceDependency.validateClosedSet evidence with
+            | Error error -> Error(InvalidEvidenceDependencies error)
+            | Ok () ->
+                Ok
+                    { Id = id
                   Resolution = resolution
                   Correlation = None
                   CausedBy = None
                   Contract = contract
                   State = state
-                  Evidence = evidence
-                  CreatedAt = now }
+                      Evidence = evidence
+                      CreatedAt = now }
 
     let correlatedWith (correlation: CorrelationId) (request: DecisionRequest<'choice>) =
         { request with Correlation = Some correlation }
