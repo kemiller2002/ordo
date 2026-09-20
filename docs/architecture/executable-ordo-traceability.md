@@ -146,6 +146,25 @@ Authority: `DF-SDE-2026-0008`, `DF-SDE-2026-0014`, `EX-SDE-2026-0006`.
 
 The Strata scenario proves one request may legitimately contain `relations = Complete` and `relation_access = Partial`. The Time Tracking scenario proves an unreadable current reference catalog is `Unknown`, not an empty Complete catalog. Inactive historical references and restore-overlap rules remain ordinary domain state rather than being absorbed into coverage.
 
+## GH-23 next-pass implementation — unknown effects and Capability trust boundary
+
+Authority: `DF-SDE-2026-0010`, `DF-SDE-2026-0011`.
+
+| Requirement | Status | Implementation | Test |
+|---|---|---|---|
+| Succeeded / Failed / Unknown remain distinct | Implemented | `ExternalEffectOutcome` in `src/Ordo.Core/ExternalEffect.fs` | `CoreTests` |
+| Unknown always creates reconciliation work | Implemented | `ExternalEffect.recordOutcome` -> `ReconciliationRequired` + `ReconcileExternalEffect` | `CoreTests` |
+| Blind retry is not inferred | Implemented | `RetrySafetyNotEstablished` is the default semantic value | `CoreTests` |
+| Retry may be considered only when host supplies external-contract proof | Implemented | `RetrySafeByExternalContract basis` / `mayRepeatBeforeReconciliation` | `CoreTests` |
+| Retry safety does not erase reconciliation | Implemented | Unknown always creates obligation independent of retry-safety value | `CoreTests` |
+| Reconciliation can gate later domain action | Implemented | existing obligation-aware transition requirement consumes named reconciliation obligation | `CoreTests` |
+| Effect identity survives wire obligation form | Implemented | `reconcile-external-effect` token + `effectId` | `WireTests` |
+| Ordo performs no effect/probe I/O | Implemented by boundary | `ExternalEffect` is pure Core semantics only | architecture tests |
+| Capability explicitly means host-supplied semantic authority | Implemented | `Capability.fs` public comments and architecture docs | source/API review |
+| Capability remains independent from provider/confidence | Preserved | existing `CapabilitySet` and Gate/Transition checks unchanged | invariant/architecture tests |
+
+The application still owns effect execution, idempotency-key mechanics, compensation, reconciliation probes, and storage-specific conflict behavior. Ordo only preserves the semantic fact that the outcome is Unknown and that reconciliation remains required.
+
 ## Class B — before ROS integration
 
 | Requirement | Status | Note |
