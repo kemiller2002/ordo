@@ -313,5 +313,27 @@
     "title": "Represent context coverage as first-class scoped claims backed by evidence provenance",
     "type": "decision-record",
     "updated": "2026-09-20"
+  },
+  {
+    "created": "2026-09-20",
+    "id": "DF-SDE-2026-0015",
+    "path": "research/decisions/DF-SDE-2026-0015--represent-negative-search-observations-as-typed-evidence-content.md",
+    "related_documents": [
+      "research/decisions/DF-SDE-2026-0012--adopt-scoped-negative-knowledge-discipline.md",
+      "research/experiments/EX-SDE-2026-0007--negative-knowledge-representation-spike.md",
+      "doctrine/DECISION-AND-EVIDENCE-SEMANTICS.md"
+    ],
+    "status": "accepted",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "architecture",
+      "ordo",
+      "gh-24",
+      "negative-knowledge"
+    ],
+    "title": "Represent reusable negative search observations as typed Evidence content paired with scoped coverage",
+    "type": "decision-record",
+    "updated": "2026-09-20"
   }
 ]

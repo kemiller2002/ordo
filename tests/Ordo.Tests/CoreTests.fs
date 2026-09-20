@@ -7,6 +7,7 @@ open Ordo.Core.Json
 open Ordo.Core.Identifiers
 open Ordo.Core.Evidence
 open Ordo.Core.Coverage
+open Ordo.Core.NegativeKnowledge
 open Ordo.Core.Capability
 open Ordo.Core.Obligation
 open Ordo.Core.ExternalEffect
@@ -214,6 +215,141 @@ let ``coverage claims require evidence provenance and reject ambiguous duplicate
     match ContextCoverage.validateClaims [ provenance ] [ first; second ] with
     | Error(DuplicateCoverageScope duplicate) -> Assert.Equal(scope, duplicate)
     | other -> failwithf "expected duplicate coverage scope refusal, got %A" other
+
+[<Fact>]
+let ``a complete scoped negative observation may structurally support absence`` () =
+    let scope = ok (CoverageScope.create "strata.relations")
+    let observation =
+        ok (
+            NegativeObservation.create
+                "app.missing_table"
+                scope
+                "postgres-catalog-introspection"
+                (Some "pg_class/pg_namespace lookup")
+                "database-revision:42"
+                []
+                []
+        )
+
+    let evidence =
+        evidence
+            "missing-table-observation"
+            Direct
+            now
+            (Ordo.Core.Wire.encodeNegativeObservation observation)
+
+    let coverage = ok (ContextCoverageClaim.create scope Complete [ evidence.Id ])
+
+    Assert.Equal(Ok(), NegativeKnowledge.supportsAbsence evidence coverage observation)
+
+[<Fact>]
+let ``Strata partial coverage cannot turn not-found into absence`` () =
+    let scope = ok (CoverageScope.create "strata.relation-access")
+    let observation =
+        ok (
+            NegativeObservation.create
+                "hidden.secret"
+                scope
+                "postgres-access-probe"
+                None
+                "database-revision:42"
+                [ "visible but unreadable relations" ]
+                []
+        )
+
+    let evidence =
+        evidence
+            "partial-relation-access"
+            Direct
+            now
+            (Ordo.Core.Wire.encodeNegativeObservation observation)
+
+    let coverage = ok (ContextCoverageClaim.create scope Partial [ evidence.Id ])
+
+    Assert.Equal(
+        Error(NegativeObservationCoverageNotComplete Partial),
+        NegativeKnowledge.supportsAbsence evidence coverage observation
+    )
+
+[<Fact>]
+let ``Time Tracking failed reference pull cannot become an absence claim`` () =
+    let scope = ok (CoverageScope.create "chrona.reference-catalog")
+    let observation =
+        ok (
+            NegativeObservation.create
+                "project-42"
+                scope
+                "reference-json-read"
+                (Some "project id project-42")
+                "repository-commit:abc123"
+                []
+                [ "network error while reading reference.json" ]
+        )
+
+    let evidence =
+        evidence
+            "reference-pull-failed"
+            Direct
+            now
+            (Ordo.Core.Wire.encodeNegativeObservation observation)
+
+    let coverage = ok (ContextCoverageClaim.create scope CoverageStatus.Unknown [ evidence.Id ])
+
+    Assert.Equal(
+        Error(NegativeObservationCoverageNotComplete CoverageStatus.Unknown),
+        NegativeKnowledge.supportsAbsence evidence coverage observation
+    )
+
+[<Fact>]
+let ``negative observation must be the provenance for the matching coverage scope`` () =
+    let observedScope = ok (CoverageScope.create "scope-a")
+    let otherScope = ok (CoverageScope.create "scope-b")
+    let observation =
+        ok (NegativeObservation.create "target" observedScope "method" None "state-1" [] [])
+    let negativeEvidence = evidence "negative" Direct now (Ordo.Core.Wire.encodeNegativeObservation observation)
+    let unrelatedEvidence = evidence "unrelated" Direct now JNull
+
+    let wrongScope = ok (ContextCoverageClaim.create otherScope Complete [ negativeEvidence.Id ])
+
+    match NegativeKnowledge.supportsAbsence negativeEvidence wrongScope observation with
+    | Error(NegativeObservationScopeMismatch(actual, coverage)) ->
+        Assert.Equal(observedScope, actual)
+        Assert.Equal(otherScope, coverage)
+    | other -> failwithf "expected a scope mismatch, got %A" other
+
+    let wrongProvenance = ok (ContextCoverageClaim.create observedScope Complete [ unrelatedEvidence.Id ])
+
+    Assert.Equal(
+        Error(NegativeObservationNotCoverageProvenance negativeEvidence.Id),
+        NegativeKnowledge.supportsAbsence negativeEvidence wrongProvenance observation
+    )
+
+    let wrongContentEvidence = evidence "wrong-content" Direct now JNull
+    let matchingIdButWrongContent = ok (ContextCoverageClaim.create observedScope Complete [ wrongContentEvidence.Id ])
+
+    Assert.Equal(
+        Error(NegativeObservationEvidenceContentMismatch wrongContentEvidence.Id),
+        NegativeKnowledge.supportsAbsence wrongContentEvidence matchingIdButWrongContent observation
+    )
+
+[<Fact>]
+let ``negative observation refuses missing minimum provenance fields`` () =
+    let scope = ok (CoverageScope.create "scope")
+
+    Assert.Equal(
+        Error NegativeTargetRequired,
+        NegativeObservation.create "" scope "method" None "state" [] []
+    )
+
+    Assert.Equal(
+        Error NegativeMethodRequired,
+        NegativeObservation.create "target" scope "" None "state" [] []
+    )
+
+    Assert.Equal(
+        Error NegativeStateReferenceRequired,
+        NegativeObservation.create "target" scope "method" None "" [] []
+    )
 
 [<Fact>]
 let ``a capability set answers only what it was granted`` () =

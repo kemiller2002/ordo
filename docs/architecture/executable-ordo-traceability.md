@@ -165,6 +165,25 @@ Authority: `DF-SDE-2026-0010`, `DF-SDE-2026-0011`.
 
 The application still owns effect execution, idempotency-key mechanics, compensation, reconciliation probes, and storage-specific conflict behavior. Ordo only preserves the semantic fact that the outcome is Unknown and that reconciliation remains required.
 
+## GH-24 next-pass implementation — negative knowledge
+
+Authority: `DF-SDE-2026-0012`, `DF-SDE-2026-0015`, `EX-SDE-2026-0007`.
+
+| Requirement | Status | Implementation | Test |
+|---|---|---|---|
+| Reusable negative observation has typed minimum provenance | Implemented | `NegativeObservation` in `src/Ordo.Core/NegativeKnowledge.fs` | `CoreTests` |
+| Target, scope, method, state reference required | Implemented | smart constructor | `CoreTests` |
+| Query optional; exclusions/errors explicit | Implemented | typed fields | `WireTests` |
+| Evidence owns identity/source/time/basis | Preserved | NegativeObservation is Evidence content, not a new EvidenceKind | API shape |
+| Coverage owns completeness | Preserved | `ContextCoverageClaim` paired by scope + EvidenceId provenance | `CoreTests` |
+| Partial/Unknown cannot support absence | Implemented | `NegativeObservationCoverageNotComplete` | Strata/Time Tracking scenario tests |
+| Scope mismatch cannot support absence | Implemented | `NegativeObservationScopeMismatch` | `CoreTests` |
+| Unrelated Evidence cannot support absence | Implemented | provenance must cite the Evidence ID and the Evidence content must equal the supplied `NegativeObservation`; `NegativeObservationNotCoverageProvenance` / `NegativeObservationEvidenceContentMismatch` | `CoreTests` |
+| Stable reusable content wire | Implemented | `ordo.negative-observation` schema v1 | `WireTests` |
+| No universal absence/status ontology | Implemented by scope | no new EvidenceKind or Absent/Unavailable/NotCompared union | source/API surface |
+
+Strata's not-compared false-clean case is explicitly not a NegativeObservation because the comparison did not run. Time Tracking's failed reference pull cannot support absence because coverage is Unknown. HelixNote's Measurement.UnitMissing remains a domain fact about source omission, not a search observation.
+
 ## Class B — before ROS integration
 
 | Requirement | Status | Note |
