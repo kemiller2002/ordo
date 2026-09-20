@@ -159,5 +159,48 @@
     "title": "Independent authoritative-surface review of SDE v0.2",
     "updated": "2026-09-07",
     "version": "1.0.0"
+  },
+  {
+    "author_agent": "ChatGPT",
+    "completion": {
+      "estimate": 1,
+      "state": "complete"
+    },
+    "confidence": {
+      "label": "high",
+      "rationale": "Derived from deep literature review and repository-backed validation across Chrona, Time Entry State Machine, Time Tracking Application, Strata, and HelixNote; executable baselines still need to be run before implementation."
+    },
+    "created": "2026-09-20",
+    "discipline": [
+      "software-engineering-methodology",
+      "software-architecture",
+      "agentic-engineering"
+    ],
+    "id": "RP-SDE-2026-0004",
+    "path": "research/packages/RP-SDE-2026-0004--ordo-next-pass-requirements.md",
+    "priority": "high",
+    "related_projects": [
+      "state-directed-engineering",
+      "repository-operating-system"
+    ],
+    "research_area": "state-directed-engineering",
+    "source_commit": "6f69ad93f5f410d19499cce9d49c5e15888b67aa",
+    "source_document": "research/ordo-foundations/deep-research-program/requirement-candidates/ordo-next-pass.md",
+    "source_repository": "kemiller2002/research-documents",
+    "status": "candidate",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "ordo",
+      "next-pass",
+      "requirements",
+      "four-tier",
+      "evidence",
+      "coverage",
+      "unknown-effects"
+    ],
+    "title": "Ordo next-pass validated requirements intake",
+    "updated": "2026-09-20",
+    "version": "0.1.0"
   }
 ]
