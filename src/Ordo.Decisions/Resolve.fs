@@ -150,6 +150,12 @@ module Resolve =
             DecisionOutcome.decision outcome
             |> Option.bind (fun result -> ChoiceSpace.tokenOf result.Choice request.Contract.Choices)
 
+        // DecisionRequest.create refuses unversioned legacy snapshots, so a
+        // live execution reaching this point always has current view identity.
+        let stateViewSchema =
+            request.State.ViewSchema
+            |> Option.defaultWith (fun () -> invalidOp "a live DecisionRequest must carry a state-view schema")
+
         { Resolution = request.Resolution
           Correlation = request.Correlation
           CausedBy = request.CausedBy
@@ -158,6 +164,8 @@ module Resolve =
           ContractVersion = request.Contract.Version
           Request = request.Id
           State = request.State.Fingerprint
+          StateViewSchema = stateViewSchema
+          Coverage = request.Coverage
           Provider = identity
           StartedAt = startedAt
           CompletedAt = completedAt
