@@ -9,6 +9,7 @@ related_documents:
   - research/decisions/DF-SDE-2026-0006--introduce-executable-ordo-primitives.md
   - docs/architecture/executable-ordo-traceability.md
   - doctrine/FOUR-TIER-ARCHITECTURE.md
+  - doctrine/DECISION-AND-EVIDENCE-SEMANTICS.md
   - method/CHANGE-CLASSIFICATION.md
 tags: [architecture, ordo, executable-intelligence]
 ---
@@ -264,6 +265,25 @@ proves it.
   voting and adjudication are domain or orchestration policy.
 - **Observation facts are not persisted by Ordo.** `ResolutionObservation.encode`
   produces the record; where it goes is the caller's business.
+
+## Governed next pass, not yet fully implemented
+
+GH-18 accepted six next-pass semantic requirements after repository-backed validation. They are authoritative requirements, but executable support must remain distinguishable from current v0.1 behavior until implementation completes.
+
+Pending executable changes include:
+
+- explicit state-view schema/version identity and insufficiency/version-forward rules;
+- a scoped coverage representation chosen by an implementation comparison;
+- Derived-evidence closure and cycle validation;
+- explicit reconciliation-obligation semantics for unknown external effects;
+- public/type-comment clarification of Capability's trust boundary;
+- reusable negative-observation support only if the implementation comparison shows a common wire value is warranted.
+
+The implementation must preserve the existing assembly and Four-Tier boundaries. None of these requirements permits `Ordo.Core` to acquire I/O, provider SDK, persistence, or ROS dependencies.
+
+Authoritative semantics: `doctrine/DECISION-AND-EVIDENCE-SEMANTICS.md`.
+Governance decisions: `DF-SDE-2026-0007` through `DF-SDE-2026-0013`.
+Implementation/migration plan: `docs/architecture/ordo-next-pass-implementation-plan.md`.
 
 ## Reading the code
 

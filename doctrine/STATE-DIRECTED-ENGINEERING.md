@@ -2,12 +2,13 @@
 id: SDE-DOCTRINE-002
 title: State-Directed Engineering
 status: accepted
-version: 0.2.0
+version: 0.2.1
 created: 2026-09-02
-updated: 2026-09-05
+updated: 2026-09-20
 related_documents:
   - doctrine/STATE-PROGRAMMING.md
   - doctrine/STRUCTURAL-LOCALITY.md
+  - doctrine/DECISION-AND-EVIDENCE-SEMANTICS.md
   - method/CONSTRUCTION-METHOD-v0.2.md
   - method/NAVIGATION-AND-CONTEXT.md
   - method/CHANGE-CLASSIFICATION.md

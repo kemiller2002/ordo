@@ -118,5 +118,178 @@
     "title": "Introduce executable Ordo primitives as three F# projects, with the decision boundary provider-neutral and one adapter",
     "type": "decision-record",
     "updated": "2026-09-18"
+  },
+  {
+    "created": "2026-09-20",
+    "id": "DF-SDE-2026-0007",
+    "path": "research/decisions/DF-SDE-2026-0007--adopt-minimal-versioned-semantic-state-views.md",
+    "related_documents": [
+      "research/packages/RP-SDE-2026-0004--ordo-next-pass-requirements.md",
+      "research/evidence/EV-SDE-2026-0011--ordo-next-pass-pre-upgrade-baseline.md",
+      "doctrine/DECISION-AND-EVIDENCE-SEMANTICS.md",
+      "doctrine/FOUR-TIER-ARCHITECTURE.md"
+    ],
+    "status": "accepted",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "architecture",
+      "ordo",
+      "gh-18",
+      "next-pass",
+      "state-identity"
+    ],
+    "title": "Adopt minimal, versioned, semantically complete state views for Ordo decisions",
+    "type": "decision-record",
+    "updated": "2026-09-20"
+  },
+  {
+    "created": "2026-09-20",
+    "id": "DF-SDE-2026-0008",
+    "path": "research/decisions/DF-SDE-2026-0008--adopt-scoped-context-coverage-semantics.md",
+    "related_documents": [
+      "research/packages/RP-SDE-2026-0004--ordo-next-pass-requirements.md",
+      "research/evidence/EV-SDE-2026-0011--ordo-next-pass-pre-upgrade-baseline.md",
+      "doctrine/DECISION-AND-EVIDENCE-SEMANTICS.md",
+      "doctrine/FOUR-TIER-ARCHITECTURE.md"
+    ],
+    "status": "accepted",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "architecture",
+      "ordo",
+      "gh-18",
+      "next-pass",
+      "coverage"
+    ],
+    "title": "Adopt scoped context coverage semantics without a global completeness flag",
+    "type": "decision-record",
+    "updated": "2026-09-20"
+  },
+  {
+    "created": "2026-09-20",
+    "id": "DF-SDE-2026-0009",
+    "path": "research/decisions/DF-SDE-2026-0009--validate-derived-evidence-as-an-acyclic-closed-dependency-set.md",
+    "related_documents": [
+      "research/packages/RP-SDE-2026-0004--ordo-next-pass-requirements.md",
+      "research/evidence/EV-SDE-2026-0011--ordo-next-pass-pre-upgrade-baseline.md",
+      "doctrine/DECISION-AND-EVIDENCE-SEMANTICS.md",
+      "doctrine/FOUR-TIER-ARCHITECTURE.md"
+    ],
+    "status": "accepted",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "architecture",
+      "ordo",
+      "gh-18",
+      "next-pass",
+      "evidence"
+    ],
+    "title": "Validate derived evidence as an acyclic closed dependency set",
+    "type": "decision-record",
+    "updated": "2026-09-20"
+  },
+  {
+    "created": "2026-09-20",
+    "id": "DF-SDE-2026-0010",
+    "path": "research/decisions/DF-SDE-2026-0010--adopt-unknown-effect-reconciliation-invariant.md",
+    "related_documents": [
+      "research/packages/RP-SDE-2026-0004--ordo-next-pass-requirements.md",
+      "research/evidence/EV-SDE-2026-0011--ordo-next-pass-pre-upgrade-baseline.md",
+      "doctrine/DECISION-AND-EVIDENCE-SEMANTICS.md",
+      "doctrine/FOUR-TIER-ARCHITECTURE.md"
+    ],
+    "status": "accepted",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "architecture",
+      "ordo",
+      "gh-18",
+      "next-pass",
+      "effects",
+      "reconciliation"
+    ],
+    "title": "Adopt unknown external-effect outcome as a reconciliation invariant",
+    "type": "decision-record",
+    "updated": "2026-09-20"
+  },
+  {
+    "created": "2026-09-20",
+    "id": "DF-SDE-2026-0011",
+    "path": "research/decisions/DF-SDE-2026-0011--clarify-ordo-capability-as-semantic-authority-not-authentication.md",
+    "related_documents": [
+      "research/packages/RP-SDE-2026-0004--ordo-next-pass-requirements.md",
+      "research/evidence/EV-SDE-2026-0011--ordo-next-pass-pre-upgrade-baseline.md",
+      "doctrine/DECISION-AND-EVIDENCE-SEMANTICS.md",
+      "doctrine/FOUR-TIER-ARCHITECTURE.md"
+    ],
+    "status": "accepted",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "architecture",
+      "ordo",
+      "gh-18",
+      "next-pass",
+      "capability",
+      "authority"
+    ],
+    "title": "Clarify Ordo Capability as semantic authority, not authentication or object capability security",
+    "type": "decision-record",
+    "updated": "2026-09-20"
+  },
+  {
+    "created": "2026-09-20",
+    "id": "DF-SDE-2026-0012",
+    "path": "research/decisions/DF-SDE-2026-0012--adopt-scoped-negative-knowledge-discipline.md",
+    "related_documents": [
+      "research/packages/RP-SDE-2026-0004--ordo-next-pass-requirements.md",
+      "research/evidence/EV-SDE-2026-0011--ordo-next-pass-pre-upgrade-baseline.md",
+      "doctrine/DECISION-AND-EVIDENCE-SEMANTICS.md",
+      "doctrine/FOUR-TIER-ARCHITECTURE.md"
+    ],
+    "status": "accepted",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "architecture",
+      "ordo",
+      "gh-18",
+      "next-pass",
+      "negative-knowledge"
+    ],
+    "title": "Adopt scoped negative-knowledge discipline and refuse unqualified not-found claims",
+    "type": "decision-record",
+    "updated": "2026-09-20"
+  },
+  {
+    "created": "2026-09-20",
+    "id": "DF-SDE-2026-0013",
+    "path": "research/decisions/DF-SDE-2026-0013--separate-sde-release-and-ordo-wire-versioning.md",
+    "related_documents": [
+      "research/packages/RP-SDE-2026-0004--ordo-next-pass-requirements.md",
+      "doctrine/DECISION-AND-EVIDENCE-SEMANTICS.md",
+      "docs/releasing.md",
+      "distribution/DISTRIBUTION-MAP.json",
+      "docs/architecture/ordo-next-pass-implementation-plan.md"
+    ],
+    "status": "accepted",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "architecture",
+      "ordo",
+      "sde",
+      "gh-18",
+      "distribution",
+      "versioning",
+      "migration"
+    ],
+    "title": "Release governed Ordo methodology additively while versioning executable wire semantics independently",
+    "type": "decision-record",
+    "updated": "2026-09-20"
   }
 ]
