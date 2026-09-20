@@ -135,9 +135,13 @@ Do not collapse these states:
 
 A reusable negative observation identifies its target, scope, method/query, observation time, state/commit/revision, coverage, exclusions, and errors.
 
+Executable Ordo represents the reusable core as a typed `NegativeObservation` carried inside ordinary Evidence content. Evidence continues to own identity, source, observed time, and basis. `ContextCoverageClaim` continues to own Complete / Partial / Unknown and cites the Evidence ID.
+
+`NegativeKnowledge.supportsAbsence` reports structural eligibility only when the observation scope matches the coverage scope, that Evidence is coverage provenance, and coverage is Complete.
+
 "Not found" supports Absent only when the method could detect the target and coverage is Complete for the relevant scope.
 
-Domains may use richer vocabularies. Ordo does not impose a universal negative-knowledge enum.
+The type does not represent searches that never ran, failed reads whose scope was not established, not-compared, not-modelled, unsupported, unverifiable, or domain fields whose source simply omitted a value. Domains retain those richer states. Ordo does not impose a universal negative-knowledge enum.
 
 ## 8. What is deliberately not added
 
