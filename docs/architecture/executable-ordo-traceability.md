@@ -109,6 +109,23 @@ Authority: `DF-SDE-2026-0007`, `DF-SDE-2026-0013`.
 
 The migration is intentionally non-destructive: no v1 record is rewritten or re-fingerprinted under v2 semantics. A new action requires recapturing current state with a current `StateViewSchema`.
 
+## GH-21 next-pass implementation — derived evidence closure
+
+Authority: `DF-SDE-2026-0009`.
+
+| Requirement | Status | Implementation | Test |
+|---|---|---|---|
+| Deterministic transitive closure of selected evidence | Implemented | `EvidenceDependency.closure` in `src/Ordo.Core/Evidence.fs` | `CoreTests` — dependency-first ordering and caller-order independence |
+| Valid shared dependencies | Implemented | visited-set traversal deduplicates shared inputs without treating them as cycles | `CoreTests` — shared dependency case |
+| Missing Derived input refused | Implemented | `MissingEvidenceDependency` | `CoreTests`; `DecisionTests` request-boundary rejection |
+| Direct self-cycle refused | Implemented | `EvidenceDependencyCycle` with repeated start/end id | `CoreTests` |
+| Multi-node cycle refused | Implemented | path-aware Derived traversal | `CoreTests` — A -> B -> C -> A |
+| Duplicate evidence identity refused | Implemented | `DuplicateEvidenceId` before traversal | `CoreTests` |
+| New decision requests require structurally closed provenance | Implemented | `DecisionRequest.create` maps dependency errors to `InvalidEvidenceDependencies` | `DecisionTests` |
+| No generic relationship graph | Implemented by scope | only `EvidenceKind.Derived` is traversed; correction/supersession/history relations are untouched | source/API surface |
+
+Closure validation is structural, not epistemic: it does not claim that a derivation is correct, only that its declared inputs exist and form a reconstructable acyclic derivation.
+
 ## Class B — before ROS integration
 
 | Requirement | Status | Note |
