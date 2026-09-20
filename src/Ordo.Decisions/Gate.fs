@@ -73,6 +73,7 @@ module Gate =
                 | TransitionRequiresHumanReview(reason, outstanding) -> ChangeNeedsHumanReview(reason, outstanding)
 
         | InsufficientEvidence _
+        | InsufficientCoverage _
         | RequiresDeliberation _
         | RequiresHumanReview _
         | ProviderFailure _
