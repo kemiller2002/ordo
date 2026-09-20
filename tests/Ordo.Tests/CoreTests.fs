@@ -324,6 +324,14 @@ let ``negative observation must be the provenance for the matching coverage scop
         NegativeKnowledge.supportsAbsence negativeEvidence wrongProvenance observation
     )
 
+    let wrongContentEvidence = evidence "wrong-content" Direct now JNull
+    let matchingIdButWrongContent = ok (ContextCoverageClaim.create observedScope Complete [ wrongContentEvidence.Id ])
+
+    Assert.Equal(
+        Error(NegativeObservationEvidenceContentMismatch wrongContentEvidence.Id),
+        NegativeKnowledge.supportsAbsence wrongContentEvidence matchingIdButWrongContent observation
+    )
+
 [<Fact>]
 let ``negative observation refuses missing minimum provenance fields`` () =
     let scope = ok (CoverageScope.create "scope")
