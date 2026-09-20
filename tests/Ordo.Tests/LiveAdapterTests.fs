@@ -69,6 +69,7 @@ let ``a live provider answers the bounded contract within its choice space`` () 
             Assert.False(Ordo.Decisions.Confidence.Confidence.isCalibrated confidence)
         | None -> ()
     | InsufficientEvidence _
+    | InsufficientCoverage _
     | RequiresDeliberation _
     | RequiresHumanReview _ -> ()
     | ProviderFailure error -> failwithf "the live provider failed: %A" error

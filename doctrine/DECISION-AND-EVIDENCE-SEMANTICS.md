@@ -75,7 +75,13 @@ Partial and Unknown are never aliases.
 
 One decision may carry multiple coverage claims. Ordo never infers Complete from quantity of context, provider confidence, successful execution, or absence of errors.
 
-The exact executable representation is an implementation decision still to be recorded.
+Executable Ordo represents coverage as a first-class `ContextCoverageClaim`.
+
+A claim carries a named `CoverageScope`, one of `Complete | Partial | Unknown`, and Evidence IDs that provide provenance for the observation method and facts supporting that claim.
+
+Coverage is not itself Evidence. A `DecisionContract` may require Complete coverage for selected scopes. A request may carry additional Partial or Unknown scopes. Missing, Partial, and Unknown required coverage produce `InsufficientCoverage` before provider execution.
+
+The provider boundary receives coverage explicitly as data. Ordo never parses arbitrary Evidence content to discover coverage and never infers Complete.
 
 ## 4. Derived evidence must have valid closure
 

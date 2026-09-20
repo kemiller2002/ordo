@@ -72,7 +72,9 @@ GH-21 implementation notes:
 
 ## Phase 3 - Scoped coverage representation spike
 
-Before freezing the public API for DF-SDE-2026-0008, implement or prototype both candidate forms against the Strata and Time Tracking scenarios:
+**Status: implemented by GH-22.**
+
+EX-SDE-2026-0006 compared both candidate forms against the Strata and Time Tracking scenarios:
 
 A. first-class `ContextCoverageClaim`;  
 B. typed Evidence carrying coverage content.
@@ -85,9 +87,17 @@ Compare:
 - audit/observation clarity;
 - API surface and duplication.
 
-Record the representation choice in a DF record before merging the final public type.
+The representation choice is recorded in DF-SDE-2026-0014: first-class `ContextCoverageClaim` values backed by Evidence IDs.
 
-No global coverage flag is allowed.
+GH-22 implementation notes:
+
+- scopes are explicit and domain/contract-defined;
+- Complete, Partial and Unknown are closed typed states;
+- contracts may require Complete coverage for selected scopes;
+- missing, Partial and Unknown required coverage stop resolution before the provider call;
+- multiple non-required scopes remain visible on the same request;
+- coverage crosses the provider boundary as a separate data block;
+- no global coverage flag, coverage score, inference rule, or graph was added.
 
 ## Phase 4 - Unknown-effect reconciliation semantics
 

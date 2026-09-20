@@ -15,6 +15,7 @@ module Ordo.Decisions.Contract
 open System
 open Ordo.Core.Identifiers
 open Ordo.Core.Evidence
+open Ordo.Core.Coverage
 
 /// What kind of successor a contract has.
 type ReplacementCompatibility =
@@ -122,6 +123,9 @@ type DecisionContract<'choice when 'choice: equality> =
       Scope: string
       Choices: ChoiceSpace<'choice>
       RequiredEvidence: EvidenceRequirement list
+      /// Named scopes this contract requires to be Complete before a provider
+      /// may be asked to decide.
+      RequiredCoverage: CoverageRequirement list
       /// A domain-defined consequence label, if the domain classifies by
       /// consequence. Ordo carries it and never interprets it: there is no
       /// universal risk scale here (ORDO-9302).
@@ -162,12 +166,16 @@ module DecisionContract =
           Scope = scope
           Choices = choices
           RequiredEvidence = []
+          RequiredCoverage = []
           Consequence = None }
 
     let activated (contract: DecisionContract<'choice>) = { contract with Lifecycle = Active }
 
     let requiring (requirements: EvidenceRequirement list) (contract: DecisionContract<'choice>) =
         { contract with RequiredEvidence = requirements }
+
+    let requiringCoverage (requirements: CoverageRequirement list) (contract: DecisionContract<'choice>) =
+        { contract with RequiredCoverage = requirements }
 
     let withConsequence (label: string) (contract: DecisionContract<'choice>) =
         { contract with Consequence = Some label }

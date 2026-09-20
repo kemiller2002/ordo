@@ -80,5 +80,25 @@
       "HY-SDE-2026-0010"
     ],
     "title": "Rework caused by arriving requirements — conventional against state-structured, measured mechanically"
+  },
+  {
+    "created": "2026-09-20",
+    "id": "EX-SDE-2026-0006",
+    "path": "research/experiments/EX-SDE-2026-0006--scoped-coverage-representation-spike.md",
+    "related_documents": [
+      "research/decisions/DF-SDE-2026-0008--adopt-scoped-context-coverage-semantics.md",
+      "research/decisions/DF-SDE-2026-0014--represent-context-coverage-as-first-class-claims.md"
+    ],
+    "status": "completed",
+    "tags": [
+      "ordo",
+      "coverage",
+      "gh-22",
+      "strata",
+      "time-tracking"
+    ],
+    "title": "Scoped coverage representation spike against Strata and Time Tracking",
+    "type": "experiment-record",
+    "updated": "2026-09-20"
   }
 ]

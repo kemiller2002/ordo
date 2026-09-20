@@ -126,6 +126,26 @@ Authority: `DF-SDE-2026-0009`.
 
 Closure validation is structural, not epistemic: it does not claim that a derivation is correct, only that its declared inputs exist and form a reconstructable acyclic derivation.
 
+## GH-22 next-pass implementation — scoped context coverage
+
+Authority: `DF-SDE-2026-0008`, `DF-SDE-2026-0014`, `EX-SDE-2026-0006`.
+
+| Requirement | Status | Implementation | Test |
+|---|---|---|---|
+| Contract/domain-defined named scopes | Implemented | `CoverageScope` in `src/Ordo.Core/Coverage.fs` | `CoreTests` |
+| Complete / Partial / Unknown are distinct | Implemented | closed `CoverageStatus` union | `CoreTests`, `WireTests` |
+| Multiple scopes per decision | Implemented | `DecisionRequest.Coverage : ContextCoverageClaim list` | Strata mixed-dimension slice test |
+| Coverage backed by provenance | Implemented | every claim requires one or more Evidence IDs; request construction verifies they exist | `DecisionTests`, `WireTests` |
+| Contract may require Complete named scope | Implemented | `DecisionContract.RequiredCoverage` / `requiringCoverage` | `SliceTests` |
+| Required missing/Partial/Unknown coverage stops provider execution | Implemented | `InsufficientCoverage` and `Resolve.execute` preflight | `SliceTests` |
+| Partial != Unknown | Implemented | distinct `CoveragePartial` / `CoverageUnknown` failures | Strata and Time Tracking scenario tests |
+| Provider sees coverage explicitly | Implemented | `ProviderCoverage`, separate `<coverage>` block in Anthropic adapter | `AdapterTests`, `SliceTests` |
+| Stable wire vocabulary | Implemented | `ordo.context-coverage` and `ordo.coverage-requirement` schema v1 | `WireTests` |
+| No global completeness flag or inference | Implemented by API shape | only explicit scoped claims can be Complete | source/API surface |
+| Evidence-only alternative rejected | Governed | EX-SDE-2026-0006 / DF-SDE-2026-0014 | repository-backed spike |
+
+The Strata scenario proves one request may legitimately contain `relations = Complete` and `relation_access = Partial`. The Time Tracking scenario proves an unreadable current reference catalog is `Unknown`, not an empty Complete catalog. Inactive historical references and restore-overlap rules remain ordinary domain state rather than being absorbed into coverage.
+
 ## Class B — before ROS integration
 
 | Requirement | Status | Note |

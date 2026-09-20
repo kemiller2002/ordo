@@ -20,6 +20,7 @@ open System.Threading.Tasks
 open Ordo.Core.Json
 open Ordo.Core.Clock
 open Ordo.Core.Evidence
+open Ordo.Core.Coverage
 open Ordo.Core.Resolution
 open Ordo.Core.StateIdentity
 open Ordo.Decisions.Contract
@@ -80,6 +81,15 @@ module Resolve =
           Scope = request.Contract.Scope
           LegalChoices = ChoiceSpace.tokens request.Contract.Choices
           RequiredEvidence = request.Contract.RequiredEvidence |> List.map (fun r -> r.Id, r.Description)
+          RequiredCoverage =
+            request.Contract.RequiredCoverage
+            |> List.map (fun r -> CoverageScope.value r.Scope, r.Description)
+          Coverage =
+            request.Coverage
+            |> List.map (fun claim ->
+                { Scope = claim.Scope |> CoverageScope.value
+                  Status = claim.Status |> CoverageStatus.toWire
+                  ProvenanceEvidenceIds = claim.Provenance |> List.map Ordo.Core.Identifiers.EvidenceId.value })
           Evidence =
             request.Evidence
             |> List.map (fun e ->
@@ -121,6 +131,7 @@ module Resolve =
             step ToHumanReview described
         | Decided _
         | InsufficientEvidence _
+        | InsufficientCoverage _
         | ProviderFailure _
         | ResolutionCancelled -> EscalationChain.empty
 
@@ -194,6 +205,7 @@ module Resolve =
 
             let checks = DecisionRequest.checkEvidence startedAt request
             let unmet = Evidence.unmet checks
+            let coverageFailures = DecisionRequest.checkCoverage request
 
             let satisfyingEvidence =
                 checks
@@ -203,21 +215,26 @@ module Resolve =
                     | WrongKind _
                     | Unsatisfied _ -> None)
 
-            match missingCapabilities, unmet with
-            | missing :: _, _ ->
+            match missingCapabilities, unmet, coverageFailures with
+            | missing :: _, _, _ ->
                 return
                     finish
                         (Some provider.Identity)
                         ProviderUsage.unreported
                         0
                         (ProviderFailure(UnsupportedCapability(ProviderCapability.toWire missing)))
-            | [], _ :: _ ->
+            | [], _ :: _, _ ->
                 // Required evidence is absent, stale or of the wrong kind.
                 // The provider is not asked: an answer given without the
                 // evidence the contract requires would be a guess wearing a
                 // decision's clothes.
                 return finish None ProviderUsage.unreported 0 (InsufficientEvidence unmet)
-            | [], [] ->
+            | [], [], _ :: _ ->
+                // Required context coverage is absent, known-partial, or
+                // unknown. A provider is not allowed to turn that into an
+                // answer by guessing beyond the observed scope.
+                return finish None ProviderUsage.unreported 0 (InsufficientCoverage coverageFailures)
+            | [], [], [] ->
                 let providerRequest = toProviderRequest options request
 
                 let! outcome =

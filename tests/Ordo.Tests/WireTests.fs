@@ -6,6 +6,7 @@ open Xunit
 open Ordo.Core.Json
 open Ordo.Core.Identifiers
 open Ordo.Core.Evidence
+open Ordo.Core.Coverage
 open Ordo.Core.Obligation
 open Ordo.Core.StateIdentity
 open Ordo.Core.Wire
@@ -55,6 +56,56 @@ let ``a requirement with no freshness rule round-trips as having none`` () =
         Assert.Equal(None, decoded.MaximumAge)
         Assert.Empty decoded.AcceptableKinds
     | Error error -> failwithf "decoding failed: %A" error
+
+[<Fact>]
+let ``coverage requirement and claim keep their scope status and provenance on the wire`` () =
+    let scope = ok (CoverageScope.create "strata.relations")
+    let requirement = CoverageRequirement.complete scope "relations must be complete"
+    let claim = ok (ContextCoverageClaim.create scope Partial [ diagnosticEvidence.Id; diffEvidence.Id ])
+
+    match roundTrip encodeCoverageRequirement decodeCoverageRequirement requirement with
+    | Ok decoded -> Assert.Equal(requirement, decoded)
+    | Error error -> failwithf "coverage requirement decoding failed: %A" error
+
+    match roundTrip encodeContextCoverageClaim decodeContextCoverageClaim claim with
+    | Ok decoded ->
+        Assert.Equal(claim.Scope, decoded.Scope)
+        Assert.Equal(Partial, decoded.Status)
+        Assert.Equal<EvidenceId list>(claim.Provenance, decoded.Provenance)
+    | Error error -> failwithf "coverage claim decoding failed: %A" error
+
+[<Fact>]
+let ``coverage wire refuses unknown statuses and claims with no provenance`` () =
+    let scope = ok (CoverageScope.create "scope")
+    let claim = ok (ContextCoverageClaim.create scope Complete [ diagnosticEvidence.Id ])
+
+    let unknownStatus =
+        match encodeContextCoverageClaim claim with
+        | JObject members ->
+            JObject(
+                members
+                |> List.map (fun (name, value) ->
+                    if name = "status" then name, JString "mostly-complete" else name, value)
+            )
+        | other -> other
+
+    match decodeContextCoverageClaim unknownStatus with
+    | Error(UnknownVariant("status", "mostly-complete")) -> ()
+    | other -> failwithf "expected unknown coverage status refusal, got %A" other
+
+    let noProvenance =
+        match encodeContextCoverageClaim claim with
+        | JObject members ->
+            JObject(
+                members
+                |> List.map (fun (name, value) ->
+                    if name = "provenanceEvidenceIds" then name, JArray [] else name, value)
+            )
+        | other -> other
+
+    match decodeContextCoverageClaim noProvenance with
+    | Error(InvalidField("$.provenanceEvidenceIds", _)) -> ()
+    | other -> failwithf "expected empty coverage provenance refusal, got %A" other
 
 [<Fact>]
 let ``a state snapshot is refused if its stored fingerprint disagrees with its view`` () =

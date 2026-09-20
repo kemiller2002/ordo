@@ -6,6 +6,7 @@ open Xunit
 open Ordo.Core.Json
 open Ordo.Core.Identifiers
 open Ordo.Core.Evidence
+open Ordo.Core.Coverage
 open Ordo.Core.Capability
 open Ordo.Core.Obligation
 open Ordo.Core.Resolution
@@ -161,6 +162,57 @@ let ``duplicate evidence identities are refused before provenance traversal`` ()
     match EvidenceDependency.validateClosedSet [ first; second ] with
     | Error(DuplicateEvidenceId id) -> Assert.Equal("duplicate", EvidenceId.value id)
     | other -> failwithf "expected a duplicate identity error, got %A" other
+
+[<Fact>]
+let ``coverage scopes are explicit semantic identifiers`` () =
+    Assert.Equal(Error CoverageScopeEmpty, CoverageScope.create "")
+    Assert.Equal(Error(CoverageScopeNotTrimmed " relations"), CoverageScope.create " relations")
+
+    let scope = ok (CoverageScope.create "schema.relations")
+    Assert.Equal("schema.relations", CoverageScope.value scope)
+
+[<Fact>]
+let ``Strata-style coverage keeps complete and partial dimensions separate`` () =
+    let relations = ok (CoverageScope.create "strata.relations")
+    let access = ok (CoverageScope.create "strata.relation-access")
+    let provenance = evidence "strata-introspection" Direct now (JString "hidden.secret is catalog-visible but unreadable")
+
+    let complete = ok (ContextCoverageClaim.create relations Complete [ provenance.Id ])
+    let partial = ok (ContextCoverageClaim.create access Partial [ provenance.Id ])
+    let claims = [ complete; partial ]
+
+    Assert.Equal(None, ContextCoverage.checkRequirement claims (CoverageRequirement.complete relations "relations must be fully enumerated"))
+
+    match ContextCoverage.checkRequirement claims (CoverageRequirement.complete access "relation access must be fully established") with
+    | Some(CoveragePartial(requirement, claim)) ->
+        Assert.Equal(access, requirement.Scope)
+        Assert.Equal(Partial, claim.Status)
+    | other -> failwithf "expected relation-access to remain Partial, got %A" other
+
+[<Fact>]
+let ``Time Tracking unreadable reference catalog is Unknown rather than empty or Partial`` () =
+    let scope = ok (CoverageScope.create "chrona.reference-catalog")
+    let failedPull = evidence "reference-pull" Direct now (JString "network error while reading reference.json")
+    let claim = ok (ContextCoverageClaim.create scope Unknown [ failedPull.Id ])
+    let requirement = CoverageRequirement.complete scope "the current reference catalog must be established"
+
+    match ContextCoverage.checkRequirement [ claim ] requirement with
+    | Some(CoverageUnknown(_, actual)) -> Assert.Equal(Unknown, actual.Status)
+    | other -> failwithf "expected Unknown reference-catalog coverage, got %A" other
+
+[<Fact>]
+let ``coverage claims require evidence provenance and reject ambiguous duplicate scopes`` () =
+    let scope = ok (CoverageScope.create "scope")
+    let provenance = evidence "coverage-source" Direct now JNull
+
+    Assert.Equal(Error(CoverageProvenanceRequired scope), ContextCoverageClaim.create scope Complete [])
+
+    let first = ok (ContextCoverageClaim.create scope Complete [ provenance.Id ])
+    let second = ok (ContextCoverageClaim.create scope Partial [ provenance.Id ])
+
+    match ContextCoverage.validateClaims [ provenance ] [ first; second ] with
+    | Error(DuplicateCoverageScope duplicate) -> Assert.Equal(scope, duplicate)
+    | other -> failwithf "expected duplicate coverage scope refusal, got %A" other
 
 [<Fact>]
 let ``a capability set answers only what it was granted`` () =
