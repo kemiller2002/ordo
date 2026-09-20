@@ -573,3 +573,14 @@ main > section {
 
   .section-heading { grid-template-columns: 1fr; }
 }
+
+/* A semantic h2 inside the hero side-card must not inherit display-heading scale. */
+.card h2.card-title {
+  margin: 0 0 .7rem;
+  max-width: 24ch;
+  font-family: var(--sans);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.25;
+}
