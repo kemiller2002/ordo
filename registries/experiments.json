@@ -100,5 +100,26 @@
     "title": "Scoped coverage representation spike against Strata and Time Tracking",
     "type": "experiment-record",
     "updated": "2026-09-20"
+  },
+  {
+    "created": "2026-09-20",
+    "id": "EX-SDE-2026-0007",
+    "path": "research/experiments/EX-SDE-2026-0007--negative-knowledge-representation-spike.md",
+    "related_documents": [
+      "research/decisions/DF-SDE-2026-0012--adopt-scoped-negative-knowledge-discipline.md",
+      "research/decisions/DF-SDE-2026-0015--represent-negative-search-observations-as-typed-evidence-content.md"
+    ],
+    "status": "completed",
+    "tags": [
+      "ordo",
+      "negative-knowledge",
+      "gh-24",
+      "strata",
+      "time-tracking",
+      "helixnote"
+    ],
+    "title": "Negative-knowledge representation spike across Strata, Time Tracking, and HelixNote",
+    "type": "experiment-record",
+    "updated": "2026-09-20"
   }
 ]
