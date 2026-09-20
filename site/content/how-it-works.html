@@ -29,57 +29,7 @@ summary: The Ordo decision loop, four-tier responsibility model, and engineering
     </div>
   </div>
 
-  <div class="decision-flow">
-    <div class="flow-step">
-      <span class="flow-index">State</span>
-      <h3>Project the smallest semantically complete state view</h3>
-      <p>
-        The domain selects the authoritative facts that could change the legal outcome. The view
-        carries a schema/version identity and Ordo fingerprints the whole selected view.
-      </p>
-    </div>
-    <div class="flow-step">
-      <span class="flow-index">Knowledge</span>
-      <h3>Attach evidence and scoped coverage</h3>
-      <p>
-        Evidence carries provenance. Coverage states whether a named scope is Complete, Partial,
-        or Unknown. Required incomplete coverage stops the decision before provider execution.
-      </p>
-    </div>
-    <div class="flow-step">
-      <span class="flow-index">Authority</span>
-      <h3>Resolve capabilities, obligations, and policy</h3>
-      <p>
-        Capabilities represent host-established semantic authority. Obligations represent work
-        that must still be satisfied. Policy and transition guards determine what is actually legal.
-      </p>
-    </div>
-    <div class="flow-step">
-      <span class="flow-index">Decision</span>
-      <h3>Choose only among legal alternatives</h3>
-      <p>
-        Deterministic computation is preferred where practical. A bounded model decision can be
-        used where judgment is required. Missing prerequisites produce refusal or escalation, not
-        a fabricated answer.
-      </p>
-    </div>
-    <div class="flow-step">
-      <span class="flow-index">Effect</span>
-      <h3>Request external work as data</h3>
-      <p>
-        Tier Two requests the effect. Tier Three coordinates the boundary. Tier Four performs or
-        observes the external work.
-      </p>
-    </div>
-    <div class="flow-step">
-      <span class="flow-index">Reconcile</span>
-      <h3>Interpret Succeeded, Failed, or Unknown</h3>
-      <p>
-        Unknown is preserved as Unknown. State-changing unknown effects create a reconciliation
-        obligation so later work cannot rely on a result the system never actually established.
-      </p>
-    </div>
-  </div>
+  {{diagram:decision}}
 </section>
 
 <section>
@@ -112,6 +62,8 @@ summary: The Ordo decision loop, four-tier responsibility model, and engineering
       </p>
     </div>
   </div>
+  {{diagram:lifecycle}}
+
   <p><a href="{{link:/concepts/state/}}">State in depth →</a></p>
 </section>
 
@@ -136,6 +88,8 @@ summary: The Ordo decision loop, four-tier responsibility model, and engineering
       </p>
     </div>
   </div>
+
+  {{diagram:evidence-coverage}}
 
   <div class="note">
     <p>
@@ -194,6 +148,8 @@ summary: The Ordo decision loop, four-tier responsibility model, and engineering
       </p>
     </div>
   </div>
+  {{diagram:transition}}
+
   <p>
     <a href="{{link:/concepts/transitions/}}">Transitions →</a> ·
     <a href="{{link:/concepts/capabilities/}}">Capabilities →</a> ·
@@ -222,6 +178,8 @@ summary: The Ordo decision loop, four-tier responsibility model, and engineering
       </p>
     </div>
   </div>
+  {{diagram:effect-outcomes}}
+
   <div class="note">
     <p>
       Retry before reconciliation is allowed only when the real external contract proves retry
@@ -240,28 +198,7 @@ summary: The Ordo decision loop, four-tier responsibility model, and engineering
     </div>
   </div>
 
-  <div class="tier-grid">
-    <div class="card">
-      <p class="card-kicker">Tier One</p>
-      <h3>Semantic Model</h3>
-      <p>What can be true: domain state, evidence, coverage, capabilities, obligations, uncertainty.</p>
-    </div>
-    <div class="card">
-      <p class="card-kicker">Tier Two</p>
-      <h3>State Transition / Domain Execution</h3>
-      <p>What legal change may happen: decisions, guards, policy, transitions, effects requested as data.</p>
-    </div>
-    <div class="card">
-      <p class="card-kicker">Tier Three</p>
-      <h3>Application / Projection / Orchestration</h3>
-      <p>Coordinates use cases and boundaries without becoming a second source of semantic truth.</p>
-    </div>
-    <div class="card">
-      <p class="card-kicker">Tier Four</p>
-      <h3>Host / External Effects</h3>
-      <p>Performs and observes infrastructure work, including explicit unknown outcomes.</p>
-    </div>
-  </div>
+  {{diagram:architecture}}
 
   <div class="callout">
     <h3>The guardrail</h3>
@@ -294,6 +231,8 @@ summary: The Ordo decision loop, four-tier responsibility model, and engineering
       </p>
     </div>
   </div>
+  {{diagram:context}}
+
   <p>
     <a href="{{link:/concepts/locality/}}">Structural locality →</a> ·
     <a href="{{link:/concepts/navigation/}}">Navigation and context →</a>
@@ -302,32 +241,8 @@ summary: The Ordo decision loop, four-tier responsibility model, and engineering
 
 <section>
   <h2 id="verification">Verification is heterogeneous on purpose</h2>
-  <div class="grid grid-three">
-    <div class="card">
-      <p class="card-kicker">Mechanical</p>
-      <h3>Use the earliest trustworthy refusal</h3>
-      <p>
-        Type checks, architecture checks, structural checks, contract checks, and other mechanical
-        mechanisms catch different classes of failure before broader behavioral review.
-      </p>
-    </div>
-    <div class="card">
-      <p class="card-kicker">Behavioral</p>
-      <h3>Test the domain behavior</h3>
-      <p>
-        Executable specifications and integration tests verify that allowed transitions and
-        boundary behavior match the intended semantics.
-      </p>
-    </div>
-    <div class="card">
-      <p class="card-kicker">Independent</p>
-      <h3>Use a mechanism with different blind spots</h3>
-      <p>
-        Independent adversarial review matters because a green build and a passing test suite do
-        not cover every failure class.
-      </p>
-    </div>
-  </div>
+  {{diagram:verification}}
+
   <p><a href="{{link:/concepts/verification/}}">Verification in depth →</a></p>
 </section>
 
