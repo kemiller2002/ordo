@@ -184,6 +184,24 @@ Authority: `DF-SDE-2026-0012`, `DF-SDE-2026-0015`, `EX-SDE-2026-0007`.
 
 Strata's not-compared false-clean case is explicitly not a NegativeObservation because the comparison did not run. Time Tracking's failed reference pull cannot support absence because coverage is Unknown. HelixNote's Measurement.UnitMissing remains a domain fact about source omission, not a search observation.
 
+## GH-25 next-pass implementation — observation v2 and SDE 1.3.0 distribution
+
+Authority: `DF-SDE-2026-0013`, `docs/architecture/ordo-next-pass-implementation-plan.md`.
+
+| Requirement | Status | Implementation | Test |
+|---|---|---|---|
+| New observation semantics use a new wire schema | Implemented | `ResolutionObservation.SchemaVersion = 2` | `SliceTests` asserts schema v2 |
+| Audit records identify the state-view schema used | Implemented | `ResolutionObservation.StateViewSchema` and `stateViewSchema` wire member | `SliceTests` |
+| Scoped coverage is present in observations/audit output | Implemented | `ResolutionObservation.Coverage`; emitted even when incomplete coverage stops provider execution | `SliceTests` partial and mixed-scope cases |
+| Existing state-snapshot v1 history remains historical | Preserved | state-snapshot v1 decoding/round-trip remains unchanged; new authorization still requires a versioned snapshot | `WireTests` legacy fixture |
+| SDE distribution carries accepted decision/evidence doctrine | Implemented | `distribution/DISTRIBUTION-MAP.json` -> `.sde/architecture/DECISION-AND-EVIDENCE-SEMANTICS.md` | `LifecycleTests`, packed-artifact test |
+| SDE package minor version reflects additive methodology change | Implemented | `@echelon-foundry/sde` 1.3.0 | version/contract/package tests |
+| 1.2.0 -> 1.3.0 upgrade is additive and dry-runnable | Implemented | payload replacement only; configuration remains v2 | `LifecycleTests` release-specific dry-run/apply case |
+| Package matrix and documented quick start | Release gate | GitHub Actions `SDE distribution` | Ubuntu Node 18/20/22, macOS Node 22, Windows Node 22, quick start |
+| Live provider | Explicitly separate | no live-provider result is inferred from normal CI | `LiveAdapterTests` remains opt-in |
+
+The SDE package version and executable Ordo wire versions remain independent. SDE 1.3.0 installs methodology; `ordo.resolution-observation` schema v2 identifies the new audit shape. Neither version is used as a substitute for the other.
+
 ## Class B — before ROS integration
 
 | Requirement | Status | Note |
