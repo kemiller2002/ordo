@@ -114,3 +114,5 @@ The implementation should start with state-view identity/versioning and evidence
 ## Governance validation handoff
 
 The six decision records and doctrine updates were indexed with `./ros registry build`, followed by successful `./ros registry check` and `./ros validate` in the GH-18 governance indexing job. Normal repository CI is run again on this final indexed state before implementation begins.
+
+The final governance records, including DF-SDE-2026-0013 and the implementation plan, were indexed by the repository ROS CLI with registry check and validation passing. This note triggers the normal repository CI against the fully indexed state.
