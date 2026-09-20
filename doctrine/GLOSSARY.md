@@ -130,9 +130,13 @@ picking one meaning.
 - **Ordo Capability** - a host/application-supplied semantic authority
   prerequisite. It is not an authentication token, credential, object
   capability, signature, or identity proof.
-- **Negative observation** - a scoped, method- and state-version-specific
-  observation that a target was not found. It is not an unqualified absence
-  claim.
+- **Negative observation** - typed Evidence content stating that a declared
+  method actually ran against a named scope/state and did not find one target.
+  It records method/query, state reference, exclusions and errors. It is not
+  an unqualified absence claim.
+- **Absence support** - the structural condition that a negative observation's
+  Evidence is provenance for matching Complete scoped coverage. It permits a
+  domain to consider absence; it does not create truth by itself.
 
 ## SDE (methodology) terms
 
