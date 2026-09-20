@@ -1,193 +1,329 @@
 ---
 path: /
 title: Ordo | State-Directed Engineering
-description: AI writes plausible code faster than teams can absorb it. Ordo makes state, legal actions, ownership and verification explicit, so correctness stops depending on what a human or an agent infers.
+description: Ordo is Echelon Foundry's State-Directed Engineering methodology. It makes state, evidence, legal actions, obligations, uncertainty, and external-effect outcomes explicit so humans and AI agents can make bounded changes without reconstructing the system's meaning from incidental code.
 section: Home
 order: 1
-summary: What Ordo does, the problem it addresses, and what was measured.
+summary: What Ordo is, how it works, and what it changes for human and AI-assisted engineering.
 ---
 <section class="hero">
-  <p class="eyebrow">Echelon Foundry</p>
-  <h1>Your agents aren't the bottleneck. Absorbing what they produce is.</h1>
-  <p class="lead">
-    Ordo is a State-Directed Engineering methodology. It turns the things a codebase
-    normally leaves implicit — what states exist, which changes are legal, who owns a rule,
-    what counts as done — into structures a compiler and a test suite can act on. The point is
-    not to make agents write better code. It is to stop correctness depending on what anyone,
-    human or model, has to infer.
-  </p>
-  <div class="actions">
-    <a class="button primary" href="{{link:/how-it-works/}}">How it works</a>
-    <a class="button ghost" href="{{link:/results/}}">What we measured</a>
+  <div class="hero-grid">
+    <div class="stack">
+      <span class="eyebrow">Ordo · State-Directed Engineering</span>
+      <h1>Make the legal next move explicit.</h1>
+      <p class="lead">
+        Ordo is Echelon Foundry's engineering methodology for building software around explicit
+        state, evidence, legal transitions, capabilities, obligations, and uncertainty. Instead of
+        asking a human or an AI agent to infer what the system means, the domain states what is
+        true, what may happen next, what is still unresolved, and what must be verified before work
+        continues.
+      </p>
+      <div class="actions">
+        <a class="button primary" href="{{link:/how-it-works/}}">See how Ordo works</a>
+        <a class="button ghost" href="{{link:/adoption/}}">Adopt it incrementally</a>
+      </div>
+      <div class="stat-blocks">
+        <div class="stat">State is explicit <span class="muted">What can be true is represented directly</span></div>
+        <div class="stat">Evidence is explicit <span class="muted">What is known, from where, and with what coverage</span></div>
+        <div class="stat">Legal actions are derived <span class="muted">The domain exposes what may happen next</span></div>
+        <div class="stat">Unresolved work stays visible <span class="muted">Unknown effects and obligations are not collapsed away</span></div>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="signal">
+        Ordo reduces inference by moving decision-relevant meaning into structures the software can
+        check.
+      </div>
+      <div class="card">
+        <p class="card-kicker">In one sentence</p>
+        <h3>Bound the reasoning before you ask for a decision.</h3>
+        <p>
+          Give the engineer or agent the smallest semantically complete state view, the evidence
+          and coverage that support it, the authority already established by the host, and the
+          legal choices the domain permits. Then verify the result through mechanisms with
+          different failure sensitivities.
+        </p>
+      </div>
+      <div class="callout helix-card">
+        Ordo is not an AI wrapper, not a generic workflow engine, and not a fifth architecture
+        tier. It is a method for making software semantics explicit and mechanically enforceable.
+      </div>
+    </div>
   </div>
 </section>
 
 <section>
-  <h2>The problem is now well measured, and it is not code generation</h2>
-  <p>
-    Generation got solved. Absorption did not. Three independent findings, none of them ours:
-  </p>
-  <div class="grid grid-three">
-    <div class="card">
-      <p class="card-kicker">{{ref:R-DORA-2025}}</p>
-      <h3>Throughput up, stability down</h3>
-      <p>
-        Higher AI adoption now correlates with <em>both</em> faster delivery and more delivery
-        instability — more change failures, more rework, longer recovery. DORA's own reading:
-        change volume is outrunning the control systems meant to absorb it.
-      </p>
-    </div>
-    <div class="card">
-      <p class="card-kicker">{{ref:R-METR-RCT}}</p>
-      <h3>19% slower, and they couldn't tell</h3>
-      <p>
-        Sixteen experienced maintainers, 246 real issues, repositories they knew well. They were
-        19% slower with AI. They had forecast 24% faster, and afterwards still believed they had
-        been 20% faster.
-      </p>
-    </div>
-    <div class="card">
-      <p class="card-kicker">{{ref:R-METR-HOLISTIC}}</p>
-      <h3>Tests pass. Not mergeable.</h3>
-      <p>
-        Across eighteen real tasks in mature repositories, agent solutions passed the reference
-        tests and still failed merge-readiness review. A green suite stopped being evidence that
-        the work was done.
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">The core idea</span>
+      <h2>Give the system a vocabulary for truth, action, and uncertainty.</h2>
+      <p class="mute">
+        Most codebases encode these ideas indirectly through nullable fields, duplicated checks,
+        comments, conventions, exceptions, and tribal knowledge. Ordo makes them first-class.
       </p>
     </div>
   </div>
-  <p>
-    A framework paper synthesising telemetry from more than ten thousand developers puts a number
-    on the shape of it — {{ref:R-PRP}} reports 98% more pull requests, 91% longer review times,
-    and flat delivery — and draws the conclusion Ordo is built on:
-    <strong>the bottleneck moves from generation to specification clarity.</strong>
-  </p>
-</section>
 
-<section>
-  <h2>What Ordo changes</h2>
-  <p>
-    Every mechanism below exists because something specific goes wrong without it. Each one
-    trades a small, one-time declaration for a permanent reduction in what has to be inferred.
-  </p>
   <div class="grid">
     <div class="card">
-      <p class="card-kicker">Mechanism</p>
-      <h3>State is named, not inferred</h3>
+      <p class="card-kicker">State</p>
+      <h3>Represent what can actually be true</h3>
       <p>
-        An entry is <em>Recorded</em>, <em>Voided</em> or <em>Superseded</em> — not a combination
-        of four optional fields a reader has to decode. Data belonging to one state is only
-        constructible in that state.
+        A domain uses closed alternatives and state-specific data rather than asking every caller
+        to reconstruct meaning from combinations of fields. A bounded decision operates on the
+        smallest domain-defined state view that is semantically complete for that decision.
       </p>
       <p class="outcome-line">
-        Consequence: whole categories of defensive branching stop being necessary, because the
-        condition they guard against cannot be written down.
+        The view is versioned and fingerprinted as a whole. Ordo does not selectively ignore
+        changed fields.
       </p>
     </div>
+
     <div class="card">
-      <p class="card-kicker">Mechanism</p>
-      <h3>Only legal transitions exist</h3>
+      <p class="card-kicker">Evidence and coverage</p>
+      <h3>Represent what is known and how completely it is known</h3>
       <p>
-        Change happens through named transitions the model declares. Reviving a superseded
-        record isn't rejected at runtime — there is no route to take.
+        Evidence carries provenance. Coverage says whether a named scope is Complete, Partial, or
+        Unknown. Required coverage can stop a decision before a provider or model is called.
       </p>
       <p class="outcome-line">
-        Consequence: an agent choosing from the legal set cannot construct an illegal request.
-        The action space shrinks instead of the rulebook growing.
+        More context, provider confidence, or a successful call never silently becomes proof of
+        complete coverage.
       </p>
     </div>
+
     <div class="card">
-      <p class="card-kicker">Mechanism</p>
-      <h3>One authority per rule</h3>
+      <p class="card-kicker">Capabilities</p>
+      <h3>Expose semantic authority, not a second rulebook</h3>
       <p>
-        What an actor may do next is computed from the same predicates the transitions enforce —
-        never a second copy maintained beside them.
+        A Capability is a semantic authority prerequisite that the host has already established
+        and supplied for transition evaluation. It is not authentication and it cannot be created
+        by model output or confidence.
       </p>
       <p class="outcome-line">
-        Consequence: the interface and the enforcement cannot drift, because there is only one
-        of them to drift from.
+        The same predicates that guard a transition should also determine whether that transition
+        is available.
       </p>
     </div>
+
     <div class="card">
-      <p class="card-kicker">Mechanism</p>
-      <h3>Verification that fails differently</h3>
+      <p class="card-kicker">Obligations</p>
+      <h3>Make unresolved work part of the state</h3>
       <p>
-        Type checks, architecture checks, behavioural tests, integration against a real
-        boundary, and independent review — chosen because their blind spots don't overlap.
+        If something must still happen before the system can proceed safely, Ordo represents that
+        as an obligation instead of leaving it in a comment, a log message, or someone's memory.
       </p>
       <p class="outcome-line">
-        Consequence: a passing suite stops being the only signal, which matters because a
-        passing suite demonstrably isn't one.
+        Obligations can block later transitions until the domain's required work is actually
+        satisfied.
+      </p>
+    </div>
+
+    <div class="card">
+      <p class="card-kicker">External effects</p>
+      <h3>Unknown is not Failed</h3>
+      <p>
+        External work can Succeed, Fail, or be Unknown. If the system cannot tell whether a
+        state-changing effect occurred, it retains that uncertainty and creates reconciliation
+        work rather than pretending failure or retrying blindly.
+      </p>
+      <p class="outcome-line">
+        Tier Three and Tier Four perform the observation. Tier One and Tier Two interpret what the
+        result means.
+      </p>
+    </div>
+
+    <div class="card">
+      <p class="card-kicker">Negative knowledge</p>
+      <h3>"Not found" is only meaningful inside a complete scope</h3>
+      <p>
+        Ordo distinguishes absent from not searched, not compared, unsupported, unavailable, and
+        unknown. A negative observation can support absence only when the method could detect the
+        target and coverage for the matching scope is Complete.
+      </p>
+      <p class="outcome-line">
+        This prevents missing information from being silently promoted into a fact.
       </p>
     </div>
   </div>
-  <p><a href="{{link:/how-it-works/}}">The full mechanism, step by step →</a></p>
 </section>
 
 <section>
-  <h2>What we measured</h2>
-  <p>
-    {{count:experiments}} recorded trials across {{count:codebases}} codebases. Three results
-    that survived adversarial review:
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">A bounded decision</span>
+      <h2>The decision starts before the model or engineer chooses anything.</h2>
+      <p class="mute">
+        Ordo defines the semantic conditions under which a decision is allowed to exist.
+      </p>
+    </div>
+  </div>
+
+  <div class="decision-flow">
+    <div class="flow-step">
+      <span class="flow-index">State</span>
+      <h3>Select the semantically complete view</h3>
+      <p>The domain projects exactly the authoritative facts that can change the legal outcome.</p>
+    </div>
+    <div class="flow-step">
+      <span class="flow-index">Evidence</span>
+      <h3>Establish evidence and scoped coverage</h3>
+      <p>Required evidence, provenance, and Complete coverage must exist before the decision proceeds.</p>
+    </div>
+    <div class="flow-step">
+      <span class="flow-index">Authority</span>
+      <h3>Derive the legal choice space</h3>
+      <p>Capabilities, obligations, policy, and transition rules determine which choices are actually legal.</p>
+    </div>
+    <div class="flow-step">
+      <span class="flow-index">Outcome</span>
+      <h3>Interpret the effect honestly</h3>
+      <p>Success, failure, and unknown remain distinct. Unknown state-changing effects create reconciliation work.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <p>
+      The important shift is that provider output is never the source of authority. A model may
+      help choose among legal alternatives, but it cannot invent a capability, waive missing
+      coverage, erase an obligation, or make an illegal transition legal.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">Architecture</span>
+      <h2>Four tiers. One dependency direction.</h2>
+      <p class="mute">
+        Ordo strengthens the semantic core without pulling infrastructure concerns into it.
+      </p>
+    </div>
+  </div>
+
+  <div class="tier-grid">
+    <div class="card">
+      <p class="card-kicker">Tier One · Semantic Model</p>
+      <h3>What can be true?</h3>
+      <p>Domain values, closed alternatives, evidence, coverage, capabilities, obligations, and uncertainty.</p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Tier Two · Domain Execution</p>
+      <h3>What legal change may happen?</h3>
+      <p>Transitions, guards, policy, invariants, decisions, requested effects, and interpretation of effect results.</p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Tier Three · Application / Orchestration</p>
+      <h3>How is the use case coordinated?</h3>
+      <p>Use-case flow, projections, boundary translation, and coordination without becoming a second semantic authority.</p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Tier Four · Host / External Effects</p>
+      <h3>What actually happened outside the domain?</h3>
+      <p>Database, network, browser, filesystem, clock, queues, providers, and other external I/O.</p>
+    </div>
+  </div>
+
+  <p class="architecture-note">
+    Dependencies point toward the semantic core. ROS observes engineering execution from outside
+    the application stack. It is not Tier Five, and application correctness must not depend on ROS
+    being present.
   </p>
+</section>
+
+<section>
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">AI-assisted engineering</span>
+      <h2>Ordo changes what the agent has to reason about.</h2>
+      <p class="mute">
+        The goal is not a smarter prompt. The goal is a smaller, better-defined reasoning surface.
+      </p>
+    </div>
+  </div>
+
+  <div class="columns">
+    <div class="card">
+      <h3>Less reconstruction</h3>
+      <p>
+        Semantic maps, structural locality, explicit state, and bounded context reduce how much of
+        the repository must be rediscovered before a safe change can begin.
+      </p>
+    </div>
+    <div class="card">
+      <h3>A narrower action space</h3>
+      <p>
+        Agents choose from domain-defined legal actions rather than inventing requests and relying
+        on downstream validation to reject the wrong ones.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Explicit refusal and escalation</h3>
+      <p>
+        Missing authority, insufficient coverage, unresolved obligations, and unknown effects can
+        stop work explicitly instead of forcing an answer.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Deterministic work stays deterministic</h3>
+      <p>
+        Where a result can be computed or mechanically verified, Ordo prefers that mechanism over
+        open-ended model reasoning.
+      </p>
+    </div>
+  </div>
+
+  <div class="note">
+    <p>
+      Lower cost, fewer tokens, lower latency, and more safely autonomous work are current
+      measurement objectives, not established Ordo results. The methodology is deliberately
+      instrumented so those claims can be tested rather than assumed.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">Evidence</span>
+      <h2>What the evidence currently supports.</h2>
+      <p class="mute">
+        Ordo's strongest results are about how failures become discoverable, where mechanical
+        feedback catches them, and how independently constructed implementations converge.
+      </p>
+    </div>
+    <a class="button ghost" href="{{link:/results/}}">See the full evidence</a>
+  </div>
+
   {{metrics:M-GF2B-OVERLAP,M-TE-JS-LANGUAGE,M-GF2A-AC}}
-  <p>
-    The first is the one to dwell on. A fresh reviewer examined a finished build that had already
-    passed a 90-test suite, a strict type check, a dependency audit, an architecture check, and an
-    adversarial self-review including mutation tests. It found five things. None of them had been
-    caught by any of that — the same gap METR found independently, in someone else's repositories.
+
+  <div class="note">
+    <p>
+      Ordo does not currently establish that state-directed development produces fewer defects
+      overall than conventional development. Some controlled comparisons showed no measurable
+      difference for specific change classes. Those contradictions remain published because the
+      boundary of the evidence matters as much as the positive result.
+    </p>
+  </div>
+
+  <div class="actions">
+    <a class="button primary" href="{{link:/results/}}">Review the measurements</a>
+    <a class="button ghost" href="{{link:/comparison/}}">Compare with conventional development</a>
+  </div>
+</section>
+
+<section class="closing-cta">
+  <span class="eyebrow">Start here</span>
+  <h2>Ordo is a method for making the software explain its own rules.</h2>
+  <p class="lead">
+    Start with explicit state and legal transitions. Add evidence, coverage, capabilities,
+    obligations, boundary preservation, structural locality, and heterogeneous verification as
+    the system requires them.
   </p>
   <div class="actions">
-    <a class="button primary" href="{{link:/results/}}">See all the results</a>
-    <a class="button ghost" href="{{link:/comparison/}}">Ordo vs. conventional</a>
+    <a class="button primary" href="{{link:/how-it-works/}}">Walk through the method</a>
+    <a class="button ghost" href="{{link:/adoption/}}">See the adoption path</a>
   </div>
-</section>
-
-<section>
-  <h2>Where a conventional codebase goes quiet</h2>
-  <p>
-    A unit-of-measure change, applied to the same domain built two ways. This is the clearest
-    single illustration in our evidence base, and it is drawn from a build written under a
-    deliberately ordinary persona — not a strawman.
-  </p>
-  <div class="grid">
-    <div class="card">
-      <p class="card-kicker">Conventional</p>
-      <h3>Green build, wrong meaning</h3>
-      <p>
-        Renaming the duration field caught eight call sites in the compiler. Roughly
-        {{metric:M-TE-CS-SILENT}} more passed duration as a bare positional integer, where
-        identical source text now meant something six times different. The build was clean and
-        thirty tests passed while that was in flight. Two sites came out correct
-        {{metric:M-TE-CS-COINCIDENCE}}.
-      </p>
-    </div>
-    <div class="card callout">
-      <p class="card-kicker">Ordo</p>
-      <h3>The sentence won't compile</h3>
-      <p>
-        <code>TimeOfDay</code> and <code>DurationMinutes</code> are distinct nominal types, kept
-        apart specifically so a caller cannot pass a duration where a time-of-day is expected and
-        have it compile. This is not a measured tendency. It is a property of the code, and you
-        can read it.
-      </p>
-    </div>
-  </div>
-  <p><a href="{{link:/comparison/}}">The full comparison, including where it does not hold →</a></p>
-</section>
-
-<section class="note">
-  <h2>What we will not tell you</h2>
-  <p>
-    That Ordo produces fewer defects than conventional development. We tested the nearest thing to
-    that claim under controlled conditions and it did not hold: on field renames, explicit domain
-    types made <a href="{{link:/results/}}#no-difference">no measurable difference</a>, and on
-    arithmetic business rules no type system helped at all. That experiment is on this site
-    because it is true.
-  </p>
-  <p>
-    What the evidence supports is narrower and more useful: Ordo changes <em>which mechanism</em>
-    catches a mistake, and whether anything catches it. That is the claim, and
-    <a href="{{link:/results/}}">here is what stands behind it</a>.
-  </p>
 </section>
