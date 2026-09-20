@@ -291,5 +291,27 @@
     "title": "Release governed Ordo methodology additively while versioning executable wire semantics independently",
     "type": "decision-record",
     "updated": "2026-09-20"
+  },
+  {
+    "created": "2026-09-20",
+    "id": "DF-SDE-2026-0014",
+    "path": "research/decisions/DF-SDE-2026-0014--represent-context-coverage-as-first-class-claims.md",
+    "related_documents": [
+      "research/decisions/DF-SDE-2026-0008--adopt-scoped-context-coverage-semantics.md",
+      "research/experiments/EX-SDE-2026-0006--scoped-coverage-representation-spike.md",
+      "doctrine/DECISION-AND-EVIDENCE-SEMANTICS.md"
+    ],
+    "status": "accepted",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "architecture",
+      "ordo",
+      "gh-22",
+      "coverage"
+    ],
+    "title": "Represent context coverage as first-class scoped claims backed by evidence provenance",
+    "type": "decision-record",
+    "updated": "2026-09-20"
   }
 ]
