@@ -52,6 +52,8 @@ summary: Worked examples, each drawn from a real experiment rather than invented
     discipline plus a load-time validator instead. Both are covered on
     <a href="{{link:/concepts/state/}}">the state page</a>.
   </p>
+
+  {{diagram:lifecycle}}
 </section>
 
 <section>
@@ -111,6 +113,8 @@ Effects             one write to the record store, returned as data</code></pre>
     predicates the transitions enforce. An agent that asks the domain what is legal cannot
     construct an illegal request, because the illegal request is not in the answer.
   </p>
+    {{diagram:context}}
+
   <div class="note">
     <p>
       <strong>What this does not do.</strong> It constrains the action space; it does not make
@@ -188,6 +192,8 @@ fixtures   sampleFor : ObservedValue -> Sample                   silence until e
     <a href="{{link:/concepts/verification/}}">heterogeneous verification</a>, and it is an
     argument made entirely out of things that did not work.
   </p>
+
+  {{diagram:verification}}
 </section>
 
 <section>

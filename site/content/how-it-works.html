@@ -1,302 +1,275 @@
 ---
 path: /how-it-works/
 title: How Ordo works
-description: Each mechanism Ordo prescribes, the consequence it produces, and what was observed when it was measured.
+description: Ordo bounds software decisions with explicit state, evidence, scoped coverage, capabilities, obligations, legal transitions, honest external-effect outcomes, and heterogeneous verification.
 section: Start here
 order: 20
-summary: Each mechanism, the consequence it produces, and what was observed.
+summary: The Ordo decision loop, four-tier responsibility model, and engineering method.
 ---
 <section class="page-intro">
   <p class="eyebrow">How it works</p>
   <h1>How Ordo works</h1>
   <p class="lead">
-    Ordo is an order of operations and a set of structural commitments, not a framework to
-    install. Below, each mechanism is paired with the consequence it produces and with what was
-    actually observed — because a mechanism with no consequence is decoration, and a consequence
-    with no measurement is a hope.
+    Ordo moves decision-relevant meaning out of convention and into explicit domain structures.
+    The method asks a simple sequence of questions: what can be true, what do we actually know,
+    what authority exists, what legal change is available, what happened at the boundary, and what
+    remains unresolved?
   </p>
 </section>
 
 <section>
-  <h2>The construction order</h2>
-  {{diagram:engineering}}
-  <p>
-    Verification is not a phase at the end. It is several mechanisms with different sensitivities,
-    applied in order of how early and how cheaply each can refuse a mistake.
-  </p>
-  <p class="muted">
-    Status: the individual steps are separately supported; the ordering has not been trial-tested
-    as a single workflow on a production project.
-  </p>
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">The loop</span>
+      <h2>A safe decision is constructed before it is selected.</h2>
+      <p class="mute">
+        The provider, model, or engineer operates inside a domain-defined choice space. It does not
+        define that choice space.
+      </p>
+    </div>
+  </div>
+
+  {{diagram:decision}}
 </section>
 
 <section>
-  <h2 id="state">Explicit state</h2>
+  <h2 id="state">State is the semantic starting point</h2>
   <div class="grid grid-three">
     <div class="card">
       <p class="card-kicker">Mechanism</p>
-      <h3>The state is stored, not derived</h3>
+      <h3>Closed states and state-specific data</h3>
       <p>
-        A record is in a named state from a closed set. Fields meaningful only in one state are
-        constructible only in that state. Exhaustiveness checking is a build error.
+        A record occupies a named state from a closed set. Data meaningful only in one state is
+        constructible only in that state. Exhaustiveness checking makes new states visible to
+        every caller that must interpret them.
       </p>
     </div>
     <div class="card">
       <p class="card-kicker">Consequence</p>
-      <h3>Nothing has to decode a combination</h3>
+      <h3>Readers stop decoding combinations</h3>
       <p>
-        No read site combines flags to work out what is true, so no read site can combine them
-        differently. Adding a state produces a failing build at every place that must now decide
-        what it means.
+        Meaning no longer depends on everyone interpreting flags, nulls, status strings, and
+        related fields in exactly the same way.
       </p>
     </div>
     <div class="card">
-      <p class="card-kicker">Observed</p>
-      <h3>Three states, four transitions, twenty-four refusals</h3>
+      <p class="card-kicker">Decision view</p>
+      <h3>Only the relevant authoritative state is projected</h3>
       <p>
-        The measured build declares {{metric:M-GF1-TRANSITIONS}} and
-        {{metric:M-GF1-DIAGNOSTICS}} — each refusal a named value rather than a thrown exception
-        or a null.
+        The view must be semantically complete for the contract. If an omitted authoritative fact
+        could change legality, evidence requirements, coverage, capability applicability,
+        obligations, policy, or transition outcome, the view is incomplete.
       </p>
     </div>
   </div>
+  {{diagram:lifecycle}}
+
+  <p><a href="{{link:/concepts/state/}}">State in depth →</a></p>
+</section>
+
+<section>
+  <h2 id="evidence">Evidence and coverage are separate concepts</h2>
+  <div class="grid">
+    <div class="card">
+      <p class="card-kicker">Evidence</p>
+      <h3>What observation or fact supports the decision?</h3>
+      <p>
+        Evidence carries identity, source, observation time, basis, and typed content. Derived
+        evidence must form a closed, acyclic dependency set with every referenced input present.
+      </p>
+    </div>
+    <div class="card">
+      <p class="card-kicker">Coverage</p>
+      <h3>How completely did the observation method cover a named scope?</h3>
+      <p>
+        Coverage is Complete, Partial, or Unknown for a contract/domain-defined scope. Partial and
+        Unknown are distinct, and neither can be promoted to Complete because a provider was
+        confident or a call succeeded.
+      </p>
+    </div>
+  </div>
+
+  {{diagram:evidence-coverage}}
+
   <div class="note">
     <p>
-      <strong>Guaranteed, not measured:</strong> in the C# state implementation,
-      <code>TimeOfDay</code> and <code>DurationMinutes</code> are distinct nominal types
-      specifically so a duration cannot be supplied where a time-of-day is expected. That is a
-      property of the source, readable in the source.
+      Coverage is not itself Evidence. A coverage claim cites Evidence as provenance. A contract
+      may require Complete coverage for selected scopes, while allowing other scopes to remain
+      Partial or Unknown.
     </p>
   </div>
-  <p><a href="{{link:/concepts/state/}}">The concept in depth →</a></p>
+
+  <p><a href="{{link:/concepts/evidence/}}">Evidence in depth →</a></p>
 </section>
 
 <section>
-  <h2 id="transitions">Legal transitions</h2>
+  <h2 id="negative-knowledge">Negative knowledge requires a complete search scope</h2>
+  <p>
+    "Not found" is not the same as "absent." Ordo keeps unavailable, not searched, not compared,
+    unsupported, unknown, and absent separate. A negative observation can support absence only
+    when the observation method could detect the target and the matching coverage scope is
+    Complete.
+  </p>
+  <div class="callout">
+    <h3>Why this matters</h3>
+    <p>
+      Without scoped coverage, missing information can silently become a false fact. Ordo forces
+      the system to say whether the thing is absent or whether the system simply failed to
+      establish that it was present.
+    </p>
+  </div>
+</section>
+
+<section>
+  <h2 id="transitions">Legal transitions define the action space</h2>
   <div class="grid grid-three">
     <div class="card">
-      <p class="card-kicker">Mechanism</p>
-      <h3>Change goes through declared routes</h3>
+      <p class="card-kicker">Transitions</p>
+      <h3>Change happens through named routes</h3>
       <p>
-        Transition functions are the only thing that constructs a new state value. Terminal states
-        are enforced by every guard and asserted by tests, not merely absent from the code.
+        Guards, invariants, policy, evidence requirements, capability requirements, and
+        obligations determine whether the transition exists for the current state.
       </p>
     </div>
     <div class="card">
-      <p class="card-kicker">Consequence</p>
-      <h3>Illegal actions are unavailable, not rejected</h3>
+      <p class="card-kicker">Capabilities</p>
+      <h3>Authority is supplied, not invented</h3>
       <p>
-        An agent choosing from the legal set cannot construct an illegal request. Constraint
-        replaces remembering: the action space shrinks instead of the rulebook growing.
+        A Capability means the host has already established semantic authority needed for the
+        action. It is not a credential and model output can never create one.
       </p>
     </div>
     <div class="card">
-      <p class="card-kicker">Observed</p>
-      <h3>Independent builds agreed</h3>
+      <p class="card-kicker">Obligations</p>
+      <h3>Unresolved work can block the next transition</h3>
       <p>
-        Two agents with no contact produced identical state machines and transition sets from the
-        same requirements, differing on {{metric:M-GF2B-SCOPE}} across 41 requirement-level
-        decisions — and that one was a scope question, not a rule.
+        Obligations represent work the domain still requires. They remain part of the semantic
+        state until satisfied rather than disappearing into operational notes.
       </p>
     </div>
   </div>
   {{diagram:transition}}
-  <p><a href="{{link:/concepts/transitions/}}">The concept in depth →</a></p>
+
+  <p>
+    <a href="{{link:/concepts/transitions/}}">Transitions →</a> ·
+    <a href="{{link:/concepts/capabilities/}}">Capabilities →</a> ·
+    <a href="{{link:/concepts/obligations/}}">Obligations →</a>
+  </p>
 </section>
 
 <section>
-  <h2 id="authority">One authority per rule</h2>
-  <div class="grid grid-three">
+  <h2 id="effects">External effects report what actually happened</h2>
+  <div class="grid">
     <div class="card">
-      <p class="card-kicker">Mechanism</p>
-      <h3>Capabilities are derived, never copied</h3>
+      <p class="card-kicker">Request</p>
+      <h3>The semantic core requests the effect</h3>
       <p>
-        What an actor may do next is computed by calling the same named predicates the transitions
-        use as preconditions.
+        Tier Two returns requested work as data. Tier Three coordinates it. Tier Four performs the
+        database, network, browser, filesystem, provider, queue, clock, or other external work.
       </p>
     </div>
     <div class="card">
-      <p class="card-kicker">Consequence</p>
-      <h3>Two answers cannot disagree</h3>
+      <p class="card-kicker">Interpretation</p>
+      <h3>The domain interprets Succeeded, Failed, or Unknown</h3>
       <p>
-        The interface and the enforcement cannot drift apart, because there is one of them. A
-        change to the rule changes both by construction.
-      </p>
-    </div>
-    <div class="card">
-      <p class="card-kicker">Observed</p>
-      <h3>Reached independently, and proved</h3>
-      <p>
-        Both greenfield builds arrived at this architecture separately and documented the reason in
-        nearly the same words. One proved the sharing was real by deliberately breaking the shared
-        predicate and confirming both callers broke together.
+        If an effect may have occurred but the result is unknown, Ordo does not collapse that into
+        failure. It creates reconciliation work before later actions are allowed to depend on the
+        uncertain result.
       </p>
     </div>
   </div>
-  <p><a href="{{link:/concepts/capabilities/}}">The concept in depth →</a></p>
-</section>
+  {{diagram:effect-outcomes}}
 
-<section>
-  <h2 id="locality">Structural locality and deterministic routing</h2>
-  <div class="grid grid-three">
-    <div class="card">
-      <p class="card-kicker">Mechanism</p>
-      <h3>Route, do not explore</h3>
-      <p>
-        A repository map points from semantic areas to locations; a feature's owned state,
-        behaviour, contracts and tests stay bounded together. Navigation artifacts declare by
-        reference and never restate a rule.
-      </p>
-    </div>
-    <div class="card">
-      <p class="card-kicker">Consequence</p>
-      <h3>Less has to be read to change anything</h3>
-      <p>
-        Finding where a decision lives becomes routing rather than search — which matters most for
-        whoever arrives without the model already in their head.
-      </p>
-    </div>
-    <div class="card">
-      <p class="card-kicker">Observed</p>
-      <h3>Eighteen searches, no expansions</h3>
-      <p>
-        {{metric:M-TE-CSSTATE-SEARCH}} across a whole trial, with
-        {{metric:M-TE-CSSTATE-CONTEXT}} occasions where context proved insufficient. Separately,
-        {{metric:M-TE-CSSTATE-COLDSTART}} cold-start questions were answerable without opening a
-        source file.
-      </p>
-    </div>
-  </div>
   <div class="note">
     <p>
-      <strong>Honest about this one.</strong> The search figure comes from an agent working against
-      a specification it had just written — a favourable condition, and not a measured reduction
-      against a baseline. {{ref:R-RESUMPTION}} supports the general idea that contextual
-      reconstruction aids help, and {{ref:R-EXPERTISE-REVERSAL}} is the reason to expect they cost
-      something for an expert who already holds the model.
+      Retry before reconciliation is allowed only when the real external contract proves retry
+      safety for that operation. Even then, reconciliation remains necessary before later work
+      that requires knowing what actually occurred.
     </p>
   </div>
-  <p><a href="{{link:/concepts/locality/}}">Structural locality →</a> ·
-     <a href="{{link:/concepts/navigation/}}">Navigation and context →</a></p>
+  <p><a href="{{link:/concepts/boundaries/}}">Boundary preservation in depth →</a></p>
 </section>
 
 <section>
-  <h2 id="boundaries">Boundary authority</h2>
-  <div class="grid grid-three">
-    <div class="card">
-      <p class="card-kicker">Mechanism</p>
-      <h3>One authority, a derivation, or a check</h3>
-      <p>
-        A fact crossing a boundary has a single source, something derived from it, or a mechanical
-        agreement check between the copies. Unknown outcomes are a distinct state, not a collapsed
-        success or failure.
-      </p>
-    </div>
-    <div class="card">
-      <p class="card-kicker">Consequence</p>
-      <h3>Silent divergence needs a mechanism to stay silent</h3>
-      <p>
-        Adding a case to a closed set stops producing a compiler error at one site and silence at
-        the others.
-      </p>
-    </div>
-    <div class="card">
-      <p class="card-kicker">Observed</p>
-      <h3>Discovery went from two-thirds to complete</h3>
-      <p>
-        {{metric:M-HN1-MDR}} required sites were machine-reported before hardening;
-        {{metric:M-HN2-MDR}} after five targeted mechanisms. One mechanism removed a site outright
-        rather than mechanising its discovery.
-      </p>
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">Four-tier architecture</span>
+      <h2>Semantic responsibility stays separate from infrastructure.</h2>
     </div>
   </div>
-  <div class="contradictions">
+
+  {{diagram:architecture}}
+
+  <div class="callout">
+    <h3>The guardrail</h3>
     <p>
-      <strong>And what it did not do.</strong> {{metric:M-HN2-BCA}} — boundary work per semantic
-      decision did not change, measured three times across two architectures. Hardening changed
-      how required work was found, not how much there was. Anyone claiming otherwise is
-      contradicted by our own measurements.
+      Dependencies point toward the semantic core. Ordo may refine Tier One and Tier Two semantics,
+      but it must never require the semantic core to import databases, HTTP, browser APIs, provider
+      SDKs, persistence adapters, or ROS implementation dependencies.
     </p>
   </div>
-  <p><a href="{{link:/concepts/boundaries/}}">The concept in depth →</a></p>
 </section>
 
 <section>
-  <h2 id="verification">Verification that fails differently</h2>
-  <div class="grid grid-three">
+  <h2 id="locality">Structural locality bounds the context needed for change</h2>
+  <div class="grid">
     <div class="card">
       <p class="card-kicker">Mechanism</p>
-      <h3>Mechanisms chosen for differing blind spots</h3>
+      <h3>Route to semantic authority instead of exploring the repository</h3>
       <p>
-        Types, architecture checks, contract checks, behavioural tests, integration against a real
-        boundary, and independent adversarial review — not more of whichever one you already have.
+        Semantic maps and feature ownership make state, transitions, contracts, effects, and tests
+        deterministically discoverable. Navigation artifacts point to authority rather than
+        restating it.
       </p>
     </div>
     <div class="card">
       <p class="card-kicker">Consequence</p>
-      <h3>A green suite stops being the only signal</h3>
+      <h3>The working context can stay bounded</h3>
       <p>
-        Which matters because a green suite has been independently measured not to establish
-        merge-readiness.
-      </p>
-    </div>
-    <div class="card">
-      <p class="card-kicker">Observed</p>
-      <h3>Zero overlap</h3>
-      <p>
-        {{metric:M-GF2B-OVERLAP}} of an independent reviewer's findings were already covered by a
-        90-test suite plus a mutation-tested adversarial self-review. In another build the suite
-        itself {{metric:M-GF2A-DEFECTS}}.
+        Humans and agents can enter the feature through a small declared context and expand only
+        when evidence shows the context is insufficient.
       </p>
     </div>
   </div>
+  {{diagram:context}}
+
+  <p>
+    <a href="{{link:/concepts/locality/}}">Structural locality →</a> ·
+    <a href="{{link:/concepts/navigation/}}">Navigation and context →</a>
+  </p>
+</section>
+
+<section>
+  <h2 id="verification">Verification is heterogeneous on purpose</h2>
   {{diagram:verification}}
-  <p><a href="{{link:/concepts/verification/}}">The concept in depth →</a></p>
+
+  <p><a href="{{link:/concepts/verification/}}">Verification in depth →</a></p>
 </section>
 
 <section>
-  <h2 id="evidence">Evidence as an output</h2>
-  <div class="grid grid-three">
-    <div class="card">
-      <p class="card-kicker">Mechanism</p>
-      <h3>Record what ran and what was never captured</h3>
-      <p>
-        Every metric carries a definition, a collection method and a statement of what it does not
-        show. Telemetry that does not exist is labelled, never estimated.
-      </p>
-    </div>
-    <div class="card">
-      <p class="card-kicker">Consequence</p>
-      <h3>A later reader can tell what was established</h3>
-      <p>
-        Including when the answer is "nothing" — which is the case for several figures on this
-        site, and they say so.
-      </p>
-    </div>
-    <div class="card">
-      <p class="card-kicker">Observed</p>
-      <h3>Applied to this site</h3>
-      <p>
-        A metric with no stated limitation or no resolvable source cannot be represented in this
-        site's own evidence manifest. The build fails rather than rendering it.
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">Engineering method</span>
+      <h2>Ordo is also an order of work.</h2>
+      <p class="mute">
+        State-directed architecture is not enough if the engineer or agent works around the
+        mechanisms that make it useful.
       </p>
     </div>
   </div>
-  <p><a href="{{link:/concepts/evidence/}}">The concept in depth →</a> ·
-     <a href="{{link:/concepts/}}">All nine concepts →</a></p>
-</section>
 
-<section class="callout">
-  <h2>What this costs</h2>
+  {{diagram:engineering}}
+
   <p>
-    Ordo adds explicit types, transition definitions, a semantic map and architectural checks. That
-    is real work, done once, before the thing it protects exists. It is recovered — where it is
-    recovered — in defensive branching that no longer has to be written, rules that exist in one
-    place instead of several, and change surfaces that are reported rather than discovered.
+    Requirements are analyzed into semantic decisions. Work is routed through declared ownership.
+    Mechanical feedback is used before broad repository search. Boundary changes require explicit
+    evidence. Verification uses mechanisms with different failure sensitivities. Work stops when
+    the declared obligations and acceptance conditions are satisfied, not when the code merely
+    looks plausible.
   </p>
-  <p>
-    Whether that trade is net positive over a codebase's life is not something we have measured. No
-    change-task trial has been run against a state-structured build, so the compounding argument
-    has no data behind it. We think it is likely. We are not claiming it.
-  </p>
+
+  <div class="actions">
+    <a class="button primary" href="{{link:/adoption/}}">Adopt Ordo incrementally</a>
+    <a class="button ghost" href="{{link:/results/}}">See what has been measured</a>
+  </div>
 </section>

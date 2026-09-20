@@ -54,6 +54,65 @@ let engineering () : string =
           "Heterogeneous verification", "Behavioural tests, integration against real boundaries, adversarial review — mechanisms whose blind spots differ from each other's."
           "Evidence", "What ran, what it found, and what it does not establish, recorded durably." ]
 
+/// The semantic envelope around a bounded Ordo decision.
+let decision () : string =
+    flow
+        "A bounded Ordo decision is legal only after the domain has established the state being judged, the evidence and coverage supporting it, the authority already granted, and the choices that remain legal. The model or engineer selects inside that envelope; it does not create the envelope."
+        [ "Semantically complete state view", "The domain projects the smallest authoritative view in which no omitted fact could change legality, evidence requirements, coverage, capability applicability, obligations, policy, or transition outcome."
+          "Evidence", "Typed evidence identifies what was observed, where it came from, when it was observed, and what it depends on."
+          "Scoped coverage", "Each contract-defined scope is Complete, Partial, or Unknown. Required non-Complete coverage refuses the decision before provider execution."
+          "Capabilities and obligations", "Host-established semantic authority is supplied as capabilities; unresolved required work remains explicit as obligations."
+          "Legal choice space", "Policy, guards, state, evidence, coverage, capabilities, and obligations determine which outcomes are actually legal."
+          "Compute, bounded decide, refuse, or escalate", "Deterministic work stays deterministic. Judgment happens only inside the legal choice space. Missing prerequisites do not force an answer."
+          "Result, requested effects, and audit", "The result carries the state identity and decision facts forward; external work is requested as data and observations are recorded for later verification." ]
+
+/// How evidence supports a coverage claim and how coverage gates a decision.
+let evidenceCoverage () : string =
+    flow
+        "Evidence answers what was observed. Coverage answers how completely the observation method covered a named scope. They remain separate so 'not found' cannot silently become 'absent'."
+        [ "Observation produces Evidence", "Evidence carries identity, source, observation time, basis, and typed content. Derived evidence must have a closed, acyclic dependency set."
+          "Evidence supports a Coverage claim", "A ContextCoverageClaim names a contract/domain-defined scope and says Complete, Partial, or Unknown, citing Evidence as provenance."
+          "Contract declares required Complete scopes", "Completeness is required only where the contract says it matters. Other scopes may legitimately remain Partial or Unknown."
+          "Coverage gate runs before provider execution", "Missing, Partial, or Unknown required coverage becomes InsufficientCoverage. Ordo does not ask the provider to reason through an unestablished context."
+          "Negative knowledge stays scoped", "A negative observation can support absence only when the method could detect the target and matching coverage is Complete."
+          "Decision proceeds with explicit knowledge limits", "The provider sees coverage as data. Confidence, quantity of context, successful execution, or absence of errors never upgrades coverage implicitly." ]
+
+/// The canonical four tiers, shown in dependency direction from infrastructure
+/// toward semantic authority.
+let architecture () : string =
+    flow
+        "Dependencies point toward the semantic core. Ordo refines Tier One and Tier Two semantics without moving infrastructure inward. ROS observes engineering execution from outside this stack; it is not a fifth tier."
+        [ "Tier Four — Host / External Effects", "Database, network, HTTP, browser, filesystem, clock, queues, provider SDKs, persistence and other external I/O. Reports Succeeded, Failed, or Unknown."
+          "Tier Three — Application / Projection / Orchestration", "Coordinates use cases, projections, requested effects, and boundary translation without becoming a second semantic authority."
+          "Tier Two — State Transition / Domain Execution", "Owns decisions, guards, policy, invariants, evidence and capability requirements, legal transitions, obligations, and interpretation of effect results."
+          "Tier One — Semantic Model", "Owns what can be true: domain values, closed alternatives, state-specific data, evidence, coverage, capabilities, obligations, and uncertainty." ]
+
+/// What happens when a state-changing external effect cannot be observed
+/// conclusively.
+let effectOutcomes () : string =
+    flow
+        "External effects do not collapse uncertainty. Succeeded, Failed, and Unknown remain different semantic facts; Unknown creates reconciliation work before later actions may rely on the outcome."
+        [ "Tier Two requests an effect", "The semantic core describes the work as data. It does not perform the I/O."
+          "Tier Three coordinates the boundary", "Application code translates the request and hands it to the host without re-deciding the domain rule."
+          "Tier Four performs or observes the effect", "The host returns what it can establish: Succeeded, Failed, or Unknown."
+          "Succeeded or Failed is interpreted normally", "The semantic core applies the domain meaning of the known result."
+          "Unknown creates a reconciliation obligation", "The system preserves that the effect may or may not have happened. It does not pretend failure and blindly replay state-changing work."
+          "Tier Three / Four reconcile against reality", "The external system is observed using the real contract. Retry is allowed early only when that contract proves retry safety."
+          "Tier Two interprets the reconciled fact", "Only after reality is re-established may later transitions that depend on the outcome proceed." ]
+
+/// How a human or agent is routed into bounded context instead of reconstructing
+/// the repository from scratch.
+let contextRouting () : string =
+    flow
+        "Ordo treats repository context as something to route and verify, not something every engineer or agent should reconstruct by exploration."
+        [ "Work item and acceptance criteria", "The requested change starts with explicit intent and conditions that can be checked."
+          "Semantic map", "The repository points to the semantic area and authority that own the decision."
+          "Declared feature context", "State, transitions, contracts, effects, interfaces, and tests for the feature are locally discoverable."
+          "Mechanical feedback first", "Compiler, architecture, contract, and structural checks expose required propagation before broad search."
+          "Expand only when evidence says context is insufficient", "Search is an escalation mechanism, not the default navigation strategy."
+          "Heterogeneous verification", "Behavioural, integration, and independent review cover failure classes the earlier mechanisms cannot."
+          "Record evidence and unresolved obligations", "The work leaves behind what ran, what was established, what remains open, and what the evidence does not prove." ]
+
 /// Which failure classes each verification mechanism can and cannot refuse.
 /// The right-hand column is the argument: no single mechanism covers the set.
 let verification () : string =
