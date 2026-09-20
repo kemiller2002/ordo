@@ -494,6 +494,10 @@ let encodeObligationKind (kind: ObligationKind) =
         JObject
             [ field "kind" (JString "investigate-failure")
               field "what" (JString what) ]
+    | ReconcileExternalEffect effectId ->
+        JObject
+            [ field "kind" (JString "reconcile-external-effect")
+              field "effectId" (JString(ExternalEffectId.value effectId)) ]
     | Custom label ->
         JObject
             [ field "kind" (JString "custom")
@@ -511,5 +515,11 @@ let decodeObligationKind (document: JsonValue) : Result<ObligationKind, WireErro
         | "human-review" -> withField "question" HumanReview
         | "run-verification" -> withField "what" RunVerification
         | "investigate-failure" -> withField "what" InvestigateFailure
+        | "reconcile-external-effect" ->
+            requiredString "effectId" document
+            |> Result.bind (fun raw ->
+                ExternalEffectId.create raw
+                |> Result.map ReconcileExternalEffect
+                |> Result.mapError (fun error -> InvalidField("$.effectId", sprintf "%A" error)))
         | "custom" -> withField "label" Custom
         | other -> Error(UnknownVariant("kind", other)))
