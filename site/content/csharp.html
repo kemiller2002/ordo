@@ -1,0 +1,558 @@
+---
+path: /csharp/
+title: Ordo in C#
+description: Concrete C# examples of State-Directed Engineering: explicit state, nominal domain types, legal transitions, action projections, evidence and scoped coverage, capabilities, obligations, and unknown external-effect reconciliation.
+section: Start here
+order: 55
+summary: A complete C# walkthrough showing how Ordo's current semantics map into ordinary .NET code.
+---
+<section class="page-intro">
+  <p class="eyebrow">C# examples</p>
+  <h1>Ordo in C#</h1>
+  <p class="lead">
+    Ordo is language-independent. These examples show what the method looks like in ordinary C#
+    without introducing a framework. The first four patterns are grounded in the measured C#
+    time-entry trial. The later decision, coverage, Capability, and reconciliation examples are
+    explicit C# translations of the current Ordo 1.3 semantics.
+  </p>
+</section>
+
+<section>
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">1 · State</span>
+      <h2>Name the state instead of reconstructing it.</h2>
+      <p class="mute">
+        The measured C# trial used a closed enum for the lifecycle and immutable records for the
+        entity. That is a pragmatic C# representation when the cases do not need different payload
+        shapes.
+      </p>
+    </div>
+  </div>
+
+  <div class="code-example">
+    <div class="code-example-label">Measured C# trial · simplified</div>
+    <pre><code>public enum TimeEntryStatus
+{
+    Recorded,
+    Voided,
+    Superseded
+}
+
+public sealed record TimeEntry(
+    EntryId Id,
+    PersonId PersonId,
+    DateOnly Date,
+    TimeOfDay Start,
+    DurationMinutes Duration,
+    ProjectId ProjectId,
+    TimeEntryStatus Status,
+    long Revision);</code></pre>
+  </div>
+
+  {{diagram:lifecycle}}
+
+  <div class="note">
+    <p>
+      C# enums are useful here because a switch expression over an enum can produce CS8509 when a
+      case is missing. With <code>TreatWarningsAsErrors</code>, adding a lifecycle state can turn
+      unhandled switches into build failures.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">2 · Domain types</span>
+      <h2>Do not let two different meanings share the same primitive.</h2>
+      <p class="mute">
+        A time of day and a duration can both be represented by integers. They are still not the
+        same thing.
+      </p>
+    </div>
+  </div>
+
+  <div class="code-example">
+    <div class="code-example-label">Measured C# trial · nominal types</div>
+    <pre><code>public sealed record TimeOfDay
+{
+    public int Hour { get; }
+    public int Minute { get; }
+
+    private TimeOfDay(int hour, int minute)
+    {
+        Hour = hour;
+        Minute = minute;
+    }
+
+    public static TimeOfDay Of(int hour, int minute)
+    {
+        if (hour is &lt; 0 or &gt; 23)
+            throw new ArgumentOutOfRangeException(nameof(hour));
+
+        if (minute is &lt; 0 or &gt; 59)
+            throw new ArgumentOutOfRangeException(nameof(minute));
+
+        return new TimeOfDay(hour, minute);
+    }
+
+    public int MinutesSinceMidnight =&gt; Hour * 60 + Minute;
+}
+
+public sealed record DurationMinutes
+{
+    public int Value { get; }
+
+    private DurationMinutes(int value) =&gt; Value = value;
+
+    public static DurationMinutes Of(int minutes) =&gt;
+        minutes &lt;= 0
+            ? throw new ArgumentOutOfRangeException(nameof(minutes))
+            : new DurationMinutes(minutes);
+}</code></pre>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>What this prevents</h3>
+      <p>
+        A caller cannot accidentally pass a <code>DurationMinutes</code> where a
+        <code>TimeOfDay</code> is required and still compile.
+      </p>
+    </div>
+    <div class="card">
+      <h3>What this does not prevent</h3>
+      <p>
+        A mathematically wrong calculation can still produce a perfectly valid
+        <code>DurationMinutes</code>. Types narrow the failure space; they do not prove business
+        arithmetic.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">3 · Legal transitions</span>
+      <h2>Change state through named operations.</h2>
+      <p class="mute">
+        The write is not "set Status." The write is "Void this Recorded entry at this revision."
+      </p>
+    </div>
+  </div>
+
+  <div class="code-example">
+    <div class="code-example-label">Measured C# trial · simplified</div>
+    <pre><code>public static CommandResult Void(
+    WeekDocument week,
+    EntryId entryId,
+    long expectedRevision,
+    string? reason)
+{
+    var error = RequireStatus(
+        week,
+        entryId,
+        expectedRevision,
+        TimeEntryStatus.Recorded,
+        out var entry);
+
+    if (error is not null)
+        return new CommandResult.Rejected([error]);
+
+    var voided = entry! with
+    {
+        Status = TimeEntryStatus.Voided,
+        Revision = entry.Revision + 1,
+        Provenance = entry.Provenance with
+        {
+            CorrectionReason = reason
+        }
+    };
+
+    var updatedWeek = week with
+    {
+        Entries = ReplaceEntry(week.Entries, voided),
+        DocumentRevision = week.DocumentRevision + 1
+    };
+
+    return new CommandResult.Success(updatedWeek, voided);
+}</code></pre>
+  </div>
+
+  {{diagram:transition}}
+
+  <p>
+    The important part is not the amount of code. The operation names the precondition, the legal
+    transition, the revision check, and the result. Callers do not get a generic mutation surface.
+  </p>
+</section>
+
+<section>
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">4 · Available actions</span>
+      <h2>Derive what can be attempted from the same semantic rules.</h2>
+      <p class="mute">
+        The measured C# trial called this projection <code>EntryCapabilities</code>. Current Ordo
+        terminology reserves <strong>Capability</strong> for host-established semantic authority,
+        so think of this older type as an <em>available-action projection</em>.
+      </p>
+    </div>
+  </div>
+
+  <div class="code-example">
+    <div class="code-example-label">Measured C# trial · available-action projection</div>
+    <pre><code>[Flags]
+public enum EntryActions
+{
+    None           = 0,
+    Correct        = 1 &lt;&lt; 0,
+    Split          = 1 &lt;&lt; 1,
+    Void           = 1 &lt;&lt; 2,
+    Restore        = 1 &lt;&lt; 3,
+    LinkEvidence   = 1 &lt;&lt; 4,
+    UnlinkEvidence = 1 &lt;&lt; 5,
+    Merge          = 1 &lt;&lt; 6
+}
+
+public static class AvailableActions
+{
+    public static EntryActions For(TimeEntry entry) =&gt;
+        entry.Status switch
+        {
+            TimeEntryStatus.Voided =&gt;
+                EntryActions.Restore,
+
+            TimeEntryStatus.Superseded =&gt;
+                EntryActions.None,
+
+            TimeEntryStatus.Recorded =&gt;
+                ForRecorded(entry)
+        };
+
+    private static EntryActions ForRecorded(TimeEntry entry)
+    {
+        var actions =
+            EntryActions.Correct |
+            EntryActions.Void |
+            EntryActions.LinkEvidence |
+            EntryActions.Merge;
+
+        if (entry.Duration.Value &gt;= 2)
+            actions |= EntryActions.Split;
+
+        if (entry.Evidence.Count &gt; 0)
+            actions |= EntryActions.UnlinkEvidence;
+
+        return actions;
+    }
+}</code></pre>
+  </div>
+
+  <div class="callout">
+    <h3>The UI does not own this rule.</h3>
+    <p>
+      A UI, API, or agent may ask the domain which actions are available. It should not recreate
+      the rules independently and hope they stay synchronized with the transition guards.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">5 · Evidence and scoped coverage</span>
+      <h2>Separate what you observed from how completely you looked.</h2>
+      <p class="mute">
+        This is a C# translation of current Ordo 1.3 semantics. It was not part of the earlier C#
+        effort trial.
+      </p>
+    </div>
+  </div>
+
+  <div class="code-example">
+    <div class="code-example-label">Illustrative C# · current Ordo semantics</div>
+    <pre><code>public readonly record struct EvidenceId(Guid Value);
+public readonly record struct CoverageScope(string Value);
+
+public sealed record Evidence(
+    EvidenceId Id,
+    string Source,
+    DateTimeOffset ObservedAt,
+    string Basis);
+
+public enum CoverageStatus
+{
+    Complete,
+    Partial,
+    Unknown
+}
+
+public sealed record ContextCoverageClaim(
+    CoverageScope Scope,
+    CoverageStatus Status,
+    IReadOnlySet&lt;EvidenceId&gt; Provenance);
+
+public sealed record DecisionContract(
+    IReadOnlySet&lt;CoverageScope&gt; RequiredCompleteScopes);
+
+public static class CoverageGate
+{
+    public static IReadOnlyList&lt;CoverageScope&gt; MissingRequiredCoverage(
+        DecisionContract contract,
+        IReadOnlyList&lt;ContextCoverageClaim&gt; claims) =&gt;
+
+        contract.RequiredCompleteScopes
+            .Where(required =&gt;
+                !claims.Any(c =&gt;
+                    c.Scope == required &amp;&amp;
+                    c.Status == CoverageStatus.Complete))
+            .ToList();
+}</code></pre>
+  </div>
+
+  {{diagram:evidence-coverage}}
+
+  <div class="note">
+    <p>
+      A large evidence collection is not automatically Complete coverage. A confident model answer
+      is not Complete coverage. A successful API call is not Complete coverage. The contract names
+      the scopes for which completeness is required.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">6 · Capability</span>
+      <h2>Authority is supplied by the host, not invented by the decision.</h2>
+      <p class="mute">
+        In current Ordo, Capability means a semantic authority prerequisite that the surrounding
+        system has already established.
+      </p>
+    </div>
+  </div>
+
+  <div class="code-example">
+    <div class="code-example-label">Illustrative C# · current Ordo semantics</div>
+    <pre><code>public readonly record struct CapabilityName(string Value);
+
+public sealed record Capability(
+    CapabilityName Name,
+    string EstablishedBy,
+    DateTimeOffset EstablishedAt);
+
+public static class CapabilityGate
+{
+    private static readonly CapabilityName CorrectTimeEntry =
+        new("time-entry.correct");
+
+    public static bool CanCorrect(IReadOnlySet&lt;Capability&gt; supplied) =&gt;
+        supplied.Any(c =&gt; c.Name == CorrectTimeEntry);
+}</code></pre>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Capability is not authentication</h3>
+      <p>
+        It is not a JWT, API key, user identity, signature, or provider confidence score. Those may
+        participate in how the host establishes authority, but the semantic core receives the
+        already-established fact it needs.
+      </p>
+    </div>
+    <div class="card">
+      <h3>The model cannot grant itself authority</h3>
+      <p>
+        A provider response may choose among legal alternatives. It cannot manufacture a missing
+        Capability and thereby make an otherwise-illegal transition legal.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">7 · A bounded decision</span>
+      <h2>Refuse before model execution when prerequisites are missing.</h2>
+      <p class="mute">
+        The decision boundary is where state identity, evidence, coverage, authority, obligations,
+        and the legal choice space come together.
+      </p>
+    </div>
+  </div>
+
+  <div class="code-example">
+    <div class="code-example-label">Illustrative C# · current Ordo semantics</div>
+    <pre><code>public abstract record DecisionGateResult
+{
+    private DecisionGateResult() { }
+
+    public sealed record Allowed(
+        IReadOnlyList&lt;string&gt; LegalChoices) : DecisionGateResult;
+
+    public sealed record InsufficientCoverage(
+        IReadOnlyList&lt;CoverageScope&gt; Missing) : DecisionGateResult;
+
+    public sealed record MissingCapability(
+        CapabilityName Capability) : DecisionGateResult;
+
+    public sealed record BlockedByObligation(
+        string Obligation) : DecisionGateResult;
+}
+
+public static DecisionGateResult EvaluateCorrection(
+    DecisionContract contract,
+    IReadOnlyList&lt;ContextCoverageClaim&gt; coverage,
+    IReadOnlySet&lt;Capability&gt; capabilities,
+    IReadOnlyList&lt;string&gt; openObligations)
+{
+    var missingCoverage =
+        CoverageGate.MissingRequiredCoverage(contract, coverage);
+
+    if (missingCoverage.Count &gt; 0)
+        return new DecisionGateResult.InsufficientCoverage(missingCoverage);
+
+    var requiredCapability =
+        new CapabilityName("time-entry.correct");
+
+    if (!capabilities.Any(c =&gt; c.Name == requiredCapability))
+        return new DecisionGateResult.MissingCapability(requiredCapability);
+
+    if (openObligations.Count &gt; 0)
+        return new DecisionGateResult.BlockedByObligation(
+            openObligations[0]);
+
+    return new DecisionGateResult.Allowed(
+        ["accept-correction", "reject-correction", "escalate"]);
+}</code></pre>
+  </div>
+
+  {{diagram:decision}}
+
+  <p>
+    Only the <code>Allowed</code> case reaches a model or human judgment step. Missing coverage,
+    authority, or unresolved work is a semantic refusal, not another prompt.
+  </p>
+</section>
+
+<section>
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">8 · Unknown external effects</span>
+      <h2>Do not turn "we do not know" into failure.</h2>
+      <p class="mute">
+        A timeout after a write does not prove the write failed. If repeating the operation may
+        duplicate a real-world effect, the uncertainty must survive.
+      </p>
+    </div>
+  </div>
+
+  <div class="code-example">
+    <div class="code-example-label">Illustrative C# · current Ordo semantics</div>
+    <pre><code>public enum EffectStatus
+{
+    Succeeded,
+    Failed,
+    Unknown
+}
+
+public sealed record EffectObservation(
+    string EffectId,
+    EffectStatus Status,
+    string? Detail);
+
+public sealed record ReconciliationObligation(
+    string EffectId,
+    string Reason);
+
+public static ReconciliationObligation? Interpret(
+    EffectObservation observation) =&gt;
+
+    observation.Status switch
+    {
+        EffectStatus.Succeeded =&gt; null,
+
+        EffectStatus.Failed =&gt; null,
+
+        EffectStatus.Unknown =&gt;
+            new ReconciliationObligation(
+                observation.EffectId,
+                "Observe the external system before any dependent transition.")
+    };</code></pre>
+  </div>
+
+  {{diagram:effect-outcomes}}
+
+  <div class="callout">
+    <h3>Why the extra state matters</h3>
+    <p>
+      If an HTTP request times out after a payment, message, deployment, or database operation,
+      retrying blindly can be more dangerous than refusing to continue. Ordo keeps the unresolved
+      effect visible until reality is re-established.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">9 · Verification</span>
+      <h2>Make C# help, then verify what C# cannot know.</h2>
+      <p class="mute">
+        The compiler should be one member of the verification system, not the definition of
+        correctness.
+      </p>
+    </div>
+  </div>
+
+  <div class="code-example">
+    <div class="code-example-label">Project-level mechanical guardrail</div>
+    <pre><code>&lt;PropertyGroup&gt;
+  &lt;TargetFramework&gt;net8.0&lt;/TargetFramework&gt;
+  &lt;Nullable&gt;enable&lt;/Nullable&gt;
+  &lt;TreatWarningsAsErrors&gt;true&lt;/TreatWarningsAsErrors&gt;
+&lt;/PropertyGroup&gt;</code></pre>
+  </div>
+
+  <div class="code-example">
+    <div class="code-example-label">Behavioral assertion</div>
+    <pre><code>[Fact]
+public void Superseded_entries_have_no_available_actions()
+{
+    var entry = ExampleEntry.Recorded()
+        with { Status = TimeEntryStatus.Superseded };
+
+    var actions = AvailableActions.For(entry);
+
+    Assert.Equal(EntryActions.None, actions);
+}</code></pre>
+  </div>
+
+  {{diagram:verification}}
+
+  <p>
+    Types can reject unrepresentable substitutions and missing enum cases. Architecture checks can
+    reject dependency violations. Tests can verify behavior. Real-boundary integration can catch
+    semantically inert implementations. Independent review can catch assumptions shared by the
+    author and the tests.
+  </p>
+</section>
+
+<section class="closing-cta">
+  <span class="eyebrow">The point</span>
+  <h2>C# does not need to become F# for Ordo to work.</h2>
+  <p class="lead">
+    Use the strongest mechanisms C# gives you, make their limits explicit, and compensate where the
+    language cannot encode a rule as strongly as the domain requires. Ordo is about semantic
+    authority and bounded reasoning, not loyalty to a syntax.
+  </p>
+  <div class="actions">
+    <a class="button primary" href="{{link:/how-it-works/}}">Return to the method</a>
+    <a class="button ghost" href="{{link:/examples/}}">See the measured examples</a>
+  </div>
+</section>
