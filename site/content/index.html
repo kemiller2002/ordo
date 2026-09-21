@@ -54,6 +54,63 @@ summary: What Ordo is, how it works, and what it changes for human and AI-assist
   </div>
 </section>
 
+<section class="everyday-intro">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">No state-machine background required</span>
+      <h2>Think about ordering coffee.</h2>
+      <p class="mute">
+        You already reason about state in everyday life. Software becomes easier to understand when
+        it makes those same rules explicit.
+      </p>
+    </div>
+    <a class="button ghost" href="{{link:/csharp/}}">See the full C# example</a>
+  </div>
+
+  <div class="real-world-grid">
+    <div class="real-world-panel">
+      <p class="card-kicker">What you ordered</p>
+      <h3>Black, cream, sugar, or both</h3>
+      <p>
+        Cream and sugar describe the coffee. They are data about the order. They do not, by
+        themselves, tell you what may happen next.
+      </p>
+      <div class="coffee-order">
+        <div>
+          <span class="coffee-label">Coffee</span>
+          <strong>With cream + sugar</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="real-world-panel">
+      <p class="card-kicker">Where the order is</p>
+      <h3>Taking Order → Preparing → Ready → Served</h3>
+      <p>
+        These are states because each one changes the legal next move. You cannot serve coffee
+        before it is ready. You should not change the recipe after preparation has started.
+      </p>
+      <div class="simple-state-flow coffee-flow" role="img" aria-label="Coffee order moves from Taking Order to Preparing to Ready to Served.">
+        <div class="state-box">Taking Order</div>
+        <div class="state-arrow">→</div>
+        <div class="state-box">Preparing</div>
+        <div class="state-arrow">→</div>
+        <div class="state-box">Ready</div>
+        <div class="state-arrow">→</div>
+        <div class="state-box">Served</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <p>
+      Ordo applies that ordinary idea to software: make <strong>what is true now</strong> and
+      <strong>what is legally allowed next</strong> explicit, then let people, UIs, APIs, and AI
+      agents operate inside those rules instead of reconstructing them independently.
+    </p>
+  </div>
+</section>
+
 <section>
   <div class="section-heading">
     <div>

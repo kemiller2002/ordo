@@ -618,3 +618,110 @@ main > section {
 .code-callout {
   margin-top: clamp(3rem, 6vw, 6rem);
 }
+
+
+/* --- Everyday teaching examples --------------------------------------- */
+
+.real-world-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--ef-border-decorative);
+  border-left: 1px solid var(--ef-border-decorative);
+  margin: 2rem 0;
+}
+
+.real-world-panel {
+  min-width: 0;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  border-right: 1px solid var(--ef-border-decorative);
+  border-bottom: 1px solid var(--ef-border-decorative);
+  background: var(--ef-surface-secondary);
+}
+
+.real-world-panel h3 {
+  margin-top: 0;
+}
+
+.simple-state-flow {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin: 1.75rem 0;
+}
+
+.state-box {
+  min-width: 7rem;
+  padding: .9rem 1rem;
+  border: 1px solid var(--ef-border-functional);
+  background: var(--ef-surface-primary);
+  font-weight: 700;
+  text-align: center;
+}
+
+.state-arrow {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  min-width: 5rem;
+  color: var(--ef-text-secondary);
+  font-family: var(--mono);
+  font-size: .72rem;
+  text-align: center;
+}
+
+.coffee-flow {
+  display: grid;
+  grid-template-columns: minmax(7rem, 1fr) auto minmax(7rem, 1fr) auto minmax(7rem, 1fr) auto minmax(7rem, 1fr);
+}
+
+.coffee-flow .state-arrow {
+  min-width: 0;
+  align-self: center;
+}
+
+.coffee-order {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 1px;
+  margin: 1.5rem 0;
+  border: 1px solid var(--ef-border-functional);
+  background: var(--ef-border-functional);
+}
+
+.coffee-order > div {
+  padding: 1rem;
+  background: var(--ef-surface-primary);
+}
+
+.coffee-label {
+  display: block;
+  margin-bottom: .2rem;
+  color: var(--ef-text-secondary);
+  font-family: var(--mono);
+  font-size: .64rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.everyday-code-heading {
+  margin-top: 4rem;
+}
+
+@media (max-width: 900px) {
+  .real-world-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .coffee-flow {
+    grid-template-columns: 1fr;
+  }
+
+  .coffee-flow .state-arrow {
+    padding: .2rem 0;
+    transform: rotate(90deg);
+  }
+
+  .simple-state-flow:not(.coffee-flow) {
+    flex-wrap: wrap;
+  }
+}

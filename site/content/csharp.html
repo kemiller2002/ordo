@@ -10,11 +10,209 @@ summary: A complete C# walkthrough showing how Ordo's current semantics map into
   <p class="eyebrow">C# examples</p>
   <h1>Ordo in C#</h1>
   <p class="lead">
-    Ordo is language-independent. These examples show what the method looks like in ordinary C#
-    without introducing a framework. The first four patterns are grounded in the measured C#
-    time-entry trial. The later decision, coverage, Capability, and reconciliation examples are
+    Ordo is language-independent. We will start with things you already understand in real life,
+    then show the same ideas in ordinary C#. The first measured engineering examples come from the
+    C# time-entry trial. The later decision, coverage, Capability, and reconciliation examples are
     explicit C# translations of the current Ordo 1.3 semantics.
   </p>
+</section>
+
+<section class="everyday-example">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">Start with real life</span>
+      <h2>You already understand state. You just may not call it that.</h2>
+      <p class="mute">
+        State is simply <strong>what is true right now</strong>. A transition is a change that is
+        allowed from that state.
+      </p>
+    </div>
+  </div>
+
+  <div class="real-world-grid">
+    <div class="real-world-panel">
+      <p class="card-kicker">The 30-second example</p>
+      <h3>A light switch</h3>
+      <p>
+        A normal light is either <strong>Off</strong> or <strong>On</strong>. If it is Off, the
+        useful action is Turn On. If it is On, the useful action is Turn Off.
+      </p>
+
+      <div class="simple-state-flow" role="img" aria-label="Light switch moves from Off to On with Turn On, and from On to Off with Turn Off.">
+        <div class="state-box">Off</div>
+        <div class="state-arrow">
+          <span>Turn On →</span>
+          <span>← Turn Off</span>
+        </div>
+        <div class="state-box">On</div>
+      </div>
+
+      <div class="code-example">
+        <div class="code-example-label">C# · the same idea</div>
+        <pre><code>public enum LightState
+{
+    Off,
+    On
+}
+
+public static LightState TurnOn(LightState state) =&gt;
+    state == LightState.Off
+        ? LightState.On
+        : throw new InvalidOperationException(
+            "The light is already on.");</code></pre>
+      </div>
+
+      <p>
+        That is the core idea. Ordo takes the same thing you already understand about the light and
+        applies it to business software, where the legal states and transitions are harder to see.
+      </p>
+    </div>
+
+    <div class="real-world-panel coffee-panel">
+      <p class="card-kicker">A more useful example</p>
+      <h3>Ordering a cup of coffee</h3>
+      <p>
+        Suppose you order coffee. You can ask for it black, with cream, with sugar, or with both.
+        Those choices describe <strong>what you ordered</strong>. They are not necessarily the
+        order's state.
+      </p>
+
+      <div class="coffee-order">
+        <div>
+          <span class="coffee-label">Coffee</span>
+          <strong>With cream + sugar</strong>
+        </div>
+        <div>
+          <span class="coffee-label">Current state</span>
+          <strong>Preparing</strong>
+        </div>
+      </div>
+
+      <p>
+        The lifecycle is different: <strong>Taking Order → Preparing → Ready → Served</strong>.
+        That is state because each step changes what can legally happen next.
+      </p>
+
+      <div class="simple-state-flow coffee-flow" role="img" aria-label="Coffee order moves from Taking Order to Preparing to Ready to Served.">
+        <div class="state-box">Taking Order</div>
+        <div class="state-arrow">→</div>
+        <div class="state-box">Preparing</div>
+        <div class="state-arrow">→</div>
+        <div class="state-box">Ready</div>
+        <div class="state-arrow">→</div>
+        <div class="state-box">Served</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-heading everyday-code-heading">
+    <div>
+      <span class="eyebrow">Now make the rule visible in code</span>
+      <h2>Cream and sugar are data. Preparing and Served are state.</h2>
+      <p class="mute">
+        This distinction matters. If every combination becomes a state, the model explodes into
+        things like <code>PreparingBlack</code>, <code>PreparingWithCream</code>,
+        <code>ReadyWithCreamAndSugar</code>, and so on. Ordo models only the distinctions that
+        change meaning or legal behavior.
+      </p>
+    </div>
+  </div>
+
+  <div class="code-example">
+    <div class="code-example-label">C# · coffee configuration and lifecycle</div>
+    <pre><code>public sealed record CoffeeSpec(
+    bool Cream,
+    bool Sugar)
+{
+    public static CoffeeSpec Black =&gt;
+        new(Cream: false, Sugar: false);
+
+    public static CoffeeSpec CreamAndSugar =&gt;
+        new(Cream: true, Sugar: true);
+}
+
+public enum OrderStatus
+{
+    TakingOrder,
+    Preparing,
+    Ready,
+    Served,
+    Cancelled
+}
+
+public sealed record CoffeeOrder(
+    Guid Id,
+    CoffeeSpec Coffee,
+    OrderStatus Status);</code></pre>
+  </div>
+
+  <div class="code-example">
+    <div class="code-example-label">C# · legal next moves</div>
+    <pre><code>public static CoffeeOrder AddCream(CoffeeOrder order)
+{
+    if (order.Status != OrderStatus.TakingOrder)
+        throw new InvalidOperationException(
+            "The drink can only be changed while taking the order.");
+
+    return order with
+    {
+        Coffee = order.Coffee with { Cream = true }
+    };
+}
+
+public static CoffeeOrder Submit(CoffeeOrder order)
+{
+    if (order.Status != OrderStatus.TakingOrder)
+        throw new InvalidOperationException(
+            "Only an open order can be submitted.");
+
+    return order with { Status = OrderStatus.Preparing };
+}
+
+public static CoffeeOrder MarkReady(CoffeeOrder order)
+{
+    if (order.Status != OrderStatus.Preparing)
+        throw new InvalidOperationException(
+            "Only a drink being prepared can become ready.");
+
+    return order with { Status = OrderStatus.Ready };
+}
+
+public static CoffeeOrder Serve(CoffeeOrder order)
+{
+    if (order.Status != OrderStatus.Ready)
+        throw new InvalidOperationException(
+            "Only a ready drink can be served.");
+
+    return order with { Status = OrderStatus.Served };
+}</code></pre>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>What became explicit?</h3>
+      <p>
+        You cannot serve a drink that is still being prepared. You cannot change cream after
+        preparation starts. You cannot accidentally treat sugar as a lifecycle state.
+      </p>
+    </div>
+    <div class="card">
+      <h3>That is the Ordo move</h3>
+      <p>
+        Put meaning in one authoritative model, expose the legal next actions, and stop every UI,
+        API, engineer, and agent from having to rediscover the rules independently.
+      </p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <h3>The important question is not "is this a state machine?"</h3>
+    <p>
+      Ask: <strong>what is true now, and does that change what is legally allowed next?</strong>
+      If the answer changes the legal next move, it probably belongs in the semantic state. If it
+      merely describes the thing, like cream or sugar, it is usually data carried by that state.
+    </p>
+  </div>
 </section>
 
 <section>
