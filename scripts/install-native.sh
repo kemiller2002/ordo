@@ -96,8 +96,16 @@ else
 fi
 
 ln -sfn "$target" "$current"
-ln -sfn "$current/ordo" "$bin_dir/ordo"
-ln -sfn "$current/ordo" "$bin_dir/sde"
+
+for command_name in ordo sde; do
+  cat > "$bin_dir/$command_name" <<EOF
+#!/usr/bin/env sh
+set -eu
+tool_root="\${ECHELON_HOME:-\$HOME/.echelon}/tools/ordo/current"
+SDE_PAYLOAD_DIR="\$tool_root/dist" exec "\$tool_root/ordo" "\$@"
+EOF
+  chmod +x "$bin_dir/$command_name"
+done
 
 printf '%s\n' "Installed Ordo $VERSION to $target"
 printf '%s\n' "Commands: $bin_dir/ordo and $bin_dir/sde"
