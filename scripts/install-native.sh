@@ -106,7 +106,8 @@ for command_name in ordo sde; do
   cat > "$bin_dir/$command_name" <<EOF
 #!/usr/bin/env sh
 set -eu
-tool_root="\${ECHELON_HOME:-\$HOME/.echelon}/tools/ordo/current"
+home_dir="\$(CDPATH= cd -- "\$(dirname -- "\$0")/.." && pwd)"
+tool_root="\$home_dir/tools/ordo/current"
 SDE_PAYLOAD_DIR="\$tool_root/dist" exec "\$tool_root/ordo" "\$@"
 EOF
   chmod +x "$bin_dir/$command_name"
