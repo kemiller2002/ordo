@@ -12,7 +12,7 @@ if (-not $Version) {
 }
 
 $asset = "ordo-win-x64.zip"
-$baseUrl = "https://github.com/$repo/releases/download/v$Version"
+$baseUrl = if ($env:ECHELON_RELEASE_BASE_URL) { $env:ECHELON_RELEASE_BASE_URL.TrimEnd('/') } else { "https://github.com/$repo/releases/download/v$Version" }
 $temp = Join-Path ([IO.Path]::GetTempPath()) ("ordo-" + [Guid]::NewGuid().ToString("N"))
 New-Item -ItemType Directory -Path $temp | Out-Null
 
