@@ -21,8 +21,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: ordo-native-release
-  cancel-in-progress: false
+  group: ordo-native-release-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   release:
