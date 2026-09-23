@@ -1,10 +1,20 @@
 name: Native Ordo release
 
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/native-release.yml"
+      - "scripts/install-native.sh"
+      - "scripts/install-native.ps1"
+      - "src/**"
+      - "distribution/**"
   push:
     branches: [main]
     paths:
       - "distribution/package.json"
+      - ".github/workflows/native-release.yml"
+      - "scripts/install-native.sh"
+      - "scripts/install-native.ps1"
   workflow_dispatch: {}
 
 permissions:
@@ -73,7 +83,15 @@ jobs:
           (cd dist/native && sha256sum ordo-* > checksums.txt)
           cat dist/native/checksums.txt
 
+      - name: Smoke test Linux native bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./dist/native-stage/ordo-linux-x64/ordo --version
+          sh -n scripts/install-native.sh
+
       - name: Create or update GitHub release
+        if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.bundle.outputs.version }}
