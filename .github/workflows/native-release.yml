@@ -1,0 +1,136 @@
+name: Native Ordo release
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/native-release.yml"
+      - "scripts/install-native.sh"
+      - "scripts/install-native.ps1"
+      - "src/**"
+      - "distribution/**"
+  push:
+    branches: [main]
+    paths:
+      - "distribution/package.json"
+      - ".github/workflows/native-release.yml"
+      - "scripts/install-native.sh"
+      - "scripts/install-native.ps1"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ordo-native-release-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Build execution payload and native runtimes
+        working-directory: distribution
+        run: npm run build
+
+      - name: Build native release bundles
+        id: bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./distribution/package.json').version")"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+          rm -rf dist/native dist/native-stage
+          mkdir -p dist/native dist/native-stage
+
+          make_posix_bundle() {
+            rid="$1"
+            name="ordo-${rid}"
+            root="dist/native-stage/${name}"
+            mkdir -p "${root}/dist"
+            cp -R distribution/dist/. "${root}/dist/"
+            cp "distribution/runtimes/${rid}/sde" "${root}/ordo"
+            chmod +x "${root}/ordo"
+            printf '%s\n' "${VERSION}" > "${root}/VERSION"
+            tar -czf "dist/native/${name}.tar.gz" -C dist/native-stage "${name}"
+          }
+
+          make_posix_bundle linux-x64
+          make_posix_bundle linux-musl-x64
+          make_posix_bundle linux-arm64
+          make_posix_bundle osx-x64
+          make_posix_bundle osx-arm64
+
+          win_root="dist/native-stage/ordo-win-x64"
+          mkdir -p "${win_root}/dist"
+          cp -R distribution/dist/. "${win_root}/dist/"
+          cp distribution/runtimes/win-x64/sde.exe "${win_root}/ordo.exe"
+          printf '%s\n' "${VERSION}" > "${win_root}/VERSION"
+          (cd dist/native-stage && zip -qr "../native/ordo-win-x64.zip" ordo-win-x64)
+
+          (cd dist/native && sha256sum ordo-* > native-checksums.txt)
+          cat dist/native/native-checksums.txt
+
+      - name: Smoke test native installer and installed Ordo
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./distribution/package.json').version")"
+          install_root="$(mktemp -d)"
+          project_root="$(mktemp -d)"
+          trap 'rm -rf "$install_root" "$project_root"' EXIT
+
+          ECHELON_RELEASE_BASE_URL="file://$PWD/dist/native"             sh scripts/install-native.sh --version "$VERSION" --install-base "$install_root"
+
+          "$install_root/bin/ordo" --version
+          "$install_root/bin/sde" --version
+          (
+            cd "$project_root"
+            "$install_root/bin/ordo" init
+            "$install_root/bin/ordo" verify
+          )
+          sh -n scripts/install-native.sh
+
+      - name: Create or update GitHub release
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.bundle.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          assets=(dist/native/ordo-* dist/native/native-checksums.txt)
+
+          if gh release view "v${VERSION}" >/dev/null 2>&1; then
+            gh release upload "v${VERSION}" "${assets[@]}" --clobber
+          else
+            if ! gh release create "v${VERSION}" "${assets[@]}"               --target "${GITHUB_SHA}"               --title "Ordo v${VERSION}"               --notes "Native Ordo/SDE bundles. These bundles require no Node.js or .NET runtime on the consuming machine."; then
+              gh release upload "v${VERSION}" "${assets[@]}" --clobber
+            fi
+          fi
+
+
+  windows-powershell-syntax:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse installer scripts with Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          $files = @("scripts/install-native.ps1")
+          foreach ($file in $files) {
+            [scriptblock]::Create((Get-Content -Raw $file)) | Out-Null
+            Write-Host "parsed $file"
+          }

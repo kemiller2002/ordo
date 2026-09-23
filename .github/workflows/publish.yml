@@ -45,6 +45,7 @@ env:
 
 jobs:
   validate:
+    if: vars.NPM_PUBLISH_ENABLED == 'true'
     name: Validate (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:

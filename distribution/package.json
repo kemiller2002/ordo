@@ -1,16 +1,16 @@
 {
   "name": "@echelon-foundry/sde",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Echelon Foundry State-Directed Engineering repository initialization, verification, diagnostics, and upgrade tooling.",
   "license": "UNLICENSED",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kemiller2002/state-directed-engineering.git",
+    "url": "git+https://github.com/kemiller2002/ordo.git",
     "directory": "distribution"
   },
-  "homepage": "https://github.com/kemiller2002/state-directed-engineering#readme",
+  "homepage": "https://github.com/kemiller2002/ordo#readme",
   "bugs": {
-    "url": "https://github.com/kemiller2002/state-directed-engineering/issues"
+    "url": "https://github.com/kemiller2002/ordo/issues"
   },
   "publishConfig": {
     "access": "public"
