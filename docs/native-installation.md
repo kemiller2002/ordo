@@ -14,7 +14,7 @@ macOS or Linux:
 
 Pin a version:
 
-    curl -fsSL https://raw.githubusercontent.com/kemiller2002/ordo/main/scripts/install-native.sh | sh -s -- --version 1.3.0
+    curl -fsSL https://raw.githubusercontent.com/kemiller2002/ordo/main/scripts/install-native.sh | sh -s -- --version 1.4.0
 
 Windows PowerShell:
 
