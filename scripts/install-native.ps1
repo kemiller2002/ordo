@@ -45,6 +45,8 @@ try {
         Set-Content -Encoding Ascii -Path $cmd -Value $cmdContent
     }
 
+    Set-Content -Encoding Ascii -Path (Join-Path $InstallBase "tools\ordo\current-version") -Value $Version
+
     Write-Host "Installed Ordo $Version to $target"
     Write-Host "Add $binDir to PATH if it is not already present."
 }
