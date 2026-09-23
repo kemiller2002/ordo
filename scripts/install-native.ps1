@@ -34,11 +34,17 @@ try {
     $target = Join-Path $InstallBase "tools\ordo\$Version"
     $binDir = Join-Path $InstallBase "bin"
 
-    if (Test-Path $target) { Remove-Item -Recurse -Force $target }
     New-Item -ItemType Directory -Force -Path (Split-Path $target), $binDir | Out-Null
-    Copy-Item -Recurse -Force $sourceRoot $target
-
     $exe = Join-Path $target "ordo.exe"
+    $versionFile = Join-Path $target "VERSION"
+    if (Test-Path $target) {
+        if (-not (Test-Path $exe) -or -not (Test-Path $versionFile)) {
+            throw "Existing Ordo $Version installation is incomplete. Remove $target and retry."
+        }
+    }
+    else {
+        Copy-Item -Recurse -Force $sourceRoot $target
+    }
     foreach ($name in @("ordo", "sde")) {
         $cmd = Join-Path $binDir "$name.cmd"
         $cmdContent = "@echo off" + [Environment]::NewLine + '"' + $exe + '" %*' + [Environment]::NewLine
