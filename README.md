@@ -20,18 +20,23 @@ Version 0.1 remains frozen as the prior method and historical trial target.
 
 ## Using SDE in your own repository
 
-This repository is the canonical source of the methodology. To *apply* SDE to
-a project, install the published package rather than cloning this repository:
+This repository is the canonical source of the methodology. To *apply* Ordo/SDE to
+a project, prefer the native GitHub Release distribution rather than cloning this repository:
 
 ```bash
-npx @echelon-foundry/sde init      # bring the repository into a valid installed state
-npx @echelon-foundry/sde status    # what is installed
-npx @echelon-foundry/sde verify    # validate the installation
-npx @echelon-foundry/sde upgrade   # move to a newer release
-npx @echelon-foundry/sde doctor    # diagnose problems and how to fix them
+curl -fsSL https://raw.githubusercontent.com/kemiller2002/ordo/main/scripts/install-native.sh | sh
+ordo init
+ordo status
+ordo verify
 ```
 
-That is the canonical public interface. The package installs a curated,
+The native install requires neither Node.js nor a machine-wide .NET runtime. The historical `sde` command remains an alias, and npm remains a supported compatibility distribution:
+
+```bash
+npx @echelon-foundry/sde init
+```
+
+The lifecycle commands and repository installation format are unchanged. The package installs a curated,
 versioned subset of `doctrine/`, `method/` and `templates/sde/` into `.sde/`,
 so an engineer or agent can apply SDE without reading the research that
 produced it.
