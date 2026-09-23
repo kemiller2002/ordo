@@ -83,11 +83,24 @@ jobs:
           (cd dist/native && sha256sum ordo-* > native-checksums.txt)
           cat dist/native/native-checksums.txt
 
-      - name: Smoke test Linux native bundle
+      - name: Smoke test native installer and installed Ordo
         shell: bash
         run: |
           set -euo pipefail
-          ./dist/native-stage/ordo-linux-x64/ordo --version
+          VERSION="$(node -p "require('./distribution/package.json').version")"
+          install_root="$(mktemp -d)"
+          project_root="$(mktemp -d)"
+          trap 'rm -rf "$install_root" "$project_root"' EXIT
+
+          ECHELON_RELEASE_BASE_URL="file://$PWD/dist/native"             sh scripts/install-native.sh --version "$VERSION" --install-base "$install_root"
+
+          "$install_root/bin/ordo" --version
+          "$install_root/bin/sde" --version
+          (
+            cd "$project_root"
+            "$install_root/bin/ordo" init
+            "$install_root/bin/ordo" verify
+          )
           sh -n scripts/install-native.sh
 
       - name: Create or update GitHub release
