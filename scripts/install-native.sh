@@ -84,10 +84,16 @@ target="$tool_root/$VERSION"
 current="$tool_root/current"
 bin_dir="$INSTALL_BASE/bin"
 
-rm -rf "$target"
 mkdir -p "$tool_root" "$bin_dir"
-cp -R "$source_root" "$target"
-chmod +x "$target/ordo"
+if [ -d "$target" ]; then
+  [ -x "$target/ordo" ] && [ -f "$target/VERSION" ] || {
+    echo "Existing Ordo $VERSION installation is incomplete. Remove $target and retry." >&2
+    exit 1
+  }
+else
+  cp -R "$source_root" "$target"
+  chmod +x "$target/ordo"
+fi
 
 ln -sfn "$target" "$current"
 ln -sfn "$current/ordo" "$bin_dir/ordo"
