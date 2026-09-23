@@ -58,7 +58,7 @@ npx sde init
 ```
 
 Full command reference:
-[docs/cli.md](https://github.com/kemiller2002/state-directed-engineering/blob/main/docs/cli.md).
+[docs/cli.md](https://github.com/kemiller2002/ordo/blob/main/docs/cli.md).
 
 ## Options
 
@@ -277,7 +277,7 @@ npx @echelon-foundry/sde upgrade --dry-run --json
 ```
 
 Supported upgrade paths and migration behaviour:
-[docs/upgrading.md](https://github.com/kemiller2002/state-directed-engineering/blob/main/docs/upgrading.md).
+[docs/upgrading.md](https://github.com/kemiller2002/ordo/blob/main/docs/upgrading.md).
 
 ## `doctor`
 
@@ -415,7 +415,7 @@ depend on:
 The one behavioural change: the tool now runs as a native executable rather
 than as JavaScript, so platforms outside the supported list fail with exit
 code `3` instead of running. See
-[docs/upgrading.md](https://github.com/kemiller2002/state-directed-engineering/blob/main/docs/upgrading.md)
+[docs/upgrading.md](https://github.com/kemiller2002/ordo/blob/main/docs/upgrading.md)
 for the full compatibility boundary.
 
 ## Version pinning
@@ -455,19 +455,19 @@ all, or the reverse.
 ## Development, testing and releasing
 
 This package is built from the
-[`state-directed-engineering`](https://github.com/kemiller2002/state-directed-engineering)
+[`state-directed-engineering`](https://github.com/kemiller2002/ordo)
 repository, where the lifecycle is implemented in F# under `src/Sde.Core` and
 `src/Sde.Cli`. Node is only the launcher.
 
-- [docs/development.md](https://github.com/kemiller2002/state-directed-engineering/blob/main/docs/development.md)
+- [docs/development.md](https://github.com/kemiller2002/ordo/blob/main/docs/development.md)
   — building and testing from a checkout
-- [docs/releasing.md](https://github.com/kemiller2002/state-directed-engineering/blob/main/docs/releasing.md)
+- [docs/releasing.md](https://github.com/kemiller2002/ordo/blob/main/docs/releasing.md)
   — the release and publish process
-- [docs/installation.md](https://github.com/kemiller2002/state-directed-engineering/blob/main/docs/installation.md)
+- [docs/installation.md](https://github.com/kemiller2002/ordo/blob/main/docs/installation.md)
   — detailed installation behaviour
-- [docs/cli.md](https://github.com/kemiller2002/state-directed-engineering/blob/main/docs/cli.md)
+- [docs/cli.md](https://github.com/kemiller2002/ordo/blob/main/docs/cli.md)
   — full command reference
-- [docs/upgrading.md](https://github.com/kemiller2002/state-directed-engineering/blob/main/docs/upgrading.md)
+- [docs/upgrading.md](https://github.com/kemiller2002/ordo/blob/main/docs/upgrading.md)
   — migration behaviour and compatibility policy
 
 `DISTRIBUTION-MAP.json`, shipped with the package, is the machine-readable
