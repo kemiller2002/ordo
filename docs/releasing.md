@@ -149,3 +149,10 @@ A released package version is immutable. If canonical methodology changes
 materially, that requires a new package version and a new build, not a silent
 regeneration of an already-published version's contents. This matters for
 reproducible engineering trials that cite a specific installed SDE version.
+
+
+## Repository rename and native distribution
+
+The source repository is now `kemiller2002/ordo`. Native GitHub Release distribution is independent of npm trusted publishing and is the preferred installation path.
+
+npm Trusted Publishing validates the repository identity in GitHub's OIDC claim. Before compatibility npm publication is resumed, the package's Trusted Publisher entry must name `kemiller2002/ordo` and `.github/workflows/publish.yml`. The npm workflow is intentionally gated by the GitHub repository variable `NPM_PUBLISH_ENABLED` until that external setting is updated. Set `NPM_PUBLISH_ENABLED=true` only after the npm configuration has been changed.
