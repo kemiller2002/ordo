@@ -79,16 +79,19 @@ fi
 
 tar -xzf "$tmp/$asset" -C "$tmp"
 source_root="$tmp/ordo-$rid"
-target="$INSTALL_BASE/tools/ordo/$VERSION"
+tool_root="$INSTALL_BASE/tools/ordo"
+target="$tool_root/$VERSION"
+current="$tool_root/current"
 bin_dir="$INSTALL_BASE/bin"
 
 rm -rf "$target"
-mkdir -p "$(dirname "$target")" "$bin_dir"
+mkdir -p "$tool_root" "$bin_dir"
 cp -R "$source_root" "$target"
 chmod +x "$target/ordo"
 
-ln -sfn "$target/ordo" "$bin_dir/ordo"
-ln -sfn "$target/ordo" "$bin_dir/sde"
+ln -sfn "$target" "$current"
+ln -sfn "$current/ordo" "$bin_dir/ordo"
+ln -sfn "$current/ordo" "$bin_dir/sde"
 
 printf '%s\n' "Installed Ordo $VERSION to $target"
 printf '%s\n' "Commands: $bin_dir/ordo and $bin_dir/sde"
