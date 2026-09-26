@@ -161,7 +161,8 @@ let contextFor (snapshot: StateSnapshot) (choice: ChangeClass) =
       Available = fullEvidence
       Obligations = []
       Policy = fastPathPolicy.Identity, fastPathPolicy.Evaluate choice
-      Now = now }
+      Now = now
+      RequestedBy = None }
 
 // ---------------------------------------------------------- fake providers
 

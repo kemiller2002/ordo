@@ -142,6 +142,8 @@ provenance is structurally reconstructable.
 
 **Capability is semantic authority, not authentication.** A Capability is supplied by the host/application after its own identity and authorization checks. It is not a token, credential, signature, object capability, identity proof, or cryptographic grant.
 
+**Who asked is not whether they may, or why it should happen.** A host may record the requester, `requestedBy = {actor, execution}`, on a `DecisionRequest` and a `TransitionContext`. The actor is the Praxis actor shape. The requester is copied, unread, onto the `TransitionAuthorization` and into the `ResolutionObservation` (wire schema v3). Capability answers "may this actor request this?". Evidence answers "why should the transition occur?". No check reads the requester, no evidence is weighted by it, and no provider sees or sets it. See `DF-SDE-2026-D68A`.
+
 **Replay is not execution.** `Replay.execute` re-evaluates a recorded
 request and returns a record. It never calls the gate, so there is no path
 from a replay to a state change.
@@ -263,6 +265,7 @@ proves it.
 | Applying a decision made against state that has since changed | `DecisionIsStale`, for every choice at every confidence — `InvariantTests`, invariant 7. |
 | Falling back to another provider silently | There is no fallback anywhere. A caller holds the provider it chose. |
 | Calling a self-reported number a calibrated probability | `Confidence.isCalibrated` is false for `ProviderReported` and for `Derived`. |
+| Treating who asked as permission or as evidence | No check reads `RequestedBy`. Every verdict is identical for agent, human, automation, unknown, extension, and absent requesters — `ProvenanceTests`. |
 | Letting a provider failure become a domain decision | Every `ProviderError` yields no decision and refuses the change — `InvariantTests`, invariant 8. |
 
 ## Limits, stated

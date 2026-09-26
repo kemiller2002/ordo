@@ -526,7 +526,8 @@ let ``legacy state cannot authorize a new transition even when its fingerprint m
           Available = []
           Obligations = []
           Policy = fastPathPolicy.Identity, Ordo.Core.Policy.PolicyAllows
-          Now = now }
+          Now = now
+          RequestedBy = None }
 
     match Transition.evaluate (TransitionRequirement.create "legacy-refusal") context with
     | TransitionRefused failures ->
@@ -554,7 +555,8 @@ let ``outstanding reconciliation can block a later transition until explicitly d
           Available = []
           Obligations = [ obligation ]
           Policy = fastPathPolicy.Identity, Ordo.Core.Policy.PolicyAllows
-          Now = now }
+          Now = now
+          RequestedBy = None }
 
     match Transition.evaluate requirement baseContext with
     | TransitionRefused failures ->

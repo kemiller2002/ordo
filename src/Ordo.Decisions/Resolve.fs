@@ -183,7 +183,10 @@ module Resolve =
           Policy = None
           Usage = usage
           TransportRetries = retries
-          ExperimentReference = options.ExperimentReference }
+          ExperimentReference = options.ExperimentReference
+          // Copied from the host-built request. Nothing the provider
+          // returned can reach this field (DF-SDE-2026-D68A).
+          RequestedBy = request.RequestedBy }
 
     /// Runs one decision request against one provider.
     ///

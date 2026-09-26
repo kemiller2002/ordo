@@ -50,6 +50,14 @@ module EscalationTarget =
         | ToDecide -> "decide"
         | ToCompute -> "compute"
 
+    let fromWire token =
+        match token with
+        | "deliberation" -> Some ToDeliberation
+        | "human-review" -> Some ToHumanReview
+        | "decide" -> Some ToDecide
+        | "compute" -> Some ToCompute
+        | _ -> None
+
 [<RequireQualifiedAccess>]
 module EscalationChain =
 

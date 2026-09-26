@@ -202,5 +202,76 @@
     "title": "Ordo next-pass validated requirements intake",
     "updated": "2026-09-20",
     "version": "1.0.0"
+  },
+  {
+    "author_agent": "anthropic/claude-code",
+    "completion": {
+      "estimate": 1,
+      "state": "complete"
+    },
+    "confidence": {
+      "label": "high",
+      "rationale": "The separation it requires already exists structurally in executable Ordo (DF-SDE-2026-0011); this package only adds a recorded, non-authoritative \"who asked\" fact and states what may never read it. The actor shape is taken unchanged from the Praxis provenance contract rather than invented here."
+    },
+    "created": "2026-09-26",
+    "discipline": [
+      "software-engineering-methodology",
+      "software-architecture",
+      "agentic-engineering"
+    ],
+    "id": "RP-SDE-2026-DE93",
+    "keywords": [
+      "requestedBy",
+      "actor",
+      "execution",
+      "provenance-not-authorization"
+    ],
+    "path": "research/packages/RP-SDE-2026-DE93--ordo-requester-provenance-requirements.md",
+    "priority": "high",
+    "provenance": {
+      "contributions": {
+        "EXE-ordo.ros-work-951cc7c00fea5fcd18cb1d3d": {
+          "actor": {
+            "id": "anthropic/claude-code",
+            "kind": "agent",
+            "model": "unknown",
+            "provider": "anthropic",
+            "runtime": "claude-code"
+          },
+          "at": "2026-09-26T21:30:00.000Z",
+          "operations": [
+            "created"
+          ],
+          "reason": "Echelon cross-system provenance upgrade (work item FEAT-ECHELON-PROVENANCE)"
+        }
+      }
+    },
+    "related_documents": [
+      "research/packages/RP-SDE-2026-0004--ordo-next-pass-requirements.md",
+      "research/decisions/DF-SDE-2026-D68A--record-requester-provenance-as-audit-only-fact.md",
+      "research/decisions/DF-SDE-2026-0011--clarify-ordo-capability-as-semantic-authority-not-authentication.md",
+      "research/decisions/DF-SDE-2026-0013--separate-sde-release-and-ordo-wire-versioning.md",
+      "docs/architecture/executable-ordo-traceability.md"
+    ],
+    "related_projects": [
+      "state-directed-engineering",
+      "repository-operating-system",
+      "echelon"
+    ],
+    "research_area": "state-directed-engineering",
+    "status": "accepted",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "ordo",
+      "provenance",
+      "identity",
+      "requester",
+      "echelon",
+      "wire-versioning"
+    ],
+    "title": "Ordo requester provenance requirements intake",
+    "updated": "2026-09-26",
+    "version": "1.0.0"
   }
 ]

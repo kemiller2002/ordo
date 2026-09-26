@@ -335,5 +335,50 @@
     "title": "Represent reusable negative search observations as typed Evidence content paired with scoped coverage",
     "type": "decision-record",
     "updated": "2026-09-20"
+  },
+  {
+    "created": "2026-09-26",
+    "id": "DF-SDE-2026-D68A",
+    "path": "research/decisions/DF-SDE-2026-D68A--record-requester-provenance-as-audit-only-fact.md",
+    "provenance": {
+      "contributions": {
+        "EXE-ordo.ros-work-951cc7c00fea5fcd18cb1d3d": {
+          "actor": {
+            "id": "anthropic/claude-code",
+            "kind": "agent",
+            "model": "unknown",
+            "provider": "anthropic",
+            "runtime": "claude-code"
+          },
+          "at": "2026-09-26T21:30:00.000Z",
+          "operations": [
+            "created"
+          ],
+          "reason": "Echelon cross-system provenance upgrade (work item FEAT-ECHELON-PROVENANCE)"
+        }
+      }
+    },
+    "related_documents": [
+      "research/packages/RP-SDE-2026-DE93--ordo-requester-provenance-requirements.md",
+      "research/decisions/DF-SDE-2026-0011--clarify-ordo-capability-as-semantic-authority-not-authentication.md",
+      "research/decisions/DF-SDE-2026-0013--separate-sde-release-and-ordo-wire-versioning.md",
+      "docs/architecture/executable-ordo-traceability.md"
+    ],
+    "status": "accepted",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "architecture",
+      "ordo",
+      "provenance",
+      "identity",
+      "capability",
+      "evidence",
+      "wire-versioning",
+      "echelon"
+    ],
+    "title": "Record requester provenance as an audit-only fact, separate from capability and evidence",
+    "type": "decision-record",
+    "updated": "2026-09-26"
   }
 ]

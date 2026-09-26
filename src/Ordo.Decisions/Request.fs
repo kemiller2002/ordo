@@ -16,6 +16,7 @@ open Ordo.Core.Identifiers
 open Ordo.Core.Evidence
 open Ordo.Core.Coverage
 open Ordo.Core.StateIdentity
+open Ordo.Core.Provenance
 open Ordo.Decisions.Contract
 
 /// Why a request could not be formed.
@@ -57,6 +58,11 @@ type DecisionRequest<'choice when 'choice: equality> =
       /// Scoped completeness claims. Multiple scopes may coexist; there is
       /// deliberately no request-level global completeness flag.
       Coverage: ContextCoverageClaim list
+      /// Who asked, as the host reports it: self-reported provenance, set
+      /// only through `requestedBy`. It is never sent to a provider, never
+      /// read by a check, and never a substitute for capability or evidence
+      /// (DF-SDE-2026-D68A). `None` means none was supplied.
+      RequestedBy: Requester option
       CreatedAt: DateTimeOffset }
 
 [<RequireQualifiedAccess>]
@@ -96,6 +102,7 @@ module DecisionRequest =
                           State = state
                           Evidence = evidence
                           Coverage = coverage
+                          RequestedBy = None
                           CreatedAt = now }
 
     /// Backward-compatible constructor for decisions that declare no coverage
@@ -119,6 +126,10 @@ module DecisionRequest =
 
     let causedBy (cause: ResolutionId) (request: DecisionRequest<'choice>) =
         { request with CausedBy = Some cause }
+
+    /// Records who asked. Host-only: a provider has no path to this value.
+    let requestedBy (requester: Requester) (request: DecisionRequest<'choice>) =
+        { request with RequestedBy = Some requester }
 
     /// Checks the contract's evidence requirements against what the request
     /// carries. Pure; the caller decides what an unmet requirement means.
