@@ -4,7 +4,7 @@ title: Executable Ordo v0.1 requirement traceability
 status: draft
 version: 0.1.0
 created: 2026-09-18
-updated: 2026-09-20
+updated: 2026-09-26
 related_documents:
   - docs/architecture/executable-ordo.md
   - research/decisions/DF-SDE-2026-0006--introduce-executable-ordo-primitives.md
@@ -201,6 +201,33 @@ Authority: `DF-SDE-2026-0013`, `docs/architecture/ordo-next-pass-implementation-
 | Live provider | Explicitly separate | no live-provider result is inferred from normal CI | `LiveAdapterTests` remains opt-in |
 
 The SDE package version and executable Ordo wire versions remain independent. SDE 1.3.0 installs methodology; `ordo.resolution-observation` schema v2 identifies the new audit shape. Neither version is used as a substitute for the other.
+
+## Echelon provenance — requester (ORDO-NEXT-07)
+
+Authority: `RP-SDE-2026-DE93`, `DF-SDE-2026-D68A`. External contract (referenced, not depended on): Praxis `RQ-ROS-2026-A001`, `A010`, `A013`–`A015` at commit `58cf46a`.
+
+| Requirement | Status | Implementation | Test |
+|---|---|---|---|
+| Praxis actor (`agent`/`human`/`automation`/`unknown`/`x-…`), with agent attributes required and humans omitting them | Implemented | `Actor`, `ActorKind` in `src/Ordo.Core/Provenance.fs` | `ProvenanceTests` — round trip, malformed actors refused |
+| Contract key order; absent attributes omitted | Implemented | `Wire.encodeActor` | `ProvenanceTests` — key order |
+| Unknown actor fields preserved, not dropped | Implemented | `Actor.Extensions`; `Wire.decodeActor` | `ProvenanceTests` — preservation; Praxis fixture actors re-encode losslessly |
+| Unknown kind token refused loudly; `x-` kinds accepted | Implemented | `ActorKind.fromWire`; `UnknownVariant` | `ProvenanceTests` |
+| No credentials in identity | Implemented | `Credentials.looksLikeCredential` (no regex dependency) | `ProvenanceTests`; Praxis `credential-in-actor` fixture |
+| Execution key `EXE-…`/`CTB-…`; an agent must name an `EXE-…` run; foreign runs are namespaced | Implemented | `ExecutionKey`, `Requester.create`, `ExecutionKey.foreign` | `ProvenanceTests` |
+| Identity from whitelisted variables only, never guessed, never minting a Praxis execution | Implemented | `Requester.fromIdentityVariables` (pure; host supplies the lookup) | `ProvenanceTests` — consulted keys, GitHub Actions default |
+| Optional requester on `DecisionRequest` | Implemented | `DecisionRequest.RequestedBy`, `DecisionRequest.requestedBy` | `ProvenanceTests` |
+| Requester on authorisation as an audit fact | Implemented | `TransitionContext.RequestedBy` -> `TransitionAuthorization.RequestedBy` | `ProvenanceTests` |
+| Transition verdicts and capability outcomes invariant under requester | Implemented | `Transition.evaluate` never reads it; `Provenance` is compiled after `Evidence`/`Coverage`/`NegativeKnowledge`/`Capability`/`Obligation`/`ExternalEffect` | `ProvenanceTests` — six contexts x six requesters; reflection over authority/evidence types |
+| Provider requests, resolution outcomes, and gate outcomes invariant under requester | Implemented | `Resolve.toProviderRequest` has no requester input | `ProvenanceTests` |
+| Providers cannot see or mint the requester | Implemented | not on `ProviderRequest`/`ProviderOutcome`; `Resolve` copies it from the request | `ProvenanceTests` — reflection plus adversarial provider responses |
+| Observation wire schema v3 with `requestedBy` | Implemented | `ResolutionObservation.SchemaVersion = 3`; `encode`/`decode` | `ProvenanceTests` — round trip for every requester; `SliceTests` asserts v3 |
+| v2 observations decode with requester absent and stay v2 | Implemented | `ResolutionObservation.decode` returns `SchemaVersion`; `encodeAtVersion` | `ProvenanceTests` — literal v2 fixture |
+| v2 never reinterpreted; unknown versions refused | Implemented | a v2 document with `requestedBy` is refused; `encodeAtVersion 2` refuses a requester; versions other than 2/3 refused | `ProvenanceTests` |
+| Praxis conformance fixtures vendored and run | Implemented (subset) | `tests/Ordo.Tests/fixtures/praxis-provenance-record/` + `SOURCE.json` digests | `ProvenanceTests` — digests; valid/unversioned accepted; 6 actor-level invalid cases refused; 11 record-level invalid cases listed as outside Ordo's codec; unsupported major not interpreted; e2e and preserved-successor actors lossless |
+| Obligation satisfaction attribution | Deferred | obligations have no wire lifecycle; who satisfied is host-recorded provenance of the completion evidence | — |
+| Interchange-record (`praxis.provenance-record`) codec and successor checks | Not applicable | Ordo neither stores nor transports interchange records | fixture subset is explicit |
+
+Identity is provenance: self-reported, not authentication, not authorisation, not evidence, and not evidence weight. The same holds for negative knowledge: whoever observed or asserted an absence is provenance about the observation, and cannot upgrade `Partial`/`Unknown` coverage. Whoever attempted an `Unknown` external effect cannot establish that retrying it is safe.
 
 ## Class B — before ROS integration
 

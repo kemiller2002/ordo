@@ -26,6 +26,15 @@
     <Compile Include="LiveAdapterTests.fs" />
     <Compile Include="ArchitectureTests.fs" />
     <Compile Include="InvariantTests.fs" />
+    <Compile Include="ProvenanceTests.fs" />
+  </ItemGroup>
+
+  <!--
+    Praxis provenance conformance fixtures, vendored with their digests in
+    fixtures/praxis-provenance-record/SOURCE.json (RP-SDE-2026-DE93).
+  -->
+  <ItemGroup>
+    <None Include="fixtures/**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

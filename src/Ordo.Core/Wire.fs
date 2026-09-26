@@ -21,6 +21,7 @@ open Ordo.Core.Coverage
 open Ordo.Core.NegativeKnowledge
 open Ordo.Core.Obligation
 open Ordo.Core.StateIdentity
+open Ordo.Core.Provenance
 
 /// Schema version for core records whose semantics have not changed.
 [<Literal>]
@@ -584,3 +585,105 @@ let decodeObligationKind (document: JsonValue) : Result<ObligationKind, WireErro
                 |> Result.mapError (fun error -> InvalidField("$.effectId", sprintf "%A" error)))
         | "custom" -> withField "label" Custom
         | other -> Error(UnknownVariant("kind", other)))
+
+// ------------------------------------------------------ requester provenance
+
+/// The Praxis actor, exactly: `kind`, `id`, then `provider`, `model` and
+/// `runtime` when present, then any preserved extension fields in their
+/// original order. Absent attributes are omitted rather than written as
+/// `null`, because that is the contract's shape (DF-SDE-2026-D68A).
+let encodeActor (actor: Actor) =
+    let attribute name value =
+        value |> Option.map (fun text -> field name (JString text)) |> Option.toList
+
+    JObject(
+        [ field "kind" (JString(ActorKind.toWire actor.Kind))
+          field "id" (JString actor.Id) ]
+        @ attribute "provider" actor.Provider
+        @ attribute "model" actor.Model
+        @ attribute "runtime" actor.Runtime
+        @ actor.Extensions
+    )
+
+let private provenanceError (path: string) (error: ProvenanceError) =
+    match error with
+    | UnknownActorKind token -> UnknownVariant(path + ".kind", token)
+    | other -> InvalidField(path, sprintf "%A" other)
+
+/// Reads a Praxis actor. Unknown fields are kept, not dropped; an unknown
+/// non-`x-` kind is refused; a duplicated member is refused rather than
+/// silently resolved to one of its values.
+let decodeActor (document: JsonValue) : Result<Actor, WireError> =
+    match document with
+    | JObject members ->
+        let names = members |> List.map fst
+
+        match names |> List.countBy (fun name -> name) |> List.tryFind (fun (_, count) -> count > 1) with
+        | Some(name, _) -> Error(InvalidField("$.actor." + name, "member appears more than once"))
+        | None ->
+            let attribute name =
+                match List.tryFind (fst >> (=) name) members with
+                | None -> Ok None
+                | Some(_, JString text) -> Ok(Some text)
+                | Some _ -> Error(InvalidField("$.actor." + name, "must be a string"))
+
+            let kind =
+                requiredString "kind" document
+                |> Result.bind (fun token ->
+                    match ActorKind.fromWire token with
+                    | Some kind -> Ok kind
+                    | None -> Error(UnknownVariant("actor.kind", token)))
+
+            let id = requiredString "id" document
+            let extensions = members |> List.filter (fun (name, _) -> not (List.contains name Actor.modelledFields))
+
+            match kind, id, attribute "provider", attribute "model", attribute "runtime" with
+            | Ok kind, Ok id, Ok provider, Ok model, Ok runtime ->
+                Actor.create kind id provider model runtime extensions
+                |> Result.mapError (provenanceError "$.actor")
+            | Error e, _, _, _, _
+            | _, Error e, _, _, _
+            | _, _, Error e, _, _
+            | _, _, _, Error e, _
+            | _, _, _, _, Error e -> Error e
+    | _ -> Error(InvalidField("$.actor", "must be an object"))
+
+/// `{"actor": <Praxis actor>, "execution": "EXE-..." | "CTB-..." | null}`.
+let encodeRequester (requester: Requester) =
+    JObject
+        [ field "actor" (encodeActor requester.Actor)
+          field
+              "execution"
+              (match requester.Execution with
+               | Some key -> JString(ExecutionKey.value key)
+               | None -> JNull) ]
+
+/// Reads a requester. The wrapper is Ordo's own versioned shape, so a member
+/// other than `actor` and `execution` means a newer schema and is refused
+/// rather than ignored.
+let decodeRequester (document: JsonValue) : Result<Requester, WireError> =
+    match document with
+    | JObject members ->
+        match members |> List.map fst |> List.tryFind (fun name -> name <> "actor" && name <> "execution") with
+        | Some unexpected -> Error(InvalidField("$.requestedBy." + unexpected, "not part of this schema version"))
+        | None ->
+            let actor = required "actor" document |> Result.bind decodeActor
+
+            let execution =
+                optional "execution" document
+                |> Result.bind (function
+                    | None
+                    | Some JNull -> Ok None
+                    | Some(JString raw) ->
+                        ExecutionKey.create raw
+                        |> Result.map Some
+                        |> Result.mapError (provenanceError "$.requestedBy.execution")
+                    | Some _ -> Error(InvalidField("$.requestedBy.execution", "must be a string or null")))
+
+            match actor, execution with
+            | Ok actor, Ok execution ->
+                Requester.create actor execution
+                |> Result.mapError (provenanceError "$.requestedBy")
+            | Error e, _
+            | _, Error e -> Error e
+    | _ -> Error(InvalidField("$.requestedBy", "must be an object"))

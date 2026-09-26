@@ -88,12 +88,12 @@ let ``the observation records what happened and nothing it would have to conclud
     match parse (render (ResolutionObservation.encode observation)) with
     | Ok encoded ->
         Assert.Equal(Ok(Some(JString "ordo.resolution-observation")), tryMember "schema" encoded)
-        Assert.Equal(Ok(Some(JInt 2L)), tryMember "schemaVersion" encoded)
+        Assert.Equal(Ok(Some(JInt 3L)), tryMember "schemaVersion" encoded)
         match tryMember "stateViewSchema" encoded with
         | Ok(Some(JObject schema)) ->
             Assert.Contains(("id", JString "sde.change-site-state"), schema)
             Assert.Contains(("version", JInt 1L), schema)
-        | other -> failwithf "expected state-view schema identity in observation v2, got %A" other
+        | other -> failwithf "expected state-view schema identity in observation v3, got %A" other
         Assert.Equal(Ok(Some(JArray [])), tryMember "coverage" encoded)
     | Error error -> failwithf "the observation did not render as readable JSON: %A" error
 
@@ -197,7 +197,7 @@ let ``complete required coverage permits resolution while other scopes may remai
     | Ok encoded ->
         match tryMember "coverage" encoded with
         | Ok(Some(JArray encodedClaims)) -> Assert.Equal(2, encodedClaims.Length)
-        | other -> failwithf "expected scoped coverage in observation v2, got %A" other
+        | other -> failwithf "expected scoped coverage in observation v3, got %A" other
     | Error error -> failwithf "the coverage observation did not render as readable JSON: %A" error
 
     let providerRequest = Resolve.toProviderRequest options request

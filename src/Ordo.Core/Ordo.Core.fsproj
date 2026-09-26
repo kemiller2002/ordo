@@ -27,6 +27,13 @@
     <Compile Include="Capability.fs" />
     <Compile Include="Obligation.fs" />
     <Compile Include="ExternalEffect.fs" />
+    <!--
+      Provenance (who requested) is compiled after Evidence, Coverage,
+      NegativeKnowledge, Capability, Obligation and ExternalEffect so that
+      none of them can read it: identity is never authority or evidence
+      (DF-SDE-2026-D68A). Transition carries it without reading it.
+    -->
+    <Compile Include="Provenance.fs" />
     <Compile Include="StateIdentity.fs" />
     <Compile Include="Policy.fs" />
     <Compile Include="Transition.fs" />

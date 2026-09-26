@@ -20,6 +20,7 @@ open Ordo.Core.Capability
 open Ordo.Core.Obligation
 open Ordo.Core.Policy
 open Ordo.Core.StateIdentity
+open Ordo.Core.Provenance
 
 /// Why a transition was refused.
 ///
@@ -76,7 +77,13 @@ type TransitionContext =
       /// rather than called, so that this module stays free of the domain's
       /// fact type and the policy stays a pure function the domain owns.
       Policy: PolicyIdentity * PolicyVerdict
-      Now: DateTimeOffset }
+      Now: DateTimeOffset
+      /// Who asked for the change, as the host reports it. An audit fact
+      /// only: `evaluate` copies it onto the authorisation and no check
+      /// reads it. Identity is not capability and not evidence
+      /// (DF-SDE-2026-D68A). `None` means the host supplied no requester; it
+      /// is never filled in.
+      RequestedBy: Requester option }
 
 /// Proof that a specific change was evaluated against a specific state and
 /// found legal.
@@ -89,12 +96,16 @@ type TransitionAuthorization =
         { AuthorizedName: string
           AuthorizedAgainst: StateFingerprint
           AuthorizedBy: PolicyIdentity
-          AuthorizedAt: DateTimeOffset }
+          AuthorizedAt: DateTimeOffset
+          AuthorizedFor: Requester option }
 
     member this.Name = this.AuthorizedName
     member this.State = this.AuthorizedAgainst
     member this.Policy = this.AuthorizedBy
     member this.At = this.AuthorizedAt
+    /// Who requested the authorised change, copied verbatim from the
+    /// context. Records who asked; it is not why the change was allowed.
+    member this.RequestedBy = this.AuthorizedFor
 
 /// The outcome of evaluating a requested change.
 type TransitionEvaluation =
@@ -138,6 +149,10 @@ module Transition =
 
     /// Evaluates every check and reports every failure, rather than
     /// stopping at the first.
+    ///
+    /// `context.RequestedBy` is deliberately never read here: who asked
+    /// cannot make a missing capability, missing evidence or a refusing
+    /// policy go away (DF-SDE-2026-D68A).
     ///
     /// A caller usually wants to know everything that is wrong: an agent
     /// that must acquire evidence *and* obtain a capability should learn
@@ -232,7 +247,8 @@ module Transition =
                 { AuthorizedName = requirement.Name
                   AuthorizedAgainst = context.CurrentState.Fingerprint
                   AuthorizedBy = policyIdentity
-                  AuthorizedAt = context.Now }
+                  AuthorizedAt = context.Now
+                  AuthorizedFor = context.RequestedBy }
         | _, outstanding -> TransitionRefused outstanding
 
     let failureToWire failure =
