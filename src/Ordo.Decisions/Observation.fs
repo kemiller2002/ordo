@@ -18,6 +18,7 @@ open Ordo.Core.Resolution
 open Ordo.Core.Coverage
 open Ordo.Core.Policy
 open Ordo.Core.StateIdentity
+open Ordo.Core.Provenance
 open Ordo.Decisions.Confidence
 open Ordo.Decisions.Outcome
 open Ordo.Decisions.Escalation
@@ -70,7 +71,13 @@ type ResolutionObservation =
       /// An external experiment or work-item identifier, carried verbatim.
       /// Lets a research system correlate records without Ordo depending on
       /// one (ORDO-4403 / ORDO-8204).
-      ExperimentReference: string option }
+      ExperimentReference: string option
+      /// Who requested the decision, as the request's `praxis.provenance/1`
+      /// block: the requester's `created` contribution. Distinct from
+      /// `Provider`, which is who answered: a requester is never derived
+      /// from, or collapsed into, the provider identity (ORDO-PROV-02).
+      /// `None` means the requester is unknown; nothing is inferred.
+      RequestProvenance: ProvenanceBlock option }
 
 [<RequireQualifiedAccess>]
 module ResolutionObservation =
@@ -87,6 +94,10 @@ module ResolutionObservation =
     let withExperimentReference (reference: string) (observation: ResolutionObservation) =
         { observation with ExperimentReference = Some reference }
 
+    /// The recorded requester, or `None` when unknown.
+    let requestedBy (observation: ResolutionObservation) =
+        observation.RequestProvenance |> Option.bind Requester.ofBlock
+
     let private optionalString value =
         match value with
         | Some text -> JString text
@@ -101,7 +112,7 @@ module ResolutionObservation =
     /// shape here: an observer's stored history must not break because a
     /// field was renamed in F# (ORDO-7202 / ORDO-8402).
     let encode (observation: ResolutionObservation) : JsonValue =
-        JObject
+        JObject(
             [ "schema", JString "ordo.resolution-observation"
               "schemaVersion", JInt(int64 SchemaVersion)
               "resolutionId", JString(ResolutionId.value observation.Resolution)
@@ -176,6 +187,14 @@ module ResolutionObservation =
                     "providerReportedCost", optionalString observation.Usage.ProviderReportedCost ]
               "transportRetries", JInt(int64 observation.TransportRetries)
               "experimentReference", optionalString observation.ExperimentReference ]
+            // Additive and omitted when unknown, so a legacy observation
+            // encodes byte-for-byte as before and v2 readers that ignore
+            // unknown members (Praxis `ros ordo ingest`) accept it
+            // unchanged (ORDO-PROV-07).
+            @ (observation.RequestProvenance
+               |> Option.map (fun block -> "requestProvenance", ProvenanceBlock.toJson block)
+               |> Option.toList)
+        )
 
     /// Confidence as an observer should record it: never a bare number.
     let confidenceFacts (confidence: Confidence option) =

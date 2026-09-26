@@ -17,8 +17,9 @@
     trusting this comment.
   -->
   <ItemGroup>
-    <Compile Include="Identifiers.fs" />
     <Compile Include="Json.fs" />
+    <Compile Include="Identifiers.fs" />
+    <Compile Include="Provenance.fs" />
     <Compile Include="Clock.fs" />
     <Compile Include="Resolution.fs" />
     <Compile Include="Evidence.fs" />

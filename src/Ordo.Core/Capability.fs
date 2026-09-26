@@ -16,7 +16,9 @@ open Ordo.Core.Identifiers
 /// capability, identity proof, or cryptographic grant. The host establishes
 /// identity and authorization by its own security mechanism and supplies the
 /// semantic capability set to Ordo. Capabilities are granted and checked,
-/// never computed from confidence, evidence, provider identity, or content.
+/// never computed from confidence, evidence, provider identity, requester
+/// identity, or content. Knowing who asked (`Provenance.Requester`) says
+/// nothing about whether they may (DF-SDE-2026-0016).
 type Capability = { Id: CapabilityId; Description: string }
 
 /// The set of capabilities held by whoever is acting.

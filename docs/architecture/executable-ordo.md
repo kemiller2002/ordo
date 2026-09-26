@@ -4,8 +4,9 @@ title: Executable Ordo v0.1
 status: draft
 version: 0.1.0
 created: 2026-09-18
-updated: 2026-09-20
+updated: 2026-09-26
 related_documents:
+  - docs/architecture/ordo-requester-provenance.md
   - research/decisions/DF-SDE-2026-0006--introduce-executable-ordo-primitives.md
   - docs/architecture/executable-ordo-traceability.md
   - doctrine/FOUR-TIER-ARCHITECTURE.md
@@ -141,6 +142,8 @@ provenance is structurally reconstructable.
 **Unknown external effect is not failure.** If a state-changing effect may or may not have occurred, `ExternalEffect.recordOutcome` returns `ReconciliationRequired` and creates a named `ReconcileExternalEffect` obligation. Retry safety is a separate host-supplied fact and never removes that obligation. Ordo does not execute, retry, compensate, or probe the effect.
 
 **Capability is semantic authority, not authentication.** A Capability is supplied by the host/application after its own identity and authorization checks. It is not a token, credential, signature, object capability, identity proof, or cryptographic grant.
+
+**Identity is not capability, and not evidence.** Who requested a change is a `Requester` (a Praxis actor and its execution), carried on a `TransitionRequest` or `DecisionRequest` beside — never inside — what the checks read. `Transition.evaluateRequest` gives every requester, including none, exactly the verdict the context alone earns and only records the requester on the authorisation for audit. Evidence and obligations may carry `praxis.provenance/1` blocks through `Attributed`, which the checks never see. An absent requester is unknown, never inferred from the provider that answered. See `docs/architecture/ordo-requester-provenance.md` and `DF-SDE-2026-0016`.
 
 **Replay is not execution.** `Replay.execute` re-evaluates a recorded
 request and returns a record. It never calls the gate, so there is no path

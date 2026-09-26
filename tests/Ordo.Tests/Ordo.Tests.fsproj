@@ -26,6 +26,16 @@
     <Compile Include="LiveAdapterTests.fs" />
     <Compile Include="ArchitectureTests.fs" />
     <Compile Include="InvariantTests.fs" />
+    <Compile Include="ProvenanceTests.fs" />
+  </ItemGroup>
+
+  <!--
+    Praxis provenance conformance fixtures, vendored unchanged. SOURCE.json
+    records the Praxis commit and each file's SHA-256; ProvenanceTests
+    recomputes the hashes so a local edit fails the suite.
+  -->
+  <ItemGroup>
+    <None Include="fixtures/praxis-provenance/*.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

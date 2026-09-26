@@ -19,6 +19,10 @@ type IdentifierError =
     | IdentifierNotTrimmed of raw: string
     | IdentifierTooLong of length: int * limit: int
     | IdentifierHasControlCharacter of raw: string
+    /// An unpaired UTF-16 surrogate: the text has no UTF-8 form, so it can
+    /// be neither persisted as JSON nor escaped into a provenance key
+    /// (ORDO-PROV-06, Praxis provenance contract revision 1.2).
+    | IdentifierNotWellFormed of raw: string
 
 /// The limit every identifier in this library shares. Identifiers name
 /// things; they are not a place to store evidence, prose, or state.
@@ -35,6 +39,7 @@ let private validate (raw: string) : Result<string, IdentifierError> =
     elif raw.Trim() <> raw then Error(IdentifierNotTrimmed raw)
     elif raw.Length > MaxIdentifierLength then Error(IdentifierTooLong(raw.Length, MaxIdentifierLength))
     elif raw |> Seq.exists System.Char.IsControl then Error(IdentifierHasControlCharacter raw)
+    elif Ordo.Core.Json.hasUnpairedSurrogate raw then Error(IdentifierNotWellFormed raw)
     else Ok raw
 
 /// Identity of a bounded semantic question. Survives moving between files,

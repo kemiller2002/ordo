@@ -21,6 +21,7 @@ open Ordo.Core.Coverage
 open Ordo.Core.NegativeKnowledge
 open Ordo.Core.Obligation
 open Ordo.Core.StateIdentity
+open Ordo.Core.Provenance
 
 /// Schema version for core records whose semantics have not changed.
 [<Literal>]
@@ -584,3 +585,47 @@ let decodeObligationKind (document: JsonValue) : Result<ObligationKind, WireErro
                 |> Result.mapError (fun error -> InvalidField("$.effectId", sprintf "%A" error)))
         | "custom" -> withField "label" Custom
         | other -> Error(UnknownVariant("kind", other)))
+
+// -------------------------------------------------------------- provenance
+
+/// Embeds a record's provenance as a `provenance` member of its encoded
+/// form, or leaves the document untouched when the record is unattributed.
+///
+/// Additive: every decoder here ignores members it does not read, so an
+/// attributed record still decodes as the same record, and a document
+/// without `provenance` is an unattributed (legacy) record (ORDO-PROV-05).
+/// An unsupported major version is written back verbatim.
+let withProvenance (provenance: CarriedProvenance option) (document: JsonValue) =
+    match provenance, document with
+    | Some carried, JObject members ->
+        JObject(
+            (members |> List.filter (fun (name, _) -> name <> "provenance"))
+            @ [ "provenance", CarriedProvenance.toJson carried ]
+        )
+    | _ -> document
+
+/// Reads the `provenance` member of an encoded record. Absent is `None`
+/// (unattributed, never inferred); another major version is carried
+/// verbatim; a malformed block is refused rather than dropped or repaired.
+/// A present `"provenance": null` is malformed, never absent (Praxis
+/// contract 1.1 rule 3, applied to storage readers by revision 1.2).
+let readProvenance (document: JsonValue) : Result<CarriedProvenance option, WireError> =
+    match optional "provenance" document with
+    | Error error -> Error error
+    | Ok None -> Ok None
+    | Ok(Some block) ->
+        ProvenanceBlock.receive block
+        |> Result.map Some
+        |> Result.mapError (fun problems -> InvalidField("$.provenance", String.Join("; ", problems)))
+
+let encodeAttributed (encode: 'record -> JsonValue) (item: Attributed<'record>) =
+    encode item.Record |> withProvenance item.Provenance
+
+let decodeAttributed
+    (decode: JsonValue -> Result<'record, WireError>)
+    (document: JsonValue)
+    : Result<Attributed<'record>, WireError> =
+    match decode document, readProvenance document with
+    | Ok record, Ok provenance -> Ok { Record = record; Provenance = provenance }
+    | Error error, _
+    | _, Error error -> Error error

@@ -37,7 +37,10 @@ type EvidenceKind =
 /// Where a piece of evidence came from, in the producing system's own terms.
 type EvidenceSource =
     { /// The system or actor that produced it: a tool name, a repository, a
-      /// person, a service.
+      /// person, a service. A label, not a Praxis actor: when the producing
+      /// actor and execution are known they are recorded as provenance
+      /// beside the record (`Provenance.Attributed`), and neither ever
+      /// changes what the evidence satisfies (ORDO-PROV-04).
       System: string
       /// An optional stable pointer into that system — a path, a URL, a
       /// commit, a record id. Ordo never dereferences it; it exists so that

@@ -20,6 +20,7 @@ open Ordo.Core.Capability
 open Ordo.Core.Obligation
 open Ordo.Core.Policy
 open Ordo.Core.StateIdentity
+open Ordo.Core.Provenance
 
 /// Why a transition was refused.
 ///
@@ -89,12 +90,33 @@ type TransitionAuthorization =
         { AuthorizedName: string
           AuthorizedAgainst: StateFingerprint
           AuthorizedBy: PolicyIdentity
-          AuthorizedAt: DateTimeOffset }
+          AuthorizedAt: DateTimeOffset
+          RequestedByValue: Requester option }
 
     member this.Name = this.AuthorizedName
     member this.State = this.AuthorizedAgainst
     member this.Policy = this.AuthorizedBy
     member this.At = this.AuthorizedAt
+    /// Who asked for the change, when the host said so. Recorded for audit
+    /// after the evaluation; it is not what authorised anything —
+    /// `Policy`, capability and evidence did (ORDO-PROV-03). `None` means
+    /// unknown, never inferred.
+    member this.RequestedBy = this.RequestedByValue
+
+/// A requested change: the context the checks read, and, separately, who
+/// requested it.
+///
+/// Identity answers "who requested this?"; `Context.Held` answers "may this
+/// actor request this?"; `Context.Available` answers "why should the
+/// transition occur?". The requester is deliberately outside
+/// `TransitionContext`, so the checks cannot read it: no requester, of any
+/// kind or provider, can grant a capability, satisfy or strengthen
+/// evidence, discharge an obligation, or change a policy verdict
+/// (ORDO-PROV-01 / ORDO-PROV-03 / RQ-ROS-2026-A019).
+type TransitionRequest =
+    { Context: TransitionContext
+      /// `None` means the requester is unknown. It is never inferred.
+      RequestedBy: Requester option }
 
 /// The outcome of evaluating a requested change.
 type TransitionEvaluation =
@@ -232,8 +254,24 @@ module Transition =
                 { AuthorizedName = requirement.Name
                   AuthorizedAgainst = context.CurrentState.Fingerprint
                   AuthorizedBy = policyIdentity
-                  AuthorizedAt = context.Now }
+                  AuthorizedAt = context.Now
+                  RequestedByValue = None }
         | _, outstanding -> TransitionRefused outstanding
+
+    /// Evaluates a requested change exactly as `evaluate` evaluates its
+    /// context, then records the requester on an authorisation for audit.
+    ///
+    /// The verdict is computed before the requester is looked at and from
+    /// the context alone, so for the same context every requester — agent,
+    /// human, automation, unknown, or none — receives the same verdict and
+    /// the same failures (ORDO-PROV-03).
+    let evaluateRequest (requirement: TransitionRequirement) (request: TransitionRequest) : TransitionEvaluation =
+        match evaluate requirement request.Context with
+        | TransitionAllowed authorization ->
+            TransitionAllowed
+                { authorization with
+                    RequestedByValue = request.RequestedBy }
+        | verdict -> verdict
 
     let failureToWire failure =
         match failure with

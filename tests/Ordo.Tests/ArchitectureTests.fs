@@ -40,6 +40,11 @@ let ``Ordo.Core references only the framework and FSharp.Core`` () =
               "System.Memory"
               "System.Text.Json"
               "System.Security.Cryptography"
+              // Framework regular expressions for the praxis.provenance/1
+              // codec (`Provenance.fs`), whose key, timestamp and credential
+              // grammars are pinned to the Praxis reference patterns
+              // (ORDO-PROV-06 / DF-SDE-2026-0016).
+              "System.Text.RegularExpressions"
               "System.Runtime.Extensions"
               "System.Text.Encoding.Extensions" ]
 

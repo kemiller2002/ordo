@@ -4,7 +4,7 @@
   "repository": "state-directed-engineering",
   "actor": "ChatGPT",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-09-20T14:55:07.272Z",
+  "updatedAt": "2026-09-26T21:01:50.438Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -782,6 +782,74 @@
       ],
       "updatedAt": "2026-09-20T14:55:07.272Z",
       "completedAt": "2026-09-20T14:55:07.272Z"
+    },
+    {
+      "id": "FEAT-ECHELON-PROVENANCE",
+      "type": "task",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/Provenance.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/Transition.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Decisions/Request.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Decisions/Observation.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ProvenanceTests.fs"
+        },
+        {
+          "type": "decision-record",
+          "path": "research/decisions/DF-SDE-2026-0016--separate-requester-identity-from-capability-and-evidence.md"
+        },
+        {
+          "type": "documentation",
+          "path": "docs/architecture/ordo-requester-provenance.md"
+        }
+      ],
+      "updatedAt": "2026-09-26T08:47:21.857Z",
+      "completedAt": "2026-09-26T08:47:21.857Z"
+    },
+    {
+      "id": "FEAT-ECHELON-PROVENANCE-R12",
+      "type": "task",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/Provenance.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/Json.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/Identifiers.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ProvenanceTests.fs"
+        },
+        {
+          "type": "documentation",
+          "path": "docs/architecture/ordo-requester-provenance.md"
+        }
+      ],
+      "updatedAt": "2026-09-26T21:01:50.438Z",
+      "completedAt": "2026-09-26T21:01:50.438Z"
     }
   ]
 }

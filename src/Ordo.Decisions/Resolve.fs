@@ -183,7 +183,23 @@ module Resolve =
           Policy = None
           Usage = usage
           TransportRetries = retries
-          ExperimentReference = options.ExperimentReference }
+          ExperimentReference = options.ExperimentReference
+          RequestProvenance =
+            request.RequestedBy
+            |> Option.map (fun requester ->
+                // A DecisionRequestId is non-empty and well-formed Unicode by
+                // construction (IdentifierNotWellFormed), and no reason is
+                // recorded, so the key always forms and the block is always
+                // supported; an error here is a defect, not an input.
+                match
+                    Ordo.Core.Provenance.Requester.toBlock
+                        (Ordo.Core.Identifiers.DecisionRequestId.value request.Id)
+                        request.CreatedAt
+                        None
+                        requester
+                with
+                | Ok block -> block
+                | Error problem -> invalidOp ("a live DecisionRequest must form request provenance: " + problem)) }
 
     /// Runs one decision request against one provider.
     ///
