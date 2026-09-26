@@ -1,0 +1,173 @@
+---
+id: SDE-ARCH-003
+title: Executable Ordo requester identity and provenance requirements
+status: accepted
+version: 1.0.0
+created: 2026-09-26
+updated: 2026-09-26
+related_documents:
+  - research/decisions/DF-SDE-2026-0016--separate-requester-identity-from-capability-and-evidence.md
+  - research/decisions/DF-SDE-2026-0011--clarify-ordo-capability-as-semantic-authority-not-authentication.md
+  - docs/architecture/executable-ordo.md
+  - docs/architecture/executable-ordo-traceability.md
+tags: [architecture, ordo, provenance, identity, echelon]
+---
+
+# Executable Ordo requester identity and provenance
+
+Work item: `FEAT-ECHELON-PROVENANCE`. Decision: `DF-SDE-2026-0016`.
+
+## Authority
+
+Praxis is authoritative for what an actor, an execution, a contribution,
+lineage, and "unknown" mean. These requirements adopt that model; they
+restate it only where Ordo makes a decision of its own, and cite it
+everywhere else:
+
+| Praxis record (contract revision 1.1, commit `c2657efb4d54f11d0fd0617cc1bcd5b8418601d5`) | What Ordo takes from it |
+|---|---|
+| `RQ-ROS-2026-A019` provenance never substitutes for authentication, authorization, or evidence | the three-way separation; Ordo is named there as a downstream system that must restate it with tests |
+| `RQ-ROS-2026-A015` versioned interchange block with deterministic receiving rules | the `praxis.provenance/1` block, its `supported` / `unsupported` / `malformed` verdicts, and the append rules |
+| `RQ-ROS-2026-A016` identity propagation without re-implementing discovery | the requester comes from an explicit host declaration or is unknown; never guessed |
+| `RQ-ROS-2026-A017` no credentials in provenance | credential-like values make a block malformed and a requester unconstructable |
+| `RQ-ROS-2026-A018` cross-system conformance | the vendored conformance cases and end-to-end chain |
+| `DF-ROS-2026-A037` Echelon provenance interchange | the contract as a whole, including `EXT-<system>.<run-id>` and `EXT-op.<operationId>` keys |
+
+The canonical model is Praxis `docs/agent-provenance.md` and
+`schemas/provenance-interchange.schema.json`. Ordo does not define a second
+identity model.
+
+## The separation
+
+| Question | Answered by | Never answered by |
+|---|---|---|
+| Who requested this? | `Requester` (a Praxis actor and its execution), carried beside a request | capability, evidence, confidence, the provider that answered |
+| May this actor request this? | the host-supplied `CapabilitySet` (`DF-SDE-2026-0011`) | the requester's kind, id, provider, model, or runtime |
+| Why should the transition occur? | `Evidence` against `EvidenceRequirement`s | who produced the evidence or who asked |
+
+## Requirements
+
+### ORDO-PROV-01 — Identity, capability, and evidence stay separate
+
+Executable Ordo MUST keep requester identity, capability, and evidence as
+separate inputs. No function may grant, deny, weight, satisfy, or verify
+anything because of an actor's kind, id, provider, model, or runtime.
+Restates `RQ-ROS-2026-A019` for Ordo's decision points.
+
+Acceptance: requester identity is a distinct type that no check accepts;
+the metamorphic tests in ORDO-PROV-03 hold.
+
+### ORDO-PROV-02 — Requests may say who requested them; absence is unknown
+
+A transition request and a decision request MAY carry an optional requester:
+a Praxis actor (`kind`, `id`, and for non-humans `provider`, `model`,
+`runtime`, with the literal `unknown` when not known) and, when known, the
+execution it acted in (`EXE-...` or `EXT-<system>.<run-id>`). The requester
+serializes as a `praxis.provenance/1` block whose single `created`
+contribution is the requester's, keyed by its execution or, when the
+execution is unknown, by `EXT-op.<request id>`.
+
+An absent requester MUST read as unknown. Ordo MUST NOT infer a requester
+from the provider identity, the capability set, the host process, the
+environment, or any other ambient signal (`RQ-ROS-2026-A016`). Ordo reads
+no environment variable at all — in particular not `ROS_EXECUTION_ID` or any
+variable in Praxis's `identity-environment.json`; a host that honours
+`ROS_EXECUTION_ID` does so only when the process also declares an identity
+(contract revision 1.1) and passes the result to Ordo explicitly. The provider
+that answered a decision and the actor that requested it are different
+facts and are recorded separately.
+
+Acceptance: `TransitionRequest.RequestedBy`, `DecisionRequest.RequestedBy`,
+and `ResolutionObservation.RequestProvenance` are optional; legacy
+constructors leave them empty; a requester cannot be constructed with a
+credential-like value or a non-execution key.
+
+### ORDO-PROV-03 — Evaluation never reads the requester
+
+`Transition.evaluate` and decision resolution MUST NOT read the requester.
+For the same state, capabilities, evidence, obligations, and policy verdict,
+every requester — agent, human, automation, unknown, extension kind, any
+provider, or none — MUST receive the same verdict, the same failures, the
+same decision outcome, the same confidence, and the same provider request.
+An identity MUST NOT grant a capability that is not held; a held capability
+MUST work with no requester. The requester MAY be recorded on the resulting
+authorisation for audit only.
+
+Acceptance: exhaustive metamorphic tests over every requester and every
+transition verdict; the requester sits outside `TransitionContext`, so the
+checks cannot see it by construction.
+
+### ORDO-PROV-04 — Evidence may carry its producer's provenance, which never strengthens it
+
+An evidence record MAY carry the provenance of the contribution that
+produced it (a `praxis.provenance/1` block beside the record). That
+provenance MUST NOT change what evidence satisfies, its kind, its freshness,
+or any confidence. `EvidenceKind.Inferred`'s `ProviderId` remains the
+epistemic basis of an inference, not the actor who requested or recorded it,
+and a human-attributed inference is still an inference.
+
+Acceptance: `Evidence.checkAll` results are identical for any attribution;
+attributed evidence still decodes as the same evidence for readers that
+ignore provenance.
+
+### ORDO-PROV-05 — Obligations, unknown effects, and negative knowledge may record contributors
+
+Obligations, unknown external effects (and their reconciliation
+obligations), and negative observations MAY carry the provenance of the
+contributions that created, resolved, or otherwise settled them. Recording a
+contributor MUST NOT discharge an obligation or settle an effect: only the
+record's own state does. Provenance is appended by the Praxis rules
+(never re-attribute, at most one `created`, preserve unknown fields).
+
+Acceptance: an obligation created by an agent and resolved by a human keeps
+the agent as originator and the human in the `resolved` role, and blocks a
+transition until its state is satisfied regardless of who is recorded.
+
+### ORDO-PROV-06 — The codec conforms to the Praxis contract
+
+Ordo's `praxis.provenance/1` codec MUST reach the Praxis verdict and warning
+count for every case in the vendored `cases.json`, replay the vendored
+`echelon-chain.json` to its recorded expectations, carry another major
+version verbatim, refuse a malformed block at the boundary with its
+problems, and refuse credential-like values. The vendored files MUST stay
+byte-identical to the recorded Praxis commit (`SOURCE.json` SHA-256).
+
+At contract revision 1.1 this includes: exact matching (patterns anchored
+with `\z`, so a trailing newline is malformed); calendar-valid timestamps
+(year 0001-9999, no February 30, no `24:00`) ordered at millisecond
+precision with extra fraction digits truncated; JSON `null` never meaning
+absent; appends that never return a block `classify` rejects (no
+credentials, no contribution dated before the creation, no second
+originator, the result re-classified); same-key merges that keep the
+incoming contribution's unknown fields (existing wins), take the later
+time, and refuse an unknown identity extending a known actor's entry; and
+injective `_xx` escaping of `EXT-op.<operationId>` keys.
+Implements `RQ-ROS-2026-A015`, `RQ-ROS-2026-A017`, `RQ-ROS-2026-A018` for
+Ordo.
+
+### ORDO-PROV-07 — Wire changes are additive and keep Praxis ingest working
+
+`ordo.resolution-observation` schema v2 MAY carry an optional
+`requestProvenance` member, emitted only when the requester is known. It MUST
+NOT change any existing member, so a legacy observation encodes exactly as
+before, and Praxis `ros ordo ingest` (which fails closed on unknown
+*versions* but ignores unknown *members* and stores the raw record verbatim)
+accepts it. The member is namespaced because it describes the decision
+request, not the observation. Any Ordo record MAY carry its own provenance
+as an additive `provenance` member; existing decoders ignore it.
+
+### ORDO-PROV-08 — Legacy records are never rewritten or backfilled
+
+Records and requests without provenance remain valid and read as
+unattributed. Ordo MUST NOT backfill or infer historical requesters.
+Method v0.1 and historical experiment run data (`research/runs/EX-SDE-*`)
+are not modified.
+
+## Out of scope
+
+- Authentication, attestation, and signatures: the host establishes who is
+  acting (`DF-SDE-2026-0011`); attestation belongs behind an adapter
+  boundary (Praxis `DF-ROS-2026-A036`).
+- Execution envelopes: Ordo does not receive Echelon envelopes; a host that
+  does maps the envelope's actor and execution into a `Requester`.
+- Ordo does not discover identity. It records what the host declares.

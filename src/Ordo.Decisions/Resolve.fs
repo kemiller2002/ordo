@@ -183,7 +183,15 @@ module Resolve =
           Policy = None
           Usage = usage
           TransportRetries = retries
-          ExperimentReference = options.ExperimentReference }
+          ExperimentReference = options.ExperimentReference
+          RequestProvenance =
+            request.RequestedBy
+            |> Option.map (
+                Ordo.Core.Provenance.Requester.toBlock
+                    (Ordo.Core.Identifiers.DecisionRequestId.value request.Id)
+                    request.CreatedAt
+                    None
+            ) }
 
     /// Runs one decision request against one provider.
     ///

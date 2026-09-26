@@ -16,6 +16,7 @@ open Ordo.Core.Identifiers
 open Ordo.Core.Evidence
 open Ordo.Core.Coverage
 open Ordo.Core.StateIdentity
+open Ordo.Core.Provenance
 open Ordo.Decisions.Contract
 
 /// Why a request could not be formed.
@@ -48,6 +49,12 @@ type DecisionRequest<'choice when 'choice: equality> =
       Correlation: CorrelationId option
       /// The resolution that caused this one, if any (ORDO-7101).
       CausedBy: ResolutionId option
+      /// Who requested this decision — a Praxis actor and its execution —
+      /// when the host declared it. Identity only: it is never sent to the
+      /// provider, never read when the outcome is decided, and never
+      /// substitutes for evidence or a capability. `None` means unknown,
+      /// never inferred (ORDO-PROV-02 / ORDO-PROV-03).
+      RequestedBy: Requester option
       Contract: DecisionContract<'choice>
       /// The state the decision is about, with its identity.
       State: StateSnapshot
@@ -92,6 +99,7 @@ module DecisionRequest =
                           Resolution = resolution
                           Correlation = None
                           CausedBy = None
+                          RequestedBy = None
                           Contract = contract
                           State = state
                           Evidence = evidence
@@ -119,6 +127,11 @@ module DecisionRequest =
 
     let causedBy (cause: ResolutionId) (request: DecisionRequest<'choice>) =
         { request with CausedBy = Some cause }
+
+    /// Records who requested the decision. Changes nothing the decision is
+    /// evaluated on.
+    let requestedBy (requester: Requester) (request: DecisionRequest<'choice>) =
+        { request with RequestedBy = Some requester }
 
     /// Checks the contract's evidence requirements against what the request
     /// carries. Pure; the caller decides what an unmet requirement means.

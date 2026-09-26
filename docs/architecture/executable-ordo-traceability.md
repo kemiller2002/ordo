@@ -4,9 +4,10 @@ title: Executable Ordo v0.1 requirement traceability
 status: draft
 version: 0.1.0
 created: 2026-09-18
-updated: 2026-09-20
+updated: 2026-09-26
 related_documents:
   - docs/architecture/executable-ordo.md
+  - docs/architecture/ordo-requester-provenance.md
   - research/decisions/DF-SDE-2026-0006--introduce-executable-ordo-primitives.md
 tags: [architecture, ordo, traceability]
 ---
@@ -201,6 +202,26 @@ Authority: `DF-SDE-2026-0013`, `docs/architecture/ordo-next-pass-implementation-
 | Live provider | Explicitly separate | no live-provider result is inferred from normal CI | `LiveAdapterTests` remains opt-in |
 
 The SDE package version and executable Ordo wire versions remain independent. SDE 1.3.0 installs methodology; `ordo.resolution-observation` schema v2 identifies the new audit shape. Neither version is used as a substitute for the other.
+
+## FEAT-ECHELON-PROVENANCE — requester identity and provenance
+
+Authority: `DF-SDE-2026-0016`; requirements `ORDO-PROV-01`..`08` in
+`docs/architecture/ordo-requester-provenance.md`, which cite Praxis
+`RQ-ROS-2026-A015`/`A016`/`A017`/`A018`/`A019` and `DF-ROS-2026-A037`.
+
+| Requirement | Status | Implementation | Test |
+|---|---|---|---|
+| ORDO-PROV-01 identity, capability and evidence separate | Implemented | `Requester` in `src/Ordo.Core/Provenance.fs`; `TransitionRequest` outside `TransitionContext` in `src/Ordo.Core/Transition.fs` | `ProvenanceTests` metamorphic cases |
+| ORDO-PROV-02 optional requester; absent is unknown | Implemented | `TransitionRequest.RequestedBy`, `DecisionRequest.RequestedBy` / `DecisionRequest.requestedBy` (`src/Ordo.Decisions/Request.fs`), `Requester.create` / `toBlock` / `ofBlock` | `ProvenanceTests`: requester recorded apart from the provider; unknown requester recorded as unknown; requester refuses credentials and non-execution keys |
+| ORDO-PROV-03 evaluation never reads the requester | Implemented | `Transition.evaluateRequest` evaluates `Context` only; `Resolve.toProviderRequest` and outcome formation ignore `RequestedBy` | `ProvenanceTests`: every requester receives the verdict the context alone earns; no identity grants a capability; capability works without a requester; decision outcome, confidence and provider view identical for every requester |
+| ORDO-PROV-04 evidence provenance never strengthens evidence | Implemented | `Attributed<'record>`; checks take `Attributed.records` | `ProvenanceTests`: evidence provenance never changes what the evidence satisfies; attributed evidence round-trips |
+| ORDO-PROV-05 obligations / unknown effects / negative knowledge may record contributors | Implemented | `Attributed.contribute`, `Wire.encodeAttributed` / `decodeAttributed` / `withProvenance` / `readProvenance` (`src/Ordo.Core/Wire.fs`) | `ProvenanceTests`: obligations and unknown effects record who created and settled them |
+| ORDO-PROV-06 conformance with the Praxis contract | Implemented | `ProvenanceBlock.classify` / `appendJson` / `addLineage` / `originator` / `withRole`; fixtures in `tests/Ordo.Tests/fixtures/praxis-provenance/` | `ProvenanceTests`: SHA-256 against `SOURCE.json` (Praxis `c2657ef`, contract 1.1); all 56 conformance cases; round trip; Echelon chain replay; appending rules; revision 1.1 rules 1, 2, 4, 5, 6 and 8; unsupported carried verbatim; malformed refused |
+| ORDO-PROV-07 additive observation wire, Praxis ingest unaffected | Implemented | optional `requestProvenance` in `ResolutionObservation.encode` (`src/Ordo.Decisions/Observation.fs`), filled by `Resolve` | `ProvenanceTests`: request provenance is additive on observation v2; manually verified with Praxis `ros ordo ingest` at the contract commit (stored, re-ingest already-present, raw kept verbatim) |
+| ORDO-PROV-08 legacy records never rewritten or backfilled | Preserved | legacy constructors leave provenance empty; no historical data touched | `ProvenanceTests`: legacy observation has no `requestProvenance`; legacy evidence decodes as unattributed |
+
+Identity is self-reported provenance. It is not authentication (the host's
+job, `DF-SDE-2026-0011`), not a capability, and not evidence weight.
 
 ## Class B — before ROS integration
 
