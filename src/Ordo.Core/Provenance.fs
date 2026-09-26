@@ -20,7 +20,7 @@
 /// and DF-ROS-2026-A037. This module is a small F# codec that mirrors the
 /// reference semantics of Praxis `lib/provenance-interchange.mjs`, and it is
 /// tested against every vendored conformance case at Praxis contract
-/// revision 1.1 (ORDO-PROV-06).
+/// revision 1.2 (ORDO-PROV-06).
 ///
 /// Every function is pure. Blocks are carried as `JsonValue` so that fields
 /// this version does not model survive unchanged.
@@ -51,7 +51,6 @@ let private kindPattern = regex @"\A(agent|human|automation|unknown|x-[a-z0-9][a
 let private operationGrammar = regex @"\A[a-z][a-z0-9-]*\z"
 let private extensionPattern = regex @"\Ax-[a-z0-9][a-z0-9-]*\z"
 let private timestampPattern = regex @"\A([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2})(\.[0-9]{1,9})?Z\z"
-let private unsafeKeyCharacters = regex @"[^A-Za-z0-9.-]"
 
 /// Operation codes `praxis.provenance/1` defines. Only `created` is
 /// authorship; the others are roles. Codes outside this list that match the
@@ -80,7 +79,9 @@ let private credentialPatterns =
       @"AKIA[0-9A-Z]{16}"
       @"xox[abprs]-[A-Za-z0-9-]{10,}"
       @"-----BEGIN [A-Z ]*PRIVATE KEY-----"
-      @"(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{16,}"
+      // Contract 1.2: explicit ASCII classes only, no `\b`, `\s` or case
+      // folding, whose meaning differs between .NET, JavaScript and Python.
+      @"(?:^|[^A-Za-z0-9_])[Bb][Ee][Aa][Rr][Ee][Rr][\t\n\v\f\r ]+[A-Za-z0-9._~+/=-]{16,}"
       @"eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\." ]
     |> List.map regex
 
@@ -88,6 +89,16 @@ let isCredentialLike (value: string) =
     credentialPatterns |> List.exists (fun pattern -> pattern.IsMatch value)
 
 // ------------------------------------------------------------ json helpers
+
+/// Contract 1.2: "blank" is defined over ASCII whitespace only (tab, LF, VT,
+/// FF, CR, space). .NET `Trim()` also strips U+0085, U+00A0, U+FEFF and
+/// others, which JavaScript and Python disagree about, so every other
+/// character is content.
+let private asciiWhitespace = [| '\t'; '\n'; '\v'; '\f'; '\r'; ' ' |]
+
+let asciiTrim (text: string) = text.Trim asciiWhitespace
+
+let isBlank (text: string) = (asciiTrim text).Length = 0
 
 /// The last member with this name, as JavaScript's `JSON.parse` would keep.
 let private memberOf (name: string) (value: JsonValue) =
@@ -97,7 +108,7 @@ let private memberOf (name: string) (value: JsonValue) =
 
 let private isNonEmptyString value =
     match value with
-    | Some(JString text) -> text.Trim().Length > 0
+    | Some(JString text) -> not (isBlank text)
     | _ -> false
 
 let private stringOf value =
@@ -140,6 +151,25 @@ let private instant (text: string) : int64 option =
 /// Ordering where an unreadable time sorts last, as the reference does.
 let private order (text: string option) =
     text |> Option.bind instant |> Option.defaultValue Int64.MaxValue
+
+/// Dotted paths of every key or string value that is not well-formed
+/// Unicode (an unpaired UTF-16 surrogate; contract 1.2).
+let surrogateFindings (node: JsonValue) : string list =
+    let rec walk (path: string) (current: JsonValue) =
+        match current with
+        | JString text -> if hasUnpairedSurrogate text then [ path ] else []
+        | JArray items -> items |> List.mapi (fun index item -> walk (sprintf "%s[%d]" path index) item) |> List.concat
+        | JObject members ->
+            members
+            |> List.collect (fun (key, item) ->
+                let child = if path.Length = 0 then key else path + "." + key
+                (if hasUnpairedSurrogate key then [ child ] else []) @ walk child item)
+        | JNull
+        | JBool _
+        | JInt _
+        | JFloat _ -> []
+
+    walk "" node
 
 /// Dotted paths of every key or string value that looks like a credential.
 let credentialFindings (node: JsonValue) : string list =
@@ -200,26 +230,62 @@ module ContributionKey =
         | ForeignExecution found when found = system -> Ok key
         | _ -> Error(sprintf "cannot form a foreign execution key from system '%s' and run '%s'" system runId)
 
-    /// Injective key escaping (contract 1.1): `_` and every character
-    /// outside `[A-Za-z0-9.-]` become `_xx` per UTF-8 byte (lower-case hex),
-    /// so two different ids never share a key.
-    let escape (text: string) =
-        unsafeKeyCharacters.Replace(
-            text,
-            fun (found: Match) ->
-                Text.Encoding.UTF8.GetBytes found.Value
-                |> Array.map (fun b -> "_" + b.ToString("x2", CultureInfo.InvariantCulture))
-                |> String.concat ""
-        )
+    /// One key segment, escaped injectively (contract 1.2): for each Unicode
+    /// code point (not each UTF-16 unit), ASCII letters, digits and `-` pass
+    /// through; every other code point, `.` and `_` included, becomes `_xx`
+    /// per UTF-8 byte in lower-case hex. A segment therefore never contains
+    /// the `.` separator, and characters outside the BMP never collide. An
+    /// empty segment, or one with an unpaired surrogate (which has no UTF-8
+    /// form), cannot form a key.
+    let escapeSegment (text: string) : Result<string, string> =
+        if String.IsNullOrEmpty text then
+            Error "a key segment must be a non-empty string"
+        elif hasUnpairedSurrogate text then
+            Error "a key segment must be well-formed Unicode (unpaired surrogate)"
+        else
+            let passes (rune: Text.Rune) =
+                rune.IsAscii
+                && (Char.IsAsciiLetterOrDigit(char rune.Value) || rune.Value = int '-')
+
+            text.EnumerateRunes()
+            |> Seq.map (fun rune ->
+                if passes rune then
+                    rune.ToString()
+                else
+                    let bytes = Array.zeroCreate<byte> rune.Utf8SequenceLength
+                    rune.EncodeToUtf8(Span<byte> bytes) |> ignore
+
+                    bytes
+                    |> Array.map (fun b -> "_" + b.ToString("x2", CultureInfo.InvariantCulture))
+                    |> String.concat "")
+            |> String.concat ""
+            |> Ok
 
     /// `EXT-op.<operationId>`: the registry mapping for work whose execution
-    /// is unknown and only an operation id is known, escaped injectively.
-    /// An empty id (which no Ordo identifier admits) maps to `EXT-op._`,
-    /// which no escaped id can produce.
-    let ofOperation (operationId: string) =
-        match escape operationId with
-        | "" -> "EXT-op._"
-        | safe -> "EXT-op." + safe
+    /// is unknown and only an operation id is known, with the id escaped by
+    /// `escapeSegment`. An id that cannot form a key is refused, never
+    /// replaced by an invented key.
+    let ofOperation (operationId: string) : Result<string, string> =
+        escapeSegment operationId
+        |> Result.map (fun safe -> "EXT-op." + safe)
+        |> Result.mapError (sprintf "operation id cannot form a contribution key: %s")
+
+    /// The Praxis reference `keyFromEnvelopeV1`: `EXT-run.<seg(runId)>` when
+    /// a v1 envelope's run id is known, otherwise `EXT-op.<seg(operationId)>`.
+    /// An error means the envelope must be rejected.
+    let ofEnvelopeV1 (envelope: JsonValue) : Result<string, string> =
+        let path names =
+            names |> List.fold (fun node name -> node |> Option.bind (memberOf name)) (Some envelope)
+
+        match path [ "actor"; "runId"; "state" ], path [ "actor"; "runId"; "value" ] with
+        | Some(JString "known"), Some(JString run) when not (isBlank run) ->
+            escapeSegment run
+            |> Result.map (fun safe -> "EXT-run." + safe)
+            |> Result.mapError (sprintf "run id cannot form a contribution key: %s")
+        | _ ->
+            match memberOf "operationId" envelope with
+            | Some(JString operationId) -> ofOperation operationId
+            | _ -> Error "operation id cannot form a contribution key: a key segment must be a non-empty string"
 
 // ----------------------------------------------------------------- actors
 
@@ -267,7 +333,7 @@ module Actor =
 
     let private orUnknown (value: string option) =
         value
-        |> Option.filter (fun text -> text.Trim().Length > 0)
+        |> Option.filter (isBlank >> not)
         |> Option.defaultValue UnknownValue
         |> Some
 
@@ -343,7 +409,7 @@ module Actor =
 
     let private isKnown (value: string option) =
         match value with
-        | Some text -> text.Trim().Length > 0 && text.Trim() <> UnknownValue
+        | Some text -> not (isBlank text) && asciiTrim text <> UnknownValue
         | None -> false
 
     /// Same actor: kind, id and every applicable known attribute agree;
@@ -519,13 +585,18 @@ module ProvenanceBlock =
     let classify (node: JsonValue) : ProvenanceVerdict =
         match node with
         | JObject _ ->
-            match credentialFindings node with
-            | _ :: _ as secrets ->
+            match surrogateFindings node, credentialFindings node with
+            | _ :: _ as unpaired, _ ->
+                Malformed(
+                    unpaired
+                    |> List.map (fun path -> path + ": unpaired UTF-16 surrogate; provenance must be well-formed Unicode")
+                )
+            | [], (_ :: _ as secrets) ->
                 Malformed(
                     secrets
                     |> List.map (fun path -> path + ": credential-like value; provenance must never carry authentication material")
                 )
-            | [] ->
+            | [], [] ->
                 match memberOf "schema" node with
                 | Some(JString tag) when tag <> SchemaTag ->
                     if schemaPattern.IsMatch tag then
@@ -566,6 +637,16 @@ module ProvenanceBlock =
                     | Some _ -> Malformed [ "contributions must be an object keyed by EXE-, EXT-, or CTB- keys" ]
                 | Some _ -> Malformed [ "schema must be a string" ]
         | _ -> Malformed [ "provenance must be a JSON object" ]
+
+    /// Classifies a block received as JSON text (contract 1.2). Text that is
+    /// not JSON, repeats a member name within any one object, or holds an
+    /// unpaired UTF-16 surrogate is malformed whatever its major version;
+    /// otherwise the parsed value is classified. Never throws.
+    let classifyText (text: string) : ProvenanceVerdict =
+        match parse text with
+        | Ok node -> classify node
+        | Error(MalformedJson message) -> Malformed [ "provenance is not well-formed JSON: " + message ]
+        | Error error -> Malformed [ sprintf "provenance is not well-formed JSON: %A" error ]
 
     /// Classifies a block a record carries: understood, carried verbatim, or
     /// the problems that make it unacceptable.
@@ -637,7 +718,7 @@ module ProvenanceBlock =
                     setMember "contributions" (JObject updated) block.Json
 
                 let isKnown (value: string) =
-                    value.Trim().Length > 0 && value.Trim() <> UnknownValue
+                    not (isBlank value) && asciiTrim value <> UnknownValue
 
                 match members |> List.rev |> List.tryFind (fst >> (=) key) with
                 | None ->
@@ -730,15 +811,49 @@ module ProvenanceBlock =
     let append (contribution: Contribution) (block: ProvenanceBlock) =
         appendJson contribution.Key (Contribution.encode contribution) block
 
-    /// Adds lineage references (never authorship), preserving order.
-    let addLineage (references: string list) (block: ProvenanceBlock) : ProvenanceBlock =
-        let current = derivedFrom block
-        let additions = references |> List.distinct |> List.filter (fun item -> not (List.contains item current))
+    /// Adds lineage references (never authorship), preserving existing
+    /// order, as the Praxis reference `addLineage` (contract 1.2). The block
+    /// must classify as supported; `references` must be an array of
+    /// non-blank, credential-free, well-formed strings; duplicates are
+    /// dropped keeping the first occurrence; and the result must itself
+    /// classify as supported. Returns the new block and whether anything
+    /// changed, or why the lineage was refused. Nothing is stored or
+    /// silently dropped on refusal.
+    let addLineageJson (references: JsonValue) (node: JsonValue) : Result<ProvenanceBlock * bool, string> =
+        let refuse = Error
 
-        if additions.IsEmpty then
-            block
-        else
-            ProvenanceBlock(setMember "derivedFrom" (JArray((current @ additions) |> List.map JString)) block.Json)
+        match classify node with
+        | Unsupported(schema, _) -> refuse (sprintf "refusing to add lineage to a unsupported provenance block (%s)" schema)
+        | Malformed _ -> refuse "refusing to add lineage to a malformed provenance block"
+        | Supported(block, _) ->
+            match references with
+            | JArray items ->
+                match items |> List.forall (Some >> isNonEmptyString), surrogateFindings (JObject [ "derivedFrom", references ]), credentialFindings (JObject [ "derivedFrom", references ]) with
+                | false, _, _ -> refuse "lineage references must be non-empty strings"
+                | true, (_ :: _ as unpaired), _ -> refuse (String.Join(", ", unpaired) + ": unpaired UTF-16 surrogate")
+                | true, [], (_ :: _ as secrets) ->
+                    refuse (String.Join(", ", secrets) + ": credential-like value; provenance must never carry authentication material")
+                | true, [], [] ->
+                    let current = derivedFrom block
+
+                    let additions =
+                        items
+                        |> List.choose (Some >> stringOf)
+                        |> List.distinct
+                        |> List.filter (fun item -> not (List.contains item current))
+
+                    if additions.IsEmpty then
+                        Ok(block, false)
+                    else
+                        match classify (setMember "derivedFrom" (JArray((current @ additions) |> List.map JString)) node) with
+                        | Supported(next, _) -> Ok(next, true)
+                        | Malformed problems -> refuse ("the resulting lineage would be malformed: " + String.Join("; ", problems))
+                        | Unsupported(schema, _) -> refuse (sprintf "the resulting lineage would be unsupported (%s)" schema)
+            | _ -> refuse "lineage references must be an array"
+
+    /// `addLineageJson` for a block this reader already understands.
+    let addLineage (references: string list) (block: ProvenanceBlock) : Result<ProvenanceBlock * bool, string> =
+        addLineageJson (JArray(references |> List.map JString)) block.Json
 
 // -------------------------------------------------------------- requesters
 
@@ -775,44 +890,73 @@ module Requester =
                 [ sprintf "execution '%s' must be EXE-... or EXT-<system>.<run-id>" key ]
             | _ -> []
 
+        let declared =
+            JObject [ "actor", Actor.encode actor; "execution", (execution |> Option.map JString |> Option.defaultValue JNull) ]
+
+        let unpaired =
+            surrogateFindings declared
+            |> List.map (fun path -> path + ": unpaired UTF-16 surrogate; provenance must be well-formed Unicode")
+
         let secrets =
-            credentialFindings (JObject [ "actor", Actor.encode actor; "execution", (execution |> Option.map JString |> Option.defaultValue JNull) ])
+            credentialFindings declared
             |> List.map (fun path -> path + ": credential-like value; provenance must never carry authentication material")
 
-        match actorProblems @ executionProblems @ secrets with
+        match actorProblems @ executionProblems @ unpaired @ secrets with
         | [] -> Ok { ActorValue = actor; ExecutionValue = execution }
         | problems -> Error problems
 
-    /// The contribution key: the execution, or `EXT-op.<operationId>`.
-    let contributionKey (operationId: string) (requester: Requester) =
-        requester.Execution |> Option.defaultWith (fun () -> ContributionKey.ofOperation operationId)
+    /// The contribution key: the execution, or `EXT-op.<seg(operationId)>`.
+    /// Refused when there is no execution and the operation id cannot form
+    /// a key (empty, or not well-formed Unicode; contract 1.2).
+    let contributionKey (operationId: string) (requester: Requester) : Result<string, string> =
+        match requester.Execution with
+        | Some execution -> Ok execution
+        | None -> ContributionKey.ofOperation operationId
 
     /// The interchange form of an instant: ISO-8601 UTC with milliseconds.
     let private timestamp (at: DateTimeOffset) =
         at.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fff'Z'", CultureInfo.InvariantCulture)
 
     /// The requester's `created` contribution to the request it made.
-    let creation (operationId: string) (at: DateTimeOffset) (reason: string option) (requester: Requester) : Contribution =
-        { Key = contributionKey operationId requester
-          Operations = [ "created" ]
-          At = timestamp at
-          Last = None
-          Actor = requester.Actor
-          Reason = reason |> Option.map (fun text -> text.Replace("\r", " ").Replace("\n", " "))
-          Evidence = [] }
+    let creation
+        (operationId: string)
+        (at: DateTimeOffset)
+        (reason: string option)
+        (requester: Requester)
+        : Result<Contribution, string> =
+        contributionKey operationId requester
+        |> Result.map (fun key ->
+            { Key = key
+              Operations = [ "created" ]
+              At = timestamp at
+              Last = None
+              Actor = requester.Actor
+              Reason = reason |> Option.map (fun text -> text.Replace("\r", " ").Replace("\n", " "))
+              Evidence = [] })
 
     /// The request's `praxis.provenance/1` block: one `created` contribution
     /// by the requester, keyed by its execution or `EXT-op.<operationId>`.
-    /// Total: a `Requester` is valid by construction, the key and the
-    /// timestamp are always well formed, so the block classifies `supported`.
-    let toBlock (operationId: string) (at: DateTimeOffset) (reason: string option) (requester: Requester) : ProvenanceBlock =
-        let contribution = creation operationId at reason requester
-
-        ProvenanceBlock(
-            JObject
-                [ "schema", JString SchemaTag
-                  "contributions", JObject [ contribution.Key, Contribution.encode contribution ] ]
-        )
+    /// The result is re-classified, so an `Ok` block always classifies
+    /// `supported`; a key that cannot be formed, or a reason that would make
+    /// the block malformed (a credential, an unpaired surrogate), is refused.
+    let toBlock
+        (operationId: string)
+        (at: DateTimeOffset)
+        (reason: string option)
+        (requester: Requester)
+        : Result<ProvenanceBlock, string> =
+        creation operationId at reason requester
+        |> Result.bind (fun contribution ->
+            match
+                ProvenanceBlock.classify (
+                    JObject
+                        [ "schema", JString SchemaTag
+                          "contributions", JObject [ contribution.Key, Contribution.encode contribution ] ]
+                )
+            with
+            | Supported(block, _) -> Ok block
+            | Malformed problems -> Error("the request's provenance would be malformed: " + String.Join("; ", problems))
+            | Unsupported(schema, _) -> Error(sprintf "the request's provenance would be unsupported (%s)" schema))
 
     /// The requester recorded as a block's originator, if one is recorded.
     /// `None` means unknown: nothing else in the block is promoted into a

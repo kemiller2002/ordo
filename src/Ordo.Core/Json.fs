@@ -123,6 +123,37 @@ let renderCanonical (value: JsonValue) : string =
     renderInto sb true value
     sb.ToString()
 
+/// True when the text holds a UTF-16 surrogate without its partner. Such
+/// text has no UTF-8 form, so it can be neither persisted nor carried
+/// verbatim, and readers in other languages disagree about it (Praxis
+/// provenance contract revision 1.2; ORDO-PROV-06).
+let hasUnpairedSurrogate (text: string) : bool =
+    let rec scan index =
+        if index >= text.Length then
+            false
+        elif Char.IsHighSurrogate text[index] then
+            if index + 1 < text.Length && Char.IsLowSurrogate text[index + 1] then scan (index + 2) else true
+        elif Char.IsLowSurrogate text[index] then
+            true
+        else
+            scan (index + 1)
+
+    scan 0
+
+let private wellFormed (path: string) (text: string) : Result<string, JsonError> =
+    if hasUnpairedSurrogate text then
+        Error(MalformedJson(sprintf "%s: unpaired UTF-16 surrogate" path))
+    else
+        Ok text
+
+/// Folds a sequence of fallible steps, stopping at the first error.
+let private foldResult
+    (step: 'state -> 'item -> Result<'state, JsonError>)
+    (initial: 'state)
+    (items: 'item seq)
+    : Result<'state, JsonError> =
+    items |> Seq.fold (fun state item -> state |> Result.bind (fun current -> step current item)) (Ok initial)
+
 let private fromElement (element: JsonElement) : Result<JsonValue, JsonError> =
     let rec go (element: JsonElement) (path: string) : Result<JsonValue, JsonError> =
         match element.ValueKind with
@@ -130,7 +161,8 @@ let private fromElement (element: JsonElement) : Result<JsonValue, JsonError> =
         | JsonValueKind.Undefined -> Ok JNull
         | JsonValueKind.True -> Ok(JBool true)
         | JsonValueKind.False -> Ok(JBool false)
-        | JsonValueKind.String -> Ok(JString(element.GetString() |> Option.ofObj |> Option.defaultValue ""))
+        | JsonValueKind.String ->
+            element.GetString() |> Option.ofObj |> Option.defaultValue "" |> wellFormed path |> Result.map JString
         | JsonValueKind.Number ->
             match element.TryGetInt64() with
             | true, n -> Ok(JInt n)
@@ -139,34 +171,29 @@ let private fromElement (element: JsonElement) : Result<JsonValue, JsonError> =
                 | true, f -> Ok(JFloat f)
                 | _ -> Error(UnsupportedNumber path)
         | JsonValueKind.Array ->
-            let mutable index = 0
-            let mutable failure = None
-            let items = ResizeArray()
-
-            for item in element.EnumerateArray() do
-                if failure.IsNone then
-                    match go item (sprintf "%s[%d]" path index) with
-                    | Ok value -> items.Add value
-                    | Error e -> failure <- Some e
-
-                index <- index + 1
-
-            match failure with
-            | Some e -> Error e
-            | None -> Ok(JArray(List.ofSeq items))
+            element.EnumerateArray()
+            |> Seq.indexed
+            |> foldResult
+                (fun items (index, item) -> go item (sprintf "%s[%d]" path index) |> Result.map (fun value -> value :: items))
+                []
+            |> Result.map (List.rev >> JArray)
         | JsonValueKind.Object ->
-            let mutable failure = None
-            let members = ResizeArray()
+            // A member name repeated within one object is malformed: readers
+            // disagree about which duplicate wins, so a second value could be
+            // smuggled past one of them (ORDO-PROV-06, contract 1.2).
+            element.EnumerateObject()
+            |> foldResult
+                (fun (seen: Set<string>, members) property ->
+                    let child = sprintf "%s.%s" path property.Name
 
-            for property in element.EnumerateObject() do
-                if failure.IsNone then
-                    match go property.Value (sprintf "%s.%s" path property.Name) with
-                    | Ok value -> members.Add(property.Name, value)
-                    | Error e -> failure <- Some e
-
-            match failure with
-            | Some e -> Error e
-            | None -> Ok(JObject(List.ofSeq members))
+                    wellFormed child property.Name
+                    |> Result.bind (fun name ->
+                        if seen.Contains name then
+                            Error(MalformedJson(sprintf "%s: member name repeated within one object" child))
+                        else
+                            go property.Value child |> Result.map (fun value -> seen.Add name, (name, value) :: members)))
+                (Set.empty, [])
+            |> Result.map (snd >> List.rev >> JObject)
         | kind -> Error(UnexpectedType(path, string kind))
 
     go element "$"
@@ -174,15 +201,25 @@ let private fromElement (element: JsonElement) : Result<JsonValue, JsonError> =
 /// Parses text into the wire vocabulary. Provider output and persisted
 /// records both arrive through here, and both are untrusted until a decoder
 /// has checked them against a contract (ORDO-7501).
+///
+/// Total: text that is not JSON, that repeats a member name within one
+/// object, or that holds an unpaired UTF-16 surrogate is `MalformedJson`,
+/// never an exception. System.Text.Json reports such text through
+/// `JsonException`, `ArgumentException` or `InvalidOperationException`
+/// depending on where it notices, so all three are caught.
 let parse (text: string) : Result<JsonValue, JsonError> =
     if String.IsNullOrEmpty text then
         Error(MalformedJson "input was null or empty")
+    elif hasUnpairedSurrogate text then
+        Error(MalformedJson "input holds an unpaired UTF-16 surrogate")
     else
         try
             use document = JsonDocument.Parse(text, JsonDocumentOptions(AllowTrailingCommas = false))
             fromElement document.RootElement
-        with :? JsonException as ex ->
-            Error(MalformedJson ex.Message)
+        with
+        | :? JsonException as ex -> Error(MalformedJson ex.Message)
+        | :? ArgumentException as ex -> Error(MalformedJson ex.Message)
+        | :? InvalidOperationException as ex -> Error(MalformedJson ex.Message)
 
 /// Looks up a member of an object. Returns `None` for an absent member and
 /// an error for a value that is not an object at all, because "this record

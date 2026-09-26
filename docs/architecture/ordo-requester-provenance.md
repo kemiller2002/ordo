@@ -2,7 +2,7 @@
 id: SDE-ARCH-003
 title: Executable Ordo requester identity and provenance requirements
 status: accepted
-version: 1.0.0
+version: 1.1.0
 created: 2026-09-26
 updated: 2026-09-26
 related_documents:
@@ -15,7 +15,8 @@ tags: [architecture, ordo, provenance, identity, echelon]
 
 # Executable Ordo requester identity and provenance
 
-Work item: `FEAT-ECHELON-PROVENANCE`. Decision: `DF-SDE-2026-0016`.
+Work items: `FEAT-ECHELON-PROVENANCE` (1.0.0), `FEAT-ECHELON-PROVENANCE-R12`
+(1.1.0). Decision: `DF-SDE-2026-0016`.
 
 ## Authority
 
@@ -24,14 +25,14 @@ lineage, and "unknown" mean. These requirements adopt that model; they
 restate it only where Ordo makes a decision of its own, and cite it
 everywhere else:
 
-| Praxis record (contract revision 1.1, commit `c2657efb4d54f11d0fd0617cc1bcd5b8418601d5`) | What Ordo takes from it |
+| Praxis record (contract revision 1.2, commit `b0037183389c8b9392919f58521b9487d1b4d5c6`) | What Ordo takes from it |
 |---|---|
 | `RQ-ROS-2026-A019` provenance never substitutes for authentication, authorization, or evidence | the three-way separation; Ordo is named there as a downstream system that must restate it with tests |
 | `RQ-ROS-2026-A015` versioned interchange block with deterministic receiving rules | the `praxis.provenance/1` block, its `supported` / `unsupported` / `malformed` verdicts, and the append rules |
-| `RQ-ROS-2026-A016` identity propagation without re-implementing discovery | the requester comes from an explicit host declaration or is unknown; never guessed |
+| `RQ-ROS-2026-A016` (revision 1.2.0) identity propagation without re-implementing discovery | the requester comes from one explicit host declaration or is unknown; never guessed, never mixed field by field |
 | `RQ-ROS-2026-A017` no credentials in provenance | credential-like values make a block malformed and a requester unconstructable |
 | `RQ-ROS-2026-A018` cross-system conformance | the vendored conformance cases and end-to-end chain |
-| `DF-ROS-2026-A037` Echelon provenance interchange | the contract as a whole, including `EXT-<system>.<run-id>` and `EXT-op.<operationId>` keys |
+| `DF-ROS-2026-A037` Echelon provenance interchange | the contract as a whole, including `EXT-<system>.<run-id>` and `EXT-op.<seg(operationId)>` keys |
 
 The canonical model is Praxis `docs/agent-provenance.md` and
 `schemas/provenance-interchange.schema.json`. Ordo does not define a second
@@ -65,15 +66,23 @@ a Praxis actor (`kind`, `id`, and for non-humans `provider`, `model`,
 execution it acted in (`EXE-...` or `EXT-<system>.<run-id>`). The requester
 serializes as a `praxis.provenance/1` block whose single `created`
 contribution is the requester's, keyed by its execution or, when the
-execution is unknown, by `EXT-op.<request id>`.
+execution is unknown, by `EXT-op.<seg(request id)>`, where `seg` is the
+contract's per-code-point `escapeKeySegment` (ORDO-PROV-06). A request id
+that cannot form a key (empty, or with an unpaired UTF-16 surrogate) is
+refused, never keyed by an invented id; Ordo identifiers refuse unpaired
+surrogates at construction (`IdentifierNotWellFormed`), so a decision
+request id always forms a key.
 
 An absent requester MUST read as unknown. Ordo MUST NOT infer a requester
 from the provider identity, the capability set, the host process, the
 environment, or any other ambient signal (`RQ-ROS-2026-A016`). Ordo reads
 no environment variable at all — in particular not `ROS_EXECUTION_ID` or any
 variable in Praxis's `identity-environment.json`; a host that honours
-`ROS_EXECUTION_ID` does so only when the process also declares an identity
-(contract revision 1.1) and passes the result to Ordo explicitly. The provider
+`ROS_EXECUTION_ID` does so only when the same environment also declares
+the identity, and takes the actor wholly from one source (contract revision
+1.2, `RQ-ROS-2026-A016` 1.2.0); it passes the result to Ordo explicitly.
+Ordo's own `Requester` is that one source: it holds exactly the declared
+actor and execution and fills nothing from elsewhere. The provider
 that answered a decision and the actor that requested it are different
 facts and are recorded separately.
 
@@ -142,6 +151,36 @@ originator, the result re-classified); same-key merges that keep the
 incoming contribution's unknown fields (existing wins), take the later
 time, and refuse an unknown identity extending a known actor's entry; and
 injective `_xx` escaping of `EXT-op.<operationId>` keys.
+
+At contract revision 1.2 it also includes (vendored `text-cases.json`,
+`envelope-key-cases.json`, and `lineage-cases.json`, and the 70 cases of
+`cases.json`):
+
+- **Well-formed text.** Ordo's JSON reader (`Json.parse`) refuses, as
+  `MalformedJson`, text that is not JSON, that repeats a member name within
+  any one object, or that holds an unpaired UTF-16 surrogate in a member
+  name or string; the check is made while reading the text, for every Ordo
+  record, not only provenance. `Json.parse`, `ProvenanceBlock.classifyText`
+  and `ProvenanceBlock.classify` never throw. A lone surrogate inside an
+  already-built value makes a block malformed.
+- **ASCII whitespace.** "Blank" means empty after trimming tab, LF, VT, FF,
+  CR, and space only; every other character (U+0085, U+FEFF, U+001C,
+  U+00A0, ...) is content. Credential patterns use explicit ASCII classes,
+  `RegexOptions.CultureInvariant`, and no `\b`, `\s`, or case-insensitive
+  option; the bearer pattern is the contract's.
+- **Checked lineage.** `ProvenanceBlock.addLineage` / `addLineageJson`
+  return the new block and whether it changed, or a refusal: the block must
+  be supported, the references an array of non-blank, credential-free,
+  well-formed strings (duplicates dropped, first kept), and the result must
+  classify as supported. Nothing is stored on refusal.
+- **Key segments.** `ContributionKey.escapeSegment` escapes per Unicode
+  code point: ASCII letters, digits, and `-` pass through; every other code
+  point, `.` and `_` included, becomes `_xx` per UTF-8 byte. It refuses an
+  empty segment or one with an unpaired surrogate. `ofOperation` and
+  `ofEnvelopeV1` (the reference `keyFromEnvelopeV1`) use it. Keys already
+  stored are never rewritten.
+- **Null.** A stored `"provenance": null` is malformed, not absent.
+
 Implements `RQ-ROS-2026-A015`, `RQ-ROS-2026-A017`, `RQ-ROS-2026-A018` for
 Ordo.
 
@@ -162,6 +201,25 @@ Records and requests without provenance remain valid and read as
 unattributed. Ordo MUST NOT backfill or infer historical requesters.
 Method v0.1 and historical experiment run data (`research/runs/EX-SDE-*`)
 are not modified.
+
+## Revision notes
+
+- **1.1.0 (2026-09-26, `FEAT-ECHELON-PROVENANCE-R12`).** Adopts Praxis
+  provenance contract revision 1.2 (commit `b003718`) after the second
+  adversarial review. ORDO-PROV-06 gains the revision 1.2 rules: Ordo's JSON
+  reader refuses duplicate member names and unpaired surrogates (finding 5:
+  a duplicated contribution key had given two entries and originator
+  `mallory`; finding 10: `Json.parse` threw on a lone surrogate); blank and
+  credential checks use ASCII semantics (finding 11); `addLineage` returns a
+  result and refuses what `classify` would reject; key segments escape per
+  code point and escape `.`. ORDO-PROV-02 now keys an unknown execution by
+  `EXT-op.<seg(request id)>`, refuses an id that cannot form a key, and cites
+  the one-identity-source rule of `RQ-ROS-2026-A016` 1.2.0.
+  `Requester.toBlock` re-classifies its result and refuses a reason that
+  would make the block malformed. Existing stored keys are unchanged: only
+  request ids containing `.` or characters outside the BMP map differently.
+- **1.0.0 (2026-09-26, `FEAT-ECHELON-PROVENANCE`).** Initial requirements
+  at Praxis contract revision 1.1 (commit `c2657ef`).
 
 ## Out of scope
 

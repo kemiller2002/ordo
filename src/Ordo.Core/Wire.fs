@@ -607,6 +607,8 @@ let withProvenance (provenance: CarriedProvenance option) (document: JsonValue) 
 /// Reads the `provenance` member of an encoded record. Absent is `None`
 /// (unattributed, never inferred); another major version is carried
 /// verbatim; a malformed block is refused rather than dropped or repaired.
+/// A present `"provenance": null` is malformed, never absent (Praxis
+/// contract 1.1 rule 3, applied to storage readers by revision 1.2).
 let readProvenance (document: JsonValue) : Result<CarriedProvenance option, WireError> =
     match optional "provenance" document with
     | Error error -> Error error

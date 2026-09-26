@@ -1,6 +1,6 @@
 /// Requester identity and provenance, kept apart from capability and
 /// evidence (ORDO-PROV-01..08 / DF-SDE-2026-0016), at Praxis contract
-/// revision 1.1.
+/// revision 1.2.
 ///
 /// Three kinds of test live here:
 ///
@@ -109,11 +109,20 @@ let private everyRequester: Requester option list =
 let ``vendored Praxis fixtures are byte-identical to the recorded source commit`` () =
     let source = fixture "SOURCE.json"
     Assert.Equal("kemiller2002/praxis", text (get "repository" source))
-    Assert.Equal("c2657efb4d54f11d0fd0617cc1bcd5b8418601d5", text (get "commit" source))
-    Assert.Equal("1.1", text (get "contractRevision" source))
+    Assert.Equal("b0037183389c8b9392919f58521b9487d1b4d5c6", text (get "commit" source))
+    Assert.Equal("1.2", text (get "contractRevision" source))
 
     let files = members (get "files" source)
-    Assert.Equal<string list>([ "cases.json"; "echelon-chain.json"; "identity-environment.json" ], files |> List.map fst)
+
+    Assert.Equal<string list>(
+        [ "cases.json"
+          "echelon-chain.json"
+          "envelope-key-cases.json"
+          "identity-environment.json"
+          "lineage-cases.json"
+          "text-cases.json" ],
+        files |> List.map fst
+    )
 
     for name, expected in files do
         use stream = File.OpenRead(Path.Combine(fixtureDirectory, name))
@@ -123,7 +132,7 @@ let ``vendored Praxis fixtures are byte-identical to the recorded source commit`
 [<Fact>]
 let ``every Praxis conformance case reaches the same verdict and warning count`` () =
     let cases = items (get "cases" (fixture "cases.json"))
-    Assert.Equal(56, cases.Length)
+    Assert.Equal(70, cases.Length)
 
     let mismatches =
         cases
@@ -179,7 +188,10 @@ let ``the Echelon chain replays to the recorded expectations`` () =
 
                 let next =
                     match tryMember "lineage" step with
-                    | Ok(Some references) -> ProvenanceBlock.addLineage (items references |> List.map text) current
+                    | Ok(Some references) ->
+                        match ProvenanceBlock.addLineage (items references |> List.map text) current with
+                        | Ok(block, _) -> block
+                        | Error error -> failwithf "lineage for %s refused: %s" record error
                     | _ ->
                         let append = get "append" step
 
@@ -340,7 +352,7 @@ let ``an authorisation records who asked, for audit only`` () =
 let ``evidence provenance never changes what the evidence satisfies`` () =
     let attributions =
         everyRequester
-        |> List.map (Option.map (fun r -> Requester.toBlock "evidence-producer" now None r |> Understood))
+        |> List.map (Option.map (fun r -> ok (Requester.toBlock "evidence-producer" now None r) |> Understood))
 
     let baseline = Evidence.checkAll now fullEvidence [ toolDiagnostic; siteDiff ]
 
@@ -353,7 +365,7 @@ let ``evidence provenance never changes what the evidence satisfies`` () =
     let human = requester (Actor.human "kevin") None
 
     let attributedInference =
-        Attributed.withBlock (Requester.toBlock "evidence-producer" now None human) inferred
+        Attributed.withBlock (ok (Requester.toBlock "evidence-producer" now None human)) inferred
 
     match Evidence.checkRequirement now (Attributed.records [ attributedInference ]) toolDiagnostic with
     | WrongKind _ -> ()
@@ -454,7 +466,7 @@ let ``request provenance is additive on observation v2 and absent for legacy req
 [<Fact>]
 let ``every requester serializes to a supported block and reads back unchanged`` () =
     for requestedBy in everyRequester |> List.choose id do
-        let block = Requester.toBlock "req-9" now (Some "asked for a verification path") requestedBy
+        let block = ok (Requester.toBlock "req-9" now (Some "asked for a verification path") requestedBy)
 
         match parse (render (ProvenanceBlock.toJson block)) with
         | Ok reread ->
@@ -485,7 +497,7 @@ let ``a requester refuses credentials, non-execution keys and invalid actors`` (
 [<Fact>]
 let ``an unknown requester is recorded as unknown, not replaced with a guess`` () =
     let unknown = requester Actor.unknown None
-    let block = Requester.toBlock "req-1" now None unknown
+    let block = ok (Requester.toBlock "req-1" now None unknown)
 
     match ProvenanceBlock.originator block with
     | Some origin ->
@@ -581,9 +593,11 @@ let ``attributed evidence round-trips and still decodes as the same evidence for
     let producer = requester agentA (Some "EXE-20260926T080000000Z-aaaa0001")
 
     let block =
-        Requester.toBlock "tool-diagnostic" now (Some "ran the compiler") producer
+        ok (Requester.toBlock "tool-diagnostic" now (Some "ran the compiler") producer)
         |> appended (contribution "EXE-20260926T080000000Z-aaaa0001" [ "measured" ] "2026-09-18T12:00:00.000Z" agentA)
         |> ProvenanceBlock.addLineage [ "dokimos:snapshot/S-1" ]
+        |> ok
+        |> fst
 
     let attributed = Attributed.withBlock block diagnosticEvidence
     let document = encodeAttributed encodeEvidence attributed
@@ -643,7 +657,7 @@ let ``obligations and unknown effects record who created and who settled them wi
 
     match ExternalEffect.recordOutcome reconcile effect now (ExternalEffectOutcome.Unknown "timeout") with
     | ReconciliationRequired(_, obligation) ->
-        let attributed = Attributed.withBlock (Requester.toBlock "reconcile-effect-1" now None attempted) obligation
+        let attributed = Attributed.withBlock (ok (Requester.toBlock "reconcile-effect-1" now None attempted)) obligation
 
         let requirement = authorizeFastPath |> TransitionRequirement.requiringObligations [ reconcile ]
 
@@ -773,11 +787,11 @@ let ``rule 2: a sub-millisecond difference does not order two contributions`` ()
 
 [<Fact>]
 let ``rule 6: operation keys are escaped injectively`` () =
-    Assert.Equal("EXT-op.op_201", ContributionKey.ofOperation "op 1")
-    Assert.Equal("EXT-op.gh_2f99", ContributionKey.ofOperation "gh/99")
-    Assert.Equal("EXT-op.req-1", ContributionKey.ofOperation "req-1")
+    Assert.Equal(Ok "EXT-op.op_201", ContributionKey.ofOperation "op 1")
+    Assert.Equal(Ok "EXT-op.gh_2f99", ContributionKey.ofOperation "gh/99")
+    Assert.Equal(Ok "EXT-op.req-1", ContributionKey.ofOperation "req-1")
 
-    let keys = [ "a/b"; "a:b"; "a_b"; "a-b"; "a_2fb"; "é" ] |> List.map ContributionKey.ofOperation
+    let keys = [ "a/b"; "a:b"; "a_b"; "a-b"; "a_2fb"; "é" ] |> List.map (ContributionKey.ofOperation >> ok)
     Assert.Equal(keys.Length, (List.distinct keys).Length)
 
     for key in keys do
@@ -806,3 +820,234 @@ let ``rule 8: Ordo never takes a requester or an execution from the environment`
     finally
         for name, value in saved do
             Environment.SetEnvironmentVariable(name, value)
+
+// ------------------------------------------- contract revision 1.2
+
+/// Lone surrogates built from code units: the F# compiler replaces an
+/// unpaired `\uD800` escape in a string literal with U+FFFD.
+let private loneHigh = string (char 0xD800)
+let private loneLow = string (char 0xDC00)
+let private highOfPair = string (char 0xD83D)
+
+let private verdictName verdict =
+    match verdict with
+    | Supported _ -> "supported"
+    | Unsupported _ -> "unsupported"
+    | Malformed _ -> "malformed"
+
+/// Runs a check over every case of a vendored fixture and reports all
+/// mismatches at once.
+let private conform (name: string) (expected: int) (check: JsonValue -> string option) =
+    let cases = items (get "cases" (fixture name))
+    Assert.Equal(expected, cases.Length)
+    let mismatches = cases |> List.choose (fun case -> check case |> Option.map (sprintf "%s: %s" (text (get "name" case))))
+    Assert.True(mismatches.IsEmpty, String.Join(Environment.NewLine, mismatches))
+
+[<Fact>]
+let ``every Praxis text case reaches the same verdict, and classifying text never throws`` () =
+    conform "text-cases.json" 14 (fun case ->
+        let expected = text (get "expect" case)
+        let actual = verdictName (ProvenanceBlock.classifyText (text (get "text" case)))
+        if actual = expected then None else Some(sprintf "expected %s, got %s" expected actual))
+
+[<Fact>]
+let ``every Praxis envelope key case derives the same key or is rejected`` () =
+    conform "envelope-key-cases.json" 12 (fun case ->
+        let envelope =
+            match tryMember "envelopeText" case with
+            | Ok(Some(JString envelopeText)) -> parse envelopeText |> Result.mapError (sprintf "%A")
+            | _ -> Ok(get "envelope" case)
+
+        let actual = envelope |> Result.bind ContributionKey.ofEnvelopeV1
+
+        match tryMember "error" case, actual with
+        | Ok(Some(JBool true)), Error _ -> None
+        | Ok(Some(JBool true)), Ok key -> Some(sprintf "expected a rejection, got %s" key)
+        | _, Ok key when key = text (get "key" case) -> None
+        | _, other -> Some(sprintf "expected %s, got %A" (text (get "key" case)) other))
+
+[<Fact>]
+let ``every Praxis lineage case is added or refused as the reference does`` () =
+    conform "lineage-cases.json" 8 (fun case ->
+        let expectedOk =
+            match get "ok" case with
+            | JBool value -> value
+            | other -> failwithf "ok must be a boolean, got %A" other
+
+        match ProvenanceBlock.addLineageJson (get "references" case) (get "block" case), expectedOk with
+        | Ok(block, _), true ->
+            let expected = get "derivedFrom" case |> items |> List.map text
+
+            if ProvenanceBlock.derivedFrom block = expected then None
+            else Some(sprintf "expected %A, got %A" expected (ProvenanceBlock.derivedFrom block))
+        | Error _, false -> None
+        | Ok(block, _), false -> Some(sprintf "expected a refusal, got %s" (render (ProvenanceBlock.toJson block)))
+        | Error error, true -> Some(sprintf "expected lineage to be added, refused: %s" error))
+
+let private smuggledOriginator =
+    """{"schema":"praxis.provenance/1","contributions":{"EXE-A":{"operations":["created"],"at":"2026-09-26T08:00:00.000Z","actor":{"kind":"human","id":"mallory"}},"EXE-A":{"operations":["modified"],"at":"2026-09-26T09:00:00.000Z","actor":{"kind":"human","id":"alice"}}}}"""
+
+[<Fact>]
+let ``finding 5: a repeated member name is malformed at parse time, so no originator can be smuggled`` () =
+    match parse smuggledOriginator with
+    | Error(MalformedJson message) -> Assert.Contains("repeated", message)
+    | other -> failwithf "Ordo's JSON reader accepted duplicate members: %A" other
+
+    match ProvenanceBlock.classifyText smuggledOriginator with
+    | Malformed _ -> ()
+    | other -> failwithf "expected malformed, got %A" other
+
+    // Duplicates are refused for every Ordo record, not only provenance.
+    match parse """{"schema":"ordo.x","a":1,"nested":[{"b":1,"b":2}]}""" with
+    | Error(MalformedJson message) -> Assert.Contains("$.nested[0].b", message)
+    | other -> failwithf "expected a nested duplicate to be refused, got %A" other
+
+    // The same name in different objects is not a duplicate.
+    Assert.True((parse """{"a":{"id":1},"b":{"id":2}}""" |> Result.isOk))
+
+    // A stored record with a duplicated provenance member never decodes.
+    match parse ("""{"provenance":""" + smuggledOriginator + "}") with
+    | Error _ -> ()
+    | Ok document -> failwithf "a record with smuggled provenance parsed: %A" (readProvenance document)
+
+[<Fact>]
+let ``finding 10: an unpaired surrogate is malformed and parsing and classifying never throw`` () =
+    let texts =
+        [ "{\"schema\":\"praxis.provenance/2\",\"x-a\":\"\\ud800\"}"
+          "{\"schema\":\"praxis.provenance/1\",\"contributions\":{},\"x-\\udc00\":1}"
+          "{\"schema\":\"praxis.provenance/1\",\"contributions\":{},\"x-a\":\"" + loneHigh + "\"}"
+          "{\"x-" + loneHigh + "\":1}"
+          loneHigh
+          "not json"
+          "" ]
+
+    for candidate in texts do
+        match parse candidate with
+        | Error(MalformedJson _) -> ()
+        | other -> failwithf "expected MalformedJson for %A, got %A" candidate other
+
+        Assert.Equal("malformed", verdictName (ProvenanceBlock.classifyText candidate))
+
+    // A well-formed pair is content.
+    Assert.Equal(Ok(JString "\U0001F600"), parse "\"\\ud83d\\ude00\"")
+
+    // A lone surrogate inside an already-built value is malformed too.
+    let built =
+        JObject
+            [ "schema", JString SchemaTag
+              "contributions", JObject []
+              "x-note", JString loneHigh ]
+
+    match ProvenanceBlock.classify built with
+    | Malformed [ problem ] -> Assert.Contains("unpaired UTF-16 surrogate", problem)
+    | other -> failwithf "expected malformed, got %A" other
+
+    Assert.Equal("malformed", verdictName (ProvenanceBlock.classify (JObject [ "schema", JString "praxis.provenance/2"; "x-" + loneLow, JInt 1L ])))
+
+    match Requester.create (Actor.human ("kev" + loneHigh)) None with
+    | Error problems -> Assert.Contains("unpaired", String.Join("; ", problems))
+    | Ok accepted -> failwithf "accepted %A" accepted
+
+    Assert.Equal(Error(IdentifierNotWellFormed("req-" + loneHigh)), DecisionRequestId.create ("req-" + loneHigh))
+
+[<Fact>]
+let ``finding 11: blank means ASCII whitespace only and credential patterns use ASCII classes`` () =
+    let human id =
+        JObject
+            [ "schema", JString SchemaTag
+              "contributions",
+              JObject
+                  [ "CTB-1",
+                    JObject
+                        [ "operations", JArray [ JString "created" ]
+                          "at", JString "2026-09-26T08:00:00.000Z"
+                          "actor", JObject [ "kind", JString "human"; "id", JString id ] ] ] ]
+
+    for content in [ "\u0085"; "\ufeff"; "\u001c"; "\u00a0"; "\u2028" ] do
+        Assert.Equal("supported", verdictName (ProvenanceBlock.classify (human content)))
+
+    for blank in [ ""; " "; "\t\n\u000b\f\r " ] do
+        Assert.Equal("malformed", verdictName (ProvenanceBlock.classify (human blank)))
+
+    let token = "abcdefghijklmnopqrstuvwxyz"
+
+    for credential in [ "Bearer " + token; "x bEaReR\t" + token; "\u00e9bearer " + token; "(bearer\u000b" + token + ")" ] do
+        Assert.True(isCredentialLike credential, credential)
+
+    for ordinary in
+        [ "xbearer " + token
+          "_bearer " + token
+          "bearer\u0085" + token
+          "bearer\u00a0" + token
+          "bearer " + String('\u212a', 20)
+          "BEARER short" ] do
+        Assert.False(isCredentialLike ordinary, ordinary)
+
+[<Fact>]
+let ``rule 3: lineage is checked like a contribution and refusals leave nothing behind`` () =
+    let block = ok (Requester.toBlock "req-1" now None (requester (Actor.human "kevin") None))
+
+    ProvenanceBlock.addLineage [ "ghp_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" ] block |> refusedWith "credential-like"
+    ProvenanceBlock.addLineage [ " \t" ] block |> refusedWith "non-empty"
+    ProvenanceBlock.addLineage [ "RQ-" + loneHigh ] block |> refusedWith "unpaired"
+    ProvenanceBlock.addLineageJson (JString "RQ-1") (ProvenanceBlock.toJson block) |> refusedWith "must be an array"
+    ProvenanceBlock.addLineageJson (JArray [ JString "RQ-1" ]) (JObject [ "schema", JString "praxis.provenance/2" ]) |> refusedWith "unsupported"
+    ProvenanceBlock.addLineageJson (JArray [ JString "RQ-1" ]) JNull |> refusedWith "malformed"
+
+    // The block itself is unchanged by a refusal.
+    Assert.Empty(ProvenanceBlock.derivedFrom block)
+
+    match ProvenanceBlock.addLineage [ "RQ-1"; "RQ-2"; "RQ-1" ] block with
+    | Ok(next, true) ->
+        Assert.Equal<string list>([ "RQ-1"; "RQ-2" ], ProvenanceBlock.derivedFrom next)
+
+        match ProvenanceBlock.addLineage [ "RQ-2" ] next with
+        | Ok(again, false) -> Assert.Equal(ProvenanceBlock.toJson next, ProvenanceBlock.toJson again)
+        | other -> failwithf "expected an unchanged block, got %A" other
+    | other -> failwithf "expected lineage to be added, got %A" other
+
+[<Fact>]
+let ``rule 4: key segments escape per code point, escape '.', and refuse what cannot form a key`` () =
+    Assert.Equal(Ok "_f0_9f_98_80", ContributionKey.escapeSegment "\U0001F600")
+    Assert.Equal(Ok "a_2eb", ContributionKey.escapeSegment "a.b")
+    Assert.Equal(Ok "a_5fb", ContributionKey.escapeSegment "a_b")
+    Assert.Equal(Ok "EXT-op.req_2e1", ContributionKey.ofOperation "req.1")
+
+    // Two astral ids never collide (they did when each surrogate half
+    // became U+FFFD), and a dotted id never equals a namespaced key.
+    Assert.NotEqual(ContributionKey.ofOperation "op-\U0001F600", ContributionKey.ofOperation "op-\U0001F601")
+
+    let namespaced = ok (ContributionKey.escapeSegment "vigila") + "." + ok (ContributionKey.escapeSegment "7")
+    Assert.NotEqual(Ok("EXT-run." + namespaced), ContributionKey.ofEnvelopeV1 (JObject [ "operationId", JString "o"; "actor", JObject [ "runId", JObject [ "state", JString "known"; "value", JString "vigila.7" ] ] ]))
+
+    for unusable in [ ""; "op-" + highOfPair; loneLow ] do
+        match ContributionKey.ofOperation unusable with
+        | Error _ -> ()
+        | Ok key -> failwithf "formed %s from %A" key unusable
+
+    // A requester without an execution cannot be keyed by an unusable
+    // operation id; the block is refused, never keyed by an invented id.
+    let human = requester (Actor.human "kevin") None
+
+    match Requester.toBlock "" now None human, Requester.toBlock ("op-" + highOfPair) now None human with
+    | Error _, Error _ -> ()
+    | other -> failwithf "expected both to be refused, got %A" other
+
+    match Requester.toBlock "req.1" now None human with
+    | Ok block ->
+        Assert.Equal(Some "EXT-op.req_2e1", ProvenanceBlock.originator block |> Option.map (fun origin -> origin.Key))
+        Assert.Equal(None, (ok (Requester.toBlock "req.1" now None human) |> Requester.ofBlock |> Option.bind (fun r -> r.Execution)))
+    | Error error -> failwith error
+
+    // A reason that would make the block malformed is refused, not stored.
+    match Requester.toBlock "req-1" now (Some "Bearer abcdefghijklmnopqrstuvwxyz") human with
+    | Error error -> Assert.Contains("credential-like", error)
+    | Ok block -> failwithf "stored %s" (render (ProvenanceBlock.toJson block))
+
+[<Fact>]
+let ``rule 6: a stored provenance null is malformed, not absent`` () =
+    match parse """{"provenance":null}""" |> Result.mapError (sprintf "%A") |> Result.bind (readProvenance >> Result.mapError (sprintf "%A")) with
+    | Error problem -> Assert.Contains("provenance", problem)
+    | Ok read -> failwithf "a null provenance was read as %A" read
+
+    Assert.Equal(Ok None, readProvenance (JObject [ "id", JString "legacy" ]))
