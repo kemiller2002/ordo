@@ -108,3 +108,26 @@ to ask Ordo:
 4. what legal actions are currently available;
 5. what receipt is expected for the next transition; and
 6. whether the observed receipt permits advancement or creates an obligation.
+
+
+## Evaluator availability and repair
+
+- **ORD-EXEC-050** If required evaluation authority, tooling, configuration,
+  or evidence machinery is missing, unverifiable, or outside its declared
+  identity, the evaluation MUST stop or become blocked rather than silently
+  repairing or substituting the evaluator inside the candidate execution.
+- **ORD-EXEC-051** Repairing or replacing evaluation machinery MUST be a
+  separate governed operation with its own authority and evidence.
+- **ORD-EXEC-052** After evaluator repair or replacement, any affected
+  candidate MUST be evaluated against the resulting identified evaluator
+  before acceptance can be claimed.
+
+## Host enforcement
+
+- **ORD-EXEC-060** Ordo MUST be able to distinguish semantic authorization
+  from host-enforced access control and MUST allow a host to attach stronger
+  enforcement evidence when filesystem, process, network, credential, or
+  system-call restrictions are actually enforced.
+- **ORD-EXEC-061** Absence of host-enforcement evidence MUST leave the
+  execution's containment strength unknown or semantic-only rather than
+  inferring sandboxing from a worktree, prompt, or working directory.
