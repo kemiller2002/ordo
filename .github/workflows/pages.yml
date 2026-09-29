@@ -36,7 +36,7 @@ permissions:
 # is safe here because the artifact is rebuilt deterministically from the
 # repository on every run; nothing is lost by abandoning a superseded build.
 concurrency:
-  group: pages
+  group: ordo-pages-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
 env:
@@ -48,6 +48,10 @@ jobs:
     name: Build and validate the site
     runs-on: ubuntu-latest
     steps:
+      - name: Wait for commit batch
+        if: github.event_name != 'workflow_dispatch'
+        run: sleep 600
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-dotnet@v4
