@@ -344,18 +344,18 @@ let ``1.2.0 dry run exposes the additive decision semantics doctrine without wri
                 Assert.Contains(
                     changes,
                     function
-                    | Planning.ReplacePayload("1.2.0", "1.3.0", _) -> true
+                    | Planning.ReplacePayload("1.2.0", targetVersion, _) -> targetVersion = payload.Version
                     | _ -> false
                 )
-            | other -> failwithf "expected an additive 1.2.0 -> 1.3.0 upgrade plan, got %A" other
+            | other -> failwithf "expected an additive 1.2.0 -> %s upgrade plan, got %A" payload.Version other
 
             Assert.Equal<(string * string * System.DateTime) list>(before, snapshotWithTimestamps project)
 
             let applied = performUpgrade project payload false
 
             match applied.Outcome with
-            | Applied(_, "1.3.0") -> ()
-            | other -> failwithf "expected 1.3.0 to apply, got %A" other
+            | Applied(_, version) when version = payload.Version -> ()
+            | other -> failwithf "expected %s to apply, got %A" payload.Version other
 
             Assert.True(File.Exists(Path.Combine(installDirFor project, Paths.toNativePath doctrinePath)))
         finally
