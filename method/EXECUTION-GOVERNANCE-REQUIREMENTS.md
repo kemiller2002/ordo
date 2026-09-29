@@ -2,7 +2,7 @@
 id: SDE-METHOD-EXEC-REQ-001
 title: Execution Governance Requirements
 status: draft
-version: 0.1.0
+version: 0.2.0
 created: 2026-09-28
 updated: 2026-09-28
 related_documents:
@@ -21,7 +21,7 @@ Ordo, Praxis, and Conditor with the Bang workflow on 2026-09-28. They define
 semantic requirements for Ordo. They do not require copying Bang's board,
 prompts, or implementation.
 
-Tracked by GitHub issue #38.
+Tracked by GitHub issues #38 and #40.
 
 ## Evaluation independence
 
@@ -131,3 +131,173 @@ to ask Ordo:
 - **ORD-EXEC-061** Absence of host-enforcement evidence MUST leave the
   execution's containment strength unknown or semantic-only rather than
   inferring sandboxing from a worktree, prompt, or working directory.
+
+
+## First-class execution envelope
+
+- **ORD-EXEC-070** A bounded execution MUST be representable as a first-class
+  domain object rather than being inferred from a chat session, branch name,
+  process, or provider-specific run.
+- **ORD-EXEC-071** An execution envelope MUST identify at minimum the execution,
+  governed work item or mission, actor, execution role, baseline revision,
+  start time, effective capabilities, mutation boundary, evaluation boundary,
+  and any human-only transitions relevant to that execution.
+- **ORD-EXEC-072** Workspace identity MAY be attached to an execution envelope,
+  but workspace identity MUST remain distinct from execution identity because
+  non-filesystem and remote executions may exist.
+- **ORD-EXEC-073** Execution identity MUST remain stable across provider
+  telemetry updates, process restarts, or resumptions of the same execution.
+- **ORD-EXEC-074** A new competing attempt at the same work MUST receive a new
+  execution identity even when it uses the same actor, provider, role, or work
+  item.
+- **ORD-EXEC-075** Provider, model, runtime, and human/automation identity MUST
+  be attributes of an execution actor or host observation, not the semantic
+  definition of the execution role.
+- **ORD-EXEC-076** The semantic execution contract MUST remain provider
+  independent so a human, Claude, Codex, Gemini, CI runner, or future provider
+  can perform the same role when they possess the required capabilities.
+
+## Role authority model
+
+- **ORD-EXEC-080** Ordo MUST define role authority through capabilities and
+  prohibitions, not through prose-only role names.
+- **ORD-EXEC-081** The default specification role MUST be able to clarify and
+  elaborate already-authorized scope but MUST NOT create new governing promises
+  or approve its own specification without an explicit additional capability.
+- **ORD-EXEC-082** The default implementation role MUST be able to change the
+  authorized implementation and implementation-facing tests but MUST NOT alter
+  accepted requirements, acceptance policy, or its evaluator.
+- **ORD-EXEC-083** The default verification role MUST be able to invoke the
+  identified evaluator, observe outcomes, and record evidence but MUST NOT
+  repair the candidate or evaluator within the same verification execution.
+- **ORD-EXEC-084** The default review role MUST be able to inspect evidence,
+  accept an allowed review transition, reject, or request rework according to
+  policy but MUST NOT silently become an implementation execution.
+- **ORD-EXEC-085** The default integration role MUST be able to combine already
+  authorized candidate changes and resolve declared integration conflicts but
+  MUST NOT retroactively alter the acceptance criteria under which those
+  candidates were judged.
+- **ORD-EXEC-086** Projects MAY strengthen or narrow default role capabilities,
+  but widening a role MUST be an explicit governed policy decision.
+- **ORD-EXEC-087** Role changes during active work MUST be represented as a
+  legal transition or a new execution, not as an unrecorded change in prompt
+  instructions.
+
+## Evaluation authority closure and identity
+
+- **ORD-EXEC-090** Evaluation authority MUST be modeled as the effective closure
+  of all inputs that can change an acceptance verdict, not merely the root gate
+  command or test file.
+- **ORD-EXEC-091** The evaluation-authority closure MAY include gate code,
+  policy, configuration, schemas, test-selection logic, fixtures, generated
+  evaluator inputs, referenced constraints, and other effective-current
+  dependencies.
+- **ORD-EXEC-092** A host MUST be able to assign an immutable identity or
+  content-derived fingerprint to the effective evaluator used for a candidate.
+- **ORD-EXEC-093** Acceptance evidence MUST identify the evaluator identity or
+  fingerprint against which the candidate was judged.
+- **ORD-EXEC-094** If the effective evaluation authority changes between the
+  declared baseline and the attempted verdict, the outcome MUST NOT be reported
+  as pass or fail for the original evaluation context.
+- **ORD-EXEC-095** An evaluation-authority change MUST produce an explicit
+  invalid, stale, or changed-evaluator state that requires re-baselining or a
+  new verification execution.
+- **ORD-EXEC-096** A human-readable explanation that an evaluator change was
+  harmless MUST NOT substitute for re-evaluation when the effective evaluator
+  identity changed.
+
+## Typed receipt semantics
+
+- **ORD-EXEC-100** Expected receipts MUST be typed semantic postconditions
+  rather than unstructured success strings.
+- **ORD-EXEC-101** The receipt model MUST be able to express at least existence
+  or identity of an artifact, command/capability success, expected state,
+  produced artifact contract, satisfied verification, observed transition, and
+  composite postconditions.
+- **ORD-EXEC-102** Expected receipt, observed receipt, and receipt comparison
+  result MUST remain separate concepts.
+- **ORD-EXEC-103** Receipt comparison MUST support at least `match`,
+  `mismatch`, and `indeterminate`.
+- **ORD-EXEC-104** `indeterminate` MUST represent insufficient evidence or an
+  unknown effect and MUST NOT be collapsed into either success or failure.
+- **ORD-EXEC-105** A receipt comparison result MUST carry or reference the
+  evidence needed to explain why the result was reached.
+- **ORD-EXEC-106** A composite expected receipt MUST preserve the result of each
+  constituent check so a partial match cannot be represented as complete
+  satisfaction.
+- **ORD-EXEC-107** A narrative statement by the executing actor MAY accompany a
+  receipt but MUST remain distinct from machine-observed or independently
+  observed evidence.
+
+## Step state, resume, and reconciliation
+
+- **ORD-EXEC-110** A multi-step execution MUST be able to preserve durable
+  per-step state independently of the conversational session that performed
+  each step.
+- **ORD-EXEC-111** A completed step with a matching receipt SHOULD be reusable
+  on resume when its dependencies and authority identities remain valid.
+- **ORD-EXEC-112** A step whose effect is indeterminate MUST require
+  reconciliation before a retry when retry could duplicate or corrupt an
+  external or repository effect.
+- **ORD-EXEC-113** Reconciliation MUST determine whether the prior attempted
+  effect occurred, did not occur, or remains unknown; it MUST NOT infer
+  non-occurrence solely from a missing success response.
+- **ORD-EXEC-114** Resumption MUST preserve earlier receipts and observations
+  append-only rather than rewriting them into the final outcome.
+- **ORD-EXEC-115** The legal next action after resumption MUST be derived from
+  current state, preserved receipts, unresolved obligations, unknown effects,
+  and effective authority, not from the prior agent's narrative handoff.
+
+## Semantic mutation boundaries and scope expansion
+
+- **ORD-EXEC-120** Mutation boundaries SHOULD be expressible in semantic terms
+  such as features, responsibility clusters, authorities, or capabilities and
+  MUST NOT require file paths to be the only unit of authorization.
+- **ORD-EXEC-121** A host MAY project a semantic mutation boundary into physical
+  paths, repositories, packages, resources, or commands for enforcement and
+  observation.
+- **ORD-EXEC-122** The physical projection MUST remain traceable to the semantic
+  authority that justified it.
+- **ORD-EXEC-123** A detected mutation outside the effective boundary MUST
+  create an explicit unresolved scope effect or obligation.
+- **ORD-EXEC-124** An actor's explanation for an out-of-bound mutation MUST NOT
+  itself widen the authorized boundary.
+- **ORD-EXEC-125** Legitimate scope expansion MUST occur through an explicit
+  legal transition or separately authorized execution that records the new
+  boundary and its justification before dependent work is accepted.
+- **ORD-EXEC-126** Evaluation-authority artifacts MUST remain outside an
+  implementation execution's writable boundary even when they are physically
+  colocated with implementation files.
+
+## Actor authorization policy
+
+- **ORD-EXEC-130** Legal transitions MUST be able to express actor-kind
+  authorization independently from execution role, including human, agent,
+  and automation authorization where applicable.
+- **ORD-EXEC-131** A transition MAY be human-required, automation-allowed,
+  agent-allowed, or restricted by a more specific capability policy.
+- **ORD-EXEC-132** Human-required MUST mean that an agent cannot satisfy the
+  authorization merely by reporting or simulating human approval.
+- **ORD-EXEC-133** Different projects MAY apply different authorization policy
+  to the same semantic state machine without changing the meaning of the
+  states themselves.
+- **ORD-EXEC-134** Authorization evidence MUST record the actor that actually
+  exercised the transition capability.
+
+## Cross-system execution contract
+
+- **ORD-EXEC-140** Ordo owns the semantic meaning of execution state,
+  capability, obligation, unknown effect, receipt outcome, and legal
+  transition; it MUST NOT depend on Praxis, Conditor, a UI, or a model provider
+  to define those meanings.
+- **ORD-EXEC-141** A host such as Praxis owns execution orchestration and MAY
+  project Ordo semantics into workspaces, processes, APIs, and user interfaces,
+  but MUST NOT invent conflicting transition semantics.
+- **ORD-EXEC-142** A bootstrapper such as Conditor MAY establish the host and
+  initialize governed state but MUST NOT become the runtime authority for work
+  transitions after handoff.
+- **ORD-EXEC-143** A presentation system MUST remain a projection of the
+  authoritative execution model and MUST NOT become an independent workflow
+  database or policy engine.
+- **ORD-EXEC-144** The architecture MUST permit roles, receipts, evaluator
+  identity, and legal-action computation to be used without any particular UI.
