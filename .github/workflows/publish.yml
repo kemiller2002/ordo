@@ -44,7 +44,20 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: "true"
 
 jobs:
+  debounce:
+    if: vars.NPM_PUBLISH_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    concurrency:
+      group: ordo-publish-debounce-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Wait for commit batch
+        if: github.event_name == 'push'
+        run: sleep 600
+
   validate:
+    needs: debounce
     if: vars.NPM_PUBLISH_ENABLED == 'true'
     name: Validate (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
