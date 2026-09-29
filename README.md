@@ -101,3 +101,19 @@ The operating system is itself under evaluation. Do not infer that
 State Directed Engineering is a validated discipline, method, or product merely because
 the repository follows a rigorous process. Measure whether the process improves
 decisions, traceability, handoffs, and rework relative to the declared baseline.
+
+## Releasing
+
+```
+gh workflow run release.yml -f bump=patch        # or minor | major | X.Y.Z; add -f dry_run=true to validate only
+```
+
+The operator workflow updates `distribution/package.json` once. It then runs
+the full F# suite, `./ros validate` and the package checks, and commits and
+tags `vX.Y.Z`. Finally it dispatches `native-release.yml`, which builds the
+native bundles, `native-checksums.txt` and an `echelon.release/v1`
+`echelon-release.json`, and smoke-tests the published asset. It also
+dispatches `publish.yml`, the npm compatibility channel gated by
+`NPM_PUBLISH_ENABLED`. Released versions are immutable: an existing tag is
+never reused, and different assets are never uploaded over a published
+version.
