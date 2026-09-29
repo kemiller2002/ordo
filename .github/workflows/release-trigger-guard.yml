@@ -62,3 +62,18 @@ jobs:
                 f"in {workflow_path}.")
           sys.exit(1)
           PY
+
+      # Released versions are immutable (GH-46): the native release must
+      # never overwrite published assets, and the operator orchestrator must
+      # hand off to the native release rather than duplicating it.
+      - name: Assert native releases are immutable and orchestrated
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -n -- '--clobber' .github/workflows/native-release.yml; then
+            echo "::error file=.github/workflows/native-release.yml::native releases must never overwrite published assets (--clobber)"
+            exit 1
+          fi
+          grep -q 'gh workflow run native-release.yml' .github/workflows/release.yml
+          grep -q 'echelon-release.json' .github/workflows/native-release.yml
+          echo "OK: native releases are immutable, orchestrated, and emit echelon.release/v1."
