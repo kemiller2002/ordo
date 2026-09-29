@@ -26,6 +26,7 @@
     <Compile Include="LiveAdapterTests.fs" />
     <Compile Include="ArchitectureTests.fs" />
     <Compile Include="InvariantTests.fs" />
+    <Compile Include="ExecutionGovernanceTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

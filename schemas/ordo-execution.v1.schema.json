@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://echelonfoundry.com/schemas/ordo.execution.v1.json",
+  "title": "ordo.execution/1",
+  "description": "Wire shapes of Ordo's execution-governance contract (ORD-EXEC-*): execution envelopes, step ledgers, typed receipts and legal actions. Produced by Ordo.Core.ExecutionWire. Hosts such as Praxis exchange these documents instead of linking Ordo types.",
+  "$defs": {
+    "nullableString": { "type": ["string", "null"] },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "role": {
+      "type": "string",
+      "pattern": "^(specification|implementation|verification|review|integration|administration|specialized:.+)$"
+    },
+    "capability": {
+      "enum": [
+        "specification.elaborate", "specification.create-promise", "specification.approve",
+        "implementation.modify", "implementation.modify-tests",
+        "acceptance.modify", "evaluator.modify",
+        "evaluator.invoke", "verification.observe", "evidence.record", "verification.verdict",
+        "review.inspect", "review.findings", "review.request-rework", "review.accept", "review.reject",
+        "integration.combine", "integration.resolve-conflict",
+        "scope.expand",
+        "installation.register", "installation.remove", "policy.administer"
+      ]
+    },
+    "actor": {
+      "type": "object",
+      "required": ["id", "kind"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["human", "agent", "automation"] },
+        "provider": { "$ref": "#/$defs/nullableString" },
+        "model": { "$ref": "#/$defs/nullableString" },
+        "runtime": { "$ref": "#/$defs/nullableString" }
+      },
+      "additionalProperties": false
+    },
+    "scope": { "type": "string", "pattern": "^(feature|cluster|authority|capability):.+$" },
+    "mutationBoundary": {
+      "type": "object",
+      "required": ["scopes", "projections", "evaluatorReferences"],
+      "properties": {
+        "scopes": { "type": "array", "items": { "$ref": "#/$defs/scope" } },
+        "projections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["scope", "patterns"],
+            "properties": {
+              "scope": { "$ref": "#/$defs/scope" },
+              "patterns": { "type": "array", "items": { "type": "string" } }
+            },
+            "additionalProperties": false
+          }
+        },
+        "evaluatorReferences": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "evaluator": {
+      "type": "object",
+      "required": ["fingerprint", "inputs"],
+      "properties": {
+        "fingerprint": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "inputs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["kind", "reference", "digest"],
+            "properties": {
+              "kind": { "enum": ["gate-code", "configuration", "test-selection", "schema", "fixture", "generated-input", "policy", "dependency"] },
+              "reference": { "type": "string" },
+              "digest": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "expectedReceipt": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "enum": ["artifact-exists", "artifact-identity", "artifact-absent", "command-succeeded", "state-equals", "conforms-to-contract", "verification-satisfied", "transition-observed", "all-of"]
+        },
+        "reference": { "type": "string" },
+        "digest": { "type": "string" },
+        "command": { "type": "string" },
+        "key": { "type": "string" },
+        "value": { "type": "string" },
+        "contract": { "type": "string" },
+        "evaluator": { "type": "string" },
+        "transition": { "type": "string" },
+        "receipts": { "type": "array", "items": { "$ref": "#/$defs/expectedReceipt" } }
+      }
+    },
+    "observedFact": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "enum": ["artifact-observed", "artifact-not-found", "command-exited", "command-outcome-unknown", "state-observed", "contract-checked", "verification-observed", "transition-recorded", "unobservable"]
+        }
+      }
+    },
+    "observedReceipt": {
+      "type": "object",
+      "required": ["source", "observer", "facts", "narrative"],
+      "properties": {
+        "source": { "enum": ["host", "independent", "self-reported"] },
+        "observer": { "type": "string" },
+        "facts": { "type": "array", "items": { "$ref": "#/$defs/observedFact" } },
+        "narrative": { "$ref": "#/$defs/nullableString" }
+      }
+    },
+    "receiptResult": {
+      "type": "object",
+      "required": ["result", "expected"],
+      "properties": {
+        "result": { "enum": ["match", "mismatch", "indeterminate"] },
+        "expected": { "$ref": "#/$defs/expectedReceipt" },
+        "reason": { "type": "string" },
+        "evidence": { "type": "array", "items": { "$ref": "#/$defs/observedFact" } },
+        "constituents": { "type": "array", "items": { "$ref": "#/$defs/receiptResult" } }
+      }
+    },
+    "envelope": {
+      "type": "object",
+      "required": ["schema", "executionId", "workItem", "actor", "role", "capabilities", "prohibitions", "baselineRevision", "candidateRevision", "workspace", "containment", "securitySandbox", "mutationBoundary", "evaluator", "humanOnlyTransitions", "parentExecution", "startedAt", "state"],
+      "properties": {
+        "schema": { "const": "ordo.execution/1" },
+        "executionId": { "type": "string", "minLength": 1 },
+        "workItem": { "type": "string", "minLength": 1 },
+        "actor": { "$ref": "#/$defs/actor" },
+        "role": { "$ref": "#/$defs/role" },
+        "capabilities": { "type": "array", "items": { "$ref": "#/$defs/capability" } },
+        "prohibitions": { "type": "array", "items": { "$ref": "#/$defs/capability" } },
+        "baselineRevision": { "type": "string", "minLength": 1 },
+        "candidateRevision": { "$ref": "#/$defs/nullableString" },
+        "workspace": { "$ref": "#/$defs/nullableString" },
+        "containment": { "enum": ["unknown", "semantic-only", "host-enforced"] },
+        "securitySandbox": { "type": "boolean" },
+        "mutationBoundary": { "$ref": "#/$defs/mutationBoundary" },
+        "evaluator": { "oneOf": [{ "$ref": "#/$defs/evaluator" }, { "type": "null" }] },
+        "humanOnlyTransitions": { "type": "array", "items": { "type": "string" } },
+        "parentExecution": { "$ref": "#/$defs/nullableString" },
+        "startedAt": { "$ref": "#/$defs/timestamp" },
+        "state": { "enum": ["active", "blocked", "awaiting-reconciliation", "completed", "failed", "abandoned", "interrupted"] }
+      },
+      "additionalProperties": false
+    },
+    "legalAction": {
+      "type": "object",
+      "required": ["transition", "target", "available", "reasons", "actorRequirement"],
+      "properties": {
+        "transition": { "type": "string" },
+        "target": { "$ref": "#/$defs/nullableString" },
+        "available": { "type": "boolean" },
+        "reasons": { "type": "array", "items": { "type": "string" } },
+        "actorRequirement": { "enum": ["human-required", "agent-allowed", "automation-allowed", "any", "specific-actors"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  "oneOf": [{ "$ref": "#/$defs/envelope" }]
+}

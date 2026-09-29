@@ -164,6 +164,70 @@ type CapabilityId =
 
     override this.ToString() = this.Value
 
+/// Identity of one bounded execution — one attempt by one actor, in one role,
+/// at one governed work item. Stable across telemetry updates, process
+/// restarts and resumptions; a competing attempt at the same work gets a new
+/// one (ORD-EXEC-073 / ORD-EXEC-074).
+type ExecutionId =
+    private
+    | ExecutionId of string
+
+    member this.Value =
+        let (ExecutionId value) = this
+        value
+
+    override this.ToString() = this.Value
+
+/// Identity of one step inside an execution's step ledger. Stable across
+/// resumption so a completed step's receipt can be found again (ORD-EXEC-110).
+type StepId =
+    private
+    | StepId of string
+
+    member this.Value =
+        let (StepId value) = this
+        value
+
+    override this.ToString() = this.Value
+
+/// Identity of a workspace an execution is bound to — a worktree, a remote
+/// checkout, a container. Deliberately a different type from `ExecutionId`:
+/// non-filesystem and remote executions exist, and a workspace can outlive or
+/// be shared across attempts (ORD-EXEC-072).
+type WorkspaceId =
+    private
+    | WorkspaceId of string
+
+    member this.Value =
+        let (WorkspaceId value) = this
+        value
+
+    override this.ToString() = this.Value
+
+/// Stable identity of whoever performs an execution: a human, an agent or an
+/// automation. Self-reported by the host, never inferred from a provider.
+type ActorId =
+    private
+    | ActorId of string
+
+    member this.Value =
+        let (ActorId value) = this
+        value
+
+    override this.ToString() = this.Value
+
+/// Identity of the governed work item or mission an execution serves. Hosts
+/// supply a globally unambiguous (for example repository-qualified) value.
+type WorkItemId =
+    private
+    | WorkItemId of string
+
+    member this.Value =
+        let (WorkItemId value) = this
+        value
+
+    override this.ToString() = this.Value
+
 [<RequireQualifiedAccess>]
 module DecisionContractId =
     let create (raw: string) : Result<DecisionContractId, IdentifierError> =
@@ -233,6 +297,41 @@ module CapabilityId =
         validate raw |> Result.map CapabilityId
 
     let value (id: CapabilityId) = id.Value
+
+[<RequireQualifiedAccess>]
+module ExecutionId =
+    let create (raw: string) : Result<ExecutionId, IdentifierError> =
+        validate raw |> Result.map ExecutionId
+
+    let value (id: ExecutionId) = id.Value
+
+[<RequireQualifiedAccess>]
+module StepId =
+    let create (raw: string) : Result<StepId, IdentifierError> =
+        validate raw |> Result.map StepId
+
+    let value (id: StepId) = id.Value
+
+[<RequireQualifiedAccess>]
+module WorkspaceId =
+    let create (raw: string) : Result<WorkspaceId, IdentifierError> =
+        validate raw |> Result.map WorkspaceId
+
+    let value (id: WorkspaceId) = id.Value
+
+[<RequireQualifiedAccess>]
+module ActorId =
+    let create (raw: string) : Result<ActorId, IdentifierError> =
+        validate raw |> Result.map ActorId
+
+    let value (id: ActorId) = id.Value
+
+[<RequireQualifiedAccess>]
+module WorkItemId =
+    let create (raw: string) : Result<WorkItemId, IdentifierError> =
+        validate raw |> Result.map WorkItemId
+
+    let value (id: WorkItemId) = id.Value
 
 /// A contract's semantic revision.
 ///
