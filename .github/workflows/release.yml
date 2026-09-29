@@ -1,0 +1,105 @@
+# Operator release entry point:
+#
+#   gh workflow run release.yml -f bump=patch     (or minor | major | X.Y.Z)
+#
+# Updates the single authoritative version (distribution/package.json)
+# exactly once, runs the full F# suite and Praxis validation, commits and
+# tags, then dispatches the existing native release (native-release.yml) and
+# the npm compatibility publish (publish.yml, gated by NPM_PUBLISH_ENABLED).
+# Released versions are immutable: an existing tag is never reused.
+name: Release (operator)
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "patch | minor | major | X.Y.Z"
+        required: true
+        default: patch
+      dry_run:
+        description: "Validate and report the version without committing, tagging or publishing"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: ordo-release-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.repository == 'kemiller2002/ordo' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Resolve version
+        id: version
+        shell: bash
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          set -euo pipefail
+          current="$(node -p "require('./distribution/package.json').version")"
+          IFS=. read -r major minor patch <<<"${current%%-*}"
+          case "$BUMP" in
+            patch) next="$major.$minor.$((patch + 1))" ;;
+            minor) next="$major.$((minor + 1)).0" ;;
+            major) next="$((major + 1)).0.0" ;;
+            *)
+              [[ "$BUMP" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] || { echo "::error::bump must be patch, minor, major or X.Y.Z"; exit 2; }
+              next="$BUMP" ;;
+          esac
+          if git ls-remote --exit-code --tags origin "refs/tags/v$next" >/dev/null; then
+            echo "::error::v$next already exists; released versions are immutable"
+            exit 1
+          fi
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+          echo "next=$next" >> "$GITHUB_OUTPUT"
+          echo "Ordo $current -> $next"
+      - name: Update the authoritative version
+        working-directory: distribution
+        run: npm version "${{ steps.version.outputs.next }}" --no-git-tag-version
+      - name: Full F# suite
+        run: |
+          (cd distribution && npm run build:payload)
+          dotnet test tests/Ordo.Tests/Ordo.Tests.fsproj --nologo
+          dotnet test tests/Sde.Core.Tests/Sde.Core.Tests.fsproj --nologo
+          dotnet test tests/Ordo.Complexity.Tests/Ordo.Complexity.Tests.fsproj --nologo
+          dotnet test tests/Ordo.Churn.Tests/Ordo.Churn.Tests.fsproj --nologo
+      - name: Praxis validation
+        run: |
+          ./ros registry check
+          ./ros validate
+      - name: Package contents
+        working-directory: distribution
+        run: |
+          npm run build
+          npm run test:package
+          npm pack --dry-run
+      - name: Commit and tag
+        if: ${{ !inputs.dry_run }}
+        run: |
+          git config user.name "Ordo Release"
+          git config user.email "actions@users.noreply.github.com"
+          git add distribution/package.json
+          git commit -m "Release v${{ steps.version.outputs.next }}"
+          git tag "v${{ steps.version.outputs.next }}"
+          git push origin HEAD:main "v${{ steps.version.outputs.next }}"
+      - name: Dispatch native release and npm compatibility publish
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run native-release.yml --repo "$GITHUB_REPOSITORY" --ref main
+          gh workflow run publish.yml --repo "$GITHUB_REPOSITORY" --ref main
