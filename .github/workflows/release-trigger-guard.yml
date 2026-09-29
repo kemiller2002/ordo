@@ -19,11 +19,18 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: release-trigger-guard-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   default-branch-is-a-release-trigger:
     name: Publish workflow fires on the default branch
     runs-on: ubuntu-latest
     steps:
+      - name: Wait for commit batch
+        run: sleep 600
+
       - uses: actions/checkout@v4
 
       # PyYAML ships in the runner image today, but that is an undocumented
