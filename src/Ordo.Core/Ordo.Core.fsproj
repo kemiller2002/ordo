@@ -30,7 +30,14 @@
     <Compile Include="StateIdentity.fs" />
     <Compile Include="Policy.fs" />
     <Compile Include="Transition.fs" />
+    <Compile Include="ExecutionRole.fs" />
+    <Compile Include="Evaluator.fs" />
+    <Compile Include="Receipt.fs" />
+    <Compile Include="MutationBoundary.fs" />
+    <Compile Include="Authorization.fs" />
+    <Compile Include="Execution.fs" />
     <Compile Include="Wire.fs" />
+    <Compile Include="ExecutionWire.fs" />
   </ItemGroup>
 
 </Project>

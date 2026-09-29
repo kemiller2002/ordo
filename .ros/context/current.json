@@ -4,7 +4,7 @@
   "repository": "state-directed-engineering",
   "actor": "ChatGPT",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-09-20T14:55:07.272Z",
+  "updatedAt": "2026-09-29T11:45:00.663Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -782,6 +782,56 @@
       ],
       "updatedAt": "2026-09-20T14:55:07.272Z",
       "completedAt": "2026-09-20T14:55:07.272Z"
+    },
+    {
+      "id": "GH-44",
+      "type": "task",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/Execution.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/Receipt.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/Evaluator.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ExecutionRole.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/MutationBoundary.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/Authorization.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ExecutionWire.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "schemas/ordo-execution.v1.schema.json"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ExecutionGovernanceTests.fs"
+        },
+        {
+          "type": "documentation",
+          "path": "docs/architecture/execution-governance.md"
+        }
+      ],
+      "updatedAt": "2026-09-29T11:45:00.663Z",
+      "completedAt": "2026-09-29T11:45:00.663Z"
     }
   ]
 }
