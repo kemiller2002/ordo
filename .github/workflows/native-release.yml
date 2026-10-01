@@ -6,8 +6,10 @@ on:
       - ".github/workflows/native-release.yml"
       - "scripts/install-native.sh"
       - "scripts/install-native.ps1"
+      - "release/**"
       - "src/**"
       - "distribution/**"
+      - "release/**"
   push:
     branches: [main]
     paths:
@@ -19,6 +21,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 concurrency:
   group: ordo-native-release-${{ github.ref }}
@@ -103,29 +107,19 @@ jobs:
           )
           sh -n scripts/install-native.sh
 
-      # Machine-readable release metadata (Echelon Registry
-      # schemas/release-manifest.schema.json, echelon.release/v1).
-      - name: Generate release manifest
-        shell: bash
-        run: |
-          set -euo pipefail
-          VERSION="$(node -p "require('./distribution/package.json').version")"
-          {
-            printf '{\n  "schema": "echelon.release/v1",\n  "systemId": "ordo",\n  "version": "%s",\n' "$VERSION"
-            printf '  "repository": "%s",\n  "tag": "v%s",\n  "commit": "%s",\n' "$GITHUB_REPOSITORY" "$VERSION" "$GITHUB_SHA"
-            printf '  "executable": "ordo",\n  "compatibilityAliases": ["sde"],\n  "provides": [],\n'
-            printf '  "distributions": [ { "channel": "github-release", "package": null, "url": "https://github.com/%s/releases/tag/v%s" }, { "channel": "npm", "package": "@echelon-foundry/sde", "url": null } ],\n' "$GITHUB_REPOSITORY" "$VERSION"
-            printf '  "artifacts": [\n'
-            first=1
-            while read -r sha name; do
-              rid="${name#ordo-}"; rid="${rid%.tar.gz}"; rid="${rid%.zip}"
-              [[ $first -eq 1 ]] || printf ',\n'
-              first=0
-              printf '    { "name": "%s", "platform": "%s", "sha256": "%s" }' "$name" "$rid" "$sha"
-            done < dist/native/native-checksums.txt
-            printf '\n  ]\n}\n'
-          } > dist/native/echelon-release.json
-          python3 -m json.tool dist/native/echelon-release.json
+      - name: Generate shared Echelon release manifest
+        uses: kemiller2002/echelon-registry/actions/release-contract@73d1e87fe40c703eb1cd5e7cf7caf9d852f788b9
+        with:
+          release-input: release/echelon.release-input.json
+          artifact-dir: dist/native
+          output: dist/native/echelon-release.json
+          version: ${{ steps.bundle.outputs.version }}
+          tag: v${{ steps.bundle.outputs.version }}
+          commit: ${{ github.sha }}
+          release-stage: stable
+
+      - name: Inspect generated release manifest
+        run: python3 -m json.tool dist/native/echelon-release.json
 
       # A published version's assets are immutable: consumers pin a version
       # and verify its digest. Pushes that do not bump the version publish
@@ -150,6 +144,15 @@ jobs:
           else
             echo "publish=true" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Attest native release provenance
+        if: github.event_name != 'pull_request' && steps.release.outputs.publish == 'true'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
+        with:
+          subject-path: |
+            dist/native/ordo-*
+            dist/native/native-checksums.txt
+            dist/native/echelon-release.json
 
       - name: Create GitHub release
         if: github.event_name != 'pull_request' && steps.release.outputs.publish == 'true'
