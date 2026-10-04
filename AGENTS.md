@@ -2,11 +2,11 @@
 id: GV-START-001
 title: Agent Startup Guide
 status: canonical
-version: 1.1.0
+version: 1.2.0
 owners:
   - repository-governance
 created: 2026-07-22
-updated: 2026-09-06
+updated: 2026-09-29
 review_cycle: quarterly
 supersedes: []
 superseded_by: []
@@ -78,5 +78,16 @@ For substantial work, record: objective; work completed; files changed; decision
 ## Work Protocol
 
 Before meaningful mutation, identify the external work item and run `./ros work begin ID`. Inspect `./ros work context ID` for allowed actions and required evidence, perform the bounded work, gather configured evidence, request a legal transition with `work complete`, then run `./ros registry build` and `./ros validate`. Use `work block --reason` and `work resume` rather than hand-editing context. Use `./ros status` when resuming unfamiliar work. Meaningful committed changes require machine-readable attribution; see `docs/work-protocol.md`.
+
+## CI observation discipline
+
+Keep incremental commits, pushes, and durable checkpoints at coherent recovery
+boundaries, but do not wait for remote CI after every push. Continue the next
+independent in-scope slice while debounced CI batches or runs. Run local checks
+when they inform implementation; inspect remote build/CI status at the final
+implementation boundary by default. Inspect it earlier only when its result
+gates the next action, protects a high-risk boundary, or is required for
+merge/release/publication. Never treat queued, cancelled, unavailable, or
+unobserved CI as passing.
 
 No externally-assigned ID yet? Check `./ros work ready` for capturable, unblocked repository work before assuming none exists, and use `./ros add "..."` to record a newly discovered obligation instead of leaving it as an unfiled comment or dropped observation. `./ros work start ID` promotes a ready backlog item into the protocol above. This local backlog is repository-scoped triage, not a project-management system; see the "Local backlog" section of `docs/work-protocol.md`.

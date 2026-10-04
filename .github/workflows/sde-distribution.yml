@@ -30,12 +30,24 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: sde-distribution-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   DOTNET_NOLOGO: "true"
   DOTNET_CLI_TELEMETRY_OPTOUT: "true"
 
 jobs:
+  debounce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Wait for commit batch
+        run: sleep 600
+
   unit-tests:
+    needs: debounce
     name: F# build and tests
     runs-on: ubuntu-latest
     steps:
@@ -50,6 +62,7 @@ jobs:
         run: dotnet test tests/Sde.Core.Tests/Sde.Core.Tests.fsproj --nologo
 
   pack:
+    needs: debounce
     name: Build all runtimes and pack
     runs-on: ubuntu-latest
     # Every supported platform's executable cross-compiles from this one
