@@ -14,6 +14,7 @@
     <Compile Include="ContractTests.fs" />
     <Compile Include="LifecycleTests.fs" />
     <Compile Include="PackageBuildTests.fs" />
+    <Compile Include="BoundaryCommandTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

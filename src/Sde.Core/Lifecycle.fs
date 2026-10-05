@@ -34,6 +34,10 @@ module ExitCodes =
     /// `--check` found that changes would be required. Distinct from
     /// `failure` so CI can tell drift apart from a broken installation.
     let changesRequired = 5
+    /// `boundary assess` could not read or interpret an input document. An
+    /// assessment that found High risk is still a success (0): gating on
+    /// the assessment is the consumer's decision.
+    let invalidInput = 6
 
 /// The execution package carried by this CLI.
 type Payload =

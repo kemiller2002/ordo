@@ -8,6 +8,7 @@ npx @echelon-foundry/sde status
 npx @echelon-foundry/sde verify
 npx @echelon-foundry/sde upgrade
 npx @echelon-foundry/sde doctor
+npx @echelon-foundry/sde boundary assess --map FILE --expected FILE --changed FILE
 
 npx @echelon-foundry/sde --help
 npx @echelon-foundry/sde --version
@@ -176,6 +177,36 @@ Codes are stable across releases; the prose may be reworded.
 
 ---
 
+## `boundary assess`
+
+Report whether one work item's change crossed architectural boundaries it
+did not declare. Read-only, and it needs no installation. The native build
+names the command `ordo boundary assess`.
+
+```
+sde boundary assess --map FILE --expected FILE --changed FILE [--policy FILE] [--root DIR] [--json]
+```
+
+| Option | Meaning |
+|---|---|
+| `--map` | `ordo.boundary-map/1`: path globs to boundaries and layers, import indicators, orchestration globs. |
+| `--expected` | `ordo.boundary-expectation/1`: declared boundaries, optional write set, approved expansions. |
+| `--changed` | `ordo.changed-files/1`, or plain text with one path per line. |
+| `--policy` | `ordo.boundary-policy/1` threshold overrides. Optional; defaults apply otherwise. |
+| `--root` | Read changed F#/C# files under this directory to extract imports. |
+| `--json` | Emit one `ordo.boundary-amplification/1` document. |
+
+| Exit code | Meaning |
+|---|---|
+| `0` | Assessed, whatever the risk level. Gating is the consumer's decision. |
+| `2` | Arguments were not understood. |
+| `6` | An input document is unreadable, malformed or inconsistent. |
+
+The signal catalog (ORDO-BA-001..010), risk derivation and contracts are in
+[`docs/architecture/boundary-amplification.md`](architecture/boundary-amplification.md).
+
+---
+
 ## Exit codes
 
 | Code | Meaning | Produced by |
@@ -186,11 +217,12 @@ Codes are stable across releases; the prose may be reworded.
 | `3` | No packaged executable for this platform | the Node launcher |
 | `4` | The packaged executable could not be started | the Node launcher |
 | `5` | `--check` found that changes are required | `--check` only |
+| `6` | An input document is unreadable, malformed or inconsistent | `boundary assess` only |
 
 `0`, `1` and `2` keep exactly the meanings releases 1.0.0–1.1.1 gave them, so
 existing CI configurations that branch on them keep working. `1` is
 deliberately left as the broad failure code rather than split into finer
-codes. `3` and `4` describe conditions that could not previously arise,
+codes. `3`, `4` and `6` describe conditions that could not previously arise,
 because the tool used to run wherever Node ran.
 
 ---

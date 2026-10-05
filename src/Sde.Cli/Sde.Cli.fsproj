@@ -50,11 +50,19 @@
     <Compile Include="Args.fs" />
     <Compile Include="Help.fs" />
     <Compile Include="Render.fs" />
+    <Compile Include="Boundary.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../Sde.Core/Sde.Core.fsproj" />
+    <!--
+      Ordo.Core hosts boundary-amplification assessment (`boundary assess`).
+      The dependency points inward only: Ordo.Core is pure, references no
+      Sde/ROS assembly (Ordo.Tests asserts that) and does no I/O, so this
+      CLI stays the adapter. See DF-SDE-2026-0016.
+    -->
+    <ProjectReference Include="../Ordo.Core/Ordo.Core.fsproj" />
   </ItemGroup>
 
 </Project>
