@@ -1,11 +1,13 @@
 ---
 id: DF-SDE-2026-0003
 title: Defer solving the 4.0 Boundary Change Amplification finding during this migration
-status: accepted
+status: superseded
 type: decision-record
 created: 2026-09-02
-updated: 2026-09-02
+updated: 2026-10-05
 tags: [governance, bca, scope]
+supersedes: []
+superseded_by: [DF-SDE-2026-0016]
 ---
 
 # DF-SDE-2026-0003
@@ -54,4 +56,7 @@ effort is chartered for boundary-amplification reduction.
 
 ## Status
 
-`accepted`.
+`superseded` by DF-SDE-2026-0016 (2026-10-05). The migration this record
+scoped has finished. Boundary amplification now has its own work item
+(GH-52) and evidence trail, as the Consequences section above required.
+The decision text above is unchanged. HY-SDE-2026-0004 stays rejected.

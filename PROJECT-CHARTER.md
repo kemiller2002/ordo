@@ -73,7 +73,8 @@ begun.
 
 - Any modification to HelixNote (treated as read-only source evidence).
 - Solving the 4.0 Boundary Change Amplification finding during this phase
-  (`research/decisions/DF-SDE-2026-0003--*.md`).
+  (`research/decisions/DF-SDE-2026-0003--*.md`; superseded on 2026-10-05 by
+  `DF-SDE-2026-0016`, which charters BCA detection as its own workstream).
 - Redesigning HelixNote's or any other application's architecture as part
   of this phase.
 - Executing the first engineering validation (designed, not run, in this
