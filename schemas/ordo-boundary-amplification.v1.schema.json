@@ -1,0 +1,269 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://echelonfoundry.com/schemas/ordo.boundary-amplification.v1.json",
+  "title": "ordo.boundary-amplification/1",
+  "description": "Result of `ordo boundary assess` (Ordo.Core.BoundaryAmplificationWire.encodeAssessment): expected vs observed architectural boundaries for one work item, signals ORDO-BA-001..010 with evidence, an evidence-derived risk level, an advisory decomposition recommendation and the approval (scope expansion) record. Inputs are documented under $defs. See docs/architecture/boundary-amplification.md and DF-SDE-2026-0016.",
+  "type": "object",
+  "required": [
+    "schema", "workItem", "requirement", "policy", "expected", "observed", "supporting", "unclassified",
+    "unexpectedCrossings", "unexercised", "amplificationRatio", "signals", "risk", "recommendation", "exception"
+  ],
+  "properties": {
+    "schema": { "const": "ordo.boundary-amplification/1" },
+    "workItem": { "type": "string", "minLength": 1 },
+    "requirement": { "type": ["string", "null"] },
+    "policy": {
+      "type": "object",
+      "required": [
+        "source", "maxBoundaries", "maxModules", "moduleDepth", "coreLayers", "coreLayerSpan", "hotspotWorkItems",
+        "orchestrationChurn", "concentrationBoundaries", "maxExpansionRatio", "elevatedScore", "highScore"
+      ],
+      "properties": {
+        "source": { "type": "string", "description": "`default` or the policy file path." },
+        "coreLayers": { "type": "array", "items": { "type": "string" } },
+        "maxExpansionRatio": { "type": "number" }
+      },
+      "additionalProperties": { "type": ["integer", "number", "string", "array"] }
+    },
+    "expected": { "$ref": "#/$defs/boundaryIds" },
+    "observed": { "type": "array", "items": { "$ref": "#/$defs/observedBoundary" } },
+    "supporting": { "type": "array", "items": { "$ref": "#/$defs/observedBoundary" } },
+    "unclassified": { "type": "array", "items": { "type": "string" } },
+    "unexpectedCrossings": { "$ref": "#/$defs/boundaryIds" },
+    "unexercised": { "$ref": "#/$defs/boundaryIds" },
+    "amplificationRatio": { "type": ["number", "null"], "description": "Observed / expected architectural boundaries; null (unknown) when nothing architectural was expected." },
+    "signals": { "type": "array", "items": { "$ref": "#/$defs/signal" } },
+    "risk": {
+      "type": "object",
+      "required": ["level", "score", "evidence"],
+      "properties": {
+        "level": { "enum": ["low", "elevated", "high"] },
+        "score": { "type": "integer", "minimum": 0 },
+        "evidence": { "type": "array", "items": { "$ref": "#/$defs/signalId" } }
+      }
+    },
+    "recommendation": { "$ref": "#/$defs/recommendation" },
+    "exception": {
+      "type": "object",
+      "required": ["coverage", "applied", "rejected", "approvedCrossings", "unapprovedCrossings", "downgradedFrom"],
+      "properties": {
+        "coverage": { "enum": ["not-applicable", "none", "partial", "full"] },
+        "applied": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["expansionId", "addedBoundaries", "justification", "authorizedBy"],
+            "properties": {
+              "expansionId": { "type": "string" },
+              "addedBoundaries": { "$ref": "#/$defs/boundaryIds" },
+              "justification": { "type": "string", "minLength": 1 },
+              "authorizedBy": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "rejected": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["expansionId", "reason"],
+            "properties": { "expansionId": { "type": "string" }, "reason": { "type": "string" } }
+          }
+        },
+        "approvedCrossings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["boundary", "expansionId"],
+            "properties": { "boundary": { "type": "string" }, "expansionId": { "type": "string" } }
+          }
+        },
+        "unapprovedCrossings": { "$ref": "#/$defs/boundaryIds" },
+        "downgradedFrom": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/recommendation" }] }
+      }
+    },
+    "generator": {
+      "type": "object",
+      "description": "Added by the CLI host: the producing tool and version.",
+      "properties": { "tool": { "type": "string" }, "version": { "type": "string" } }
+    }
+  },
+  "$defs": {
+    "boundaryIds": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "signalId": {
+      "enum": [
+        "ORDO-BA-001", "ORDO-BA-002", "ORDO-BA-003", "ORDO-BA-004", "ORDO-BA-005",
+        "ORDO-BA-006", "ORDO-BA-007", "ORDO-BA-008", "ORDO-BA-009", "ORDO-BA-010"
+      ]
+    },
+    "observedBoundary": {
+      "type": "object",
+      "required": ["boundary", "layer", "sources"],
+      "properties": {
+        "boundary": { "type": "string" },
+        "layer": { "type": "string" },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["kind", "path"],
+            "properties": {
+              "kind": { "enum": ["path", "import"] },
+              "path": { "type": "string" },
+              "import": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "signal": {
+      "type": "object",
+      "required": ["id", "name", "strength", "weight", "description", "evidence"],
+      "properties": {
+        "id": { "$ref": "#/$defs/signalId" },
+        "name": {
+          "enum": [
+            "unexpected-boundary-crossing", "boundary-breadth", "module-scatter", "core-layer-span", "hotspot-recurrence",
+            "orchestration-churn", "responsibility-concentration", "scope-expansion-ratio", "write-set-escape", "unclassified-paths"
+          ]
+        },
+        "strength": { "enum": ["strong", "weak", "informational"] },
+        "weight": { "enum": [0, 1, 2] },
+        "description": { "type": "string" },
+        "evidence": { "type": "object" }
+      }
+    },
+    "recommendation": {
+      "type": "object",
+      "required": ["kind", "splitAlong"],
+      "properties": {
+        "kind": { "enum": ["no-action", "consider-split-along", "require-design-review"] },
+        "splitAlong": { "$ref": "#/$defs/boundaryIds" }
+      }
+    },
+    "boundaryMapInput": {
+      "title": "ordo.boundary-map/1",
+      "type": "object",
+      "required": ["schema", "boundaries"],
+      "properties": {
+        "schema": { "const": "ordo.boundary-map/1" },
+        "boundaries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "layer", "patterns"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "layer": { "type": "string", "minLength": 1 },
+              "patterns": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+            }
+          }
+        },
+        "indicators": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["boundary", "imports"],
+            "properties": { "boundary": { "type": "string" }, "imports": { "type": "array", "items": { "type": "string" } } }
+          }
+        },
+        "orchestration": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "expectationInput": {
+      "title": "ordo.boundary-expectation/1",
+      "type": "object",
+      "required": ["schema", "workItem"],
+      "properties": {
+        "schema": { "const": "ordo.boundary-expectation/1" },
+        "workItem": { "type": "string", "minLength": 1 },
+        "requirement": { "type": ["string", "null"] },
+        "expectedBoundaries": { "$ref": "#/$defs/boundaryIds" },
+        "writeSet": {
+          "type": ["object", "null"],
+          "properties": {
+            "scopes": { "type": "array", "items": { "type": "string", "pattern": "^(feature|cluster|authority|capability):.+$" } },
+            "projections": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["scope", "patterns"],
+                "properties": { "scope": { "type": "string" }, "patterns": { "type": "array", "items": { "type": "string" } } }
+              }
+            },
+            "evaluatorReferences": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "approvedExpansions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["expansionId"],
+            "properties": {
+              "expansionId": { "type": "string" },
+              "addedBoundaries": { "$ref": "#/$defs/boundaryIds" },
+              "justification": { "type": "string" },
+              "authorizedBy": { "type": "string" },
+              "addedScopes": { "type": "array", "items": { "type": "string" } },
+              "addedProjections": { "type": "array", "items": { "type": "object" } }
+            }
+          }
+        }
+      }
+    },
+    "changedFilesInput": {
+      "title": "ordo.changed-files/1",
+      "description": "Plain text with one path per line is also accepted by the CLI.",
+      "type": "object",
+      "required": ["schema"],
+      "properties": {
+        "schema": { "const": "ordo.changed-files/1" },
+        "workItem": { "type": ["string", "null"] },
+        "files": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "required": ["path"],
+                "properties": {
+                  "path": { "type": "string" },
+                  "changeCount": { "type": ["integer", "null"], "minimum": 0 },
+                  "imports": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            ]
+          }
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["workItem", "paths"],
+            "properties": { "workItem": { "type": "string" }, "paths": { "type": "array", "items": { "type": "string" } } }
+          }
+        }
+      }
+    },
+    "policyInput": {
+      "title": "ordo.boundary-policy/1",
+      "type": "object",
+      "required": ["schema"],
+      "additionalProperties": false,
+      "properties": {
+        "schema": { "const": "ordo.boundary-policy/1" },
+        "maxBoundaries": { "type": "integer", "minimum": 1 },
+        "maxModules": { "type": "integer", "minimum": 1 },
+        "moduleDepth": { "type": "integer", "minimum": 1 },
+        "coreLayers": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "coreLayerSpan": { "type": "integer", "minimum": 2 },
+        "hotspotWorkItems": { "type": "integer", "minimum": 2 },
+        "orchestrationChurn": { "type": "integer", "minimum": 2 },
+        "concentrationBoundaries": { "type": "integer", "minimum": 1 },
+        "maxExpansionRatio": { "type": "number", "minimum": 1 },
+        "elevatedScore": { "type": "integer", "minimum": 1 },
+        "highScore": { "type": "integer", "minimum": 2 }
+      }
+    }
+  }
+}

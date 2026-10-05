@@ -1,0 +1,6 @@
+{
+  "schema": "ordo.boundary-expectation/1",
+  "workItem": "PRX-USAGE-AUTOPAUSE",
+  "requirement": "Pause agent work automatically when provider usage approaches its limit",
+  "expectedBoundaries": ["domain", "cli"]
+}

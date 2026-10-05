@@ -31,7 +31,11 @@
     "created": "2026-09-02",
     "id": "DF-SDE-2026-0003",
     "path": "research/decisions/DF-SDE-2026-0003--defer-boundary-amplification-optimization.md",
-    "status": "accepted",
+    "status": "superseded",
+    "superseded_by": [
+      "DF-SDE-2026-0016"
+    ],
+    "supersedes": [],
     "tags": [
       "governance",
       "bca",
@@ -39,7 +43,7 @@
     ],
     "title": "Defer solving the 4.0 Boundary Change Amplification finding during this migration",
     "type": "decision-record",
-    "updated": "2026-09-02"
+    "updated": "2026-10-05"
   },
   {
     "created": "2026-09-05",
@@ -335,5 +339,34 @@
     "title": "Represent reusable negative search observations as typed Evidence content paired with scoped coverage",
     "type": "decision-record",
     "updated": "2026-09-20"
+  },
+  {
+    "created": "2026-10-05",
+    "id": "DF-SDE-2026-0016",
+    "path": "research/decisions/DF-SDE-2026-0016--detect-boundary-amplification-as-a-chartered-workstream.md",
+    "related_documents": [
+      "research/decisions/DF-SDE-2026-0003--defer-boundary-amplification-optimization.md",
+      "research/hypotheses/HY-SDE-2026-0004--hardening-reduces-boundary-volume.md",
+      "research/theories/TH-SDE-2026-0004--detection-vs-construction-optimization.md",
+      "method/QUALITY-GUARDS-PROPOSAL.md",
+      "docs/architecture/boundary-amplification.md",
+      "schemas/ordo-boundary-amplification.v1.schema.json"
+    ],
+    "status": "accepted",
+    "superseded_by": [],
+    "supersedes": [
+      "DF-SDE-2026-0003"
+    ],
+    "tags": [
+      "architecture",
+      "bca",
+      "gh-52",
+      "ordo-qual-001",
+      "ordo-qual-008",
+      "construction-quality"
+    ],
+    "title": "Charter boundary amplification as its own workstream and start with evidence-based detection",
+    "type": "decision-record",
+    "updated": "2026-10-05"
   }
 ]

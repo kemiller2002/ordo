@@ -1,0 +1,26 @@
+{
+  "schema": "ordo.boundary-map/1",
+  "description": "A Praxis-shaped boundary map used by the characterization fixtures. First matching boundary wins, so specific globs precede general ones.",
+  "boundaries": [
+    { "id": "build", "layer": "build", "patterns": ["**/*.fsproj", "**/Directory.Build.props"] },
+    { "id": "tests", "layer": "tests", "patterns": ["tests/**"] },
+    { "id": "docs", "layer": "documentation", "patterns": ["docs/**", "**/*.md"] },
+    { "id": "rendering", "layer": "rendering", "patterns": ["src/Praxis.Cli/*Status.fs"] },
+    { "id": "cli", "layer": "cli", "patterns": ["src/Praxis.Cli/**"] },
+    { "id": "application", "layer": "application", "patterns": ["src/Praxis.Application/**"] },
+    { "id": "domain", "layer": "domain", "patterns": ["src/Praxis.Domain/**"] },
+    { "id": "contracts", "layer": "contracts", "patterns": ["src/Praxis.Contracts/**"] },
+    { "id": "persistence", "layer": "persistence", "patterns": ["src/Praxis.Infrastructure/Persistence/**"] },
+    { "id": "provider", "layer": "provider", "patterns": ["src/Praxis.Infrastructure/Providers/**"] },
+    { "id": "process", "layer": "infrastructure", "patterns": ["src/Praxis.Infrastructure/Process/**"] },
+    { "id": "concurrency", "layer": "infrastructure", "patterns": ["src/Praxis.Infrastructure/Concurrency/**"] },
+    { "id": "infrastructure", "layer": "infrastructure", "patterns": ["src/Praxis.Infrastructure/**"] }
+  ],
+  "indicators": [
+    { "boundary": "provider", "imports": ["System.Net.Http*"] },
+    { "boundary": "persistence", "imports": ["System.IO", "Microsoft.Data.Sqlite*"] },
+    { "boundary": "process", "imports": ["System.Diagnostics"] },
+    { "boundary": "concurrency", "imports": ["System.Threading"] }
+  ],
+  "orchestration": ["src/Praxis.Cli/*Commands.fs", "src/Praxis.Cli/Program.fs"]
+}

@@ -1,0 +1,38 @@
+{
+  "schema": "ordo.changed-files/1",
+  "workItem": "PRX-USAGE-AUTOPAUSE",
+  "provenance": "Characterization of the Praxis usage-pacing incident (kemiller2002/praxis). Files and per-file change counts are the union of commits 4948e54, 3475098, 65a5e01, fcb53b7, d732e20, f885d16 and 8d67d12 (2026-10-03..04), which implemented one requirement; .ros governance records are omitted. Imports are the `open` lines of each file at 8d67d12. History: fdce93f added the domain state machine as separate prior work.",
+  "files": [
+    {
+      "path": "src/Praxis.Cli/PacingCommands.fs",
+      "changeCount": 6,
+      "imports": [
+        "System", "System.Collections.Generic", "System.Diagnostics", "System.Globalization", "System.IO",
+        "System.Net.Http", "System.Net.Http.Headers", "System.Text.Json", "System.Text.Json.Nodes",
+        "System.Threading", "Praxis.Domain.Pacing"
+      ]
+    },
+    {
+      "path": "src/Praxis.Cli/PacingStatus.fs",
+      "changeCount": 1,
+      "imports": ["System", "System.Globalization", "System.Text.Json", "System.Text.Json.Nodes", "Praxis.Domain.Pacing"]
+    },
+    { "path": "src/Praxis.Domain/Pacing/Model.fs", "changeCount": 3, "imports": ["System"] },
+    { "path": "src/Praxis.Cli/Program.fs", "changeCount": 1 },
+    { "path": "src/Praxis.Cli/Praxis.Cli.fsproj", "changeCount": 2 },
+    { "path": "tests/Praxis.Tests/PacingTests.fs", "changeCount": 2, "imports": ["System", "System.Text.Json", "Praxis.Domain.Pacing", "Praxis.Cli"] },
+    { "path": "docs/usage-pacing.md", "changeCount": 1 }
+  ],
+  "history": [
+    {
+      "workItem": "commit:fdce93f",
+      "paths": [
+        "src/Praxis.Domain/Pacing/Model.fs",
+        "src/Praxis.Domain/Praxis.Domain.fsproj",
+        "tests/Praxis.Tests/PacingTests.fs",
+        "tests/Praxis.Tests/Praxis.Tests.fsproj",
+        "tests/Praxis.Tests/Program.fs"
+      ]
+    }
+  ]
+}

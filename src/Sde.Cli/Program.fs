@@ -135,6 +135,14 @@ let private runCommand (invocation: Args.Invocation) (projectRoot: string) : Emi
     | Args.Help None -> ok (Help.overview releaseVersion)
     | Args.Help(Some topic) -> ok (Help.forCommand topic releaseVersion)
 
+    // Read-only and independent of any installation: it needs no payload.
+    | Args.BoundaryAssess options ->
+        let exitCode, stdout, stderr = Boundary.run globals.Json releaseVersion options
+
+        { ExitCode = exitCode
+          Stdout = stdout
+          Stderr = stderr }
+
     | Args.Init _
     | Args.Status _
     | Args.Verify _
@@ -148,6 +156,7 @@ let private runCommand (invocation: Args.Invocation) (projectRoot: string) : Emi
             | Args.Verify _ -> "verify"
             | Args.Upgrade _ -> "upgrade"
             | Args.Doctor _ -> "doctor"
+            | Args.BoundaryAssess _
             | Args.Help _
             | Args.Version -> "sde"
 
@@ -191,6 +200,7 @@ let private runCommand (invocation: Args.Invocation) (projectRoot: string) : Emi
                 (fun () -> Output.changeReportToJson options.Check options.DryRun report)
                 (fun () -> Render.change globals.Verbose options.Check options.DryRun report)
 
+        | Args.BoundaryAssess _
         | Args.Help _
         | Args.Version -> ok []
 

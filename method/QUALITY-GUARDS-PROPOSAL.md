@@ -1,7 +1,16 @@
 # Engineering Quality Guard Proposal
 
-Status: proposed Ordo/SDE method extension
+Status: proposed Ordo/SDE method extension (per-item status below)
 Date: 2026-10-04
+Updated: 2026-10-05
+
+## Item status
+
+| Item | Status | Evidence |
+|---|---|---|
+| ORDO-QUAL-001 | **partially implemented (detection)**, 2026-10-05. A work item can declare its expected boundaries (`ordo.boundary-expectation/1`). `ordo boundary assess` reports undeclared crossings (ORDO-BA-001) and write-set escapes (ORDO-BA-009). The pre-implementation responsibility allocation is not yet a method rule. | DF-SDE-2026-0016; `docs/architecture/boundary-amplification.md` |
+| ORDO-QUAL-008 | **partially implemented (detection)**, 2026-10-05. The following are reported as review triggers, never as violations by themselves: modules hosting other boundaries' effects (ORDO-BA-007), cross-tier spread (ORDO-BA-002/004), hotspot recurrence (ORDO-BA-005) and orchestration churn (ORDO-BA-006). Complexity is not yet combined in. | DF-SDE-2026-0016 |
+| ORDO-QUAL-002..007, 009..011 | proposed | — |
 
 ## Problem
 

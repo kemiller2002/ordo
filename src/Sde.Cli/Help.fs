@@ -28,6 +28,7 @@ let overview (version: string) =
       "  verify      Validate that the capability is correctly installed. Read-only."
       "  upgrade     Move an existing installation to this release's version."
       "  doctor      Diagnose problems and explain how to fix them. Read-only."
+      "  boundary    `boundary assess`: report boundary amplification for one work item. Read-only."
       ""
       "Options:" ]
     @ commonOptions
@@ -39,6 +40,7 @@ let overview (version: string) =
         "  3  no packaged executable for this platform"
         "  4  the packaged executable could not be started"
         "  5  --check found that changes are required"
+        "  6  boundary assess: an input document is unreadable or invalid"
         ""
         "Examples:"
         sprintf "  npx %s init" Packaging.packageName
@@ -178,6 +180,41 @@ let private doctorHelp =
       "  sde doctor"
       "  sde doctor --json" ]
 
+let private boundaryHelp =
+    [ "sde boundary assess"
+      ""
+      "Report whether one work item's change crossed architectural boundaries"
+      "it did not declare. Read-only; needs no installation."
+      ""
+      Args.boundaryUsage
+      ""
+      "Inputs (repository-owned, versioned JSON):"
+      "  --map FILE        ordo.boundary-map/1: path globs to boundaries and layers,"
+      "                    import indicators, orchestration globs."
+      "  --expected FILE   ordo.boundary-expectation/1: the work item's declared"
+      "                    boundaries, optional write set and approved expansions."
+      "  --changed FILE    ordo.changed-files/1, or plain text with one path per"
+      "                    line (for example `git diff --name-only base...HEAD`)."
+      "  --policy FILE     ordo.boundary-policy/1 threshold overrides (optional;"
+      "                    defaults apply otherwise)."
+      "  --root DIR        Read changed F#/C# files under DIR to extract imports."
+      "  --json            Emit one ordo.boundary-amplification/1 document."
+      ""
+      "Every changed path is classified into a boundary or reported as"
+      "unclassified. Signals ORDO-BA-001..010 carry their evidence; the risk"
+      "level (low, elevated, high) and the recommendation (no-action,"
+      "consider-split-along, require-design-review) are advisory. An approved"
+      "expansion downgrades the recommendation and stays visible."
+      ""
+      "Exit codes:"
+      "  0  assessed (whatever the risk level; gating is the consumer's decision)"
+      "  2  arguments were not understood"
+      "  6  an input document is unreadable, malformed or inconsistent"
+      ""
+      "Examples:"
+      "  git diff --name-only origin/main...HEAD > changed.txt"
+      "  sde boundary assess --map .ordo/boundaries.json --expected expectation.json --changed changed.txt --json" ]
+
 let forCommand (name: string) (version: string) =
     match name with
     | "init" -> initHelp
@@ -186,4 +223,5 @@ let forCommand (name: string) (version: string) =
     | "upgrade"
     | "update" -> upgradeHelp
     | "doctor" -> doctorHelp
+    | "boundary" -> boundaryHelp
     | _ -> overview version

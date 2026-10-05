@@ -1,10 +1,10 @@
 {
   "schemaVersion": "1.0.0",
   "protocolVersion": "1.0.0",
-  "repository": "state-directed-engineering",
+  "repository": "ordo",
   "actor": "ChatGPT",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-09-29T12:49:16.970Z",
+  "updatedAt": "2026-10-05T09:39:18.352Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -858,6 +858,56 @@
       ],
       "updatedAt": "2026-09-29T12:49:16.970Z",
       "completedAt": "2026-09-29T12:49:16.970Z"
+    },
+    {
+      "id": "GH-52",
+      "type": "feature",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/BoundaryAmplification.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/BoundaryAmplificationWire.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Sde.Cli/Boundary.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "schemas/ordo-boundary-amplification.v1.schema.json"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/BoundaryAmplificationTests.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Sde.Core.Tests/BoundaryCommandTests.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/fixtures/boundary-amplification/praxis-usage-pacing/changed.json"
+        },
+        {
+          "type": "documentation",
+          "path": "docs/architecture/boundary-amplification.md"
+        },
+        {
+          "type": "documentation",
+          "path": "research/decisions/DF-SDE-2026-0016--detect-boundary-amplification-as-a-chartered-workstream.md"
+        },
+        {
+          "type": "documentation",
+          "path": "docs/operations/ros-identity-correction-2026-10-05.md"
+        }
+      ],
+      "updatedAt": "2026-10-05T09:39:18.352Z",
+      "completedAt": "2026-10-05T09:39:18.352Z"
     }
   ]
 }
