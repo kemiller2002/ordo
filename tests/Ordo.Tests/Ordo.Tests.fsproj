@@ -27,6 +27,7 @@
     <Compile Include="ArchitectureTests.fs" />
     <Compile Include="InvariantTests.fs" />
     <Compile Include="ExecutionGovernanceTests.fs" />
+    <Compile Include="BoundaryAmplificationTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

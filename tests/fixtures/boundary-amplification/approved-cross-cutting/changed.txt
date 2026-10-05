@@ -1,0 +1,7 @@
+# git diff --name-only origin/main...HEAD
+src/Praxis.Cli/Program.fs
+src/Praxis.Application/Correlation.fs
+src/Praxis.Infrastructure/Persistence/EventStore.fs
+src/Praxis.Infrastructure/Providers/HttpProvider.fs
+tests/Praxis.Tests/CorrelationTests.fs
+docs/correlation.md

@@ -1,0 +1,14 @@
+{
+  "schema": "ordo.boundary-expectation/1",
+  "workItem": "PRX-CORRELATION-ID",
+  "requirement": "Propagate one request correlation id through every tier so a failure can be traced end to end",
+  "expectedBoundaries": ["application"],
+  "approvedExpansions": [
+    {
+      "expansionId": "EXP-CORRELATION-001",
+      "addedBoundaries": ["cli", "persistence", "provider"],
+      "justification": "Correlation is cross-cutting by definition: each tier must accept and forward the id. Each edit is a single parameter thread-through with no new responsibility.",
+      "authorizedBy": "architecture-owner"
+    }
+  ]
+}
