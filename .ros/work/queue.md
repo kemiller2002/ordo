@@ -56,4 +56,4 @@
 | WI-0039 | Govern ordo with Praxis 3.7.1 (ROS -> Praxis rename) | complete | praxis, toolchain | medium |
 | WI-0040 | ordo init/upgrade own the ordo pin in .echelon/toolchain.json; release bump moves Ordo's own pin | complete | ordo, toolchain | medium |
 | WI-0041 | WI-0041 | complete |  |  |
-| WI-0042 | Move ordo to Praxis 3.7.2; attempt Conditor adoption | ready | praxis, toolchain, conditor | medium |
+| WI-0042 | Move ordo to Praxis 3.7.2; attempt Conditor adoption | complete | praxis, toolchain, conditor | medium |
