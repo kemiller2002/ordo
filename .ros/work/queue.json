@@ -775,10 +775,10 @@
       "description": null,
       "tags": [],
       "priority": "medium",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-10-06T20:55:16.457Z",
-      "updatedAt": "2026-10-06T20:55:19.000Z",
+      "updatedAt": "2026-10-06T20:55:51.000Z",
       "createdBy": "unknown",
       "createdByActor": {
         "kind": "agent",
