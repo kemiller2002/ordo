@@ -722,6 +722,27 @@
       },
       "source": "manual",
       "sourceReference": null
+    },
+    {
+      "id": "RELEASE-1-4-2",
+      "title": "Release Ordo 1.4.2",
+      "description": "Bump distribution/package.json and the self-hosting .echelon/toolchain.json ordo pin from 1.4.1 to 1.4.2 so native-release.yml releases it.",
+      "tags": [],
+      "priority": "medium",
+      "status": "ready",
+      "attachments": [],
+      "createdAt": "2026-10-06T14:50:06.695Z",
+      "updatedAt": "2026-10-06T14:50:06.862Z",
+      "createdBy": "unknown",
+      "createdByActor": {
+        "kind": "automation",
+        "id": "github/github-actions",
+        "provider": "github",
+        "model": "unknown",
+        "runtime": "github-actions"
+      },
+      "source": "manual",
+      "sourceReference": null
     }
   ]
 }

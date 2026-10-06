@@ -13,6 +13,7 @@
 | GH-46 | GH-46 | complete |  |  |
 | GH-52 | GH-52 | complete |  |  |
 | RELEASE-1-4-1 | Release Ordo 1.4.1 | complete |  | medium |
+| RELEASE-1-4-2 | Release Ordo 1.4.2 | ready |  | medium |
 | ROS-INSTALL-1-2-1-main-16-1 | ROS-INSTALL-1-2-1-main-16-1 | complete |  |  |
 | WI-0001 | SDE bootstrap: inventory State Programming research in HelixNote | complete | migration, inventory | high |
 | WI-0002 | Experiment 1 evidence consolidation | complete | migration, evidence, experiment-1 | medium |
@@ -54,3 +55,4 @@
 | WI-0038 | Executable Ordo v0.1: bounded decision vertical slice | complete | ordo, executable-intelligence | high |
 | WI-0039 | Govern ordo with Praxis 3.7.1 (ROS -> Praxis rename) | complete | praxis, toolchain | medium |
 | WI-0040 | ordo init/upgrade own the ordo pin in .echelon/toolchain.json; release bump moves Ordo's own pin | complete | ordo, toolchain | medium |
+| WI-0041 | WI-0041 | complete |  |  |

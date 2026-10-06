@@ -1,6 +1,6 @@
 {
   "name": "@echelon-foundry/sde",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Echelon Foundry State-Directed Engineering repository initialization, verification, diagnostics, and upgrade tooling.",
   "license": "UNLICENSED",
   "repository": {
