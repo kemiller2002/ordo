@@ -85,3 +85,24 @@ Ordo defines meaning; it does not observe. A host must supply content digests
 for evaluator inputs, observed facts for receipts, the set of mutated
 resources, workspace identity and any host-enforcement evidence. Praxis is the
 reference host (see Praxis `requirements/EXECUTION-ORCHESTRATION.md`).
+
+## Consuming Ordo.Core: the package and the execution contract
+
+Hosts consume Ordo's execution semantics instead of re-implementing them
+(ORDO-CORE-PACKAGE; Praxis PRX-ARCH-001, PRX-EXEC-002).
+
+- **Package.** Every Ordo release attaches `ordo-core.nupkg`
+  (`EchelonFoundry.Ordo.Core`, the release version) to its GitHub release. Its
+  sha256 is in that release's `native-checksums.txt` and in
+  `echelon-release.json`. A host pins the exact version and digest; a release
+  asset is never replaced. The package holds only `Ordo.Core`: no provider SDK,
+  no I/O, no Praxis.
+- **Contract.** `ordo.execution-contract/1`
+  ([schema](../../schemas/ordo-execution-contract.v1.schema.json),
+  `Ordo.Core.ExecutionContract`) is what an execution is authorized to be
+  before it starts: the role (its capabilities are
+  `RoleAuthority.defaultFor`), the semantic mutation boundary and its
+  projections, the evaluator closure the host must observe and fingerprint,
+  and the human-only transitions. `ExecutionContract.parse` validates it with
+  typed refusals; every evaluator-closure reference is added to the
+  boundary's evaluator references, so it is never writable (ORD-EXEC-126).

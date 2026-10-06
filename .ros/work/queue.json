@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "repository": "state-directed-engineering",
-  "nextSeq": 43,
+  "nextSeq": 44,
   "items": [
     {
       "id": "WI-0001",
@@ -759,6 +759,27 @@
       "createdAt": "2026-10-06T16:37:20.911Z",
       "updatedAt": "2026-10-06T16:40:13.000Z",
       "createdBy": "anthropic/claude-code",
+      "createdByActor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
+      },
+      "source": "manual",
+      "sourceReference": null
+    },
+    {
+      "id": "WI-0043",
+      "title": "ORDO-CORE-PACKAGE: publish Ordo.Core as an immutable package and add the ordo.execution-contract/1 reader so hosts consume Ordo semantics",
+      "description": null,
+      "tags": [],
+      "priority": "medium",
+      "status": "ready",
+      "attachments": [],
+      "createdAt": "2026-10-06T20:55:16.457Z",
+      "updatedAt": "2026-10-06T20:55:19.000Z",
+      "createdBy": "unknown",
       "createdByActor": {
         "kind": "agent",
         "id": "anthropic/claude-code",

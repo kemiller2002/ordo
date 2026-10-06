@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://echelonfoundry.com/schemas/ordo.execution-contract.v1.json",
+  "title": "ordo.execution-contract/1",
+  "description": "The governing execution contract a host reads before creating an execution: role, semantic mutation boundary, evaluator closure and human-only transitions. Read and validated by Ordo.Core.ExecutionContract.",
+  "type": "object",
+  "required": ["schema", "role"],
+  "properties": {
+    "schema": { "const": "ordo.execution-contract/1" },
+    "role": {
+      "type": "string",
+      "pattern": "^(specification|implementation|verification|review|integration|administration|specialized:.+)$"
+    },
+    "boundary": {
+      "type": ["object", "null"],
+      "properties": {
+        "scopes": { "type": "array", "items": { "type": "string", "pattern": "^(feature|cluster|authority|capability):.+$" } },
+        "projections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["scope"],
+            "properties": {
+              "scope": { "type": "string", "pattern": "^(feature|cluster|authority|capability):.+$" },
+              "patterns": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "evaluatorReferences": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "evaluator": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "required": ["kind", "reference"],
+        "properties": {
+          "kind": { "enum": ["gate-code", "configuration", "test-selection", "schema", "fixture", "generated-input", "policy", "dependency"] },
+          "reference": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "humanOnly": { "type": ["array", "null"], "items": { "type": "string" } }
+  }
+}
