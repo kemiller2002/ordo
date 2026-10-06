@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "repository": "state-directed-engineering",
-  "nextSeq": 41,
+  "nextSeq": 43,
   "items": [
     {
       "id": "WI-0001",
@@ -740,6 +740,31 @@
         "provider": "github",
         "model": "unknown",
         "runtime": "github-actions"
+      },
+      "source": "manual",
+      "sourceReference": null
+    },
+    {
+      "id": "WI-0042",
+      "title": "Move ordo to Praxis 3.7.2; attempt Conditor adoption",
+      "description": null,
+      "tags": [
+        "praxis",
+        "toolchain",
+        "conditor"
+      ],
+      "priority": "medium",
+      "status": "ready",
+      "attachments": [],
+      "createdAt": "2026-10-06T16:37:20.911Z",
+      "updatedAt": "2026-10-06T16:37:22.000Z",
+      "createdBy": "anthropic/claude-code",
+      "createdByActor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
       },
       "source": "manual",
       "sourceReference": null
