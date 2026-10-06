@@ -14,6 +14,7 @@
 | GH-52 | GH-52 | complete |  |  |
 | RELEASE-1-4-1 | Release Ordo 1.4.1 | complete |  | medium |
 | RELEASE-1-4-2 | Release Ordo 1.4.2 | complete |  | medium |
+| RELEASE-1-5-0 | Release Ordo 1.5.0 | ready |  | medium |
 | ROS-INSTALL-1-2-1-main-16-1 | ROS-INSTALL-1-2-1-main-16-1 | complete |  |  |
 | WI-0001 | SDE bootstrap: inventory State Programming research in HelixNote | complete | migration, inventory | high |
 | WI-0002 | Experiment 1 evidence consolidation | complete | migration, evidence, experiment-1 | medium |
