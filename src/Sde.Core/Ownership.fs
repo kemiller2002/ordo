@@ -43,6 +43,10 @@ let echelonRootName = ".echelon"
 /// SDE's own installation record inside the shared root.
 let installationRecordName = ".echelon/sde.json"
 
+/// The shared Echelon toolchain manifest. The repository and other tools own
+/// it; SDE owns only its `ordo` property (see ToolchainPin).
+let toolchainManifestName = ".echelon/toolchain.json"
+
 /// The repository-owned structural-review configuration.
 let structuralConfigName = "sde.config.json"
 
@@ -57,6 +61,7 @@ let versionFileName = "VERSION"
 let classify (repositoryRelativePath: string) : Ownership =
     match repositoryRelativePath with
     | path when path = structuralConfigName -> Shared
+    | path when path = toolchainManifestName -> Shared
     | path when path = installationRecordName -> Generated
     | path when path = installRootName + "/" + manifestName -> Generated
     | path when path = installRootName + "/" + versionFileName -> Generated

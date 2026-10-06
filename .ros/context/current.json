@@ -2,9 +2,9 @@
   "schemaVersion": "1.0.0",
   "protocolVersion": "1.0.0",
   "repository": "ordo",
-  "actor": "ChatGPT",
+  "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-05T09:39:18.352Z",
+  "updatedAt": "2026-10-06T12:46:28.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -908,6 +908,88 @@
       ],
       "updatedAt": "2026-10-05T09:39:18.352Z",
       "completedAt": "2026-10-05T09:39:18.352Z"
+    },
+    {
+      "id": "WI-0039",
+      "type": "mechanical",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": ".echelon/ros.json"
+        },
+        {
+          "type": "documentation",
+          "path": "AGENTS.md"
+        }
+      ],
+      "updatedAt": "2026-10-06T12:21:53.000Z",
+      "telemetryExecutionIds": [
+        "EXE-20261006T122007674Z-2d0503dc"
+      ],
+      "latestCheckpoint": {
+        "id": "a17b4ca246cb6e046eded60a",
+        "recordedAt": "2026-10-06T12:21:51.000Z",
+        "executionId": "EXE-20261006T122007674Z-2d0503dc",
+        "repository": "ordo",
+        "branch": "chore/praxis-3.7.1-ordo-pin",
+        "commit": "dacbc7c896e01f5b6a96ce32885f842fd8f9bd61",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "chore/praxis-3.7.1-ordo-pin",
+        "remoteCommit": "dacbc7c896e01f5b6a96ce32885f842fd8f9bd61",
+        "summary": "Praxis 3.7.1 upgrade applied, AGENTS refreshed, verified, pushed",
+        "nextAction": "complete",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-06T12:21:53.000Z"
+    },
+    {
+      "id": "WI-0040",
+      "type": "default",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Sde.Core/ToolchainPin.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Sde.Core.Tests/ToolchainPinTests.fs"
+        }
+      ],
+      "updatedAt": "2026-10-06T12:46:28.000Z",
+      "telemetryExecutionIds": [
+        "EXE-20261006T122236887Z-4f6d6dd6"
+      ],
+      "latestCheckpoint": {
+        "id": "de8ba20bae77a738743fe8e5",
+        "recordedAt": "2026-10-06T12:46:27.000Z",
+        "executionId": "EXE-20261006T122236887Z-4f6d6dd6",
+        "repository": "ordo",
+        "branch": "chore/praxis-3.7.1-ordo-pin",
+        "commit": "f4fa2f9e5f4f00cf083eff9090abb195d3ce50ef",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "chore/praxis-3.7.1-ordo-pin",
+        "remoteCommit": "f4fa2f9e5f4f00cf083eff9090abb195d3ce50ef",
+        "summary": "toolchain pin implemented with tests, release bump moves own pin, pushed",
+        "nextAction": "complete",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-06T12:46:28.000Z"
     }
   ]
 }

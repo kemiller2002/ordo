@@ -155,3 +155,75 @@ let tryArray (value: JsonValue option) : JsonValue list option =
     match value with
     | Some(JArray items) -> Some items
     | _ -> None
+
+// ---------------------------------------------------------------------------
+// Editing a document another party owns
+// ---------------------------------------------------------------------------
+
+/// What setting one string property of a JSON object document amounts to.
+type PropertyUpdate =
+    /// The property already holds the value; the document is left byte for byte.
+    | Unchanged
+    /// The document with only that property set. `previous` is the string the
+    /// property held before, if it held one.
+    | Rewritten of previous: string option * document: string
+    /// Not a JSON object this tool can rewrite without losing something (it
+    /// is malformed, carries comments, or is not an object at all).
+    | NotAnObject
+
+let private editOptions =
+    JsonSerializerOptions(WriteIndented = true, Encoder = Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping)
+
+/// Sets the string property `key` of the object document `text` to `value`,
+/// changing nothing else: every other property keeps its value (numbers keep
+/// their exact text) and its position, and a missing property is added last.
+/// Used for files shared with the repository and other tools, where only one
+/// property is this tool's to write. Pure; the result ends with one newline.
+let setStringProperty (key: string) (value: string) (text: string) : PropertyUpdate =
+    let parsed =
+        try
+            let node =
+                Nodes.JsonNode.Parse(text, documentOptions = JsonDocumentOptions(CommentHandling = JsonCommentHandling.Disallow))
+
+            // Materialise an object's properties here, where a duplicate
+            // property name is caught, rather than while rewriting it.
+            match node with
+            | :? Nodes.JsonObject as current -> current.Count |> ignore
+            | _ -> ()
+
+            Some node
+        with
+        | :? JsonException
+        | :? ArgumentException -> None
+
+    match parsed with
+    | Some(:? Nodes.JsonObject as current) ->
+        let previous =
+            match current[key] with
+            | :? Nodes.JsonValue as held when held.GetValueKind() = JsonValueKind.String -> Some(held.GetValue<string>())
+            | _ -> None
+
+        if previous = Some value then
+            Unchanged
+        else
+            let pinned: Nodes.JsonNode | null = Nodes.JsonValue.Create value
+
+            // A JSON null is a null node; everything else is copied, since a
+            // node belongs to one parent.
+            let copy (node: Nodes.JsonNode | null) : Nodes.JsonNode | null =
+                match node with
+                | null -> null
+                | held -> held.DeepClone()
+
+            let properties =
+                [ for property in current -> property.Key, (if property.Key = key then pinned else copy property.Value) ]
+                @ (if current.ContainsKey key then [] else [ key, pinned ])
+
+            let rewritten =
+                Nodes.JsonObject(properties |> List.map Collections.Generic.KeyValuePair<string, Nodes.JsonNode | null>)
+
+            // Indented output uses the platform newline; files this tool
+            // writes always use "\n". A raw CR cannot occur inside a JSON
+            // string token, so this touches only layout.
+            Rewritten(previous, rewritten.ToJsonString(editOptions).Replace("\r\n", "\n") + "\n")
+    | _ -> NotAnObject

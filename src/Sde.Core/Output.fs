@@ -161,6 +161,12 @@ let private changeToJson (change: Planning.PlannedChange) =
               "fromConfiguration", JInt fromConfiguration
               "toConfiguration", JInt toConfiguration
               "description", JString description ]
+        | Planning.PinToolchain(previous, version) ->
+            "pin-toolchain",
+            [ "path", JString Ownership.toolchainManifestName
+              "property", JString ToolchainPin.key
+              "previousVersion", optionalString previous
+              "version", JString version ]
 
     JObject(
         [ "change", JString token; "message", JString(Planning.describeChange change) ]

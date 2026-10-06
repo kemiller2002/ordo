@@ -57,7 +57,9 @@ into an unrelated project.
    directory, verify the staged copy against its own manifest, then swap it
    into place.
 8. **Write the installation record** at `.echelon/sde.json`.
-9. **Verify** the result and report it.
+9. **Pin the release** in `.echelon/toolchain.json`: set its `ordo` property
+   to the version just installed (see [Toolchain pin](#toolchain-pin)).
+10. **Verify** the result and report it.
 
 Steps 1–6 never write. If step 6 finds a conflict, nothing is written at all.
 
@@ -68,11 +70,29 @@ Steps 1–6 never write. If step 6 finds a conflict, nothing is written at all.
 .sde/VERSION               the installed version (generated)
 .sde/MANIFEST.json         a SHA-256 per installed file (generated)
 .echelon/sde.json          the installation record (generated)
+.echelon/toolchain.json    created with {"schemaVersion": 1, "ordo": "<version>"} if absent;
+                           otherwise only its "ordo" property is set (shared)
 ```
 
 Nothing else is created, modified or deleted. In particular `init` does not
 create `sde.config.json`: the built-in defaults apply when it is absent, and a
 file your repository owns is yours to create when you want to change them.
+
+## Toolchain pin
+
+`.echelon/toolchain.json` names the Echelon tool versions a repository expects:
+`echelon setup` installs them and `echelon doctor` checks them. The file is
+shared. Ordo owns exactly one property in it, `ordo`, and `init` and `upgrade`
+keep it equal to the release they install, derived from the release itself
+rather than from a literal. Every other property (Praxis owns `praxis`; the
+repository owns the rest) keeps its value and its position. A missing `ordo`
+property is added last, and a missing file is created.
+
+`upgrade` over a current installation whose pin is stale or missing corrects
+the pin and nothing else, and `upgrade --check` reports that as a required
+change (exit `5`). `init` over an older installation it does not upgrade
+leaves the pin alone. A file that is not a plain JSON object (for example one
+with comments) is preserved untouched; fix it by hand.
 
 ## Repeated runs
 
