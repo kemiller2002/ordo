@@ -117,6 +117,15 @@ let private verifyHelp =
       "Options:"
       "  --strict        Treat structural findings as failures, and require the"
       "                  installation to be at the current configuration version."
+      "  --integrity-only"
+      "                  The adoption gate. Fail closed on every installation-"
+      "                  integrity condition: not installed, missing, modified or"
+      "                  undeclared managed files, an unusable structural"
+      "                  configuration, an older configuration version, an"
+      "                  installed version other than this CLI's, and a"
+      "                  .echelon/toolchain.json ordo pin that is absent or names"
+      "                  another release. Structural findings are reported as"
+      "                  review signals and do not fail. Excludes --strict."
       "  --json          Emit the report as JSON."
       "  --verbose       List every finding and problem in full."
       ""
@@ -126,7 +135,8 @@ let private verifyHelp =
       ""
       "Examples:"
       "  sde verify"
-      "  sde verify --strict --json" ]
+      "  sde verify --strict --json"
+      "  sde verify --integrity-only --json" ]
 
 let private upgradeHelp =
     [ "sde upgrade"

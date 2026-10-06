@@ -173,7 +173,13 @@ let verify (verbose: bool) (report: VerifyReport) =
             if report.StrictFailures.IsEmpty then
                 []
             else
-                [ "Strict verification failed:" ] @ (report.StrictFailures |> List.map (sprintf "  %s"))
+                let label =
+                    match report.Mode with
+                    | IntegrityOnly -> "Integrity verification failed:"
+                    | Strict
+                    | Lenient -> "Strict verification failed:"
+
+                [ label ] @ (report.StrictFailures |> List.map (sprintf "  %s"))
 
         head @ structural @ strict
 

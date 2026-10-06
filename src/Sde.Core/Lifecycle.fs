@@ -167,6 +167,101 @@ let statusExitCode (report: StatusReport) =
 // verify
 // ---------------------------------------------------------------------------
 
+/// Which conditions `verify` treats as failures.
+type VerifyMode =
+    /// The default: installation integrity fails; structural findings and an
+    /// intact installation at another version are review signals.
+    | Lenient
+    /// Everything `Lenient` treats as a review signal fails: SDE-STRUCT-001
+    /// findings, and an installation not at the current configuration version.
+    | Strict
+    /// The adoption gate. Every installation-integrity condition fails closed,
+    /// including version and toolchain-pin agreement; SDE-STRUCT-001 findings
+    /// are reported as review signals and never fail.
+    | IntegrityOnly
+
+/// What kind of failure a verification failure is. Automation gates on this
+/// rather than parsing failure prose.
+type FailureCategory =
+    /// The installation cannot be trusted: absent, damaged, at the wrong
+    /// version, pinned to another release, or configured unusably.
+    | IntegrityFailure
+    /// A source-size review signal that strict mode promotes to a failure.
+    | StructuralReviewFailure
+
+/// One reason a verification did not pass, as a closed set.
+type VerifyFailure =
+    | InstallationMissing
+    /// Invalid, but with no specific problem recorded. Never passes.
+    | InstallationUnverifiable
+    | InstallationDamaged of InstallationProblem
+    | StructuralConfigurationUnusable of detail: string
+    | ConfigurationVersionBehind of installed: int * expected: int
+    | VersionMismatch of installed: string * cli: string
+    | ToolchainPinMissing of expected: string
+    | ToolchainPinMismatch of pinned: string * expected: string
+    | ToolchainManifestUnrecognised
+    | StructuralFindings of count: int
+
+let failureCategory =
+    function
+    | StructuralFindings _ -> StructuralReviewFailure
+    | InstallationMissing
+    | InstallationUnverifiable
+    | InstallationDamaged _
+    | StructuralConfigurationUnusable _
+    | ConfigurationVersionBehind _
+    | VersionMismatch _
+    | ToolchainPinMissing _
+    | ToolchainPinMismatch _
+    | ToolchainManifestUnrecognised -> IntegrityFailure
+
+/// A stable machine-readable code for each failure.
+let failureCode =
+    function
+    | InstallationMissing -> "not-installed"
+    | InstallationUnverifiable -> "installation-invalid"
+    | InstallationDamaged problem -> problemToken problem
+    | StructuralConfigurationUnusable _ -> "structural-configuration-unusable"
+    | ConfigurationVersionBehind _ -> "configuration-version-behind"
+    | VersionMismatch _ -> "version-mismatch"
+    | ToolchainPinMissing _ -> "toolchain-pin-missing"
+    | ToolchainPinMismatch _ -> "toolchain-pin-mismatch"
+    | ToolchainManifestUnrecognised -> "toolchain-manifest-unrecognised"
+    | StructuralFindings _ -> StructuralReview.findingCode
+
+let describeFailure =
+    function
+    | InstallationMissing -> sprintf "no %s/ installation found" Ownership.installRootName
+    | InstallationUnverifiable -> "the installation is invalid"
+    | InstallationDamaged problem -> describeProblem problem
+    | StructuralConfigurationUnusable detail -> detail
+    | ConfigurationVersionBehind(installed, expected) ->
+        sprintf
+            "installation is at configuration version %d; this release expects %d (run `%s upgrade`)"
+            installed
+            expected
+            Packaging.executableName
+    | VersionMismatch(installed, cli) ->
+        sprintf
+            "installed SDE v%s does not match this CLI's packaged v%s (run the pinned CLI, or `%s upgrade`)"
+            installed
+            cli
+            Packaging.executableName
+    | ToolchainPinMissing expected ->
+        sprintf "%s does not pin %s; expected \"%s\"" Ownership.toolchainManifestName ToolchainPin.key expected
+    | ToolchainPinMismatch(pinned, expected) ->
+        sprintf
+            "%s pins %s \"%s\" but the installation is v%s"
+            Ownership.toolchainManifestName
+            ToolchainPin.key
+            pinned
+            expected
+    | ToolchainManifestUnrecognised ->
+        sprintf "%s is not a JSON object; its %s pin cannot be checked" Ownership.toolchainManifestName ToolchainPin.key
+    | StructuralFindings count ->
+        sprintf "%d SDE-STRUCT-001 finding(s) (strict mode treats structural findings as failures)" count
+
 type VerifyReport =
     { State: InstallationState
       InstalledVersion: string option
@@ -174,19 +269,39 @@ type VerifyReport =
       Problems: InstallationProblem list
       Structural: StructuralReview.Report option
       StructuralError: string option
+      Mode: VerifyMode
+      /// True only in `Strict` mode. Retained for released consumers.
       Strict: bool
-      /// In strict mode, structural findings and an installation still at an
-      /// older configuration version are failures too.
+      /// The failures only the selected non-default mode produces, as prose.
+      /// Retained for released consumers; `Failures` is the typed form.
       StrictFailures: string list
+      /// Every reason the verification did not pass, in a stable order.
+      Failures: VerifyFailure list
+      /// SDE-STRUCT-001 findings reported without failing the verification.
+      /// Empty in `Strict` mode, where the same findings are failures.
+      ReviewSignals: StructuralReview.Finding list
       Passed: bool }
+
+/// The toolchain pin, compared against the installed release. Pure.
+let private pinFailures (version: string) (toolchain: string option) =
+    match toolchain with
+    | None -> [ ToolchainPinMissing version ]
+    | Some text ->
+        match Json.parse text with
+        | Error _ -> [ ToolchainManifestUnrecognised ]
+        | Ok(Json.JObject _ as document) ->
+            match Json.tryField ToolchainPin.key document with
+            | None -> [ ToolchainPinMissing version ]
+            | Some(Json.JString pinned) when pinned = version -> []
+            | Some(Json.JString pinned) -> [ ToolchainPinMismatch(pinned, version) ]
+            | Some _ -> [ ToolchainManifestUnrecognised ]
+        | Ok _ -> [ ToolchainManifestUnrecognised ]
 
 /// Validates that the capability is correctly installed. Never mutates.
 ///
-/// `strict` has one meaning, stated once: everything the default mode treats
-/// as a review signal becomes a failure. Concretely, SDE-STRUCT-001 findings
-/// fail, and an installation that has not adopted the current configuration
-/// version fails.
-let verify (projectRoot: string) (payload: Payload) (strict: bool) : VerifyReport =
+/// The mode decides only which observed conditions fail; every mode observes
+/// the same things. See `VerifyMode`.
+let verifyIn (mode: VerifyMode) (projectRoot: string) (payload: Payload) : VerifyReport =
     let repository = inspectRepository projectRoot payload
 
     let installed =
@@ -227,25 +342,49 @@ let verify (projectRoot: string) (payload: Payload) (strict: bool) : VerifyRepor
                 | Error detail -> None, Some(sprintf "Structural source inspection failed: %s" detail)
                 | Ok report -> Some report, None
 
-    let strictFailures =
-        if not strict then
-            []
-        else
-            [ match structural with
-              | Some report when not report.Findings.IsEmpty ->
-                  sprintf "%d SDE-STRUCT-001 finding(s) (strict mode treats structural findings as failures)" report.Findings.Length
-              | Some _
-              | None -> ()
+    let findings =
+        structural |> Option.map (fun report -> report.Findings) |> Option.defaultValue []
 
-              match installed with
-              | Some i when i.ConfigurationVersion < InstallationRecord.currentConfigurationVersion ->
-                  sprintf
-                      "installation is at configuration version %d; this release expects %d (run `%s upgrade`)"
-                      i.ConfigurationVersion
-                      InstallationRecord.currentConfigurationVersion
-                      Packaging.executableName
-              | Some _
-              | None -> () ]
+    // Failures every mode reports: the installation itself is unusable.
+    let baseFailures =
+        [ match repository.State with
+          | NotInstalled -> InstallationMissing
+          | Invalid(_, []) -> InstallationUnverifiable
+          | Invalid(_, problems) -> yield! problems |> List.map InstallationDamaged
+          | Installed _
+          | UpgradeRequired _
+          | AheadOfCli _ -> ()
+
+          match structuralError with
+          | Some detail -> StructuralConfigurationUnusable detail
+          | None -> () ]
+
+    let configurationBehind =
+        [ match installed with
+          | Some i when i.ConfigurationVersion < InstallationRecord.currentConfigurationVersion ->
+              ConfigurationVersionBehind(i.ConfigurationVersion, InstallationRecord.currentConfigurationVersion)
+          | Some _
+          | None -> () ]
+
+    let structuralFailure =
+        if findings.IsEmpty then [] else [ StructuralFindings findings.Length ]
+
+    // Version and pin agreement are only meaningful over an intact
+    // installation; a damaged one has already failed with its own reasons.
+    let agreementFailures =
+        match repository.State, installed with
+        | (Installed _ | UpgradeRequired _ | AheadOfCli _), Some i ->
+            (if i.Version <> payload.Version then [ VersionMismatch(i.Version, payload.Version) ] else [])
+            @ pinFailures i.Version repository.Toolchain
+        | _ -> []
+
+    let modeFailures =
+        match mode with
+        | Lenient -> []
+        | Strict -> structuralFailure @ configurationBehind
+        | IntegrityOnly -> configurationBehind @ agreementFailures
+
+    let failures = baseFailures @ modeFailures
 
     { State = repository.State
       InstalledVersion = installed |> Option.map (fun i -> i.Version)
@@ -253,9 +392,20 @@ let verify (projectRoot: string) (payload: Payload) (strict: bool) : VerifyRepor
       Problems = problems
       Structural = structural
       StructuralError = structuralError
-      Strict = strict
-      StrictFailures = strictFailures
-      Passed = integrityOk && structuralError.IsNone && List.isEmpty strictFailures }
+      Mode = mode
+      Strict = (mode = Strict)
+      StrictFailures = modeFailures |> List.map describeFailure
+      Failures = failures
+      ReviewSignals =
+        match mode with
+        | Strict -> []
+        | Lenient
+        | IntegrityOnly -> findings
+      Passed = List.isEmpty failures }
+
+/// The released entry point: `strict` selects `Strict`, otherwise `Lenient`.
+let verify (projectRoot: string) (payload: Payload) (strict: bool) : VerifyReport =
+    verifyIn (if strict then Strict else Lenient) projectRoot payload
 
 let verifyExitCode (report: VerifyReport) =
     if report.Passed then ExitCodes.success else ExitCodes.failure

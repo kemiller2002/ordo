@@ -175,7 +175,12 @@ let private runCommand (invocation: Args.Invocation) (projectRoot: string) : Emi
             emit globals (statusExitCode report) (fun () -> Output.statusToJson report) (fun () -> Render.status globals.Verbose report)
 
         | Args.Verify options ->
-            let report = verify projectRoot payload options.Strict
+            let mode =
+                if options.IntegrityOnly then IntegrityOnly
+                elif options.Strict then Strict
+                else Lenient
+
+            let report = verifyIn mode projectRoot payload
             emit globals (verifyExitCode report) (fun () -> Output.verifyToJson report) (fun () -> Render.verify globals.Verbose report)
 
         | Args.Doctor _ ->

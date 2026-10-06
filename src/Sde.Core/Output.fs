@@ -30,19 +30,6 @@ let stateToken =
     | AheadOfCli _ -> "ahead-of-cli"
     | Invalid _ -> "invalid"
 
-/// A stable discriminator for each way an installation can be wrong.
-let problemToken =
-    function
-    | ManifestUnreadable _ -> "manifest-unreadable"
-    | ManagedFileModified _ -> "managed-file-modified"
-    | ManagedFileMissing _ -> "managed-file-missing"
-    | UnexpectedManagedFile _ -> "unexpected-managed-file"
-    | VersionFileMismatch _ -> "version-file-mismatch"
-    | UnparsableInstalledVersion _ -> "unparsable-installed-version"
-    | InstallationRecordUnreadable _ -> "installation-record-unreadable"
-    | InstallationRecordDisagrees _ -> "installation-record-disagrees"
-    | SharedFileConflict _ -> "shared-file-conflict"
-
 let private problemPath =
     function
     | ManagedFileModified(path, _) -> Some path
@@ -105,6 +92,13 @@ let statusToJson (report: StatusReport) =
           "problems", JArray(report.Problems |> List.map problemToJson)
           "exitCode", JInt(statusExitCode report) ]
 
+let private findingToJson (finding: StructuralReview.Finding) =
+    JObject
+        [ "code", JString finding.Code
+          "band", JString(StructuralReview.describeBand finding.Band)
+          "path", JString finding.Path
+          "lineCount", JInt finding.LineCount ]
+
 let private structuralToJson (report: StructuralReview.Report option) (error: string option) =
     match report, error with
     | _, Some detail -> JObject [ "ran", JBool false; "error", JString detail ]
@@ -116,14 +110,24 @@ let private structuralToJson (report: StructuralReview.Report option) (error: st
               "enabled", JBool report.Config.Enabled
               "configurationSource", JString report.Config.Source
               "inspectedFiles", JInt report.InspectedFiles
-              "findings",
-              JArray
-                  [ for finding in report.Findings ->
-                        JObject
-                            [ "code", JString finding.Code
-                              "band", JString(StructuralReview.describeBand finding.Band)
-                              "path", JString finding.Path
-                              "lineCount", JInt finding.LineCount ] ] ]
+              "findings", JArray(report.Findings |> List.map findingToJson) ]
+
+let verifyModeToken =
+    function
+    | Lenient -> "default"
+    | Strict -> "strict"
+    | IntegrityOnly -> "integrity-only"
+
+let private failureCategoryToken =
+    function
+    | IntegrityFailure -> "integrity"
+    | StructuralReviewFailure -> "structural-review"
+
+let private verifyFailureToJson (failure: VerifyFailure) =
+    JObject
+        [ "category", JString(failureCategoryToken (failureCategory failure))
+          "code", JString(failureCode failure)
+          "detail", JString(describeFailure failure) ]
 
 let verifyToJson (report: VerifyReport) =
     JObject
@@ -134,10 +138,13 @@ let verifyToJson (report: VerifyReport) =
           "state", JString(stateToken report.State)
           "installedVersion", optionalString report.InstalledVersion
           "managedFileCount", JInt report.ManagedFileCount
+          "mode", JString(verifyModeToken report.Mode)
           "strict", JBool report.Strict
           "passed", JBool report.Passed
           "problems", JArray(report.Problems |> List.map problemToJson)
           "strictFailures", JArray(report.StrictFailures |> List.map JString)
+          "failures", JArray(report.Failures |> List.map verifyFailureToJson)
+          "reviewSignals", JArray(report.ReviewSignals |> List.map findingToJson)
           "structural", structuralToJson report.Structural report.StructuralError
           "exitCode", JInt(verifyExitCode report) ]
 

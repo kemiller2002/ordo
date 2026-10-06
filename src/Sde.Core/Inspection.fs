@@ -56,6 +56,19 @@ let describeProblem =
             (Json.quote manifestVersion)
     | SharedFileConflict(path, detail) -> sprintf "%s is present but not usable: %s" path detail
 
+/// A stable discriminator for each way an installation can be wrong.
+let problemToken =
+    function
+    | ManifestUnreadable _ -> "manifest-unreadable"
+    | ManagedFileModified _ -> "managed-file-modified"
+    | ManagedFileMissing _ -> "managed-file-missing"
+    | UnexpectedManagedFile _ -> "unexpected-managed-file"
+    | VersionFileMismatch _ -> "version-file-mismatch"
+    | UnparsableInstalledVersion _ -> "unparsable-installed-version"
+    | InstallationRecordUnreadable _ -> "installation-record-unreadable"
+    | InstallationRecordDisagrees _ -> "installation-record-disagrees"
+    | SharedFileConflict _ -> "shared-file-conflict"
+
 /// A problem that makes the installation unsafe to act on at all, as opposed
 /// to one that merely makes it invalid. Commands refuse to plan changes over
 /// a blocking problem rather than guessing what the user meant.

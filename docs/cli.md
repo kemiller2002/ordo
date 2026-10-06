@@ -92,7 +92,7 @@ recorded at build time, integrity, and whether an upgrade is available.
 Validate that the capability is correctly installed. **Read-only.**
 
 ```
-sde verify [--strict] [--json] [--verbose]
+sde verify [--strict | --integrity-only] [--json] [--verbose]
 ```
 
 Checks, in order:
@@ -112,6 +112,25 @@ treats as a review signal becomes a failure. Concretely:
 
 - `SDE-STRUCT-001` findings fail;
 - an installation still at an older configuration version fails.
+
+**`--integrity-only`** is the adoption gate: it splits installation
+integrity from structural review. It fails closed on every
+installation-integrity condition:
+
+- not installed;
+- a missing, modified or undeclared managed file, or any other installation
+  problem (`VERSION`/manifest disagreement, an unreadable record);
+- an unusable `sde.config.json`;
+- an installation at an older configuration version;
+- an installed version other than the version this CLI carries;
+- a `.echelon/toolchain.json` whose `ordo` pin is absent, names another
+  release, or cannot be read.
+
+`SDE-STRUCT-001` findings are reported as `reviewSignals` and do not fail,
+because file size is a review signal, not proof of nonconformance. Use it
+where a tool records a verified installation (Conditor adoption) and must
+neither accept a damaged installation nor block on review findings.
+`--integrity-only` and `--strict` are mutually exclusive.
 
 | Exit | Meaning |
 |---|---|
@@ -266,11 +285,22 @@ ignore unknown fields.
 | `state` | string | As above |
 | `installedVersion` | string \| null | |
 | `managedFileCount` | number | |
+| `mode` | string | `default`, `strict` or `integrity-only` (since 1.4.2) |
 | `strict` | boolean | Whether `--strict` was given |
-| `passed` | boolean | The verification result |
+| `passed` | boolean | The verification result; true exactly when `failures` is empty |
 | `problems` | array | As above |
-| `strictFailures` | array of string | Failures that only strict mode produces |
+| `strictFailures` | array of string | Failures that only the selected non-default mode produces |
+| `failures` | array | Every failure, each with `category` (`integrity` or `structural-review`), `code` and `detail` (since 1.4.2) |
+| `reviewSignals` | array | Structural findings reported without failing; empty in strict mode (since 1.4.2) |
 | `structural` | object | `ran`, `error`, `enabled`, `configurationSource`, `inspectedFiles`, `findings` |
+
+Failure codes: `not-installed`, `installation-invalid`, each installation
+problem code, `structural-configuration-unusable`,
+`configuration-version-behind`, `version-mismatch`, `toolchain-pin-missing`,
+`toolchain-pin-mismatch`, `toolchain-manifest-unrecognised` (category
+`integrity`), and `SDE-STRUCT-001` (category `structural-review`). A gate that
+must fail closed on integrity but not on review signals accepts a result whose
+`failures` all have category `structural-review`.
 
 Each structural finding has `code`, `band`, `path` and `lineCount`. Bands are
 `review`, `strong-review`, `justification-required`, `conformance-concern`.
