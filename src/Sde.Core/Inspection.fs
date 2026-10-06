@@ -102,7 +102,10 @@ type Repository =
       StructuralConfig: Result<StructuralReview.Config, string>
       /// Other Echelon tools' records found in the shared root. Read purely
       /// so that changes to `.echelon/` can be proven not to disturb them.
-      OtherEchelonRecords: string list }
+      OtherEchelonRecords: string list
+      /// The shared toolchain manifest's text, when the file exists. SDE
+      /// owns only its `ordo` property (ToolchainPin).
+      Toolchain: string option }
 
 let installDirFor (projectRoot: string) =
     Path.Combine(projectRoot, Ownership.installRootName)
@@ -295,4 +298,5 @@ let inspectRepository (projectRoot: string) (availableVersion: string) : Reposit
       InstallDir = installDirFor projectRoot
       State = determineState projectRoot availableVersion
       StructuralConfig = StructuralReview.loadConfig projectRoot
-      OtherEchelonRecords = listOtherEchelonRecords projectRoot }
+      OtherEchelonRecords = listOtherEchelonRecords projectRoot
+      Toolchain = ToolchainPin.read projectRoot }

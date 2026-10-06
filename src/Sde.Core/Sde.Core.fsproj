@@ -21,6 +21,7 @@
     <Compile Include="Packaging.fs" />
     <Compile Include="Manifest.fs" />
     <Compile Include="InstallationRecord.fs" />
+    <Compile Include="ToolchainPin.fs" />
     <Compile Include="StructuralReview.fs" />
     <Compile Include="Inspection.fs" />
     <Compile Include="Migrations.fs" />

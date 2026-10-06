@@ -2,11 +2,15 @@
 #
 #   gh workflow run release.yml -f bump=patch     (or minor | major | X.Y.Z)
 #
-# Updates the single authoritative version (distribution/package.json)
-# exactly once, runs the full F# suite and Praxis validation, commits and
-# tags, then dispatches the existing native release (native-release.yml) and
+# Resolves the next version (failing closed if it is not newer or is already
+# tagged or released), runs the full F# suite, Praxis validation and package
+# checks, then bumps the single authoritative version
+# (distribution/package.json) together with this repository's own
+# .echelon/toolchain.json ordo pin as an attributed Praxis work item
+# (scripts/ordo-release-bump.sh) and dispatches the native release
+# (native-release.yml, which tags and publishes from main in its own run) and
 # the npm compatibility publish (publish.yml, gated by NPM_PUBLISH_ENABLED).
-# Released versions are immutable: an existing tag is never reused.
+# A push made with GITHUB_TOKEN starts no workflow, so both are dispatched.
 name: Release (operator)
 
 on:
@@ -43,33 +47,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Resolve version
-        id: version
+      - name: Use the GitHub Actions bot as the Git author
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      # Fails closed before anything is mutated: the next version must be
+      # newer and must have neither a tag nor a release.
+      - name: Resolve the next version
+        id: next
         shell: bash
         env:
           BUMP: ${{ inputs.bump }}
-        run: |
-          set -euo pipefail
-          current="$(node -p "require('./distribution/package.json').version")"
-          IFS=. read -r major minor patch <<<"${current%%-*}"
-          case "$BUMP" in
-            patch) next="$major.$minor.$((patch + 1))" ;;
-            minor) next="$major.$((minor + 1)).0" ;;
-            major) next="$((major + 1)).0.0" ;;
-            *)
-              [[ "$BUMP" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] || { echo "::error::bump must be patch, minor, major or X.Y.Z"; exit 2; }
-              next="$BUMP" ;;
-          esac
-          if git ls-remote --exit-code --tags origin "refs/tags/v$next" >/dev/null; then
-            echo "::error::v$next already exists; released versions are immutable"
-            exit 1
-          fi
-          echo "current=$current" >> "$GITHUB_OUTPUT"
-          echo "next=$next" >> "$GITHUB_OUTPUT"
-          echo "Ordo $current -> $next"
-      - name: Update the authoritative version
-        working-directory: distribution
-        run: npm version "${{ steps.version.outputs.next }}" --no-git-tag-version
+          GH_TOKEN: ${{ github.token }}
+        run: scripts/ordo-release-bump.sh "$BUMP" --dry-run | tee -a "$GITHUB_OUTPUT"
       - name: Full F# suite
         run: |
           (cd distribution && npm run build:payload)
@@ -79,27 +69,33 @@ jobs:
           dotnet test tests/Ordo.Churn.Tests/Ordo.Churn.Tests.fsproj --nologo
       - name: Praxis validation
         run: |
-          ./ros registry check
-          ./ros validate
+          ./praxis registry check
+          ./praxis validate
       - name: Package contents
         working-directory: distribution
         run: |
           npm run build
           npm run test:package
           npm pack --dry-run
-      - name: Commit and tag
+      # The bump is an attributed Praxis work item under the GitHub Actions
+      # identity: begin, bump distribution/package.json and this repository's
+      # own .echelon/toolchain.json ordo pin, commit, push, checkpoint,
+      # complete, push the Praxis state. native-release.yml creates the tag
+      # with the release, from main, in its own run.
+      - name: Bump the version as an attributed work item
+        id: bump
         if: ${{ !inputs.dry_run }}
-        run: |
-          git config user.name "Ordo Release"
-          git config user.email "actions@users.noreply.github.com"
-          git add distribution/package.json
-          git commit -m "Release v${{ steps.version.outputs.next }}"
-          git tag "v${{ steps.version.outputs.next }}"
-          git push origin HEAD:main "v${{ steps.version.outputs.next }}"
+        shell: bash
+        env:
+          BUMP: ${{ steps.next.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: scripts/ordo-release-bump.sh "$BUMP" | tee -a "$GITHUB_OUTPUT"
       - name: Dispatch native release and npm compatibility publish
         if: ${{ !inputs.dry_run }}
         env:
           GH_TOKEN: ${{ github.token }}
+          BASE: ${{ steps.bump.outputs.base }}
         run: |
+          [ -n "$BASE" ] || { echo "::error::the bump reported no base commit"; exit 1; }
           gh workflow run native-release.yml --repo "$GITHUB_REPOSITORY" --ref main
           gh workflow run publish.yml --repo "$GITHUB_REPOSITORY" --ref main

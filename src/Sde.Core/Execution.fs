@@ -144,6 +144,22 @@ let apply (projectRoot: string) (payloadDir: string) (plan: Plan) : Result<unit,
                         | Error detail -> fail (sprintf "Migration %s" id) detail
                         | Ok() -> go (change :: applied) rest
 
+            // Re-derived from the file as it is now, so the write carries
+            // whatever the repository or another tool holds in it.
+            | PinToolchain(_, version) ->
+                try
+                    match ToolchainPin.reconcile version (ToolchainPin.read projectRoot) with
+                    | ToolchainPin.Current -> go (change :: applied) rest
+                    | ToolchainPin.Repin(_, content) ->
+                        FileSystem.writeFileInto (ToolchainPin.path projectRoot) content
+                        go (change :: applied) rest
+                    | ToolchainPin.Unrecognised ->
+                        fail
+                            "Pinning the toolchain"
+                            (sprintf "%s is no longer a JSON object; it was left untouched" Ownership.toolchainManifestName)
+                with ex ->
+                    fail "Pinning the toolchain" ex.Message
+
             | WriteInstallationRecord(version, _) ->
                 try
                     let record = InstallationRecord.create Packaging.packageName version

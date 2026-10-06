@@ -289,7 +289,9 @@ Each structural finding has `code`, `band`, `path` and `lineCount`. Bands are
 | `failure` | string \| null | Set only when `outcome` is `failed` |
 
 `change` is one of `install-payload`, `replace-payload`,
-`write-installation-record`, `run-migration`.
+`write-installation-record`, `run-migration`, `pin-toolchain`. A
+`pin-toolchain` change carries `path` (`.echelon/toolchain.json`), `property`
+(`ordo`), `previousVersion` (null when absent) and `version`.
 
 ### `doctor --json`
 

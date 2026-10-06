@@ -77,10 +77,13 @@ These are the guarantees the tests prove, and no more:
    after a refused upgrade.
 2. **An installation newer than this release is never downgraded.**
 3. **User-owned files are never touched.** `sde.config.json`, your source,
-   your documentation — nothing outside `.sde/` and `.echelon/sde.json` is
-   read for writing.
+   your documentation — nothing outside `.sde/`, `.echelon/sde.json` and the
+   `ordo` property of `.echelon/toolchain.json` is written.
 4. **Other Echelon Foundry tools' records are never touched.** SDE owns
-   exactly one file in `.echelon/`.
+   exactly one file in `.echelon/`, plus the `ordo` property of the shared
+   `.echelon/toolchain.json` (see
+   [installation.md](installation.md#toolchain-pin)), whose other properties
+   it never changes.
 5. **A failure reports what was already applied.** If a migration fails part
    way through a chain, the error names the failing migration and lists the
    migrations that had already succeeded. Partial application is always

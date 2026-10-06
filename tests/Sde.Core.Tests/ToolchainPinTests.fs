@@ -161,3 +161,49 @@ let ``the release bump moves Ordo's own toolchain pin with the package version``
     let bump = File.ReadAllText(Path.Combine(repositoryRoot, "scripts", "ordo-release-bump.sh"))
     Assert.Contains(".echelon/toolchain.json", bump)
     Assert.Contains("git add distribution/package.json .echelon/toolchain.json .ros", bump)
+
+// ---------------------------------------------------------------------------
+// The pure decision
+// ---------------------------------------------------------------------------
+
+[<Fact>]
+let ``reconcile seeds a manifest that is absent`` () =
+    match ToolchainPin.reconcile "9.8.7" None with
+    | ToolchainPin.Repin(None, content) -> Assert.Equal("{\n  \"schemaVersion\": 1,\n  \"ordo\": \"9.8.7\"\n}\n", content)
+    | other -> failwithf "expected a seed, got %A" other
+
+[<Fact>]
+let ``reconcile leaves a current pin alone`` () =
+    Assert.Equal(ToolchainPin.Current, ToolchainPin.reconcile "1.2.3" (Some "{\"praxis\":\"3.7.1\",\"ordo\":\"1.2.3\"}"))
+
+[<Fact>]
+let ``reconcile replaces a stale pin in place and reports what it was`` () =
+    match ToolchainPin.reconcile "1.2.3" (Some stalePraxisAndOrdo) with
+    | ToolchainPin.Repin(previous, content) ->
+        Assert.Equal(Some "0.0.1", previous)
+        Assert.Equal("{\n  \"schemaVersion\": 1,\n  \"ordo\": \"1.2.3\",\n  \"praxis\": \"3.7.1\"\n}\n", content)
+    | other -> failwithf "expected a repin, got %A" other
+
+[<Theory>]
+[<InlineData("{ // comment\n \"ordo\": \"1.0.0\" }")>]
+[<InlineData("[\"ordo\"]")>]
+[<InlineData("not json")>]
+[<InlineData("{\"ordo\": \"1.0.0\", \"ordo\": \"1.0.1\"}")>]
+let ``reconcile refuses to rewrite anything that is not a plain JSON object`` (text: string) =
+    Assert.Equal(ToolchainPin.Unrecognised, ToolchainPin.reconcile "1.2.3" (Some text))
+
+[<Fact>]
+let ``the dry-run plan names the pin change and writes nothing`` () =
+    withProject (fun project ->
+        writeToolchain project stalePraxisAndOrdo
+        let report = initialize project payload true
+
+        match report.Outcome with
+        | Planned changes ->
+            Assert.Contains(Planning.PinToolchain(Some "0.0.1", payload.Version), changes)
+        | other -> failwithf "expected Planned, got %A" other
+
+        let json = Json.render (Output.changeReportToJson false true report)
+        Assert.Contains("\"change\": \"pin-toolchain\"", json)
+        Assert.Contains("\"previousVersion\": \"0.0.1\"", json)
+        Assert.Equal(stalePraxisAndOrdo, File.ReadAllText(toolchainPath project)))

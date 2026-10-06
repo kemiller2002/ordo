@@ -22,6 +22,10 @@ type PlannedChange =
     | WriteInstallationRecord of version: string * configurationVersion: int
     /// Run one numbered configuration migration.
     | RunMigration of id: string * fromConfiguration: int * toConfiguration: int * description: string
+    /// Set the `ordo` property of `.echelon/toolchain.json` to the version
+    /// installed, creating the file if absent and changing nothing else in
+    /// it. `previous` is the pin it replaces.
+    | PinToolchain of previous: string option * version: string
 
 let describeChange =
     function
@@ -32,6 +36,13 @@ let describeChange =
         sprintf "write %s recording v%s at configuration version %d" Ownership.installationRecordName version configurationVersion
     | RunMigration(id, fromConfiguration, toConfiguration, description) ->
         sprintf "run migration %s (configuration %d -> %d): %s" id fromConfiguration toConfiguration description
+    | PinToolchain(previous, version) ->
+        sprintf
+            "pin %s v%s in %s (%s)"
+            ToolchainPin.key
+            version
+            Ownership.toolchainManifestName
+            (previous |> Option.map (sprintf "was %s") |> Option.defaultValue "not pinned before")
 
 /// Why a plan cannot be produced or cannot be executed. A refusal is a
 /// first-class outcome, not an exception: the user needs to be told exactly
@@ -100,6 +111,25 @@ let private refuseInvalid (installed: InstalledVersion option) (problems: Instal
 
             LocalModifications(version, problems)
 
+/// The toolchain pin change needed for `version` to be the release this
+/// repository names, if any. A manifest that already names it, or that is not
+/// a plain JSON object, needs none.
+let private pinChanges (repository: Repository) (version: string) : PlannedChange list =
+    match ToolchainPin.reconcile version repository.Toolchain with
+    | ToolchainPin.Repin(previous, _) -> [ PinToolchain(previous, version) ]
+    | ToolchainPin.Current
+    | ToolchainPin.Unrecognised -> []
+
+/// An intact installation at this release needs no change other than,
+/// possibly, its toolchain pin.
+let private pinOnly (repository: Repository) (version: string) : PlanOutcome =
+    match pinChanges repository version with
+    | [] -> NoChangesNeeded repository.State
+    | changes ->
+        Changes
+            { Changes = changes
+              CurrentState = repository.State }
+
 let private preflight (projectRoot: string) =
     if not (FileSystem.directoryExists projectRoot) then
         Some(NotADirectory projectRoot)
@@ -125,9 +155,10 @@ let planInit (repository: Repository) (payloadVersion: string) (payloadFileCount
             { Changes =
                 [ InstallPayload(payloadVersion, payloadFileCount)
                   WriteInstallationRecord(payloadVersion, InstallationRecord.currentConfigurationVersion) ]
+                @ pinChanges repository payloadVersion
               CurrentState = repository.State }
 
-    | Installed _ -> NoChangesNeeded repository.State
+    | Installed _ -> pinOnly repository payloadVersion
 
     // An installation that is merely behind is NOT upgraded by init. That is
     // deliberate and matches the behaviour every released version has had:
@@ -147,6 +178,7 @@ let planInit (repository: Repository) (payloadVersion: string) (payloadFileCount
                           InstallationRecord.currentConfigurationVersion,
                           Migrations.recordMigrationDescription
                       ) ]
+                    @ pinChanges repository installed.Version
                   CurrentState = repository.State }
         else
             NoChangesNeeded repository.State
@@ -170,7 +202,7 @@ let planUpgrade (repository: Repository) (payloadVersion: string) (payloadFileCo
 
     | AheadOfCli(installed, available) -> Refused(WouldDowngrade(installed.Version, available))
 
-    | Installed _ -> NoChangesNeeded repository.State
+    | Installed _ -> pinOnly repository payloadVersion
 
     | UpgradeRequired(installed, available) ->
         match Migrations.plan installed.ConfigurationVersion InstallationRecord.currentConfigurationVersion with
@@ -192,4 +224,5 @@ let planUpgrade (repository: Repository) (payloadVersion: string) (payloadFileCo
                     payloadChange
                     @ migrationChanges
                     @ [ WriteInstallationRecord(available, InstallationRecord.currentConfigurationVersion) ]
+                    @ pinChanges repository available
                   CurrentState = repository.State }
