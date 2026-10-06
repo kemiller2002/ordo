@@ -14,7 +14,11 @@ type InitOptions =
 
 type StatusOptions = { Unused: unit }
 
-type VerifyOptions = { Strict: bool }
+type VerifyOptions =
+    { Strict: bool
+      /// Fail on every installation-integrity condition and report
+      /// structural findings as review signals. Excludes `Strict`.
+      IntegrityOnly: bool }
 
 type UpgradeOptions = { DryRun: bool; Check: bool }
 
@@ -135,7 +139,7 @@ let parse (argv: string list) : ParseResult =
     let flags, positionals = argv |> List.partition (fun arg -> arg.StartsWith "-")
 
     let known =
-        [ "--help"; "-h"; "--version"; "-V"; "--json"; "--verbose"; "-v"; "--dry-run"; "--check"; "--strict" ]
+        [ "--help"; "-h"; "--version"; "-V"; "--json"; "--verbose"; "-v"; "--dry-run"; "--check"; "--strict"; "--integrity-only" ]
 
     let unknown = flags |> List.filter (fun flag -> not (List.contains flag known))
 
@@ -154,6 +158,7 @@ let parse (argv: string list) : ParseResult =
     let dryRun = has [ "--dry-run" ]
     let check = has [ "--check" ]
     let strict = has [ "--strict" ]
+    let integrityOnly = has [ "--integrity-only" ]
 
     let finish command =
         Parsed { Command = command; Global = globals }
@@ -175,9 +180,17 @@ let parse (argv: string list) : ParseResult =
             finish Version
         else
             match name with
+            | "verify" when strict && integrityOnly ->
+                ParseFailed(
+                    sprintf
+                        "--integrity-only and --strict are mutually exclusive: --integrity-only already fails on every integrity condition, and reports structural findings instead of failing on them.\n%s"
+                        usageLine
+                )
+            | other when integrityOnly && other <> "verify" ->
+                ParseFailed(sprintf "--integrity-only applies only to verify.\n%s" usageLine)
             | "init" -> finish (Init { DryRun = dryRun || check; Check = check })
             | "status" -> finish (Status { Unused = () })
-            | "verify" -> finish (Verify { Strict = strict })
+            | "verify" -> finish (Verify { Strict = strict; IntegrityOnly = integrityOnly })
             | "upgrade" -> finish (Upgrade { DryRun = dryRun || check; Check = check })
             | n when n = legacyUpgradeAlias -> finish (Upgrade { DryRun = dryRun || check; Check = check })
             | "doctor" -> finish (Doctor { Unused = () })

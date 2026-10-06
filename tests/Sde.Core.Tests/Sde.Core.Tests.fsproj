@@ -16,6 +16,7 @@
     <Compile Include="PackageBuildTests.fs" />
     <Compile Include="BoundaryCommandTests.fs" />
     <Compile Include="ToolchainPinTests.fs" />
+    <Compile Include="VerifyGateTests.fs" />
   </ItemGroup>
 
   <ItemGroup>
