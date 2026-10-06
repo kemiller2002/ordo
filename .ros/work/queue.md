@@ -51,4 +51,4 @@
 | WI-0036 | Register the agent-cost experiment and its hypothesis | complete | research | medium |
 | WI-0037 | Continue the agent-cost experiment as EX-SDE-2026-0002 | active | research | medium |
 | WI-0038 | Executable Ordo v0.1: bounded decision vertical slice | complete | ordo, executable-intelligence | high |
-| WI-0039 | Govern ordo with Praxis 3.7.1 (ROS -> Praxis rename) | ready | praxis, toolchain | medium |
+| WI-0039 | Govern ordo with Praxis 3.7.1 (ROS -> Praxis rename) | complete | praxis, toolchain | medium |

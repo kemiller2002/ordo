@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-06T12:20:07.000Z",
+  "updatedAt": "2026-10-06T12:21:53.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -912,13 +912,43 @@
     {
       "id": "WI-0039",
       "type": "mechanical",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-10-06T12:20:07.000Z",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": ".echelon/ros.json"
+        },
+        {
+          "type": "documentation",
+          "path": "AGENTS.md"
+        }
+      ],
+      "updatedAt": "2026-10-06T12:21:53.000Z",
       "telemetryExecutionIds": [
         "EXE-20261006T122007674Z-2d0503dc"
-      ]
+      ],
+      "latestCheckpoint": {
+        "id": "a17b4ca246cb6e046eded60a",
+        "recordedAt": "2026-10-06T12:21:51.000Z",
+        "executionId": "EXE-20261006T122007674Z-2d0503dc",
+        "repository": "ordo",
+        "branch": "chore/praxis-3.7.1-ordo-pin",
+        "commit": "dacbc7c896e01f5b6a96ce32885f842fd8f9bd61",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "chore/praxis-3.7.1-ordo-pin",
+        "remoteCommit": "dacbc7c896e01f5b6a96ce32885f842fd8f9bd61",
+        "summary": "Praxis 3.7.1 upgrade applied, AGENTS refreshed, verified, pushed",
+        "nextAction": "complete",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-06T12:21:53.000Z"
     }
   ]
 }
