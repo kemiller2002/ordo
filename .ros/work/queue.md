@@ -2,6 +2,16 @@
 
 | ID | Work | Status | Tags | Priority |
 |---|---|---|---|---|
+| GH-18 | GH-18 | complete |  |  |
+| GH-20 | GH-20 | complete |  |  |
+| GH-21 | GH-21 | complete |  |  |
+| GH-22 | GH-22 | complete |  |  |
+| GH-23 | GH-23 | complete |  |  |
+| GH-24 | GH-24 | complete |  |  |
+| GH-25 | GH-25 | complete |  |  |
+| GH-44 | GH-44 | complete |  |  |
+| GH-46 | GH-46 | complete |  |  |
+| GH-52 | GH-52 | complete |  |  |
 | ROS-INSTALL-1-2-1-main-16-1 | ROS-INSTALL-1-2-1-main-16-1 | complete |  |  |
 | WI-0001 | SDE bootstrap: inventory State Programming research in HelixNote | complete | migration, inventory | high |
 | WI-0002 | Experiment 1 evidence consolidation | complete | migration, evidence, experiment-1 | medium |
@@ -40,4 +50,5 @@
 | WI-0035 | Register the agent-cost experiment and its hypothesis | active | research | medium |
 | WI-0036 | Register the agent-cost experiment and its hypothesis | complete | research | medium |
 | WI-0037 | Continue the agent-cost experiment as EX-SDE-2026-0002 | active | research | medium |
-| WI-0038 | Executable Ordo v0.1: bounded decision vertical slice | ready | ordo, executable-intelligence | high |
+| WI-0038 | Executable Ordo v0.1: bounded decision vertical slice | complete | ordo, executable-intelligence | high |
+| WI-0039 | Govern ordo with Praxis 3.7.1 (ROS -> Praxis rename) | ready | praxis, toolchain | medium |
