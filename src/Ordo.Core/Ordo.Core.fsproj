@@ -4,7 +4,21 @@
     <OutputType>Library</OutputType>
     <AssemblyName>Ordo.Core</AssemblyName>
     <RootNamespace>Ordo.Core</RootNamespace>
-    <IsPackable>false</IsPackable>
+    <!--
+      Ordo.Core is published as an immutable release artifact
+      (`ordo-core.nupkg` on the Ordo GitHub release, checksummed in
+      native-checksums.txt) so hosts such as Praxis consume Ordo's execution
+      semantics by pinned version instead of copying them (ORDO-CORE-PACKAGE).
+      The version is the repository's single release version.
+    -->
+    <IsPackable>true</IsPackable>
+    <PackageId>EchelonFoundry.Ordo.Core</PackageId>
+    <Authors>Echelon Foundry</Authors>
+    <Description>Ordo's pure semantic core: execution roles and capabilities, mutation boundaries, evaluator identity, receipts, legal transitions and the ordo.execution-contract/1 reader.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/kemiller2002/ordo</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
 
   <!--
@@ -40,6 +54,7 @@
     <Compile Include="Wire.fs" />
     <Compile Include="ExecutionWire.fs" />
     <Compile Include="BoundaryAmplificationWire.fs" />
+    <Compile Include="ExecutionContract.fs" />
   </ItemGroup>
 
 </Project>

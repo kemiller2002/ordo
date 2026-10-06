@@ -84,6 +84,12 @@ jobs:
           printf '%s\n' "${VERSION}" > "${win_root}/VERSION"
           (cd dist/native-stage && zip -qr "../native/ordo-win-x64.zip" ordo-win-x64)
 
+          # Ordo.Core, the pure semantic core, as an immutable package asset
+          # (ORDO-CORE-PACKAGE). Hosts such as Praxis pin this exact file by
+          # version and sha256 instead of copying Ordo's execution semantics.
+          dotnet pack src/Ordo.Core/Ordo.Core.fsproj -c Release -o dist/core-pack
+          cp "dist/core-pack/EchelonFoundry.Ordo.Core.${VERSION}.nupkg" dist/native/ordo-core.nupkg
+
           (cd dist/native && sha256sum ordo-* > native-checksums.txt)
           cat dist/native/native-checksums.txt
 

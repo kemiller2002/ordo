@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-06T16:40:13.000Z",
+  "updatedAt": "2026-10-06T20:55:51.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -1136,6 +1136,47 @@
         }
       },
       "completedAt": "2026-10-06T16:40:13.000Z"
+    },
+    {
+      "id": "WI-0043",
+      "type": "task",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ExecutionContract.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ExecutionContractTests.fs"
+        }
+      ],
+      "updatedAt": "2026-10-06T20:55:51.000Z",
+      "telemetryExecutionIds": [
+        "EXE-20261006T205520095Z-643c9008"
+      ],
+      "latestCheckpoint": {
+        "id": "aee28a891a6748ba28af3a41",
+        "recordedAt": "2026-10-06T20:55:42.000Z",
+        "executionId": "EXE-20261006T205520095Z-643c9008",
+        "repository": "ordo",
+        "branch": "ordo-core-package",
+        "commit": "4fe4df74ea2f4f284f49c936c97878faef64c1ff",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "ordo-core-package",
+        "remoteCommit": "4fe4df74ea2f4f284f49c936c97878faef64c1ff",
+        "summary": "Ordo.Core packable, release asset ordo-core.nupkg, ExecutionContract reader with tests",
+        "nextAction": "Merge, then release through release.yml",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-06T20:55:51.000Z"
     }
   ]
 }

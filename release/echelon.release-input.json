@@ -50,6 +50,12 @@
       "mediaType": "application/zip"
     },
     {
+      "name": "ordo-core.nupkg",
+      "purpose": "package",
+      "platform": null,
+      "mediaType": "application/octet-stream"
+    },
+    {
       "name": "native-checksums.txt",
       "purpose": "checksums",
       "platform": null,
