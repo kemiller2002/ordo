@@ -265,7 +265,7 @@ let manifestDigest (requirements: SourceRequirement list) =
     sha256 (builder.ToString())
 
 let private isSha256 (digest: string) =
-    not (isNull digest)
+    not (String.IsNullOrEmpty digest)
     && digest.Length = 71
     && digest.StartsWith("sha256:", StringComparison.Ordinal)
     && (digest.Substring(7)
