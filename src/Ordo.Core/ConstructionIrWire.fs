@@ -168,8 +168,10 @@ let readBlueprint input : Result<Blueprint, string> =
         let! json = parseJson input
         let! p = fields "$" [ "schemaVersion"; "sourceManifestDigest"; "requirements"; "nodes" ] [] json
         let! version = textField "$" "schemaVersion" p
-        if version <> SchemaVersion then
-            return! fail "$.schemaVersion" ("unsupported " + version)
+        let! () =
+            if version <> SchemaVersion then
+                fail "$.schemaVersion" ("unsupported " + version)
+            else Ok ()
         let! digest = textField "$" "sourceManifestDigest" p
         let! rs = field "$" "requirements" p
         let! requirements = items "$.requirements" requirement rs
