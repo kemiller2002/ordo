@@ -55,6 +55,28 @@ Each node has a stable ID, a typed kind (decision, contract, invariant, interfac
 
 A failed gate is an explicit refusal with actionable IDs. An agent may revise a new blueprint version; it must never silently rewrite history or override an approved decision.
 
+## Start with a lossless, deliberately unresolved scaffold
+
+The Conditor import produces a pinned `ecir-source-manifest.json` alongside its existing requirements trace. Ordo can now generate an initial ECIR artifact **without having an LLM invent any architecture or dispositions**:
+
+```bash
+sde ecir scaffold \
+  --manifest path/to/ecir-source-manifest.json \
+  --output path/to/ecir-draft.json \
+  --json
+
+sde ecir validate \
+  --manifest path/to/ecir-source-manifest.json \
+  --blueprint path/to/ecir-draft.json \
+  --json
+```
+
+Scaffolding refuses invalid/duplicate/empty source inputs and refuses overwriting an existing output. The output includes **exactly one registry entry for each imported requirement**, even when local IDs overlap in distinct source files. Each entry initially has an `unresolved` disposition and a unique `conflict` node with `analysis pending` explanation. Thus the scaffold can pass **source-conservation validation** but is **not ready to execute**. No decision approval, behavioral verification, or authorization is represented by the scaffold.
+
+The requirements-analysis agent consumes this committed draft, source manifest and original documents. It must replace pending nodes with explicit bidirectional references to **decisions, contracts, invariants, coherent cohorts and verification obligations**. The validator rejects dropped requirements and broken references. A new candidate must be a new committed artifact and digest, not an overwrite of an earlier approved revision. Every individual requirement remains present even if deferred, superseded, rejected or disputed.
+
+`sde ecir validate` returns `executionAuthorized: false` regardless of structural validity. Praxis separately verifies the pinned Ordo binary, committed ECIR digest and outside approvals.
+
 ## Compilation and batching
 
 Reason over related requirements together, select cohesive implementation cohorts, freeze interfaces and invariants, compile after each shared-contract milestone, execute code generation with cohesive context and run targeted checks, then independently verify the finished behavior. **50 or 100 source IDs are not assumed to equal 50 or 100 behaviors**, nor are they an unconditional batch-size target. Optimize against verified throughput and rework, not green tests alone.
