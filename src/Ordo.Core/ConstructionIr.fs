@@ -80,6 +80,7 @@ type Violation =
     | MissingDispositionNode of requirementKey: string * requiredKind: NodeKind
     | InvalidSupersession of requirementKey: string * target: string
     | MissingVerification of requirementKey: string
+    | MissingConstructionCohort of requirementKey: string
     | MissingDependency of nodeId: string * target: string
     | SelfDependency of nodeId: string
     | DependencyCycle of nodeId: string
@@ -192,6 +193,9 @@ let validate (manifest: SourceManifest) (blueprint: Blueprint) : Violation list 
         match requirement.Disposition with
         | Modeled ->
             if not (hasKind VerificationObligation) then add (MissingVerification key)
+            // Modeling without a delivery cohort still silently strands
+            // the source requirement. This is traceable, not buildable.
+            if not (hasKind Cohort) then add (MissingConstructionCohort key)
         | Deferred reason ->
             if isBlank reason then add (MissingDispositionReason key)
             if not (hasKind Deferral) then add (MissingDispositionNode(key, Deferral))
