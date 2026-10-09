@@ -92,6 +92,13 @@ let ``an apparently modeled requirement without a verification obligation is ref
     contains (MissingVerification a.Key) (validate manifest broken)
 
 [<Fact>]
+let ``a modeled requirement with verification but no construction cohort is not buildable`` () =
+    let mapped = mapping a Modeled [ "DEC"; "VERIFY" ]
+    let nodes = blueprint.Nodes |> List.filter (fun n -> n.Id <> "COHORT")
+    let broken = { blueprint with Requirements = mapped :: List.tail blueprint.Requirements; Nodes = nodes }
+    contains (MissingConstructionCohort a.Key) (validate manifest broken)
+
+[<Fact>]
 let ``an unresolved requirement is represented but cannot execute in its cohort`` () =
     let changedB = mapping b (Unresolved "conflicting source directives") [ "CONFLICT"; "COHORT" ]
     let nodes =
