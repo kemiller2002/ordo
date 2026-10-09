@@ -51,6 +51,7 @@
     <Compile Include="Help.fs" />
     <Compile Include="Render.fs" />
     <Compile Include="Boundary.fs" />
+    <Compile Include="Ecir.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
