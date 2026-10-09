@@ -1,0 +1,21 @@
+{
+  "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "requirements": [
+    {
+      "key": "requirements/domain.md#R-001",
+      "originalId": "R-001",
+      "document": "requirements/domain.md",
+      "location": "L12",
+      "revision": "rev-1",
+      "contentDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    {
+      "key": "requirements/operations.md#R-001",
+      "originalId": "R-001",
+      "document": "requirements/operations.md",
+      "location": "L8",
+      "revision": "rev-1",
+      "contentDigest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    }
+  ]
+}
