@@ -40,8 +40,13 @@ type EcirValidateOptions =
       Blueprint: string
       Cohort: string option }
 
+type EcirScaffoldOptions =
+    { Manifest: string
+      Output: string }
+
 type Command =
     | EcirValidate of EcirValidateOptions
+    | EcirScaffold of EcirScaffoldOptions
     | Init of InitOptions
     | Status of StatusOptions
     | Verify of VerifyOptions
@@ -131,13 +136,13 @@ let private parseBoundary (globals: GlobalOptions) (argv: string list) : ParseRe
         | _ -> ParseFailed boundaryUsage
 
 let ecirUsage =
-    "Usage: sde ecir validate --manifest FILE --blueprint FILE [--cohort ID] [--json]"
+    "Usage: sde ecir validate --manifest FILE --blueprint FILE [--cohort ID] [--json] | sde ecir scaffold --manifest FILE --output FILE [--json]"
 
 /// Only structural/semantic validation can be authorized by this CLI.
 //// Cohort-level execution also needs externally verified decision approvals;
 /// passing a string on the command line is deliberately not authorization.
 let private parseEcir (globals: GlobalOptions) (argv: string list) : ParseResult =
-    let valued = [ "--manifest"; "--blueprint"; "--cohort" ]
+    let valued = [ "--manifest"; "--blueprint"; "--cohort"; "--output" ]
     let switches = [ "--json"; "--verbose"; "-v"; "--help"; "-h" ]
     let rec walk args values positionals =
         match args with
@@ -156,8 +161,15 @@ let private parseEcir (globals: GlobalOptions) (argv: string list) : ParseResult
         Parsed { Command = Help(Some "ecir"); Global = globals }
     | Ok(values, [ "ecir"; "validate" ]) ->
         match Map.tryFind "--manifest" values, Map.tryFind "--blueprint" values with
-        | Some manifest, Some blueprint ->
+        | Some manifest, Some blueprint when not (Map.containsKey "--output" values) ->
             Parsed { Command = EcirValidate { Manifest = manifest; Blueprint = blueprint; Cohort = Map.tryFind "--cohort" values }; Global = globals }
+        | _ -> ParseFailed ecirUsage
+    | Ok(values, [ "ecir"; "scaffold" ]) ->
+        match Map.tryFind "--manifest" values, Map.tryFind "--output" values with
+        | Some manifest, Some output when
+            not (Map.containsKey "--cohort" values)
+            && not (Map.containsKey "--blueprint" values) ->
+            Parsed { Command = EcirScaffold { Manifest = manifest; Output = output }; Global = globals }
         | _ -> ParseFailed ecirUsage
     | _ -> ParseFailed ecirUsage
 
