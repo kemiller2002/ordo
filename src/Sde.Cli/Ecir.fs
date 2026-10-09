@@ -47,3 +47,53 @@ let run (asJson: bool) (manifestPath: string) (blueprintPath: string) (cohort: s
             if asJson then sprintf "{\"schemaVersion\":\"ecir.validate/1\",\"status\":\"rejected\",\"reason\":%s}" (escaped issue)
             else "ECIR refused: " + issue
         1, (if asJson then [ message ] else []), (if asJson then [] else [ message ])
+
+/// Construct a source-complete, intentionally non-executable starter
+/// blueprint. An already existing output is NEVER modified: revisions must
+/// be new immutable artifacts with explicit source/decision history.
+let scaffoldFile (asJson: bool) (manifestPath: string) (outputPath: string) =
+    let outcome =
+        try
+            if not (File.Exists manifestPath) then
+                Error("source manifest missing: " + manifestPath)
+            elif File.Exists outputPath then
+                Error("output already exists; never overwrite an ECIR revision: " + outputPath)
+            else
+                let proposal =
+                    File.ReadAllText manifestPath
+                    |> readManifest
+                    |> Result.mapError List.singleton
+                    |> Result.bind scaffold
+
+                match proposal with
+                | Error reasons -> Error(String.concat "; " reasons)
+                | Ok blueprint ->
+                    let content = encodeBlueprint blueprint
+                    // CreateNew enforces immutability even if the file appears
+                    // between the existence check and the write.
+                    use stream = new FileStream(outputPath, FileMode.CreateNew, FileAccess.Write, FileShare.None)
+                    use writer = new StreamWriter(stream, System.Text.Encoding.UTF8)
+                    writer.Write(content)
+                    writer.Flush()
+                    Ok(blueprintDigest blueprint, blueprint.Requirements.Length)
+        with
+        | :? IOException as problem -> Error("cannot write ECIR scaffold: " + problem.Message)
+        | :? UnauthorizedAccessException as problem -> Error("cannot write ECIR scaffold: " + problem.Message)
+
+    let quoted (value: string) = Ordo.Core.Json.JString value |> Ordo.Core.Json.render
+
+    match outcome with
+    | Ok(digest, count) ->
+        let message =
+            if asJson then
+                sprintf "{\"schemaVersion\":\"ecir.scaffold/1\",\"status\":\"unresolved\",\"requirementsRepresented\":%d,\"blueprintDigest\":%s,\"output\":%s,\"executionAuthorized\":false}" count (quoted digest) (quoted outputPath)
+            else
+                sprintf "ECIR draft: %d source requirements preserved, all unresolved; %s (%s). No execution authorized." count outputPath digest
+        0, [ message ], []
+    | Error issue ->
+        let message =
+            if asJson then
+                sprintf "{\"schemaVersion\":\"ecir.scaffold/1\",\"status\":\"rejected\",\"reason\":%s}" (quoted issue)
+            else
+                "ECIR scaffold refused: " + issue
+        1, (if asJson then [ message ] else []), (if asJson then [] else [ message ])
