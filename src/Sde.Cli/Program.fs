@@ -140,6 +140,10 @@ let private runCommand (invocation: Args.Invocation) (projectRoot: string) : Emi
         let code, stdout, stderr = Ecir.run globals.Json options.Manifest options.Blueprint options.Cohort
         { ExitCode = code; Stdout = stdout; Stderr = stderr }
 
+    | Args.EcirScaffold options ->
+        let code, stdout, stderr = Ecir.scaffoldFile globals.Json options.Manifest options.Output
+        { ExitCode = code; Stdout = stdout; Stderr = stderr }
+
     // Read-only and independent of any installation: it needs no payload.
     | Args.BoundaryAssess options ->
         let exitCode, stdout, stderr = Boundary.run globals.Json releaseVersion options
@@ -162,6 +166,7 @@ let private runCommand (invocation: Args.Invocation) (projectRoot: string) : Emi
             | Args.Upgrade _ -> "upgrade"
             | Args.Doctor _ -> "doctor"
             | Args.EcirValidate _
+            | Args.EcirScaffold _
             | Args.BoundaryAssess _
             | Args.Help _
             | Args.Version -> "sde"
@@ -212,6 +217,7 @@ let private runCommand (invocation: Args.Invocation) (projectRoot: string) : Emi
                 (fun () -> Render.change globals.Verbose options.Check options.DryRun report)
 
         | Args.EcirValidate _
+        | Args.EcirScaffold _
         | Args.BoundaryAssess _
         | Args.Help _
         | Args.Version -> ok []
