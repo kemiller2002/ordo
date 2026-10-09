@@ -289,6 +289,47 @@ let encodeManifest (manifest: SourceManifest) =
 
 let encodeBlueprint blueprint = jBlueprint blueprint |> render
 
+/// Builds a complete initial analysis artifact. It deliberately marks every
+/// imported requirement as unresolved: generating a scaffold grants neither
+/// a modeling disposition nor permission to execute code.
+let scaffold (manifest: SourceManifest) : Result<Blueprint, string list> =
+    match verifyManifestDigest manifest with
+    | Error problem -> Error [ problem ]
+    | Ok () ->
+        let keys = manifest.Requirements |> List.map (fun source -> source.Key)
+        if List.isEmpty keys then Error [ "the input manifest contains no requirements" ]
+        elif List.length (List.distinct keys) <> List.length keys then
+            Error [ "the source manifest contains repeated qualified requirement keys" ]
+        else
+            let entries =
+                manifest.Requirements
+                |> List.sortBy (fun source -> source.Key)
+                |> List.map (fun source ->
+                    // Full SHA-256 avoids a collision-prone positional ID
+                    // and is independent of the input manifest ordering.
+                    let conflictId = "ECIR-PENDING-" + (sha256 source.Key).Substring(7)
+                    source, conflictId)
+
+            let blueprint =
+                { SchemaVersion = SchemaVersion
+                  SourceManifestDigest = manifest.Digest
+                  Requirements =
+                    [ for source, conflictId in entries do
+                        { Source = source
+                          Disposition = Unresolved "Analysis pending: no architectural decision or behavior verified"
+                          NodeIds = [ conflictId ] } ]
+                  Nodes =
+                    [ for source, conflictId in entries do
+                        { Id = conflictId
+                          Kind = Conflict
+                          RequirementKeys = [ source.Key ]
+                          DependsOn = []
+                          Justification = Some "Automated intake scaffold; no resolution or decision authorization" } ] }
+
+            match validate manifest blueprint with
+            | [] -> Ok blueprint
+            | violations -> Error(violations |> List.map (sprintf "%A"))
+
 let validatePinned (manifest: SourceManifest) (blueprint: Blueprint) =
     match verifyManifestDigest manifest with
     | Error problem -> Error [ problem ]
