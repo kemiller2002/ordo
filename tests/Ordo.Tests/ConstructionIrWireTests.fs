@@ -10,7 +10,7 @@ let private source id doc =
       Document = doc
       Location = "L12"
       Revision = "v1"
-      ContentDigest = "sha256:one-content" }
+      ContentDigest = "sha256:" + System.String('c', 64) }
 
 let private r1 = source "R-001" "requirements/one.md"
 let private r2 = source "R-001" "requirements/two.md"
@@ -75,6 +75,22 @@ let ``canonical manifest digest ignores record ordering but detects mutation`` (
     Assert.Equal(manifest.Digest, manifestDigest [ r2; r1 ])
     Assert.NotEqual<string>(manifest.Digest, manifestDigest [ { r1 with Location = "L13" }; r2 ])
     Assert.NotEqual<string>(manifest.Digest, manifestDigest [ { r1 with ContentDigest = "sha256:changed" }; r2 ])
+
+[<Fact>]
+let ``ECIR rejects non-cryptographic placeholder hashes even when internally consistent`` () =
+    let forgedRequirement = { r1 with ContentDigest = "sha256:not-a-real-digest" }
+    let forgedManifest =
+        { Requirements = [ forgedRequirement; r2 ]
+          Digest = manifestDigest [ forgedRequirement; r2 ] }
+    let forgedBlueprint =
+        { blueprint with
+            SourceManifestDigest = forgedManifest.Digest
+            Requirements =
+                blueprint.Requirements
+                |> List.map (fun row ->
+                    if row.Source.Key = r1.Key then { row with Source = forgedRequirement }
+                    else row) }
+    Assert.True(validatePinned forgedManifest forgedBlueprint |> Result.isError)
 
 [<Fact>]
 let ``ECIR refuses unverified source digest even when blueprint agrees with its lie`` () =
