@@ -50,6 +50,15 @@ let ``ECIR scaffold CLI preserves all source requirements and writes only an imm
             match r.Disposition with Unresolved _ -> true | _ -> false))
         Assert.Equal(manifest.Digest, read.SourceManifestDigest)
 
+        let checkedCode, checkedOutput, checkedError =
+            Program.run [ "ecir"; "validate"; "--manifest"; input; "--blueprint"; output; "--json" ] dir
+        Assert.Equal(0, checkedCode)
+        Assert.Empty checkedError
+        Assert.Contains("\"status\":\"trace-validated\"", List.head checkedOutput)
+        Assert.Contains("\"sourceRequirements\":2", List.head checkedOutput)
+        Assert.Contains("\"unresolvedRequirements\":2", List.head checkedOutput)
+        Assert.Contains("\"executionAuthorized\":false", List.head checkedOutput)
+
         let initialBytes = File.ReadAllBytes output
         let second, secondOutput, errors = Program.run args dir
         Assert.NotEqual(0, second)
