@@ -11,9 +11,15 @@ open Ordo.Core.ConstructionIrWire
 let private examples () =
     let rec find (current: DirectoryInfo) remaining =
         let candidate = Path.Combine(current.FullName, "examples", "ecir", "source-manifest.json")
-        if File.Exists candidate then Path.GetDirectoryName candidate
-        elif remaining <= 0 || isNull current.Parent then failwith "ECIR fixtures missing from repository"
-        else find current.Parent (remaining - 1)
+        if File.Exists candidate then
+            match Path.GetDirectoryName candidate with
+            | null -> failwith "ECIR fixture parent directory missing"
+            | directory -> directory
+        elif remaining <= 0 then failwith "ECIR fixtures missing from repository"
+        else
+            match current.Parent with
+            | null -> failwith "ECIR fixtures missing from repository"
+            | parent -> find parent (remaining - 1)
     find (DirectoryInfo AppContext.BaseDirectory) 10
 
 let private read name = File.ReadAllText(Path.Combine(examples (), name))
@@ -40,7 +46,7 @@ let ``checked-in ECIR example is actually verifiable against its pinned intake``
     Assert.Equal(2, manifest.Requirements.Length)
     Assert.Equal("R-001", manifest.Requirements[0].OriginalId)
     Assert.Equal("R-001", manifest.Requirements[1].OriginalId)
-    Assert.NotEqual(manifest.Requirements[0].Key, manifest.Requirements[1].Key)
+    Assert.NotEqual<string>(manifest.Requirements[0].Key, manifest.Requirements[1].Key)
     let blueprint = parseBlueprint "valid-blueprint.json"
     Assert.True(validatePinned manifest blueprint |> Result.isOk)
 
