@@ -73,8 +73,8 @@ let ``canonical blueprint digest ignores object and reference order`` () =
 [<Fact>]
 let ``canonical manifest digest ignores record ordering but detects mutation`` () =
     Assert.Equal(manifest.Digest, manifestDigest [ r2; r1 ])
-    Assert.NotEqual(manifest.Digest, manifestDigest [ { r1 with Location = "L13" }; r2 ])
-    Assert.NotEqual(manifest.Digest, manifestDigest [ { r1 with ContentDigest = "sha256:changed" }; r2 ])
+    Assert.NotEqual<string>(manifest.Digest, manifestDigest [ { r1 with Location = "L13" }; r2 ])
+    Assert.NotEqual<string>(manifest.Digest, manifestDigest [ { r1 with ContentDigest = "sha256:changed" }; r2 ])
 
 [<Fact>]
 let ``ECIR refuses unverified source digest even when blueprint agrees with its lie`` () =
@@ -98,7 +98,7 @@ let ``ECIR refuses unknown attributes and duplicate JSON keys`` () =
 [<Fact>]
 let ``ECIR distinguishes two same-named IDs from different documents`` () =
     Assert.Equal(r1.OriginalId, r2.OriginalId)
-    Assert.NotEqual(r1.Key, r2.Key)
+    Assert.NotEqual<string>(r1.Key, r2.Key)
     Assert.Equal(2, (readManifest (encodeManifest manifest) |> expectOk).Requirements.Length)
 
 [<Fact>]
