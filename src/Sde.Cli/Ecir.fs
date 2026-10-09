@@ -24,23 +24,40 @@ let run (asJson: bool) (manifestPath: string) (blueprintPath: string) (cohort: s
                 match validatePinned manifest blueprint with
                 | Error errors -> Error(String.concat "; " errors)
                 | Ok digest ->
+                    let modeled =
+                        blueprint.Requirements
+                        |> List.filter (fun row -> row.Disposition = Modeled)
+                        |> List.length
+                    let unresolved =
+                        blueprint.Requirements
+                        |> List.filter (fun row ->
+                            match row.Disposition with Unresolved _ -> true | _ -> false)
+                        |> List.length
+                    let deferred =
+                        blueprint.Requirements
+                        |> List.filter (fun row ->
+                            match row.Disposition with Deferred _ -> true | _ -> false)
+                        |> List.length
+                    let counts = digest, manifest.Requirements.Length, blueprint.Requirements.Length, modeled, unresolved, deferred
                     match cohort with
-                    | None -> Ok digest
+                    | None -> Ok counts
                     | Some id ->
                         // Never infer approval from the model or command line.
                         match validateCohort manifest blueprint id Set.empty with
-                        | [] -> Ok digest
+                        | [] -> Ok counts
                         | issues -> Error(String.concat "; " (issues |> List.map (sprintf "%A")))))
 
     let escaped (value: string) =
         Ordo.Core.Json.JString value |> Ordo.Core.Json.render
 
     match outcome with
-    | Ok digest ->
+    | Ok(digest, imported, represented, modeled, unresolved, deferred) ->
         let message =
             if asJson then
-                sprintf "{\"schemaVersion\":\"ecir.validate/1\",\"status\":\"validated\",\"blueprintDigest\":%s,\"executionAuthorized\":false}" (escaped digest)
-            else sprintf "ECIR validated: %s (execution authorization not granted)" digest
+                sprintf "{\"schemaVersion\":\"ecir.validate/1\",\"status\":\"trace-validated\",\"sourceRequirements\":%d,\"representedRequirements\":%d,\"modeledRequirements\":%d,\"unresolvedRequirements\":%d,\"deferredRequirements\":%d,\"blueprintDigest\":%s,\"executionAuthorized\":false}" imported represented modeled unresolved deferred (escaped digest)
+            else
+                sprintf "ECIR source trace validated: %d/%d represented; %d modeled, %d unresolved, %d deferred; %s. Execution authorization not granted."
+                    represented imported modeled unresolved deferred digest
         0, [ message ], []
     | Error issue ->
         let message =
