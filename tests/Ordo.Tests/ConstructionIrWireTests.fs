@@ -128,3 +128,28 @@ let ``invalid disposition shape is refused before semantics`` () =
     let wrong = encodeBlueprint blueprint
                 |> fun s -> s.Replace("\"kind\": \"modeled\"", "\"kind\": \"modeled\", \"reason\": \"not allowed\"")
     Assert.True(readBlueprint wrong |> Result.isError)
+
+[<Fact>]
+let ``scaffold is source-complete, deterministic and cannot be executed before analysis`` () =
+    let initial = scaffold manifest |> expectOk
+    Assert.Equal(2, initial.Requirements.Length)
+    Assert.Equal(2, initial.Nodes.Length)
+    Assert.Empty(validate manifest initial)
+    Assert.True(initial.Requirements |> List.forall (fun r ->
+        match r.Disposition with Unresolved _ -> true | _ -> false))
+    Assert.True(initial.Nodes |> List.forall (fun n -> n.Kind = Conflict))
+    Assert.True(validatePinnedCohort manifest initial "MISSING" Set.empty |> Result.isError)
+    Assert.Equal(blueprintDigest initial, scaffold { manifest with Requirements = [ r2; r1 ] } |> expectOk |> blueprintDigest)
+
+[<Fact>]
+let ``scaffold rejects tampered, empty and duplicated independent input`` () =
+    let forged = { manifest with Digest = "sha256:" + System.String('a', 64) }
+    Assert.True(scaffold forged |> Result.isError)
+    let empty =
+        { Requirements = []
+          Digest = manifestDigest [] }
+    Assert.True(scaffold empty |> Result.isError)
+    let duplicated =
+        { Requirements = [ r1; r1 ]
+          Digest = manifestDigest [ r1; r1 ] }
+    Assert.True(scaffold duplicated |> Result.isError)
