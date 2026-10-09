@@ -51,9 +51,13 @@ let ``ECIR scaffold CLI preserves all source requirements and writes only an imm
         Assert.Equal(manifest.Digest, read.SourceManifestDigest)
 
         let initialBytes = File.ReadAllBytes output
-        let second, _, errors = Program.run args dir
+        let second, secondOutput, errors = Program.run args dir
         Assert.NotEqual(0, second)
-        Assert.NotEmpty errors
+        // In JSON mode a rejected command emits one JSON response on
+        // stdout and deliberately leaves stderr empty.
+        Assert.Empty errors
+        Assert.Single secondOutput |> ignore
+        Assert.Contains("\"status\":\"rejected\"", List.head secondOutput)
         Assert.Equal<byte>(initialBytes, File.ReadAllBytes output)
     finally
         cleanup [ dir ]
