@@ -29,6 +29,9 @@
     <Compile Include="ExecutionGovernanceTests.fs" />
     <Compile Include="BoundaryAmplificationTests.fs" />
     <Compile Include="ExecutionContractTests.fs" />
+    <Compile Include="ConstructionIrTests.fs" />
+    <Compile Include="ConstructionIrWireTests.fs" />
+    <Compile Include="ConstructionIrFixtureTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

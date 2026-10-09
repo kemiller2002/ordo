@@ -35,7 +35,18 @@ type BoundaryAssessOptions =
       /// extract their imports (F# `open`, C# `using`).
       Root: string option }
 
+type EcirValidateOptions =
+    { Manifest: string
+      Blueprint: string
+      Cohort: string option }
+
+type EcirScaffoldOptions =
+    { Manifest: string
+      Output: string }
+
 type Command =
+    | EcirValidate of EcirValidateOptions
+    | EcirScaffold of EcirScaffoldOptions
     | Init of InitOptions
     | Status of StatusOptions
     | Verify of VerifyOptions
@@ -62,13 +73,13 @@ type ParseResult =
 /// Command names understood by the parser. `update` is retained as an alias
 /// for `upgrade`: it was the released name through 1.1.1 and scripts in
 /// consumers' repositories still call it.
-let private canonicalCommandNames = [ "init"; "status"; "verify"; "upgrade"; "doctor"; "boundary" ]
+let private canonicalCommandNames = [ "init"; "status"; "verify"; "upgrade"; "doctor"; "boundary"; "ecir" ]
 let private legacyUpgradeAlias = "update"
 
 let allCommandNames = canonicalCommandNames @ [ legacyUpgradeAlias ]
 
 let private usageLine =
-    "Usage: sde <init|status|verify|upgrade|doctor|boundary> [options]"
+    "Usage: sde <init|status|verify|upgrade|doctor|boundary|ecir> [options]"
 
 let usage = usageLine
 
@@ -124,6 +135,44 @@ let private parseBoundary (globals: GlobalOptions) (argv: string list) : ParseRe
         | "boundary" :: other :: _ -> ParseFailed(sprintf "Unknown boundary subcommand: %s\n%s" other boundaryUsage)
         | _ -> ParseFailed boundaryUsage
 
+let ecirUsage =
+    "Usage: sde ecir validate --manifest FILE --blueprint FILE [--cohort ID] [--json] | sde ecir scaffold --manifest FILE --output FILE [--json]"
+
+/// Only structural/semantic validation can be authorized by this CLI.
+//// Cohort-level execution also needs externally verified decision approvals;
+/// passing a string on the command line is deliberately not authorization.
+let private parseEcir (globals: GlobalOptions) (argv: string list) : ParseResult =
+    let valued = [ "--manifest"; "--blueprint"; "--cohort"; "--output" ]
+    let switches = [ "--json"; "--verbose"; "-v"; "--help"; "-h" ]
+    let rec walk args values positionals =
+        match args with
+        | [] -> Ok(values, List.rev positionals)
+        | flag :: value :: rest when List.contains flag valued && not (value.StartsWith "--") ->
+            if Map.containsKey flag values then
+                Error(sprintf "Option given twice: %s" flag)
+            else walk rest (Map.add flag value values) positionals
+        | flag :: rest when List.contains flag valued -> Error(sprintf "Missing value: %s" flag)
+        | flag :: rest when List.contains flag switches -> walk rest values positionals
+        | flag :: _ when flag.StartsWith "-" -> Error(sprintf "Unknown ECIR flag: %s" flag)
+        | item :: rest -> walk rest values (item :: positionals)
+    match walk argv Map.empty [] with
+    | Error e -> ParseFailed(e + "\n" + ecirUsage)
+    | Ok(_, _) when List.contains "--help" argv || List.contains "-h" argv ->
+        Parsed { Command = Help(Some "ecir"); Global = globals }
+    | Ok(values, [ "ecir"; "validate" ]) ->
+        match Map.tryFind "--manifest" values, Map.tryFind "--blueprint" values with
+        | Some manifest, Some blueprint when not (Map.containsKey "--output" values) ->
+            Parsed { Command = EcirValidate { Manifest = manifest; Blueprint = blueprint; Cohort = Map.tryFind "--cohort" values }; Global = globals }
+        | _ -> ParseFailed ecirUsage
+    | Ok(values, [ "ecir"; "scaffold" ]) ->
+        match Map.tryFind "--manifest" values, Map.tryFind "--output" values with
+        | Some manifest, Some output when
+            not (Map.containsKey "--cohort" values)
+            && not (Map.containsKey "--blueprint" values) ->
+            Parsed { Command = EcirScaffold { Manifest = manifest; Output = output }; Global = globals }
+        | _ -> ParseFailed ecirUsage
+    | _ -> ParseFailed ecirUsage
+
 let parse (argv: string list) : ParseResult =
     let globalsOf (args: string list) =
         { Json = List.contains "--json" args
@@ -131,6 +180,7 @@ let parse (argv: string list) : ParseResult =
 
     match argv |> List.tryFind (fun arg -> not (arg.StartsWith "-")) with
     | Some "boundary" -> parseBoundary (globalsOf argv) argv
+    | Some "ecir" -> parseEcir (globalsOf argv) argv
     | _ ->
 
     // Flags are recognised anywhere, before or after the command name, so

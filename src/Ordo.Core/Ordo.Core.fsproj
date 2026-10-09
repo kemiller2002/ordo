@@ -55,6 +55,8 @@
     <Compile Include="ExecutionWire.fs" />
     <Compile Include="BoundaryAmplificationWire.fs" />
     <Compile Include="ExecutionContract.fs" />
+    <Compile Include="ConstructionIr.fs" />
+    <Compile Include="ConstructionIrWire.fs" />
   </ItemGroup>
 
 </Project>
