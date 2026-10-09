@@ -288,7 +288,7 @@ let validateCohort
                 blueprint.Nodes
                 |> List.filter (fun n ->
                     n.Kind = Decision
-                    && n.RequirementKeys |> List.exists (fun key -> List.contains key node.RequirementKeys)
+                    && (n.RequirementKeys |> List.exists (fun key -> List.contains key node.RequirementKeys))
                     && not (Set.contains n.Id authorizedDecisionIds))
                 |> List.map (fun n -> MissingDecisionAuthorization n.Id)
 
