@@ -264,9 +264,22 @@ let manifestDigest (requirements: SourceRequirement list) =
           source.Revision; source.ContentDigest ] |> List.iter frame)
     sha256 (builder.ToString())
 
+let private isSha256 (digest: string) =
+    not (isNull digest)
+    && digest.Length = 71
+    && digest.StartsWith("sha256:", StringComparison.Ordinal)
+    && (digest.Substring(7)
+        |> Seq.forall (fun ch -> (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f')))
+
 let verifyManifestDigest (manifest: SourceManifest) : Result<unit, string> =
-    if manifest.Digest = manifestDigest manifest.Requirements then Ok ()
-    else Error "source manifest digest does not match canonical source identity/content"
+    if not (isSha256 manifest.Digest) then
+        Error "the manifest digest must be a lowercase 64-hex SHA-256 value"
+    elif manifest.Requirements
+         |> List.exists (fun requirement -> not (isSha256 requirement.ContentDigest)) then
+        Error "every source requirement must have a lowercase 64-hex SHA-256 content digest"
+    elif manifest.Digest <> manifestDigest manifest.Requirements then
+        Error "source manifest digest does not match canonical source identity/content"
+    else Ok ()
 
 let encodeManifest (manifest: SourceManifest) =
     JObject [
