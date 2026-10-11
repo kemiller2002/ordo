@@ -368,5 +368,47 @@
     "title": "Charter boundary amplification as its own workstream and start with evidence-based detection",
     "type": "decision-record",
     "updated": "2026-10-05"
+  },
+  {
+    "created": "2026-10-11",
+    "id": "DF-SDE-2026-0017",
+    "path": "research/decisions/DF-SDE-2026-0017--prepare-cohorts-after-transitive-readiness.md",
+    "provenance": {
+      "contributions": {
+        "EXE-20261011T073712704Z-a851bd5a": {
+          "actor": {
+            "id": "openai/codex",
+            "kind": "agent",
+            "model": "unknown",
+            "provider": "openai",
+            "runtime": "codex"
+          },
+          "at": "2026-10-11T07:41:54.341Z",
+          "last": "2026-10-11T07:44:34.971Z",
+          "operations": [
+            "created",
+            "modified"
+          ],
+          "reason": "Record dependency-readiness bypass reproduction and opaque preparation boundary"
+        }
+      }
+    },
+    "related_documents": [
+      "docs/architecture/ecir-v1.md",
+      "src/Ordo.Core/ConstructionIr.fs",
+      "tests/Ordo.Tests/ConstructionIrTests.fs"
+    ],
+    "status": "draft",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "ecir",
+      "prevention",
+      "readiness",
+      "gh-61"
+    ],
+    "title": "Prepare cohorts only after transitive dependency readiness checks",
+    "type": "decision-record",
+    "updated": "2026-10-11"
   }
 ]

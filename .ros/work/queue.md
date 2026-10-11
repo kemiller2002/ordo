@@ -12,6 +12,7 @@
 | GH-44 | GH-44 | complete |  |  |
 | GH-46 | GH-46 | complete |  |  |
 | GH-52 | GH-52 | complete |  |  |
+| GH-61 | GH-61 | active |  |  |
 | RELEASE-1-4-1 | Release Ordo 1.4.1 | complete |  | medium |
 | RELEASE-1-4-2 | Release Ordo 1.4.2 | complete |  | medium |
 | RELEASE-1-5-0 | Release Ordo 1.5.0 | complete |  | medium |
@@ -50,7 +51,7 @@
 | WI-0032 | Build and publish the Ordo public website (Echelon Foundry State-Directed Engineering methodology) as an F#-generated, evidence-traceable static site deployed via GitHub Pages | complete |  | medium |
 | WI-0033 | Correct the Ordo site's deployment target: the custom domain ordo.echelonfoundry.com serves from the root, not a project-page path prefix | complete |  | medium |
 | WI-0034 | Reposition the Ordo website as an outcome-led marketing site grounded in independent AI-engineering research and the five time-entry implementation trials | complete |  | medium |
-| WI-0035 | Register the agent-cost experiment and its hypothesis | active | research | medium |
+| WI-0035 | Register the agent-cost experiment and its hypothesis | abandoned | research | medium |
 | WI-0036 | Register the agent-cost experiment and its hypothesis | complete | research | medium |
 | WI-0037 | Continue the agent-cost experiment as EX-SDE-2026-0002 | active | research | medium |
 | WI-0038 | Executable Ordo v0.1: bounded decision vertical slice | complete | ordo, executable-intelligence | high |

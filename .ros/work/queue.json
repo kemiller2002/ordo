@@ -12,10 +12,10 @@
         "inventory"
       ],
       "priority": "high",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T06:12:54.658Z",
-      "updatedAt": "2026-09-02T06:13:06.568Z",
+      "updatedAt": "2026-09-02T06:34:32.192Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -30,10 +30,10 @@
         "experiment-1"
       ],
       "priority": "medium",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T06:13:44.042Z",
-      "updatedAt": "2026-09-02T06:13:55.236Z",
+      "updatedAt": "2026-09-02T06:34:32.265Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -48,10 +48,10 @@
         "experiment-2"
       ],
       "priority": "medium",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T06:13:44.111Z",
-      "updatedAt": "2026-09-02T06:13:55.364Z",
+      "updatedAt": "2026-09-02T06:34:32.340Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -66,10 +66,10 @@
         "experiment-3"
       ],
       "priority": "high",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T06:13:44.179Z",
-      "updatedAt": "2026-09-02T06:13:55.494Z",
+      "updatedAt": "2026-09-02T06:34:32.410Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -84,10 +84,10 @@
         "four-tier"
       ],
       "priority": "high",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T06:13:44.244Z",
-      "updatedAt": "2026-09-02T06:13:55.617Z",
+      "updatedAt": "2026-09-02T06:34:32.477Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -102,10 +102,10 @@
         "boundary"
       ],
       "priority": "high",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T06:13:44.318Z",
-      "updatedAt": "2026-09-02T06:13:55.747Z",
+      "updatedAt": "2026-09-02T06:34:32.548Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -119,10 +119,10 @@
         "registry"
       ],
       "priority": "medium",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T06:13:44.387Z",
-      "updatedAt": "2026-09-02T06:13:55.873Z",
+      "updatedAt": "2026-09-02T06:34:32.616Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -136,10 +136,10 @@
         "traceability"
       ],
       "priority": "high",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T06:13:44.451Z",
-      "updatedAt": "2026-09-02T06:13:55.998Z",
+      "updatedAt": "2026-09-02T06:34:32.685Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -153,10 +153,10 @@
         "glossary"
       ],
       "priority": "medium",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T06:13:44.525Z",
-      "updatedAt": "2026-09-02T06:13:56.124Z",
+      "updatedAt": "2026-09-02T06:34:32.752Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -170,10 +170,10 @@
         "construction-method"
       ],
       "priority": "high",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T06:13:44.595Z",
-      "updatedAt": "2026-09-02T06:13:56.249Z",
+      "updatedAt": "2026-09-02T06:34:32.819Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -187,10 +187,10 @@
         "change-classification"
       ],
       "priority": "high",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T06:13:44.660Z",
-      "updatedAt": "2026-09-02T06:13:56.373Z",
+      "updatedAt": "2026-09-02T06:34:32.891Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -204,10 +204,10 @@
         "verification"
       ],
       "priority": "medium",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T06:13:44.724Z",
-      "updatedAt": "2026-09-02T06:13:56.515Z",
+      "updatedAt": "2026-09-02T06:34:32.961Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -221,10 +221,10 @@
         "agent-rules"
       ],
       "priority": "medium",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T06:13:44.791Z",
-      "updatedAt": "2026-09-02T06:13:56.661Z",
+      "updatedAt": "2026-09-02T06:34:33.029Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -238,10 +238,10 @@
         "metrics"
       ],
       "priority": "medium",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T06:13:44.854Z",
-      "updatedAt": "2026-09-02T06:13:56.819Z",
+      "updatedAt": "2026-09-02T06:34:33.106Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -255,10 +255,10 @@
         "method"
       ],
       "priority": "low",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T06:13:44.922Z",
-      "updatedAt": "2026-09-02T06:13:56.943Z",
+      "updatedAt": "2026-09-02T06:34:33.188Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -272,10 +272,10 @@
         "chronology"
       ],
       "priority": "medium",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T06:13:44.989Z",
-      "updatedAt": "2026-09-02T06:13:57.075Z",
+      "updatedAt": "2026-09-02T06:34:33.264Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -289,10 +289,10 @@
         "audit"
       ],
       "priority": "high",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T06:13:45.051Z",
-      "updatedAt": "2026-09-02T06:13:57.206Z",
+      "updatedAt": "2026-09-02T06:34:41.374Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -307,10 +307,10 @@
         "future"
       ],
       "priority": "medium",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T06:13:45.117Z",
-      "updatedAt": "2026-09-02T06:13:57.329Z",
+      "updatedAt": "2026-09-02T06:34:33.341Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -342,10 +342,10 @@
         "ci-fix"
       ],
       "priority": "high",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T06:40:43.246Z",
-      "updatedAt": "2026-09-02T06:40:51.293Z",
+      "updatedAt": "2026-09-02T06:40:51.504Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -360,10 +360,10 @@
         "packaging"
       ],
       "priority": "high",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T07:08:02.446Z",
-      "updatedAt": "2026-09-02T07:08:19.291Z",
+      "updatedAt": "2026-09-02T07:08:19.424Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -377,10 +377,10 @@
         "distribution"
       ],
       "priority": "high",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T11:37:50.353Z",
-      "updatedAt": "2026-09-02T11:37:50.446Z",
+      "updatedAt": "2026-09-02T11:40:24.621Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -395,10 +395,10 @@
         "release"
       ],
       "priority": "high",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T16:11:53.090Z",
-      "updatedAt": "2026-09-02T16:11:53.154Z",
+      "updatedAt": "2026-09-02T16:12:00.358Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -412,10 +412,10 @@
         "release"
       ],
       "priority": "high",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T19:49:53.548Z",
-      "updatedAt": "2026-09-02T19:50:27.854Z",
+      "updatedAt": "2026-09-02T19:50:38.038Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -430,10 +430,10 @@
         "ci"
       ],
       "priority": "high",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-02T20:09:18.271Z",
-      "updatedAt": "2026-09-02T20:09:22.081Z",
+      "updatedAt": "2026-09-02T20:09:41.692Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -449,10 +449,10 @@
         "verification"
       ],
       "priority": "high",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-05T18:45:39.161Z",
-      "updatedAt": "2026-09-05T18:45:43.122Z",
+      "updatedAt": "2026-09-05T20:43:29.580Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -486,10 +486,10 @@
         "telemetry"
       ],
       "priority": "high",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-06T02:17:18.647Z",
-      "updatedAt": "2026-09-06T02:17:25.867Z",
+      "updatedAt": "2026-09-07T08:51:20.270Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -505,10 +505,10 @@
         "packaging"
       ],
       "priority": "high",
-      "status": "captured",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-15T16:15:38.327Z",
-      "updatedAt": "2026-09-15T16:15:38.327Z",
+      "updatedAt": "2026-09-15T16:25:53.390Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -522,10 +522,10 @@
         "ci-fix"
       ],
       "priority": "high",
-      "status": "captured",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-15T16:40:46.777Z",
-      "updatedAt": "2026-09-15T16:40:46.777Z",
+      "updatedAt": "2026-09-15T16:40:52.865Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -539,10 +539,10 @@
         "release"
       ],
       "priority": "high",
-      "status": "captured",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-16T13:18:07.030Z",
-      "updatedAt": "2026-09-16T13:18:07.030Z",
+      "updatedAt": "2026-09-16T13:23:29.443Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -553,10 +553,10 @@
       "description": null,
       "tags": [],
       "priority": "medium",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-16T16:22:45.416Z",
-      "updatedAt": "2026-09-16T16:22:59.785Z",
+      "updatedAt": "2026-09-16T17:02:40.390Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -567,10 +567,10 @@
       "description": null,
       "tags": [],
       "priority": "medium",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-16T17:33:22.360Z",
-      "updatedAt": "2026-09-16T17:33:27.136Z",
+      "updatedAt": "2026-09-16T17:33:27.257Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -581,10 +581,10 @@
       "description": null,
       "tags": [],
       "priority": "medium",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-16T23:22:09.619Z",
-      "updatedAt": "2026-09-16T23:22:09.684Z",
+      "updatedAt": "2026-09-16T23:22:09.805Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -613,10 +613,10 @@
         "research"
       ],
       "priority": "medium",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-17T06:52:24.280Z",
-      "updatedAt": "2026-09-17T06:52:24.448Z",
+      "updatedAt": "2026-09-17T06:52:28.523Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
@@ -646,10 +646,10 @@
         "executable-intelligence"
       ],
       "priority": "high",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-09-18T17:15:43.758Z",
-      "updatedAt": "2026-09-18T17:15:47.302Z",
+      "updatedAt": "2026-09-18T17:45:06.079Z",
       "createdBy": "unknown",
       "source": "manual",
       "sourceReference": null
