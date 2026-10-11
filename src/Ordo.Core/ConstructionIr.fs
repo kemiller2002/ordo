@@ -92,6 +92,19 @@ type ReadinessViolation =
     | BlockedRequirement of key: string
     | MissingDecisionAuthorization of nodeId: string
 
+/// Semantic readiness snapshot, not authenticated execution authority.
+/// It retains exact inputs and required scope; no caller can construct success.
+type PreparedCohortView =
+    { Manifest: SourceManifest
+      Blueprint: Blueprint
+      CohortId: string
+      AssignedRequirementKeys: Set<string>
+      RequiredRequirementKeys: Set<string>
+      RequiredNodeIds: Set<string>
+      RequiredDecisionIds: Set<string> }
+
+type PreparedCohort = private PreparedCohort of PreparedCohortView
+
 [<Literal>]
 let SchemaVersion = "ecir/1"
 
@@ -259,7 +272,30 @@ let validate (manifest: SourceManifest) (blueprint: Blueprint) : Violation list 
     |> Seq.sortBy (sprintf "%A")
     |> Seq.toList
 
-/// Execution readiness checks ONLY one cohort after whole-artifact semantic
+/// Explicit dependencies plus the selected/dependent cohort's own construction
+/// obligations and required decisions. Other delivery cohorts are not included
+/// merely because they implement the same requirement. Used only after validate.
+let private cohortScope (blueprint: Blueprint) (cohort: ConstructionNode) =
+    let index = blueprint.Nodes |> List.map (fun n -> n.Id, n) |> Map.ofList
+    let rec visit seen pending =
+        match pending with
+        | [] -> seen
+        | id :: rest when Set.contains id seen -> visit seen rest
+        | id :: rest ->
+            let current = index[id]
+            let requiredDecisions =
+                blueprint.Nodes |> List.filter (fun n ->
+                    n.Kind = Decision && (n.RequirementKeys |> List.exists (fun key -> List.contains key current.RequirementKeys)))
+                |> List.map _.Id
+            let obligations =
+                if current.Kind <> Cohort then []
+                else
+                    blueprint.Requirements |> List.filter (fun r -> List.contains r.Source.Key current.RequirementKeys)
+                    |> List.collect _.NodeIds |> List.filter (fun id -> index[id].Kind <> Cohort)
+            visit (Set.add id seen) (current.DependsOn @ requiredDecisions @ obligations @ rest)
+    visit Set.empty [ cohort.Id ]
+
+/// Execution readiness checks one cohort and its required dependency scope after whole-artifact semantic
 /// validation. The caller must obtain authorizedDecisionIds from an external,
 /// verified authority, not from an agent-authored "approved" field.
 let validateCohort
@@ -277,9 +313,13 @@ let validateCohort
         | None -> [ MissingCohort cohortId ]
         | Some node when node.Kind <> Cohort -> [ NotACohort cohortId ]
         | Some node ->
+            let scope = cohortScope blueprint node
+            let requiredKeys =
+                blueprint.Nodes |> List.filter (fun n -> Set.contains n.Id scope)
+                |> List.collect _.RequirementKeys |> Set.ofList
             let requirements =
                 blueprint.Requirements
-                |> List.filter (fun r -> List.contains r.Source.Key node.RequirementKeys)
+                |> List.filter (fun r -> Set.contains r.Source.Key requiredKeys)
 
             let blocked =
                 requirements
@@ -292,10 +332,28 @@ let validateCohort
                 blueprint.Nodes
                 |> List.filter (fun n ->
                     n.Kind = Decision
-                    && (n.RequirementKeys |> List.exists (fun key -> List.contains key node.RequirementKeys))
+                    && Set.contains n.Id scope
                     && not (Set.contains n.Id authorizedDecisionIds))
                 |> List.map (fun n -> MissingDecisionAuthorization n.Id)
 
             blocked @ missingDecisions
             |> List.distinct
             |> List.sortBy (sprintf "%A")
+
+/// Pure preparation records established semantic facts, never signer or host
+/// authenticity. Authorization changes still require fresh host validation.
+let prepareCohort manifest blueprint cohortId authorizedDecisionIds =
+    match validateCohort manifest blueprint cohortId authorizedDecisionIds with
+    | errors when not errors.IsEmpty -> Error errors
+    | _ ->
+        let cohort = blueprint.Nodes |> List.find (fun n -> n.Id = cohortId)
+        let scope = cohortScope blueprint cohort
+        let nodes = blueprint.Nodes |> List.filter (fun n -> Set.contains n.Id scope)
+        Ok(PreparedCohort
+            { Manifest = manifest; Blueprint = blueprint; CohortId = cohortId
+              AssignedRequirementKeys = Set.ofList cohort.RequirementKeys
+              RequiredRequirementKeys = nodes |> List.collect _.RequirementKeys |> Set.ofList
+              RequiredNodeIds = scope
+              RequiredDecisionIds = nodes |> List.filter (fun n -> n.Kind = Decision) |> List.map _.Id |> Set.ofList })
+
+let preparedCohortView (PreparedCohort view) = view

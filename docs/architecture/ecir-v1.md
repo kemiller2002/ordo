@@ -53,6 +53,23 @@ Each node has a stable ID, a typed kind (decision, contract, invariant, interfac
 | Construction ready | No unresolved hard blockers affecting cohort; authorized decisions, dependency graph, pinned compatible versions and independent verification plan | Praxis using Ordo results and external approvals |
 | Completion | Independently observed acceptance, constraints, mutations/adversarial tests, code and evidence per original requirement | Dokimos and Praxis |
 
+`ConstructionIr.validateCohort` checks the selected cohort's construction
+obligations and required decisions, then follows explicit `DependsOn` edges
+transitively. A referenced cohort brings its own obligations; required decisions
+for reached requirements are also included. Deferred, unresolved, rejected or
+superseded requirements within this required scope refuse readiness. Unrelated
+requirements stay in the lossless registry without blocking this cohort.
+
+`ConstructionIr.prepareCohort` returns a private-constructor `PreparedCohort`
+only after whole-artifact validation and scoped readiness succeed. Its view
+retains the exact immutable manifest and blueprint, selected cohort and required
+source/node/decision sets. Assigned requirement keys remain distinct from the
+required dependency scope: a prerequisite does not become work implemented by
+this cohort. This pure snapshot is not authenticated authority,
+proof of source trust, completed dependency work or a transferable permission.
+Hosts must independently pin inputs, verify approvals and recheck before effects.
+It has no new wire representation or enabled Praxis runtime route.
+
 A failed gate is an explicit refusal with actionable IDs. An agent may revise a new blueprint version; it must never silently rewrite history or override an approved decision.
 
 ## Start with a lossless, deliberately unresolved scaffold
