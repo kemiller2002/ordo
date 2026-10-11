@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-11T07:43:28.101Z",
+  "updatedAt": "2026-10-11T07:45:53.483Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -1215,13 +1215,48 @@
     {
       "id": "GH-61",
       "type": "task",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-10-11T07:37:12.000Z",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ConstructionIr.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ConstructionIrTests.fs"
+        },
+        {
+          "type": "documentation",
+          "path": "docs/architecture/ecir-v1.md"
+        }
+      ],
+      "updatedAt": "2026-10-11T07:45:53.483Z",
       "telemetryExecutionIds": [
         "EXE-20261011T073712704Z-a851bd5a"
-      ]
+      ],
+      "latestCheckpoint": {
+        "id": "91dd0e667bd1e382b36bc583",
+        "recordedAt": "2026-10-11T07:45:46.967Z",
+        "executionId": "EXE-20261011T073712704Z-a851bd5a",
+        "repository": "ordo",
+        "branch": "feat/ecir-dependency-readiness",
+        "commit": "e02bfe0d340249a09a25504ca63d7305a4d1067b",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo.git"
+        },
+        "remoteBranch": "feat/ecir-dependency-readiness",
+        "remoteCommit": "e02bfe0d340249a09a25504ca63d7305a4d1067b",
+        "summary": "Published exact tested transitive readiness and opaque preparation source. Four reproduced bypasses now refuse; 257 full Ordo.Tests pass, one live test skipped. Native state mismatch GH-62 reconciled and validation passes; runtime/package pins unchanged.",
+        "nextAction": "Review Ordo PR and native net8 CI; qualify released Ordo semantics before Praxis runtime consumption.",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-11T07:45:53.483Z",
+      "conclusion": "Published first semantic prevention slice; CI and host/package qualification remain tracked separately."
     }
   ]
 }
