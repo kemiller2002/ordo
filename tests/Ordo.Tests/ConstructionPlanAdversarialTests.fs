@@ -576,7 +576,15 @@ let private publicProducers (target: Type) =
 [<Fact>]
 let ``validate is the only public way to obtain a ValidatedPlan`` () =
     Assert.Empty(typeof<ValidatedPlan>.GetConstructors())
-    Assert.Equal<string[]>([| "Ordo.Core.ConstructionPlan.validate" |], publicProducers typeof<ValidatedPlan>)
+    // A consensus result carries the plan its own `validate` call returned
+    // (ConstructionPlanConsensus.combine); its getter cannot mint one.
+    Assert.Equal<string[]>(
+        [| "Ordo.Core.ConstructionPlan.validate"; "Ordo.Core.ConstructionPlanConsensus+ConsensusResult.get_Plan" |],
+        publicProducers typeof<ValidatedPlan>)
+    Assert.Equal<string[]>(
+        [| "Ordo.Core.ConstructionPlanConsensus.combine" |],
+        publicProducers typeof<ConstructionPlanConsensus.ConsensusResult>)
+    Assert.Empty(typeof<ConstructionPlanConsensus.ConsensusResult>.GetConstructors())
     // And validate needs a PreparedCohort, which only prepareCohort produces.
     Assert.Equal<string[]>([| "Ordo.Core.ConstructionIr.prepareCohort" |], publicProducers typeof<PreparedCohort>)
 

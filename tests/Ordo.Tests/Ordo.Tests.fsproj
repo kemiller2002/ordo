@@ -35,6 +35,7 @@
     <Compile Include="FsiProbe.fs" />
     <Compile Include="ConstructionPlanTests.fs" />
     <Compile Include="ConstructionPlanAdversarialTests.fs" />
+    <Compile Include="ConstructionPlanConsensusTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

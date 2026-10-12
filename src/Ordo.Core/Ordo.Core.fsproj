@@ -60,6 +60,7 @@
     <Compile Include="ConstructionIrWire.fs" />
     <Compile Include="ConstructionPlan.fs" />
     <Compile Include="ConstructionPlanWire.fs" />
+    <Compile Include="ConstructionPlanConsensus.fs" />
   </ItemGroup>
 
 </Project>
