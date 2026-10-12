@@ -563,5 +563,53 @@
     "title": "Require a declared effect-failure disposition in construction vocabulary 2",
     "type": "decision-record",
     "updated": "2026-10-12"
+  },
+  {
+    "created": "2026-10-12",
+    "id": "DF-SDE-2026-0021",
+    "path": "research/decisions/DF-SDE-2026-0021--combine-independent-plans-without-a-winner.md",
+    "provenance": {
+      "contributions": {
+        "EXE-20261012T212905057Z-9b1bcf75": {
+          "actor": {
+            "id": "anthropic/claude-code",
+            "kind": "agent",
+            "model": "unknown",
+            "provider": "anthropic",
+            "runtime": "claude-code"
+          },
+          "at": "2026-10-12T21:45:37.815Z",
+          "evidence": [
+            "tests/Ordo.Tests/ConstructionPlanConsensusTests.fs"
+          ],
+          "operations": [
+            "created"
+          ],
+          "reason": "Record the construction-plan consensus decision (WI-0044)"
+        }
+      }
+    },
+    "related_documents": [
+      "docs/architecture/construction-plan-consensus.md",
+      "docs/architecture/construction-plan-v1.md",
+      "research/decisions/DF-SDE-2026-0018--constrain-construction-to-a-typed-vocabulary.md",
+      "research/decisions/DF-SDE-2026-0020--require-a-declared-effect-failure-disposition.md",
+      "src/Ordo.Core/ConstructionPlanConsensus.fs",
+      "tests/Ordo.Tests/ConstructionPlanConsensusTests.fs",
+      "tests/fixtures/construction/time-entry-timer-pilot-01/README.md"
+    ],
+    "status": "draft",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "construction",
+      "consensus",
+      "plans",
+      "unresolved",
+      "plan-consensus"
+    ],
+    "title": "Combine independent construction plans without choosing a winner",
+    "type": "decision-record",
+    "updated": "2026-10-12"
   }
 ]

@@ -5,6 +5,8 @@ Status: **draft / implemented in `Ordo.Core`**. Contract owner: Ordo. Tracking:
 Consumer: [ordo#65](https://github.com/kemiller2002/ordo/issues/65) (`Ordo.Construction`).
 Decision: [`DF-SDE-2026-0018`](../../research/decisions/DF-SDE-2026-0018--constrain-construction-to-a-typed-vocabulary.md).
 Vocabulary 2 (effect-failure disposition): [`DF-SDE-2026-0020`](../../research/decisions/DF-SDE-2026-0020--require-a-declared-effect-failure-disposition.md).
+Combining independent plans: [construction plan consensus](construction-plan-consensus.md),
+decision [`DF-SDE-2026-0021`](../../research/decisions/DF-SDE-2026-0021--combine-independent-plans-without-a-winner.md).
 
 ## Purpose
 
@@ -246,7 +248,8 @@ schema or vocabulary version change, not an updated constant.
 whether the plan was formed against exactly that cohort.
 
 A validated plan proves only semantic agreement with one exact prepared
-cohort. It is **not** authenticated authority, not host permission, not
+cohort. The same holds for a plan combined from several drafts by
+[`ConstructionPlanConsensus`](construction-plan-consensus.md). It is **not** authenticated authority, not host permission, not
 evidence of implementation and not evidence of verification. Hosts (Praxis
 #242) pin the plan digest, recheck approvals and control every effect.
 
@@ -280,3 +283,8 @@ unchanged meaning. New plans use `VocabularyVersion2`.
 - Vocabulary 2 negatives: section 9 of
   `tests/Ordo.Tests/ConstructionPlanAdversarialTests.fs`.
 - Compile negatives: `tests/Ordo.Tests/ConstructionPlanTests.fs`.
+- Consensus over independent plans, including the time-entry pilot's
+  agent-produced plans B1, B2 and B3
+  (`tests/fixtures/construction/time-entry-timer-pilot-01/`):
+  `tests/Ordo.Tests/ConstructionPlanConsensusTests.fs`. See
+  [construction plan consensus](construction-plan-consensus.md).

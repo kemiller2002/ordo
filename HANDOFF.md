@@ -1,5 +1,26 @@
 # State Directed Engineering handoff
 
+## Latest: construction-plan consensus (WI-0044), 2026-10-12
+
+**Objective.** No single agent decides structure or drops a question:
+`ConstructionPlanConsensus.combine` keeps only the structure every
+independent draft proposed and turns any other proposal into an explicit
+unresolved disagreement. Evidence: time-entry timer pilot 01
+(research-documents PR #7, research-documents#6).
+
+**Authority.** [`docs/architecture/construction-plan-consensus.md`](docs/architecture/construction-plan-consensus.md)
+and `DF-SDE-2026-0021`. No majority vote. An invalid combined plan is refused
+with its disagreements, never repaired. The result is not authority.
+
+**Evidence.** `tests/Ordo.Tests/ConstructionPlanConsensusTests.fs`; the
+pilot's agent-produced plans B1, B2 and B3 are verbatim fixtures in
+`tests/fixtures/construction/time-entry-timer-pilot-01/`. Their consensus has
+11 agreed operations, 0 disagreements and 9 questions, with a pinned digest.
+
+**Not done.** No `sde` command: the CLI has no construction-plan family, and
+an approval flag would be a new authority surface. No host (Praxis) wiring. No
+version bump.
+
 ## Latest: Construction by Design (GH-59, GH-61, GH-64, GH-65), 2026-10-12
 
 **Objective.** Remove structural choices from coding agents. They express

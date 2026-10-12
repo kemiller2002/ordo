@@ -207,9 +207,9 @@ let private nameKey raw =
 let private question (label: string) (proposals: Proposal list) (notProposing: int list) =
     let proposed = proposals |> List.map (fun p -> sprintf "%s proposed %s." (draftsText p.Drafts) p.Variant)
     let absent = if List.isEmpty notProposing then [] else [ sprintf "%s proposed nothing for %s." (draftsText notProposing) label ]
+    let capitalized (sentence: string) = string (Char.ToUpperInvariant sentence[0]) + sentence.Substring 1
     let sentences = proposed @ absent @ [ "Consensus does not choose between independent drafts; a person must decide." ]
-    let text = String.Join(" ", sentences)
-    string (Char.ToUpperInvariant text[0]) + text.Substring 1
+    String.Join(" ", sentences |> List.map capitalized)
 
 let private record kind label (proposals: Proposal list) (all: int list) effect trace =
     let proposing = proposals |> List.collect _.Drafts |> List.distinct |> List.sort

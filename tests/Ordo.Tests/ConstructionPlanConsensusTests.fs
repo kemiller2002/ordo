@@ -232,7 +232,11 @@ let ``an extra transition in one draft becomes a disagreement, not a construct``
     Assert.Equal<int list>([ proposer ], d.Proposing)
     Assert.Equal<int list>([ 1; 2; 3 ] |> List.except [ proposer ], d.NotProposing)
     let record = unresolvedIn result |> List.find (fun u -> u.Subject.Key = d.Subject)
-    Assert.Contains(sprintf "Draft %d proposed defineTransition Restart from Paused to Running." proposer, record.Question)
+    let others = [ 1; 2; 3 ] |> List.except [ proposer ]
+    Assert.Equal(
+        sprintf "Draft %d proposed defineTransition Restart from Paused to Running. Drafts %d and %d proposed nothing for transition:Paused/Restart. Consensus does not choose between independent drafts; a person must decide."
+            proposer others[0] others[1],
+        record.Question)
     Assert.Equal(None, record.Effect)
     // Requirement coverage is preserved through the record's trace.
     let restartTrace = traceAt "transition:Paused/Resume"
