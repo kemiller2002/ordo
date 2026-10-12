@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-12T12:50:44.000Z",
+  "updatedAt": "2026-10-12T13:03:07.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -1314,13 +1314,59 @@
     {
       "id": "GH-64",
       "type": "task",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-10-12T12:50:44.000Z",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ConstructionPlan.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ConstructionPlanWire.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ConstructionPlanTests.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ConstructionPlanAdversarialTests.fs"
+        },
+        {
+          "type": "documentation",
+          "path": "docs/architecture/construction-plan-v1.md"
+        },
+        {
+          "type": "decision",
+          "path": "research/decisions/DF-SDE-2026-0018--constrain-construction-to-a-typed-vocabulary.md"
+        }
+      ],
+      "updatedAt": "2026-10-12T13:03:07.000Z",
       "telemetryExecutionIds": [
         "EXE-20261012T125044669Z-9fb1c008"
-      ]
+      ],
+      "latestCheckpoint": {
+        "id": "c7ffeb22b9a0ce4d8b8ac7cd",
+        "recordedAt": "2026-10-12T13:03:00.000Z",
+        "executionId": "EXE-20261012T125044669Z-9fb1c008",
+        "repository": "ordo",
+        "branch": "feat/gh-64-construction-plan",
+        "commit": "870548ef0d4e25d886dc816e93bee5756c2ac669",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "feat/gh-64-construction-plan",
+        "remoteCommit": "870548ef0d4e25d886dc816e93bee5756c2ac669",
+        "summary": "Typed construction vocabulary, strict wire, validation against prepared cohorts, fixture, adversarial and compile-negative tests",
+        "nextAction": "Implement Ordo.Construction deterministic workflow constructor (GH-65)",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-12T13:03:07.000Z"
     }
   ]
 }
