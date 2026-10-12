@@ -59,11 +59,15 @@ transitively. A referenced cohort brings its own obligations; required decisions
 for reached requirements are also included. Deferred, unresolved, rejected or
 superseded requirements within this required scope refuse readiness. Unrelated
 requirements stay in the lossless registry without blocking this cohort.
+A standalone `engineeringRationale` (one with no originating requirement) that is
+reached in required scope is model-authored architecture: it refuses readiness
+with `MissingRationaleAuthorization` unless the externally supplied authorization
+set names it, exactly like a decision. Its own justification text is not approval.
 
 `ConstructionIr.prepareCohort` returns a private-constructor `PreparedCohort`
 only after whole-artifact validation and scoped readiness succeed. Its view
 retains the exact immutable manifest and blueprint, selected cohort and required
-source/node/decision sets. Assigned requirement keys remain distinct from the
+source/node/decision/rationale sets. Assigned requirement keys remain distinct from the
 required dependency scope: a prerequisite does not become work implemented by
 this cohort. This pure snapshot is not authenticated authority,
 proof of source trust, completed dependency work or a transferable permission.
@@ -100,7 +104,14 @@ Reason over related requirements together, select cohesive implementation cohort
 
 ## Wire and determinism
 
-Initial wire version: `ecir/1`. An ECIR artifact pins the source manifest digest; its canonical JSON digest is content-addressed and transmitted to execution agents by immutable Git reference. The JSON schema gives **structural** validation only; the Ordo validator enforces source-set equality and semantic rules. It must not accept an LLM-authored manifest as the source authority. JSON keys, reference strings and hashes have stable explicit meanings; a breaking semantic change requires a schema version change.
+Initial wire version: `ecir/1`. An ECIR artifact pins the source manifest digest; its canonical JSON digest is content-addressed and transmitted to execution agents by immutable Git reference. A host that reviewed a blueprint pins that digest and checks it with `ConstructionIrWire.verifyBlueprintDigest`; an edited or substituted blueprint is refused rather than treated as the reviewed one. Downstream construction plans bind both digests (see `docs/architecture/construction-plan-v1.md`). The JSON schema gives **structural** validation only; the Ordo validator enforces source-set equality and semantic rules. It must not accept an LLM-authored manifest as the source authority. JSON keys, reference strings and hashes have stable explicit meanings; a breaking semantic change requires a schema version change.
+
+Semantic validation is bounded on adversarial input: dependency-cycle detection
+peels acyclic nodes rather than enumerating paths, so a blueprint built from
+chained diamonds cannot stall the validator. Every node from which a cycle is
+reachable is reported. A supersession chain that loops back on itself is
+refused as `InvalidSupersession` for each member, because it redirects every
+member to nothing.
 
 ## Important negative tests
 

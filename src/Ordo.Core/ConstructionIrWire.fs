@@ -281,6 +281,16 @@ let verifyManifestDigest (manifest: SourceManifest) : Result<unit, string> =
         Error "source manifest digest does not match canonical source identity/content"
     else Ok ()
 
+/// A host pins the blueprint digest it reviewed. A substituted or edited
+/// blueprint has a different canonical digest and is refused here rather than
+/// silently treated as the reviewed artifact.
+let verifyBlueprintDigest (pinned: string) (blueprint: Blueprint) : Result<unit, string> =
+    if not (isSha256 pinned) then
+        Error "the pinned blueprint digest must be a lowercase 64-hex SHA-256 value"
+    elif pinned <> blueprintDigest blueprint then
+        Error "blueprint does not match its pinned canonical digest"
+    else Ok ()
+
 let encodeManifest (manifest: SourceManifest) =
     JObject [
         "digest", JString manifest.Digest

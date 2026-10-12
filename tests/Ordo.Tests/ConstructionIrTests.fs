@@ -264,3 +264,112 @@ let ``dependent cohort obligations and diamond dependencies are checked once`` (
     let errors = validateCohort manifest candidate "COHORT" Set.empty
     Assert.True((errors = [ MissingDecisionAuthorization "D2"; MissingDecisionAuthorization "DEC" ]), "dependency closure omitted or duplicated approval")
     Assert.Empty(validateCohort manifest candidate "COHORT" (Set.ofList [ "DEC"; "D2" ]))
+
+// ---- ECIR-001 / GH-59 hardening: negative coverage the issue names explicitly ----
+
+[<Fact>]
+let ``a requirement pointing at an unrecognized node is refused`` () =
+    let row = mapping a Modeled [ "DEC"; "VERIFY"; "COHORT"; "GHOST" ]
+    contains (MissingNode(a.Key, "GHOST"))
+        (validate manifest { blueprint with Requirements = row :: List.tail blueprint.Requirements })
+
+[<Fact>]
+let ``a node pointing at an unknown requirement is refused`` () =
+    let nodes = blueprint.Nodes |> List.map (fun n -> if n.Id = "DEC" then { n with RequirementKeys = [ a.Key; "domain/R-404" ] } else n)
+    contains (MissingRequirementReference("DEC", "domain/R-404")) (validate manifest { blueprint with Nodes = nodes })
+
+[<Fact>]
+let ``duplicate edges in either direction are refused`` () =
+    let row = mapping a Modeled [ "DEC"; "DEC"; "VERIFY"; "COHORT" ]
+    contains (DuplicateLink(a.Key, "DEC"))
+        (validate manifest { blueprint with Requirements = row :: List.tail blueprint.Requirements })
+    let nodes = blueprint.Nodes |> List.map (fun n -> if n.Id = "DEC" then { n with RequirementKeys = [ a.Key; a.Key ] } else n)
+    contains (DuplicateLink("DEC", a.Key)) (validate manifest { blueprint with Nodes = nodes })
+
+[<Fact>]
+let ``every nonmodeled disposition needs its explaining node kind`` () =
+    for disposition, expected in [ Deferred "later", Deferral; Unresolved "pending", Conflict; Rejected "declined", EngineeringRationale ] do
+        let nodes = blueprint.Nodes |> List.map (fun n -> if n.Id = "DEF" then { n with Kind = Contract } else n)
+        let rows = [ List.head blueprint.Requirements; mapping b disposition [ "DEF" ] ]
+        contains (MissingDispositionNode(b.Key, expected)) (validate manifest { blueprint with Requirements = rows; Nodes = nodes })
+
+[<Fact>]
+let ``supersession must target a real requirement and cannot form a loop`` () =
+    let rows = [ List.head blueprint.Requirements; mapping b (Superseded("domain/R-404", "replaced")) [ "DEF" ] ]
+    contains (InvalidSupersession(b.Key, "domain/R-404")) (validate manifest { blueprint with Requirements = rows })
+
+    let c = source "domain/R-003" "R-003"
+    let looped = { manifest with Requirements = [ a; b; c ] }
+    let candidate =
+        { blueprint with
+            Requirements =
+                [ List.head blueprint.Requirements
+                  mapping b (Superseded(c.Key, "replaced by R-003")) [ "DEF" ]
+                  mapping c (Superseded(b.Key, "replaced by R-002")) [ "DEF" ] ]
+            Nodes = blueprint.Nodes |> List.map (fun n -> if n.Id = "DEF" then { n with RequirementKeys = [ b.Key; c.Key ] } else n) }
+    let errors = validate looped candidate
+    contains (InvalidSupersession(b.Key, c.Key)) errors
+    contains (InvalidSupersession(c.Key, b.Key)) errors
+
+[<Fact>]
+let ``blank source identity fields fail closed`` () =
+    let blank = { a with Location = " " }
+    contains (InvalidField("manifest:" + a.Key, "location")) (validate { manifest with Requirements = [ blank; b ] } blueprint)
+
+[<Fact>]
+let ``cycle detection stays linear on adversarial diamond chains`` () =
+    // 2^40 distinct paths; a path-enumerating cycle search never returns.
+    let depth = 40
+    let layer i = [ sprintf "L%d-A" i; sprintf "L%d-B" i ]
+    let chain =
+        [ for i in 0 .. depth - 1 do
+            for id in layer i do
+                { node id Invariant [ a.Key ] with DependsOn = if i = depth - 1 then [] else layer (i + 1) } ]
+    let ids = chain |> List.map _.Id
+    let candidate =
+        { blueprint with
+            Requirements = mapping a Modeled ([ "DEC"; "VERIFY"; "COHORT" ] @ ids) :: List.tail blueprint.Requirements
+            Nodes = blueprint.Nodes @ chain }
+    let work = System.Threading.Tasks.Task.Run(fun () -> validate manifest candidate)
+    Assert.True(work.Wait(System.TimeSpan.FromSeconds 20.0), "cycle detection did not finish")
+    Assert.Empty(work.Result)
+
+[<Fact>]
+let ``cycle detection still names every node that reaches a cycle`` () =
+    let nodes =
+        blueprint.Nodes
+        |> List.map (fun n ->
+            if n.Id = "COHORT" then { n with DependsOn = [ "DEC" ] }
+            elif n.Id = "DEC" then { n with DependsOn = [ "VERIFY" ] }
+            elif n.Id = "VERIFY" then { n with DependsOn = [ "DEC" ] }
+            else n)
+    let cycles = validate manifest { blueprint with Nodes = nodes } |> List.filter (function DependencyCycle _ -> true | _ -> false)
+    Assert.Equal<Violation list>([ DependencyCycle "COHORT"; DependencyCycle "DEC"; DependencyCycle "VERIFY" ], cycles)
+
+// ---- GH-61: an engineering rationale with no originating requirement cannot approve itself ----
+
+let private standaloneRationale =
+    { blueprint with
+        Nodes =
+            (blueprint.Nodes |> List.map (fun n -> if n.Id = "COHORT" then { n with DependsOn = [ "WHY" ] } else n))
+            @ [ { node "WHY" EngineeringRationale [] with Justification = Some "shared clock abstraction" } ] }
+
+[<Fact>]
+let ``a standalone engineering rationale in required scope needs external authorization`` () =
+    Assert.Empty(validate manifest standaloneRationale)
+    contains (MissingRationaleAuthorization "WHY") (validateCohort manifest standaloneRationale "COHORT" (Set.singleton "DEC"))
+    Assert.Empty(validateCohort manifest standaloneRationale "COHORT" (Set.ofList [ "DEC"; "WHY" ]))
+
+[<Fact>]
+let ``an unrelated standalone rationale does not block the cohort`` () =
+    let unrelated = { standaloneRationale with Nodes = standaloneRationale.Nodes |> List.map (fun n -> if n.Id = "COHORT" then { n with DependsOn = [] } else n) }
+    Assert.Empty(validateCohort manifest unrelated "COHORT" (Set.singleton "DEC"))
+
+[<Fact>]
+let ``prepared snapshots record the authorized rationale scope separately from decisions`` () =
+    match prepareCohort manifest standaloneRationale "COHORT" (Set.ofList [ "DEC"; "WHY" ]) with
+    | Error errors -> failwithf "%A" errors
+    | Ok prepared ->
+        let view = preparedCohortView prepared
+        Assert.Equal<Set<string>>(Set.singleton "DEC", view.RequiredDecisionIds)
+        Assert.Equal<Set<string>>(Set.singleton "WHY", view.RequiredRationaleIds)

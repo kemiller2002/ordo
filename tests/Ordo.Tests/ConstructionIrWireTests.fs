@@ -153,3 +153,37 @@ let ``scaffold rejects tampered, empty and duplicated independent input`` () =
         { Requirements = [ r1; r1 ]
           Digest = manifestDigest [ r1; r1 ] }
     Assert.True(scaffold duplicated |> Result.isError)
+
+// ---- GH-59 hardening ----
+
+[<Fact>]
+let ``a host-pinned blueprint digest refuses a stale or substituted blueprint`` () =
+    let pinned = blueprintDigest blueprint
+    Assert.True(verifyBlueprintDigest pinned blueprint |> Result.isOk)
+    let substituted = { blueprint with Requirements = [ { deferred with Disposition = Deferred "another reason" }; modeled ] }
+    Assert.True(verifyBlueprintDigest pinned substituted |> Result.isError)
+    Assert.True(verifyBlueprintDigest "sha256:not-hex" blueprint |> Result.isError)
+
+[<Fact>]
+let ``canonical blueprint bytes are stable across repeated encoding`` () =
+    let once = canonicalBlueprint blueprint
+    Assert.Equal(once, canonicalBlueprint (readBlueprint (encodeBlueprint blueprint) |> expectOk))
+    Assert.Equal(once, canonicalBlueprint blueprint)
+
+[<Fact>]
+let ``every disposition variant round-trips through the strict reader`` () =
+    for disposition in [ Modeled; Deferred "d"; Unresolved "u"; Rejected "r"; Superseded(r1.Key, "s") ] do
+        let candidate = { blueprint with Requirements = [ { deferred with Disposition = disposition }; modeled ] }
+        Assert.Equal(candidate, readBlueprint (encodeBlueprint candidate) |> expectOk)
+
+[<Fact>]
+let ``unknown node kinds, unknown dispositions, wrong types and blank strings are refused`` () =
+    let text = encodeBlueprint blueprint
+    for mutated in
+        [ text.Replace("\"kind\": \"deferral\"", "\"kind\": \"generatedCode\"")
+          text.Replace("\"kind\": \"deferred\"", "\"kind\": \"approved\"")
+          text.Replace("\"dependsOn\": []", "\"dependsOn\": \"DECISION\"")
+          text.Replace("\"reason\": \"release scope\"", "\"reason\": \"  \"")
+          text.Replace("\"id\": \"DEFERRAL\"", "\"id\": 7") ] do
+        Assert.NotEqual<string>(text, mutated)
+        Assert.True(readBlueprint mutated |> Result.isError, mutated)
