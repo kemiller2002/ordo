@@ -71,7 +71,7 @@ let ``no orchestration tier is generated for a plan that declares no ports`` () 
     // The two requirements the ports carried stay covered, explicitly undecided.
     let kept =
         noPorts
-        @ [ DeclareUnresolved { Subject = "Elapsed time"; Question = "How segments are timed without a clock port is undecided."; Trace = { RequirementKeys = [ paused ]; NodeIds = [ "IFC-TIMER-PORTS" ] } } ]
+        @ [ DeclareUnresolved { Subject = "Elapsed time"; Effect = None; Question = "How segments are timed without a clock port is undecided."; Trace = { RequirementKeys = [ paused ]; NodeIds = [ "IFC-TIMER-PORTS" ] } } ]
         |> List.map (function
             | DeclareUnresolved u when u.Subject = "Stop completion refused" -> DeclareUnresolved { u with Trace = { u.Trace with RequirementKeys = [ completion ] } }
             | other -> other)
@@ -83,7 +83,7 @@ let ``no orchestration tier is generated for a plan that declares no ports`` () 
 
 [<Fact>]
 let ``every artifact stays inside its workflow's ownership root`` () =
-    for fixture in [ timer; door ] do
+    for fixture in [ timer; door ] @ timerV2Fixtures do
         let c = construction fixture
         for a in c.Artifacts do
             Assert.StartsWith(c.OwnershipRoot, a.Path)
@@ -117,12 +117,13 @@ let private content (c: Construction) (tier: Tier) =
 
 [<Fact>]
 let ``no lower tier refers to a higher tier`` () =
-    for fixture, wf in [ timer, "Timer"; door, "Door" ] do
+    for fixture, wf in [ timer, "Timer"; door, "Door"; timerRemain, "TimerRemain"; timerProceed, "TimerProceed"; timerUnresolved, "TimerUnresolved" ] do
         let c = construction fixture
         let model, transition, orchestration = content c SemanticModel, content c Transition, content c Orchestration
-        for higher in [ wf + "Transition"; wf + "Refusal"; wf + "Decision"; wf + "Rules"; "I" + wf + "Ports"; wf + "Orchestration"; wf + "Result"; wf + "EffectOutcome" ] do
+        let tier3 = [ "I" + wf + "Ports"; wf + "Orchestration"; wf + "Result"; wf + "EffectOutcome"; wf + "EffectFailure"; wf + "FailureDisposition" ]
+        for higher in [ wf + "Transition"; wf + "Refusal"; wf + "Decision"; wf + "Rules" ] @ tier3 do
             Assert.DoesNotContain(higher, model)
-        for higher in [ "I" + wf + "Ports"; wf + "Orchestration"; wf + "Result"; wf + "EffectOutcome"; "DateTimeOffset" ] do
+        for higher in tier3 @ [ "DateTimeOffset" ] do
             Assert.DoesNotContain(higher, transition)
         Assert.Contains(wf + "Transition.decide", orchestration)
 
@@ -132,19 +133,20 @@ let ``generated code contains no effect, escape hatch or permissive default`` ()
         [ "open "; "System.IO"; "System.Net"; "Process"; "Environment"; "Console"; "printf"; "#r"; "#load"
           "DllImport"; "extern"; "Reflection"; "Unchecked"; "failwith"; "raise"; "mutable"; "<-"
           "_ ->"; "fun _ -> true"; "Task"; "async"; "Thread" ]
-    for fixture in [ timer; door ] do
+    for fixture in [ timer; door ] @ timerV2Fixtures do
         for a in (construction fixture).Artifacts |> List.filter (fun a -> a.Tier.IsSome) do
             for token in forbidden do
                 Assert.False(a.Content.Contains token, sprintf "%s contains %s" a.Path token)
 
 [<Fact>]
 let ``requirement text, questions and trace keys never reach generated code`` () =
-    let c = construction timer
-    let v = view (validated timer)
-    for a in c.Artifacts |> List.filter (fun a -> a.Tier.IsSome) do
-        for key in v.AssignedRequirementKeys do Assert.DoesNotContain(key, a.Content)
-        for u in v.Workflow.Unresolved do Assert.DoesNotContain(u.Question, a.Content)
-        Assert.DoesNotContain(v.Binding.CohortId, a.Content)
+    for fixture in timer :: timerV2Fixtures do
+        let c = construction fixture
+        let v = view (validated fixture)
+        for a in c.Artifacts |> List.filter (fun a -> a.Tier.IsSome) do
+            for key in v.AssignedRequirementKeys do Assert.DoesNotContain(key, a.Content)
+            for u in v.Workflow.Unresolved do Assert.DoesNotContain(u.Question, a.Content)
+            Assert.DoesNotContain(v.Binding.CohortId, a.Content)
 
 // ---- the engine performs no effects ----
 

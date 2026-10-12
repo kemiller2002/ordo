@@ -831,6 +831,27 @@
       },
       "source": "manual",
       "sourceReference": null
+    },
+    {
+      "id": "CONSTRUCT-VOCAB-2",
+      "title": "Construction vocabulary 2: mandatory effect-failure disposition",
+      "description": "Add ordo.construction-vocabulary/2: every transitionEffect port declares onFailure (remain | proceed | unresolved); unresolved links a declareUnresolved by effect; the generated orchestration applies the disposition and exposes post-command state. Evidence: construction-by-design time-entry-timer-01 finding F2 (research-documents PR #7).",
+      "tags": [],
+      "priority": "medium",
+      "status": "ready",
+      "attachments": [],
+      "createdAt": "2026-10-12T18:47:05.876Z",
+      "updatedAt": "2026-10-12T18:47:06.107Z",
+      "createdBy": "unknown",
+      "createdByActor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
+      },
+      "source": "manual",
+      "sourceReference": null
     }
   ]
 }

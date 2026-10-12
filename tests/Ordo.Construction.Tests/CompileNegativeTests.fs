@@ -56,3 +56,30 @@ let ``a lower tier cannot be compiled against a higher one`` () =
               "transition tier before the semantic model", load door [ doorFile "Transition"; doorFile "Model" ], Some "FS0039"
               "orchestration tier without the transition tier", load door [ doorFile "Model"; doorFile "Orchestration" ], Some "FS0039" ]
     Assert.True(List.isEmpty failures, String.concat "\n\n" failures)
+
+let private v2Tiers (fixture: Fixture) (workflow: string) =
+    load fixture [ for tier in [ "Model"; "Transition"; "Orchestration" ] -> sprintf "generated/%s/%s.%s.g.fs" workflow workflow tier ]
+
+/// Vocabulary 2: the generated result decides the post-command state, so a
+/// host cannot read one where the plan left the outcome unresolved, and
+/// cannot mistake a remained outcome for an acceptance.
+[<Fact>]
+let ``a host cannot take a state the plan did not decide`` () =
+    let unresolved = v2Tiers timerUnresolved "TimerUnresolved" + "\nopen Generated.TimerUnresolved\n"
+    let remain = v2Tiers timerRemain "TimerRemain" + "\nopen Generated.TimerRemain\n"
+    let failures =
+        Ordo.Tests.FsiProbe.check references
+            [ "positive control: a host handles every unresolved-variant case",
+              unresolved
+              + "let decide (r: TimerUnresolvedResult) : TimerUnresolvedState option =\n"
+              + "    match r with\n"
+              + "    | TimerUnresolvedResult.Accepted(_, _, _, state) -> Some state\n"
+              + "    | TimerUnresolvedResult.Unresolved(_, _, _, _) -> None\n"
+              + "    | TimerUnresolvedResult.Refused(_, _, state) -> Some state", None
+              "unresolved carries no post-command state to read",
+              unresolved + "let f (r: TimerUnresolvedResult) = match r with TimerUnresolvedResult.Unresolved(_, _, _, _, state) -> Some state | _ -> None", Some "FS0019"
+              "a failure cannot be reported as an acceptance",
+              remain + "let f (d: TimerRemainDecision) (e: TimerRemainEffectFailure) : TimerRemainResult = TimerRemainResult.Accepted(d, System.DateTimeOffset.MinValue, [], e, d.Next)", Some "FS0019"
+              "remain has no proceeded case to fall back on",
+              remain + "let f (r: TimerRemainResult) = match r with TimerRemainResult.Proceeded(_, _, _, _, state) -> Some state | _ -> None", Some "FS0039" ]
+    Assert.True(List.isEmpty failures, String.concat "\n\n" failures)

@@ -8,6 +8,11 @@
 /// that the plan agrees with the exact prepared cohort it was checked
 /// against. It is never a host credential or permission to cause effects.
 /// See docs/architecture/construction-plan-v1.md.
+///
+/// Two vocabularies are read. Vocabulary 2 differs from vocabulary 1 only in
+/// that every transition effect must declare what a failed or unknown effect
+/// outcome means for the workflow (`EffectFailureDisposition`). A vocabulary
+/// 1 plan keeps its exact semantics, canonical form and digest.
 module Ordo.Core.ConstructionPlan
 
 open System
@@ -21,7 +26,23 @@ open Ordo.Core.ConstructionIr
 let PlanSchemaVersion = "ordo.construction-plan/1"
 
 [<Literal>]
-let VocabularyVersion = "ordo.construction-vocabulary/1"
+let VocabularyVersion1 = "ordo.construction-vocabulary/1"
+
+/// Adds the mandatory effect-failure disposition (`onFailure`) to every
+/// transition effect port, and the `effect` link from an unresolved
+/// obligation to the effect whose failure it leaves open.
+[<Literal>]
+let VocabularyVersion2 = "ordo.construction-vocabulary/2"
+
+/// The first vocabulary, under its original name. Code that authors plans
+/// with this constant keeps producing vocabulary 1 plans with unchanged
+/// meaning; a vocabulary is never upgraded in place.
+[<Literal>]
+let VocabularyVersion = VocabularyVersion1
+
+/// Every vocabulary this reader and validator accept. Anything else is
+/// refused, never upgraded.
+let SupportedVocabularyVersions = [ VocabularyVersion1; VocabularyVersion2 ]
 
 // ---------------------------------------------------------------------------
 // The untrusted draft: everything an agent is able to say.
@@ -70,13 +91,29 @@ type InvariantDraft =
       HoldsIn: string list
       Trace: TraceDraft }
 
+/// What a `Failed` or `Unknown` outcome of a transition effect means for the
+/// workflow (vocabulary 2). The plan states it, so neither generated nor
+/// handwritten code has to guess it.
+[<RequireQualifiedAccess>]
+type EffectFailureDisposition =
+    /// The workflow stays in the transition's source state.
+    | Remain
+    /// The transition's target state stands; the failure is reported.
+    | Proceed
+    /// Not decided: generated code picks neither outcome and the host must
+    /// handle the failure explicitly. Requires a linked `declareUnresolved`.
+    | Unresolved
+
 /// The orchestration ports a workflow may require. The engine chooses their
 /// signatures and placement; the plan only states that one is needed.
 type PortKindDraft =
     /// The current instant, read once per handled command.
     | CurrentTime
     /// An outbound effect requested after the named command is accepted.
-    | TransitionEffect of command: string
+    /// `onFailure` is required in vocabulary 2 and absent in vocabulary 1.
+    /// Only an effect port can carry a disposition: `CurrentTime` has no
+    /// field for one.
+    | TransitionEffect of command: string * onFailure: EffectFailureDisposition option
 
 type PortDraft = { Kind: PortKindDraft; Trace: TraceDraft }
 
@@ -92,6 +129,10 @@ type CapabilityDraft =
 /// person; it is never rendered into generated code.
 type UnresolvedDraft =
     { Subject: string
+      /// Vocabulary 2: the command whose effect failure this obligation
+      /// leaves open. Required for, and only allowed with, an effect whose
+      /// disposition is `unresolved`. Absent in vocabulary 1.
+      Effect: string option
       Question: string
       Trace: TraceDraft }
 
@@ -205,7 +246,8 @@ type Invariant =
 
 type PortKind =
     | CurrentTimePort
-    | TransitionEffectPort of command: SemanticName
+    /// `onFailure` is `Some` exactly when the plan is vocabulary 2.
+    | TransitionEffectPort of command: SemanticName * onFailure: EffectFailureDisposition option
 
 type Port = { Kind: PortKind; Trace: Trace }
 
@@ -216,6 +258,8 @@ type CapabilityBinding =
 
 type UnresolvedObligation =
     { Subject: SemanticName
+      /// The effect whose failure this obligation leaves open (vocabulary 2).
+      Effect: SemanticName option
       Question: string
       Trace: Trace }
 
@@ -308,6 +352,22 @@ type PlanViolation =
     | DeadEndState of state: string
     | EmptyInvariantScope of operation: string
     | BlankUnresolvedQuestion of operation: string
+    /// A member the plan's vocabulary does not define, for example
+    /// `onFailure` in a vocabulary 1 plan.
+    | NotInVocabulary of operation: string * memberName: string * vocabulary: string
+    /// Vocabulary 2: a transition effect port without a failure disposition.
+    | MissingEffectDisposition of operation: string
+    /// An `unresolved` disposition with no `declareUnresolved` naming the
+    /// effect, so the open question would not become an obligation.
+    | UnresolvedEffectWithoutObligation of operation: string
+    /// A `declareUnresolved` names an effect that no transition effect port
+    /// declares.
+    | UnknownEffect of operation: string * effect: string
+    /// A `declareUnresolved` names an effect whose disposition is already
+    /// decided (`remain` or `proceed`).
+    | EffectAlreadyDecided of operation: string * effect: string
+    /// Several `declareUnresolved` operations name the same effect.
+    | DuplicateEffectObligation of effect: string * operations: string list
 
 // ---------------------------------------------------------------------------
 // Encoding. The draft is the wire shape; the canonical plan is the draft of
@@ -322,6 +382,13 @@ let private jTrace (trace: TraceDraft) =
 let private predicateName predicate =
     match predicate with
     | ExtensionPredicate -> "extension"
+
+/// The wire spelling of a disposition.
+let effectFailureDispositionName disposition =
+    match disposition with
+    | EffectFailureDisposition.Remain -> "remain"
+    | EffectFailureDisposition.Proceed -> "proceed"
+    | EffectFailureDisposition.Unresolved -> "unresolved"
 
 let private roleName role =
     match role with
@@ -351,12 +418,17 @@ let private jOperation operation =
         let kind =
             match p.Kind with
             | CurrentTime -> [ "port", JString "currentTime" ]
-            | TransitionEffect command -> [ "port", JString "transitionEffect"; "command", JString command ]
+            | TransitionEffect(command, onFailure) ->
+                [ "port", JString "transitionEffect"; "command", JString command ]
+                @ (onFailure |> Option.map (fun d -> "onFailure", JString(effectFailureDispositionName d)) |> Option.toList)
         JObject([ "op", JString "declarePort" ] @ kind @ [ "trace", jTrace p.Trace ])
     | BindCapability c ->
         JObject [ "op", JString "bindCapability"; "command", JString c.Command; "capability", JString c.Capability; "trace", jTrace c.Trace ]
     | DeclareUnresolved u ->
-        JObject [ "op", JString "declareUnresolved"; "subject", JString u.Subject; "question", JString u.Question; "trace", jTrace u.Trace ]
+        JObject(
+            [ "op", JString "declareUnresolved"; "subject", JString u.Subject ]
+            @ (u.Effect |> Option.map (fun effect -> "effect", JString effect) |> Option.toList)
+            @ [ "question", JString u.Question; "trace", jTrace u.Trace ])
 
 let toJson (plan: PlanDraft) =
     JObject [ "schemaVersion", JString plan.SchemaVersion
@@ -399,11 +471,12 @@ let private canonicalDraft (binding: PlanBinding) (w: Workflow) : PlanDraft =
                   { Name = key i.Name; Predicate = i.Predicate; HoldsIn = i.HoldsIn |> List.map key; Trace = traceDraft i.Trace }
           for p in w.Ports ->
               DeclarePort
-                  { Kind = (match p.Kind with CurrentTimePort -> CurrentTime | TransitionEffectPort c -> TransitionEffect(key c))
+                  { Kind = (match p.Kind with CurrentTimePort -> CurrentTime | TransitionEffectPort(c, d) -> TransitionEffect(key c, d))
                     Trace = traceDraft p.Trace }
           for c in w.Capabilities ->
               BindCapability { Command = key c.Command; Capability = CapabilityId.value c.Capability; Trace = traceDraft c.Trace }
-          for u in w.Unresolved -> DeclareUnresolved { Subject = key u.Subject; Question = u.Question; Trace = traceDraft u.Trace } ] }
+          for u in w.Unresolved ->
+              DeclareUnresolved { Subject = key u.Subject; Effect = u.Effect |> Option.map key; Question = u.Question; Trace = traceDraft u.Trace } ] }
 
 // ---------------------------------------------------------------------------
 // Validation.
@@ -419,7 +492,7 @@ let operationLabel (operation: OperationDraft) =
     | DefineTransition t -> sprintf "transition:%s/%s" (norm t.From) (norm t.Command)
     | DefineInvariant i -> "invariant:" + norm i.Name
     | DeclarePort { Kind = CurrentTime } -> "port:currentTime"
-    | DeclarePort { Kind = TransitionEffect command } -> "port:transitionEffect/" + norm command
+    | DeclarePort { Kind = TransitionEffect(command, _) } -> "port:transitionEffect/" + norm command
     | BindCapability c -> sprintf "capability:%s/%s" (norm c.Command) c.Capability
     | DeclareUnresolved u -> "unresolved:" + norm u.Subject
 
@@ -445,16 +518,16 @@ let private namesOf operation =
     | DefineTransition t -> [ t.Command; t.From; t.To ] @ (t.Guards |> List.map _.Name)
     | DefineInvariant i -> i.Name :: i.HoldsIn
     | DeclarePort { Kind = CurrentTime } -> []
-    | DeclarePort { Kind = TransitionEffect command } -> [ command ]
+    | DeclarePort { Kind = TransitionEffect(command, _) } -> [ command ]
     | BindCapability c -> [ c.Command ]
-    | DeclareUnresolved u -> [ u.Subject ]
+    | DeclareUnresolved u -> u.Subject :: Option.toList u.Effect
 
 let private bindingViolations (view: PreparedCohortView) (preparedBlueprintDigest: string) (plan: PlanDraft) =
     let binding = plan.Binding
     let required = Set.union view.RequiredDecisionIds view.RequiredRationaleIds
     let bound = Set.ofList binding.DecisionIds
     [ if plan.SchemaVersion <> PlanSchemaVersion then UnsupportedPlanSchema plan.SchemaVersion
-      if plan.VocabularyVersion <> VocabularyVersion then UnsupportedVocabulary plan.VocabularyVersion
+      if not (List.contains plan.VocabularyVersion SupportedVocabularyVersions) then UnsupportedVocabulary plan.VocabularyVersion
       if binding.SourceManifestDigest <> view.Manifest.Digest then
           StaleSourceManifest(binding.SourceManifestDigest, view.Manifest.Digest)
       if binding.BlueprintDigest <> preparedBlueprintDigest then
@@ -568,7 +641,7 @@ let private structureViolations (operations: OperationDraft list) =
         operations
         |> List.choose (fun operation ->
             match operation with
-            | DeclarePort { Kind = TransitionEffect command } | BindCapability { Command = command } ->
+            | DeclarePort { Kind = TransitionEffect(command, _) } | BindCapability { Command = command } ->
                 if Set.contains (name command).Key commandKeys then None
                 else Some(UnknownCommand(operationLabel operation, (name command).Key))
             | _ -> None)
@@ -623,6 +696,62 @@ let private structureViolations (operations: OperationDraft list) =
       | many -> MultipleInitialStates(List.sort many) ]
     @ duplicates @ duplicateGuards @ transitionConflicts @ unknownStates @ unknownCommands @ fromTerminal @ graph @ unresolvedQuestions
 
+/// Members a plan's vocabulary does not define. Vocabulary 1 has no failure
+/// disposition and no effect link; a vocabulary 1 plan that carries one is
+/// refused, never read as vocabulary 2.
+let private vocabularyViolations (plan: PlanDraft) =
+    if plan.VocabularyVersion <> VocabularyVersion1 then []
+    else
+        plan.Operations
+        |> List.collect (fun operation ->
+            match operation with
+            | DeclarePort { Kind = TransitionEffect(_, Some _) } -> [ NotInVocabulary(operationLabel operation, "onFailure", plan.VocabularyVersion) ]
+            | DeclareUnresolved { Effect = Some _ } -> [ NotInVocabulary(operationLabel operation, "effect", plan.VocabularyVersion) ]
+            | _ -> [])
+
+/// Vocabulary 2: every transition effect declares its failure disposition,
+/// and an `unresolved` disposition is linked, by effect, to exactly one
+/// `declareUnresolved`, so the open question becomes an obligation. A link
+/// is valid only to an effect port whose disposition is `unresolved`.
+let private effectDispositionViolations (vocabulary: string) (operations: OperationDraft list) =
+    if vocabulary <> VocabularyVersion2 then []
+    else
+        let ports =
+            operations
+            |> List.choose (fun operation ->
+                match operation with
+                | DeclarePort { Kind = TransitionEffect(command, disposition) } -> Some((name command).Key, operationLabel operation, disposition)
+                | _ -> None)
+        let links =
+            operations
+            |> List.choose (fun operation ->
+                match operation with
+                | DeclareUnresolved { Effect = Some effect } -> Some((name effect).Key, operationLabel operation)
+                | _ -> None)
+        let isLinked key = links |> List.exists (fun (effect, _) -> effect = key)
+        let dispositions =
+            [ for key, label, disposition in ports do
+                  match disposition with
+                  | None -> MissingEffectDisposition label
+                  | Some EffectFailureDisposition.Unresolved when not (isLinked key) -> UnresolvedEffectWithoutObligation label
+                  | Some _ -> () ]
+        let decided disposition =
+            match disposition with
+            | Some EffectFailureDisposition.Remain | Some EffectFailureDisposition.Proceed -> true
+            | Some EffectFailureDisposition.Unresolved | None -> false
+        let badLinks =
+            [ for key, label in links do
+                  match ports |> List.filter (fun (port, _, _) -> port = key) with
+                  | [] -> UnknownEffect(label, key)
+                  | matching when matching |> List.exists (fun (_, _, disposition) -> decided disposition) -> EffectAlreadyDecided(label, key)
+                  | _ -> () ]
+        let duplicateLinks =
+            links
+            |> List.groupBy fst
+            |> List.filter (fun (_, group) -> List.length group > 1)
+            |> List.map (fun (key, group) -> DuplicateEffectObligation(key, group |> List.map snd |> List.sort))
+        dispositions @ badLinks @ duplicateLinks
+
 /// The typed workflow, in canonical order. Called only after every check passed.
 let private buildWorkflow (operations: OperationDraft list) : Workflow =
     let byKey (f: 'a -> SemanticName) = List.sortBy (fun item -> (f item).Key)
@@ -662,10 +791,10 @@ let private buildWorkflow (operations: OperationDraft list) : Workflow =
         operations
         |> List.choose (function
             | DeclarePort p ->
-                Some { Kind = (match p.Kind with CurrentTime -> CurrentTimePort | TransitionEffect c -> TransitionEffectPort(name c))
+                Some { Kind = (match p.Kind with CurrentTime -> CurrentTimePort | TransitionEffect(c, d) -> TransitionEffectPort(name c, d))
                        Trace = normalizeTrace p.Trace }
             | _ -> None)
-        |> List.sortBy (fun p -> match p.Kind with CurrentTimePort -> "" | TransitionEffectPort c -> c.Key)
+        |> List.sortBy (fun p -> match p.Kind with CurrentTimePort -> "" | TransitionEffectPort(c, _) -> c.Key)
       Capabilities =
         operations
         |> List.choose (function
@@ -677,7 +806,10 @@ let private buildWorkflow (operations: OperationDraft list) : Workflow =
         |> List.sortBy (fun c -> c.Command.Key, CapabilityId.value c.Capability)
       Unresolved =
         operations
-        |> List.choose (function DeclareUnresolved u -> Some { Subject = name u.Subject; Question = u.Question; Trace = normalizeTrace u.Trace } | _ -> None)
+        |> List.choose (function
+            | DeclareUnresolved u ->
+                Some { Subject = name u.Subject; Effect = u.Effect |> Option.map name; Question = u.Question; Trace = normalizeTrace u.Trace }
+            | _ -> None)
         |> byKey _.Subject }
 
 let private coverage (assigned: Set<string>) (operations: OperationDraft list) =
@@ -715,11 +847,13 @@ let validate (prepared: PreparedCohort) (plan: PlanDraft) : Result<ValidatedPlan
         match ConstructionIrWire.verifyManifestDigest view.Manifest with
         | Error reason -> [ UnverifiedSourceManifest reason ]
         | Ok () -> []
-    let early = manifestCheck @ bindingViolations view preparedDigest plan @ traceViolations view plan.Operations @ nameViolations plan.Operations
+    let early =
+        manifestCheck @ bindingViolations view preparedDigest plan @ vocabularyViolations plan
+        @ traceViolations view plan.Operations @ nameViolations plan.Operations
     match early with
     | _ :: _ -> Error(finish early)
     | [] ->
-        match structureViolations plan.Operations with
+        match structureViolations plan.Operations @ effectDispositionViolations plan.VocabularyVersion plan.Operations with
         | _ :: _ as structural -> Error(finish structural)
         | [] ->
             let binding =

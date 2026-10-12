@@ -2,6 +2,10 @@
 /// untrusted `PlanDraft`; only `ConstructionPlan.validate` against a prepared
 /// cohort can produce a `ValidatedPlan`. An operation, port or predicate the
 /// vocabulary does not name is refused by name, never ignored or guessed.
+///
+/// The members an operation may carry depend on the plan's vocabulary:
+/// `onFailure` and `effect` exist only in vocabulary 2, so a vocabulary 1
+/// plan that carries one is refused as an unknown member.
 module Ordo.Core.ConstructionPlanWire
 
 open Ordo.Core.Json
@@ -36,6 +40,13 @@ let private role path raw =
     | "terminal" -> Ok Terminal
     | other -> fail path ("unknown state role: " + other)
 
+let private disposition path raw =
+    match raw with
+    | "remain" -> Ok EffectFailureDisposition.Remain
+    | "proceed" -> Ok EffectFailureDisposition.Proceed
+    | "unresolved" -> Ok EffectFailureDisposition.Unresolved
+    | other -> fail path ("unsupported onFailure: " + other)
+
 let private guard path value =
     result {
         let! p = fields path [ "name"; "predicate" ] [] value
@@ -45,7 +56,8 @@ let private guard path value =
         return { GuardDraft.Name = name; Predicate = decided }
     }
 
-let private operation path value =
+let private operation (vocabulary: string) path value =
+    let second = vocabulary = VocabularyVersion2
     result {
         let! kind =
             match value with
@@ -86,14 +98,25 @@ let private operation path value =
             let! t = traceField path p
             return DefineInvariant { Name = name; Predicate = decided; HoldsIn = holdsIn; Trace = t }
         | "declarePort" ->
-            let! p = fields path [ "op"; "port"; "trace" ] [ "command" ] value
+            let! p = fields path [ "op"; "port"; "trace" ] ([ "command" ] @ (if second then [ "onFailure" ] else [])) value
             let! port = textField path "port" p
+            let onFailure () =
+                match second, Map.containsKey "onFailure" p with
+                | false, _ -> Ok None
+                | true, true ->
+                    textField path "onFailure" p |> Result.bind (disposition (path + ".onFailure")) |> Result.map Some
+                | true, false -> fail path ("missing JSON member onFailure: " + VocabularyVersion2 + " requires a failure disposition for every transitionEffect port")
             let! kindOfPort =
-                match port, Map.containsKey "command" p with
-                | "currentTime", false -> Ok CurrentTime
-                | "transitionEffect", true -> textField path "command" p |> Result.map TransitionEffect
-                | ("currentTime" | "transitionEffect"), _ -> fail path ("incorrect fields for port " + port)
-                | other, _ -> fail (path + ".port") ("unsupported port: " + other)
+                match port, Map.containsKey "command" p, Map.containsKey "onFailure" p with
+                | "currentTime", false, false -> Ok CurrentTime
+                | "transitionEffect", true, _ ->
+                    result {
+                        let! command = textField path "command" p
+                        let! decided = onFailure ()
+                        return TransitionEffect(command, decided)
+                    }
+                | ("currentTime" | "transitionEffect"), _, _ -> fail path ("incorrect fields for port " + port)
+                | other, _, _ -> fail (path + ".port") ("unsupported port: " + other)
             let! t = traceField path p
             return DeclarePort { Kind = kindOfPort; Trace = t }
         | "bindCapability" ->
@@ -103,11 +126,13 @@ let private operation path value =
             let! t = traceField path p
             return BindCapability { Command = command; Capability = capability; Trace = t }
         | "declareUnresolved" ->
-            let! p = fields path [ "op"; "subject"; "question"; "trace" ] [] value
+            let! p = fields path [ "op"; "subject"; "question"; "trace" ] (if second then [ "effect" ] else []) value
             let! subject = textField path "subject" p
+            let! effect =
+                if Map.containsKey "effect" p then textField path "effect" p |> Result.map Some else Ok None
             let! question = textField path "question" p
             let! t = traceField path p
-            return DeclareUnresolved { Subject = subject; Question = question; Trace = t }
+            return DeclareUnresolved { Subject = subject; Effect = effect; Question = question; Trace = t }
         | other -> return! fail (path + ".op") ("unsupported operation: " + other)
     }
 
@@ -118,7 +143,9 @@ let readPlan (input: string) : Result<PlanDraft, string> =
         let! schema = textField "$" "schemaVersion" p
         let! () = if schema = PlanSchemaVersion then Ok() else fail "$.schemaVersion" ("unsupported " + schema)
         let! vocabulary = textField "$" "vocabularyVersion" p
-        let! () = if vocabulary = VocabularyVersion then Ok() else fail "$.vocabularyVersion" ("unsupported " + vocabulary)
+        let! () =
+            if List.contains vocabulary SupportedVocabularyVersions then Ok()
+            else fail "$.vocabularyVersion" ("unsupported " + vocabulary)
         let! rawBinding = field "$" "binding" p
         let! b = fields "$.binding" [ "sourceManifestDigest"; "blueprintDigest"; "cohortId"; "decisionIds" ] [] rawBinding
         let! manifest = textField "$.binding" "sourceManifestDigest" b
@@ -127,7 +154,7 @@ let readPlan (input: string) : Result<PlanDraft, string> =
         let! rawDecisions = field "$.binding" "decisionIds" b
         let! decisions = strings "$.binding.decisionIds" rawDecisions
         let! rawOperations = field "$" "operations" p
-        let! operations = items "$.operations" operation rawOperations
+        let! operations = items "$.operations" (operation vocabulary) rawOperations
         return
             { SchemaVersion = schema
               VocabularyVersion = vocabulary

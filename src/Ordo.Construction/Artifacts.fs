@@ -1,8 +1,21 @@
 /// What the engine produces: immutable descriptions, never effects.
 module Ordo.Construction.Artifacts
 
+/// The generator for vocabulary 1 plans. Its output for a given plan digest
+/// never changes.
 [<Literal>]
 let GeneratorVersion = "ordo.construction/1"
+
+/// The generator for vocabulary 2 plans. Tiers 1 and 2 have the same shape
+/// as version 1; Tier 3 applies each effect's declared failure disposition
+/// and reports the post-command state.
+[<Literal>]
+let GeneratorVersion2 = "ordo.construction/2"
+
+/// The generator version a plan's vocabulary selects. The plan cannot choose
+/// it any other way.
+let generatorVersionFor (vocabularyVersion: string) =
+    if vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion2 then GeneratorVersion2 else GeneratorVersion
 
 /// The marker every generated file starts with. A host may replace a file at
 /// a target path only if it carries this marker; anything else is
@@ -54,6 +67,10 @@ type ObligationKind =
     | Implement of contract: string
     /// The plan declared behavior it must not decide.
     | ResolveUnresolved of subject: string * question: string
+    /// Vocabulary 2: the plan leaves what a failed or unknown outcome of this
+    /// effect means unresolved. The generated orchestration returns a result
+    /// case the host must handle explicitly until this is resolved.
+    | ResolveEffectFailure of effect: string * subject: string * question: string
     /// Behavior compiles but is not verified by generation; independent
     /// verification (Dokimos) is still required.
     | VerifyIndependently of what: string
