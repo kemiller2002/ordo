@@ -1,0 +1,177 @@
+# Ordo construction plan v1
+
+Status: **draft / implemented in `Ordo.Core`**. Contract owner: Ordo. Tracking:
+[ordo#64](https://github.com/kemiller2002/ordo/issues/64) (CONSTRUCT-001).
+Consumer: [ordo#65](https://github.com/kemiller2002/ordo/issues/65) (`Ordo.Construction`).
+Decision: [`DF-SDE-2026-0018`](../../research/decisions/DF-SDE-2026-0018--constrain-construction-to-a-typed-vocabulary.md).
+
+## Purpose
+
+A coding agent that may create any file, write any expression, add any
+package or reshape a project has to make, and can get wrong, every
+architectural choice on every change. A construction plan takes those choices
+away. The agent states domain intent for one prepared ECIR cohort, using a closed
+set of operations, and nothing else is expressible. Choosing names, placement,
+dependencies and output shapes is the construction engine's job (#65), not the
+plan's.
+
+The plan extends `ConstructionIr` rather than restating it. It does not keep a
+second requirement registry, does not re-decide readiness, and does not mint
+authority.
+
+## Wire: `ordo.construction-plan/1`, vocabulary `ordo.construction-vocabulary/1`
+
+Schema: [`schemas/ordo-construction-plan.v1.schema.json`](../../schemas/ordo-construction-plan.v1.schema.json)
+(structural only). Reader: `ConstructionPlanWire.readPlan`, which is strict.
+Unknown or duplicate members are refused, as are blank names and unknown
+`op`/`port`/`predicate`/`role` values. Each refusal names the offending value
+and its JSON path.
+
+```text
+{ schemaVersion, vocabularyVersion,
+  binding:   { sourceManifestDigest, blueprintDigest, cohortId, decisionIds[] },
+  operations: [ op ... ] }
+```
+
+| Operation | Operands | What it may express |
+|---|---|---|
+| `defineWorkflow` | name | the one finite-state workflow of this plan (v1: exactly one) |
+| `defineState` | name, role `initial`/`ordinary`/`terminal` | a domain state; exactly one initial |
+| `defineTransition` | command, from, to, guards[] | the command is legal from `from` and leads to `to`; commands are derived from transitions |
+| `defineInvariant` | name, predicate, holdsIn[] | a named property that must hold in the listed states |
+| `declarePort` | `currentTime`, or `transitionEffect` + command | an orchestration need; the engine picks the signature |
+| `bindCapability` | command, capability | a semantic capability (`Ordo.Core.Capability`) required to issue the command |
+| `declareUnresolved` | subject, question | behavior the plan must not guess; becomes an open obligation |
+
+Every operation carries `trace: { requirementKeys[], nodeIds[] }`.
+
+**Predicates.** Version 1 has a single predicate kind, `extension`: a named
+contract that handwritten code implements. Expression, operator and code
+strings have no representation at all.
+
+**Names.** A name is made of ASCII letter and digit words, joined by single
+spaces, hyphens or underscores, starts with a letter, and is at most 64
+characters long. Its identity is the words in PascalCase, so `no timer`,
+`no-timer` and `NoTimer` are the same name. The grammar admits no quote, dot,
+slash, parenthesis or operator, so a name cannot carry code or a path.
+
+**What cannot be said.** The vocabulary has no operation, member or value that
+could express any of these:
+- a file, path or directory;
+- a shell or process command;
+- a package or dependency;
+- a project, framework or architecture setting;
+- code or expression text;
+- a change to validation policy or authority;
+- an approval or "validated" marker.
+
+The reader refuses each attempt as an unsupported operation or an unknown
+member. The compiler refuses each attempt made in F#.
+
+## Semantic validation: `ConstructionPlan.validate prepared draft`
+
+The input is a `PreparedCohort` from `ConstructionIr.prepareCohort`, so source
+conservation, transitive readiness and external decision authorization have
+already been established. They cannot be skipped. Validation then checks:
+
+1. **Binding.**
+   - Schema and vocabulary versions are known.
+   - The prepared manifest's digest is recomputed from its content
+     (`UnverifiedSourceManifest`). A manifest that carries a reviewed digest but
+     altered requirements is refused, even when the blueprint agrees with it.
+   - The source manifest digest equals the prepared manifest.
+   - The blueprint digest equals `blueprintDigest` of the prepared blueprint. It is recomputed, never trusted.
+   - The cohort ID equals the prepared cohort.
+   - The bound decision IDs equal exactly the cohort's required decisions plus its required standalone rationales.
+   - Violations: `StaleSourceManifest`, `StaleBlueprint`, `CohortMismatch`, `UnboundDecision`, `UnauthorizedDecision`.
+2. **Trace.**
+   - Every operation names at least one requirement and one node.
+   - Every requirement is one the cohort *implements* (assigned). A prerequisite requirement is not implementation scope.
+   - Every node is in the prepared required scope.
+   - The cohort node is never cited (`CohortNodeCited`). It is the delivery
+     container linked to every assigned requirement, so citing it would justify
+     anything.
+   - Every anchored node links at least one of the operation's requirements.
+   - A `bindCapability` must cite a decision node the cohort requires
+     (`CapabilityWithoutDecision`). A capability requirement is authorization
+     policy, so the agent's word is not enough; the decision must have been
+     authorized externally before the cohort could be prepared.
+   - Every assigned requirement is covered by at least one operation, so a requirement cannot silently vanish between ECIR and construction.
+3. **Names and identifiers.**
+   - Names follow the grammar above.
+   - Capability IDs are ASCII words joined by `.`, `:`, `-` or `_`, start with a
+     letter and are at most 128 characters long.
+   - Unresolved questions are at most 1000 characters.
+4. **Structure.** Validation refuses:
+   - a missing workflow, or more than one;
+   - a missing initial state, or more than one;
+   - duplicate definitions, compared by normalized name;
+   - unknown states or commands;
+   - conflicting transitions (same source and command, different targets);
+   - duplicate transitions;
+   - transitions out of a terminal state;
+   - unreachable states, found by breadth-first search over an adjacency map, so
+     validation of a hostile 20,000-state chain stays within the test's 30-second bound;
+   - non-terminal dead ends; a self-loop alone does not leave a state;
+   - duplicate guards on one transition, compared by normalized name. They are
+     refused, not merged;
+   - invariants with an empty scope;
+   - blank unresolved questions.
+
+Failures are `PlanViolation` values that name the operation by its derived
+label, for example `transition:Running/Pause`. The agent never assigns
+operation IDs or ownership. An operation owns exactly the construct it
+defines, so two operations that define the same construct collide.
+
+**Coverage is reported, not just counted.** `ValidatedPlanView.Coverage`
+classifies each assigned requirement in one of three ways:
+- `Constructed`: states, transitions, invariants, ports or capabilities define it;
+- `UnresolvedOnly`: only open obligations mention it;
+- `WorkflowLevel`: only the workflow declaration mentions it, as a
+  whole-workflow constraint such as "the timer is not durable".
+
+Only `Constructed` coverage is construction. None of the three is evidence of
+implementation.
+
+## Validated plan, identity and authority
+
+`ValidatedPlan` has a private constructor. `ConstructionPlan.validate` is the
+only way to obtain one. Ordinary code cannot construct one directly, cannot pass
+a draft or a view in its place, and cannot add a `Validated = true` marker,
+because the type has no such field. Compile-negative probes in
+`tests/Ordo.Tests/ConstructionPlanTests.fs` run the real F# compiler against
+the built assembly and assert the specific error code for each attempt.
+
+`ConstructionPlan.digest` is the SHA-256 of `canonicalJson`:
+- names are normalized;
+- states are ordered initial first, then by name;
+- transitions are ordered by (from, command);
+- every other list is sorted and deduplicated;
+- object keys are sorted.
+
+Reordering operations, trace lists or decision IDs, or respelling a name,
+leaves the digest unchanged. Any semantic change alters it. The time-entry
+fixture's digest is pinned in the tests. Changing canonicalization requires a
+schema or vocabulary version change, not an updated constant.
+
+`ConstructionPlan.isBoundTo prepared plan` tells a host that holds both values
+whether the plan was formed against exactly that cohort.
+
+A validated plan proves only semantic agreement with one exact prepared
+cohort. It is **not** authenticated authority, not host permission, not
+evidence of implementation and not evidence of verification. Hosts (Praxis
+#242) pin the plan digest, recheck approvals and control every effect.
+
+## Versioning
+
+An unknown `schemaVersion` or `vocabularyVersion` is refused, never upgraded
+in place. A future vocabulary that adds an operation or predicate gets a new
+version. Plans in an older version stay readable only while that reader is
+kept. A change to canonical encoding is a breaking change.
+
+## Evidence
+
+- Runtime negatives: `tests/Ordo.Tests/ConstructionPlanAdversarialTests.fs`.
+- Real fixture: `tests/fixtures/construction/time-entry-timer/`, taken from
+  `kemiller2002/time-entry-state-machine@73a63f1` requirement text.
+- Compile negatives: `tests/Ordo.Tests/ConstructionPlanTests.fs`.
