@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "repository": "state-directed-engineering",
-  "nextSeq": 44,
+  "nextSeq": 45,
   "items": [
     {
       "id": "WI-0001",
@@ -863,6 +863,29 @@
       "attachments": [],
       "createdAt": "2026-10-12T19:09:38.051Z",
       "updatedAt": "2026-10-12T19:15:17.513Z",
+      "createdBy": "unknown",
+      "createdByActor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
+      },
+      "source": "manual",
+      "sourceReference": null
+    },
+    {
+      "id": "WI-0044",
+      "title": "Deterministic construction-plan consensus over N independent drafts (research-documents#6, #7)",
+      "description": null,
+      "tags": [
+        "construction,consensus"
+      ],
+      "priority": "high",
+      "status": "complete",
+      "attachments": [],
+      "createdAt": "2026-10-12T21:29:00.651Z",
+      "updatedAt": "2026-10-12T21:48:19.000Z",
       "createdBy": "unknown",
       "createdByActor": {
         "kind": "agent",
