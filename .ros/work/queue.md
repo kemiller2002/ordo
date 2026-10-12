@@ -12,10 +12,15 @@
 | GH-44 | GH-44 | complete |  |  |
 | GH-46 | GH-46 | complete |  |  |
 | GH-52 | GH-52 | complete |  |  |
-| GH-61 | GH-61 | active |  |  |
+| GH-59 | GH-59 | complete |  |  |
+| GH-61 | GH-61 | complete |  |  |
+| GH-64 | GH-64 | complete |  |  |
+| GH-65 | GH-65 | complete |  |  |
+| GH-69 | GH-69 | complete |  |  |
 | RELEASE-1-4-1 | Release Ordo 1.4.1 | complete |  | medium |
 | RELEASE-1-4-2 | Release Ordo 1.4.2 | complete |  | medium |
 | RELEASE-1-5-0 | Release Ordo 1.5.0 | complete |  | medium |
+| RELEASE-1-6-0 | Release Ordo 1.6.0 | ready |  | medium |
 | ROS-INSTALL-1-2-1-main-16-1 | ROS-INSTALL-1-2-1-main-16-1 | complete |  |  |
 | WI-0001 | SDE bootstrap: inventory State Programming research in HelixNote | complete | migration, inventory | high |
 | WI-0002 | Experiment 1 evidence consolidation | complete | migration, evidence, experiment-1 | medium |
