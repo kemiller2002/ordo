@@ -4,7 +4,20 @@
     <OutputType>Library</OutputType>
     <AssemblyName>Ordo.Construction</AssemblyName>
     <RootNamespace>Ordo.Construction</RootNamespace>
-    <IsPackable>false</IsPackable>
+    <!--
+      Published as an immutable release asset (`ordo-construction.nupkg`,
+      checksummed in native-checksums.txt) beside ordo-core.nupkg, so hosts
+      such as Praxis invoke construction by pinned version instead of copying
+      the engine (CONSTRUCT-PACKAGE, GH-69). Its only dependency is
+      EchelonFoundry.Ordo.Core at the same release version.
+    -->
+    <IsPackable>true</IsPackable>
+    <PackageId>EchelonFoundry.Ordo.Construction</PackageId>
+    <Authors>Echelon Foundry</Authors>
+    <Description>Ordo's deterministic construction engine: a pure projection from a validated construction plan to immutable artifact descriptions, ownership-checked write plans and extension obligations. It writes no file and starts no process.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/kemiller2002/ordo</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
 

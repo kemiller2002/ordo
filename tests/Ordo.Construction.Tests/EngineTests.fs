@@ -190,3 +190,25 @@ let ``no public engine entry point accepts unvalidated plan data`` () =
     Assert.Empty(offending)
     let construct = constructionAssembly.GetExportedTypes() |> Array.pick (fun t -> Option.ofObj (t.GetMethod "construct"))
     Assert.Equal<Type list>([ typeof<ValidatedPlan> ], construct.GetParameters() |> Array.map _.ParameterType |> Array.toList)
+
+/// Hosts pin the engine by release version (GH-69): the project is packaged as
+/// EchelonFoundry.Ordo.Construction and depends on nothing but Ordo.Core, so
+/// the package can carry no other dependency.
+[<Fact>]
+let ``Ordo.Construction is packaged as EchelonFoundry.Ordo.Construction with only Ordo.Core as a dependency`` () =
+    let rec root (dir: DirectoryInfo) =
+        if File.Exists(Path.Combine(dir.FullName, "Directory.Build.props")) then dir.FullName
+        else
+            match dir.Parent with
+            | null -> failwith "repository root not found"
+            | parent -> root parent
+
+    let project =
+        File.ReadAllText(Path.Combine(root (DirectoryInfo(AppContext.BaseDirectory)), "src", "Ordo.Construction", "Ordo.Construction.fsproj"))
+
+    Assert.Contains("<IsPackable>true</IsPackable>", project)
+    Assert.Contains("<PackageId>EchelonFoundry.Ordo.Construction</PackageId>", project)
+    Assert.DoesNotContain("<PackageReference", project)
+    let references = project.Split("<ProjectReference", StringSplitOptions.None) |> Array.tail
+    Assert.Equal(1, references.Length)
+    Assert.Contains("../Ordo.Core/Ordo.Core.fsproj", references[0])

@@ -89,6 +89,10 @@ jobs:
           # version and sha256 instead of copying Ordo's execution semantics.
           dotnet pack src/Ordo.Core/Ordo.Core.fsproj -c Release -o dist/core-pack
           cp "dist/core-pack/EchelonFoundry.Ordo.Core.${VERSION}.nupkg" dist/native/ordo-core.nupkg
+          # Ordo.Construction, the deterministic constructor, beside it (GH-69).
+          # Its package depends only on EchelonFoundry.Ordo.Core of this version.
+          dotnet pack src/Ordo.Construction/Ordo.Construction.fsproj -c Release -o dist/core-pack
+          cp "dist/core-pack/EchelonFoundry.Ordo.Construction.${VERSION}.nupkg" dist/native/ordo-construction.nupkg
 
           (cd dist/native && sha256sum ordo-* > native-checksums.txt)
           cat dist/native/native-checksums.txt
