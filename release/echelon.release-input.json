@@ -56,6 +56,12 @@
       "mediaType": "application/octet-stream"
     },
     {
+      "name": "ordo-construction.nupkg",
+      "purpose": "package",
+      "platform": null,
+      "mediaType": "application/octet-stream"
+    },
+    {
       "name": "native-checksums.txt",
       "purpose": "checksums",
       "platform": null,
