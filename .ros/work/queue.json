@@ -882,10 +882,10 @@
         "construction,consensus"
       ],
       "priority": "high",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-10-12T21:29:00.651Z",
-      "updatedAt": "2026-10-12T21:29:04.000Z",
+      "updatedAt": "2026-10-12T21:48:19.000Z",
       "createdBy": "unknown",
       "createdByActor": {
         "kind": "agent",
