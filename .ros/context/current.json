@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-12T18:47:06.458Z",
+  "updatedAt": "2026-10-12T19:07:25.529Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -1505,10 +1505,27 @@
     {
       "id": "CONSTRUCT-VOCAB-2",
       "type": "task",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-10-12T18:47:06.458Z",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Construction/Emit.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ConstructionPlan.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Construction.Tests/EffectFailureTests.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ConstructionPlanAdversarialTests.fs"
+        }
+      ],
+      "updatedAt": "2026-10-12T19:07:25.529Z",
       "telemetryExecutionIds": [
         "EXE-20261012T184706791Z-71fb8dee"
       ],
@@ -1531,7 +1548,8 @@
           "status": "verified",
           "mechanism": "git-remote-observation"
         }
-      }
+      },
+      "completedAt": "2026-10-12T19:07:25.529Z"
     }
   ]
 }
