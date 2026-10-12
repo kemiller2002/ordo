@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-12T19:09:38.700Z",
+  "updatedAt": "2026-10-12T19:15:17.513Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -1554,13 +1554,47 @@
     {
       "id": "CONSTRUCT-VOCAB-2-DECISION",
       "type": "task",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-10-12T19:09:38.700Z",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ConstructionPlan.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ConstructionPlanAdversarialTests.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ConstructionPlanTests.fs"
+        }
+      ],
+      "updatedAt": "2026-10-12T19:15:17.513Z",
       "telemetryExecutionIds": [
         "EXE-20261012T190938992Z-699c43cb"
-      ]
+      ],
+      "latestCheckpoint": {
+        "id": "7fff02650e9d508771ea3b4c",
+        "recordedAt": "2026-10-12T19:15:10.398Z",
+        "executionId": "EXE-20261012T190938992Z-699c43cb",
+        "repository": "ordo",
+        "branch": "construct/effect-failure-disposition",
+        "commit": "23a48213c65befbf5f2e793ad843bbdaf1703553",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "construct/effect-failure-disposition",
+        "remoteCommit": "23a48213c65befbf5f2e793ad843bbdaf1703553",
+        "summary": "Decided dispositions require a required decision (EffectDispositionWithoutDecision); fixtures, docs and DF-SDE-2026-0020 updated; full suite and praxis validate pass",
+        "nextAction": "Complete work item and commit Praxis state",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-12T19:15:17.513Z"
     }
   ]
 }
