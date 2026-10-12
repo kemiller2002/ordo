@@ -1,5 +1,52 @@
 # State Directed Engineering handoff
 
+## Latest: Construction by Design (GH-59, GH-61, GH-64, GH-65), 2026-10-12
+
+**Objective.** Remove structural choices from coding agents. They express
+intent in a typed vocabulary over a prepared ECIR cohort, and Ordo generates
+deterministic Four-Tier F# from that.
+
+**PRs.** They are stacked; merge them in order and retarget each to `main` as
+the one below it merges:
+1. #66 ECIR and readiness hardening (GH-59/61);
+2. #67 typed construction plan (GH-64);
+3. #68 `Ordo.Construction` engine and time-entry smoke test (GH-65).
+
+Praxis work items GH-59, GH-64 and GH-65 are checkpointed and complete.
+
+**Where authority lives.**
+- [`docs/architecture/ecir-v1.md`](docs/architecture/ecir-v1.md): source conservation and readiness.
+- [`docs/architecture/construction-plan-v1.md`](docs/architecture/construction-plan-v1.md): the vocabulary, binding, trace and coverage rules.
+- [`docs/architecture/construction-engine-v1.md`](docs/architecture/construction-engine-v1.md): placement, naming, ownership, regeneration rules and the requirements for Praxis #242.
+- Decision records `DF-SDE-2026-0018` and `DF-SDE-2026-0019`.
+
+**Fixtures.**
+- `tests/fixtures/construction/time-entry-timer`: verbatim excerpts from
+  `time-entry-state-machine@73a63f1`, with provenance in its README.
+- `tests/fixtures/construction/door-synthetic`: synthetic, covering every
+  vocabulary feature.
+
+The goldens live in `tests/Ordo.Construction.Tests/Golden`. Never edit them
+by hand. A change in output bytes means a new generator version.
+
+**Open, and not claimed.**
+- The time-entry arithmetic, the 30-second rule and entry creation are
+  handwritten obligations, not generated behavior.
+- Two plan questions are unresolved: what happens to the timer when entry
+  creation is refused, and whether the timer is scoped per person or per
+  session.
+- The short-stop code/text disagreement stays `unresolved` in ECIR.
+- Independent behavioral verification (Dokimos #30) and trusted application
+  of artifacts (Praxis #242) have not been done.
+- Vocabulary v1 has no data-carrying states, no multiple workflows and no
+  computed predicates.
+
+**Environment note.** CI compiles with the runner's newest SDK, because
+`Sde.Core` uses F# 9 nullness syntax. Run the `Sde.Core.Tests` suite only
+after `npm run build:payload` in `distribution/`.
+
+---
+
 ## Objective and outcome
 
 `WI-0032` built and wired for publication the **Ordo website** — the public
