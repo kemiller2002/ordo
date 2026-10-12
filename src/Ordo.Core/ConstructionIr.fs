@@ -91,6 +91,10 @@ type ReadinessViolation =
     | NotACohort of nodeId: string
     | BlockedRequirement of key: string
     | MissingDecisionAuthorization of nodeId: string
+    /// An engineering rationale with no originating requirement is model-
+    /// authored architecture. It can enter required scope only with the same
+    /// external authorization as a decision; its own justification is not one.
+    | MissingRationaleAuthorization of nodeId: string
 
 /// Semantic readiness snapshot, not authenticated execution authority.
 /// It retains exact inputs and required scope; no caller can construct success.
@@ -101,7 +105,8 @@ type PreparedCohortView =
       AssignedRequirementKeys: Set<string>
       RequiredRequirementKeys: Set<string>
       RequiredNodeIds: Set<string>
-      RequiredDecisionIds: Set<string> }
+      RequiredDecisionIds: Set<string>
+      RequiredRationaleIds: Set<string> }
 
 type PreparedCohort = private PreparedCohort of PreparedCohortView
 
@@ -179,6 +184,16 @@ let validate (manifest: SourceManifest) (blueprint: Blueprint) : Violation list 
     |> duplicateValues
     |> List.iter (DuplicateNode >> add)
 
+    // A supersession chain must end at a requirement that is not itself
+    // superseded; a loop redirects every member to nothing.
+    let supersessionLoops start =
+        let rec follow (seen: Set<string>) key =
+            match Map.tryFind key modeledIndex |> Option.map _.Disposition with
+            | Some(Superseded(target, _)) when Set.contains target seen -> true
+            | Some(Superseded(target, _)) -> follow (Set.add target seen) target
+            | _ -> false
+        follow (Set.singleton start) start
+
     for requirement in blueprint.Requirements do
         let key = requirement.Source.Key
 
@@ -221,7 +236,7 @@ let validate (manifest: SourceManifest) (blueprint: Blueprint) : Violation list 
                 add (MissingDispositionNode(key, EngineeringRationale))
         | Superseded(target, reason) ->
             if isBlank reason then add (MissingDispositionReason key)
-            if key = target || not (Map.containsKey target originalIndex) then
+            if key = target || not (Map.containsKey target originalIndex) || supersessionLoops key then
                 add (InvalidSupersession(key, target))
 
     for node in blueprint.Nodes do
@@ -255,22 +270,28 @@ let validate (manifest: SourceManifest) (blueprint: Blueprint) : Violation list 
             elif not (Map.containsKey dependency nodeIndex) then
                 add (MissingDependency(node.Id, dependency))
 
-    let rec reachesCycle (visited: Set<string>) (nodeId: string) =
-        if Set.contains nodeId visited then true
-        else
-            match Map.tryFind nodeId nodeIndex with
-            | None -> false
-            | Some node ->
-                node.DependsOn
-                |> List.exists (reachesCycle (Set.add nodeId visited))
+    // Peel nodes whose every known dependency is already peeled. What remains
+    // is exactly the set of nodes from which a cycle is reachable. Unlike
+    // enumerating paths, this terminates quickly on adversarial diamond chains.
+    let knownDependencies (node: ConstructionNode) =
+        node.DependsOn |> List.filter (fun id -> Map.containsKey id nodeIndex)
 
-    for node in blueprint.Nodes do
-        if reachesCycle Set.empty node.Id then add (DependencyCycle node.Id)
+    let rec unpeelable (remaining: Set<string>) =
+        let peelable =
+            remaining
+            |> Set.filter (fun id ->
+                knownDependencies nodeIndex[id] |> List.forall (fun dep -> not (Set.contains dep remaining)))
+        if Set.isEmpty peelable then remaining else unpeelable (Set.difference remaining peelable)
+
+    nodeIndex |> Map.keys |> Set.ofSeq |> unpeelable |> Set.iter (DependencyCycle >> add)
 
     errors
     |> Seq.distinct
     |> Seq.sortBy (sprintf "%A")
     |> Seq.toList
+
+let private isStandaloneRationale (node: ConstructionNode) =
+    node.Kind = EngineeringRationale && List.isEmpty node.RequirementKeys
 
 /// Explicit dependencies plus the selected/dependent cohort's own construction
 /// obligations and required decisions. Other delivery cohorts are not included
@@ -297,7 +318,8 @@ let private cohortScope (blueprint: Blueprint) (cohort: ConstructionNode) =
 
 /// Execution readiness checks one cohort and its required dependency scope after whole-artifact semantic
 /// validation. The caller must obtain authorizedDecisionIds from an external,
-/// verified authority, not from an agent-authored "approved" field.
+/// verified authority, not from an agent-authored "approved" field. The same
+/// set authorizes standalone engineering rationales reached in required scope.
 let validateCohort
     (manifest: SourceManifest)
     (blueprint: Blueprint)
@@ -328,15 +350,15 @@ let validateCohort
                     | Modeled -> None
                     | _ -> Some (BlockedRequirement r.Source.Key))
 
-            let missingDecisions =
+            let unauthorized =
                 blueprint.Nodes
-                |> List.filter (fun n ->
-                    n.Kind = Decision
-                    && Set.contains n.Id scope
-                    && not (Set.contains n.Id authorizedDecisionIds))
-                |> List.map (fun n -> MissingDecisionAuthorization n.Id)
+                |> List.filter (fun n -> Set.contains n.Id scope && not (Set.contains n.Id authorizedDecisionIds))
+                |> List.choose (fun n ->
+                    if n.Kind = Decision then Some(MissingDecisionAuthorization n.Id)
+                    elif isStandaloneRationale n then Some(MissingRationaleAuthorization n.Id)
+                    else None)
 
-            blocked @ missingDecisions
+            blocked @ unauthorized
             |> List.distinct
             |> List.sortBy (sprintf "%A")
 
@@ -354,6 +376,7 @@ let prepareCohort manifest blueprint cohortId authorizedDecisionIds =
               AssignedRequirementKeys = Set.ofList cohort.RequirementKeys
               RequiredRequirementKeys = nodes |> List.collect _.RequirementKeys |> Set.ofList
               RequiredNodeIds = scope
-              RequiredDecisionIds = nodes |> List.filter (fun n -> n.Kind = Decision) |> List.map _.Id |> Set.ofList })
+              RequiredDecisionIds = nodes |> List.filter (fun n -> n.Kind = Decision) |> List.map _.Id |> Set.ofList
+              RequiredRationaleIds = nodes |> List.filter isStandaloneRationale |> List.map _.Id |> Set.ofList })
 
 let preparedCohortView (PreparedCohort view) = view
