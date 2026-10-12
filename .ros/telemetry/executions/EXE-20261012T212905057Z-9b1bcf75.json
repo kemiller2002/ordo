@@ -1521,6 +1521,23 @@
         "name": "step",
         "mechanism": "step-lifecycle"
       }
+    },
+    {
+      "type": "step.completed",
+      "occurredAt": "2026-10-12T21:48:12.000Z",
+      "stepId": "STEP-20261012T214317000Z-25dbc7ad",
+      "actor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
+      },
+      "source": {
+        "type": "ros-cli",
+        "name": "step",
+        "mechanism": "step-lifecycle"
+      }
     }
   ],
   "repository": {
@@ -1909,12 +1926,12 @@
       "name": "Document consensus semantics and record DF-SDE-2026-0021",
       "description": null,
       "classification": [],
-      "status": "active",
+      "status": "completed",
       "plannedAt": "2026-10-12T21:43:17.000Z",
       "startedAt": "2026-10-12T21:43:17.000Z",
-      "completedAt": null,
-      "endedAt": null,
-      "updatedAt": "2026-10-12T21:43:17.000Z",
+      "completedAt": "2026-10-12T21:48:12.000Z",
+      "endedAt": "2026-10-12T21:48:12.000Z",
+      "updatedAt": "2026-10-12T21:48:12.000Z",
       "actor": {
         "kind": "agent",
         "id": "anthropic/claude-code",
@@ -2213,6 +2230,19 @@
           "from": null,
           "to": "active",
           "occurredAt": "2026-10-12T21:43:17.000Z",
+          "reason": null,
+          "actor": {
+            "kind": "agent",
+            "id": "anthropic/claude-code",
+            "provider": "anthropic",
+            "model": "unknown",
+            "runtime": "claude-code"
+          }
+        },
+        {
+          "from": "active",
+          "to": "completed",
+          "occurredAt": "2026-10-12T21:48:12.000Z",
           "reason": null,
           "actor": {
             "kind": "agent",
