@@ -852,6 +852,27 @@
       },
       "source": "manual",
       "sourceReference": null
+    },
+    {
+      "id": "CONSTRUCT-VOCAB-2-DECISION",
+      "title": "Vocabulary 2: a decided effect-failure disposition must cite a required decision",
+      "description": "Follow-up to CONSTRUCT-VOCAB-2 (complete; no reopen action). A remain or proceed onFailure must cite in its trace a decision node the prepared cohort requires (EffectDispositionWithoutDecision), as bindCapability does; otherwise only unresolved is legal. PR #71.",
+      "tags": [],
+      "priority": "medium",
+      "status": "ready",
+      "attachments": [],
+      "createdAt": "2026-10-12T19:09:38.051Z",
+      "updatedAt": "2026-10-12T19:09:38.361Z",
+      "createdBy": "unknown",
+      "createdByActor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
+      },
+      "source": "manual",
+      "sourceReference": null
     }
   ]
 }

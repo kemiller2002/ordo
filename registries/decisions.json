@@ -520,6 +520,23 @@
             "created"
           ],
           "reason": "Record the vocabulary 2 effect-failure disposition decision (CONSTRUCT-VOCAB-2)"
+        },
+        "EXE-20261012T190938992Z-699c43cb": {
+          "actor": {
+            "id": "anthropic/claude-code",
+            "kind": "agent",
+            "model": "unknown",
+            "provider": "anthropic",
+            "runtime": "claude-code"
+          },
+          "at": "2026-10-12T19:13:06.712Z",
+          "evidence": [
+            "tests/Ordo.Tests/ConstructionPlanAdversarialTests.fs"
+          ],
+          "operations": [
+            "modified"
+          ],
+          "reason": "Require an authorized decision for remain and proceed dispositions (CONSTRUCT-VOCAB-2-DECISION)"
         }
       }
     },

@@ -3,6 +3,7 @@
 | ID | Work | Status | Tags | Priority |
 |---|---|---|---|---|
 | CONSTRUCT-VOCAB-2 | Construction vocabulary 2: mandatory effect-failure disposition | complete |  | medium |
+| CONSTRUCT-VOCAB-2-DECISION | Vocabulary 2: a decided effect-failure disposition must cite a required decision | ready |  | medium |
 | GH-18 | GH-18 | complete |  |  |
 | GH-20 | GH-20 | complete |  |  |
 | GH-21 | GH-21 | complete |  |  |

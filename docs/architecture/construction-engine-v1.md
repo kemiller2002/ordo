@@ -214,7 +214,9 @@ of behavioral verification.
   `EffectFailureTests.fs`. They check that a failed or unknown Stop under
   `remain` leaves `Running` and `Paused` in place, that `proceed` reaches
   `NoTimer` and reports the failure, and that `unresolved` picks no state and
-  carries a linked `RESOLVE` obligation. Compile probes check that the
+  carries a linked `RESOLVE` obligation. The `remain` and `proceed` plans cite
+  a test-only decision node, because the plan rules require one for a decided
+  disposition. Compile probes check that the
   `Unresolved` case has no state to read and that a failure cannot be built
   as an acceptance.
 - **Engine tests.** Naming refusals, justified tiers only, ownership and write

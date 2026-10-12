@@ -3,10 +3,11 @@
   "vocabularyVersion": "ordo.construction-vocabulary/2",
   "binding": {
     "sourceManifestDigest": "sha256:03e29eddb6e528baea0707ec6660f18b0495ac8a6424f3c794a53cc2f5925a01",
-    "blueprintDigest": "sha256:28dd3964f9c49f3492f3c34174ab04d57f4ddcba298276b2a287b4a6f3fdc4cb",
+    "blueprintDigest": "sha256:412a6a158c1cf3d300d7463540d7da68fe57657177a3aea279d8f2aa4ba790b1",
     "cohortId": "COH-TIMER",
     "decisionIds": [
-      "DEC-TIMER-STATES"
+      "DEC-TIMER-STATES",
+      "DEC-TIMER-STOP-FAILURE"
     ]
   },
   "operations": [
@@ -161,7 +162,8 @@
           "kemiller2002/time-entry-state-machine/docs/architecture/business-activity-ledger-state-model.md#L131-L144"
         ],
         "nodeIds": [
-          "IFC-TIMER-PORTS"
+          "IFC-TIMER-PORTS",
+          "DEC-TIMER-STOP-FAILURE"
         ]
       }
     },

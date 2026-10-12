@@ -758,7 +758,14 @@ let ``a plan for an unready cohort cannot be validated against any prepared coho
 //    effect, to an explicit open obligation.
 // ---------------------------------------------------------------------------
 
-let private lockPort disposition = portOp (TransitionEffect("lock", disposition)) tL
+/// A decided disposition must cite a decision the cohort requires. DEC-A is
+/// the door's authorized decision, cited the same way the capability is.
+let private tDecided = trace [ rA; rL ] [ "CONTRACT-L"; "DEC-A" ]
+
+let private lockPort disposition =
+    match disposition with
+    | Some EffectFailureDisposition.Remain | Some EffectFailureDisposition.Proceed -> portOp (TransitionEffect("lock", disposition)) tDecided
+    | Some EffectFailureDisposition.Unresolved | None -> portOp (TransitionEffect("lock", disposition)) tL
 
 let private linkedUnresolvedOp subject effect =
     DeclareUnresolved { UnresolvedDraft.Subject = subject; Effect = Some effect; Question = "Does a failed lock leave the door closed or locked?"; Trace = tL }
@@ -824,7 +831,54 @@ let ``one effect cannot be linked by two obligations`` () =
 [<Fact>]
 let ``a duplicate effect port with another disposition is a duplicate, not a second opinion`` () =
     refusedWith (DuplicateDefinition "port:transitionEffect/Lock")
-        { remainV2 with Operations = remainV2.Operations @ [ portOp (TransitionEffect("Lock", Some EffectFailureDisposition.Proceed)) tL ] }
+        { remainV2 with Operations = remainV2.Operations @ [ portOp (TransitionEffect("Lock", Some EffectFailureDisposition.Proceed)) tDecided ] }
+
+/// Replaces the lock effect port of a vocabulary 2 draft.
+let private withLockPort disposition t (draft: PlanDraft) =
+    { draft with
+        Operations =
+            draft.Operations
+            |> List.map (fun op -> if operationLabel op = "port:transitionEffect/Lock" then portOp (TransitionEffect("lock", Some disposition)) t else op) }
+
+[<Fact>]
+let ``remain without a decision is refused`` () =
+    refusedWith (EffectDispositionWithoutDecision "port:transitionEffect/Lock") (remainV2 |> withLockPort EffectFailureDisposition.Remain tL)
+
+[<Fact>]
+let ``proceed citing a non-decision node is refused`` () =
+    for nodes in [ [ "CONTRACT-L" ]; [ "CONTRACT-L"; "VERIFY-L" ] ] do
+        refusedWith (EffectDispositionWithoutDecision "port:transitionEffect/Lock")
+            (remainV2 |> withLockPort EffectFailureDisposition.Proceed (trace [ rL ] nodes))
+
+[<Fact>]
+let ``proceed citing a decision outside the cohort is refused`` () =
+    // DEC-OUT is a real decision node, but on the deferred alarm requirement,
+    // which the door cohort neither implements nor requires.
+    let outside =
+        let b = blueprintWith [ "CONTRACT-P" ]
+        { b with
+            Requirements = b.Requirements |> List.map (fun r -> if r.Source.Key = rD then { r with NodeIds = r.NodeIds @ [ "DEC-OUT" ] } else r)
+            Nodes = b.Nodes @ [ node "DEC-OUT" Decision [ rD ] [] ] }
+    Assert.Empty(ConstructionIr.validate manifest outside)
+    let cohort =
+        match prepareCohort manifest outside cohortId approvals with
+        | Ok c -> c
+        | Error e -> failwithf "%A" e
+    Assert.DoesNotContain("DEC-OUT", (preparedCohortView cohort).RequiredDecisionIds)
+    let draft =
+        { remainV2 with Binding = { remainV2.Binding with BlueprintDigest = Ordo.Core.ConstructionIrWire.blueprintDigest outside } }
+        |> withLockPort EffectFailureDisposition.Proceed (trace [ rL ] [ "CONTRACT-L"; "DEC-OUT" ])
+    match ConstructionPlan.validate cohort draft with
+    | Ok _ -> failwith "a disposition justified by a decision outside the cohort was accepted"
+    | Error errors ->
+        Assert.Contains(EffectDispositionWithoutDecision "port:transitionEffect/Lock", errors)
+        Assert.Contains(UnauthorizedNodeReference("port:transitionEffect/Lock", "DEC-OUT"), errors)
+    // The same plan citing the cohort's own decision is accepted.
+    Assert.True(Result.isOk (ConstructionPlan.validate cohort { draft with Operations = (remainV2 |> withLockPort EffectFailureDisposition.Proceed tDecided).Operations }))
+
+[<Fact>]
+let ``unresolved needs no decision: it settles nothing`` () =
+    Assert.True(Result.isOk (ConstructionPlan.validate prepared unresolvedV2))
 
 [<Fact>]
 let ``an effect link is a checked name`` () =

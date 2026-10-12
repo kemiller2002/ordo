@@ -30,6 +30,17 @@ provenance:
         runtime: claude-code
       reason: "Record the vocabulary 2 effect-failure disposition decision (CONSTRUCT-VOCAB-2)"
       evidence: [tests/Ordo.Construction.Tests/EffectFailureTests.fs]
+    EXE-20261012T190938992Z-699c43cb:
+      operations: [modified]
+      at: 2026-10-12T19:13:06.712Z
+      actor:
+        kind: agent
+        id: anthropic/claude-code
+        provider: anthropic
+        model: unknown
+        runtime: claude-code
+      reason: "Require an authorized decision for remain and proceed dispositions (CONSTRUCT-VOCAB-2-DECISION)"
+      evidence: [tests/Ordo.Tests/ConstructionPlanAdversarialTests.fs]
 ---
 
 # Context
@@ -77,13 +88,22 @@ ability at all.
    one linked obligation. A link must name a declared effect whose
    disposition is `unresolved`. The linked obligation becomes
    `RESOLVE:<subject>` with kind `ResolveEffectFailure`.
-4. **Precise refusals.** `PlanViolation` gains `NotInVocabulary`,
+4. **A decided disposition needs an authorized decision.** `remain` and
+   `proceed` settle effect-failure semantics, so the port's trace must cite a
+   decision node that the prepared cohort requires. This is the rule
+   `bindCapability` follows (`CapabilityWithoutDecision`). Citing no node, a
+   non-decision node, or a decision outside the cohort is refused with
+   `EffectDispositionWithoutDecision`. Without an authorized decision, the
+   only legal disposition is `unresolved`. The agent can therefore no longer
+   settle the question on its own word. It can only surface the question.
+5. **Precise refusals.** `PlanViolation` gains `NotInVocabulary`,
    `MissingEffectDisposition`, `UnresolvedEffectWithoutObligation`,
-   `UnknownEffect`, `EffectAlreadyDecided` and `DuplicateEffectObligation`.
+   `UnknownEffect`, `EffectAlreadyDecided`, `DuplicateEffectObligation` and
+   `EffectDispositionWithoutDecision`.
    Each names the operation by its derived label. The wire reader refuses an
    unknown `onFailure` value by name, a missing one under vocabulary 2, and
    either new member under vocabulary 1.
-5. **The generator applies the disposition.** A vocabulary 2 plan selects
+6. **The generator applies the disposition.** A vocabulary 2 plan selects
    `ordo.construction/2`. Tiers 1 and 2 keep their shape. Tier 3 finds the
    first effect that did not complete and applies the declared disposition
    through typed result cases:
@@ -102,6 +122,11 @@ ability at all.
 - **Keep reporting outcomes and document the question.** Rejected. The pilot
   shows that documentation did not stop the silent choice: the generated
   comment was already there.
+- **Accept a decided disposition on the plan author's word.** Rejected after
+  review of this change. It would make the disposition visible and
+  digest-pinned, but the agent would still settle effect-failure semantics
+  itself, which is the same ability F2 objects to, moved from session code
+  into the plan.
 - **A fixed default, such as always `remain`.** Rejected. A default is the
   same silent decision, moved into the generator. The baseline arm shows that
   reasonable agents disagree on the answer.
@@ -140,7 +165,9 @@ ability at all.
   `proceed` reaches `NoTimer` and reports the failure. `unresolved` picks no
   state and carries a linked `RESOLVE` obligation.
 - Section 9 of `tests/Ordo.Tests/ConstructionPlanAdversarialTests.fs` holds
-  the validation and wire negatives. Pinned v1 and v2 digests are in
+  the validation and wire negatives, including `remain` without a decision,
+  `proceed` citing a non-decision node, and `proceed` citing a decision
+  outside the cohort. Pinned v1 and v2 digests are in
   `tests/Ordo.Tests/ConstructionPlanTests.fs`. Compile probes show that
   `CurrentTime` cannot carry a disposition (FS0003) and that a disposition is
   not free text (FS0001).
@@ -150,16 +177,14 @@ ability at all.
 
 # Known limits and open questions
 
-- A `remain` or `proceed` disposition does not have to cite an externally
-  authorized decision node, unlike `bindCapability`. The choice is now
-  explicit, digest-pinned and reviewable in the plan, rather than an
-  untracked line of session code. Still, the agent that writes the plan can
-  make it. Requiring an authorized decision for a decided disposition, and
-  `unresolved` otherwise, is the candidate next step. It needs a blueprint
-  decision node per effect, and the pilot evidence does not yet show that it
-  pays for itself.
+- Authorization is only as good as the decision node and its external
+  approval. Ordo checks that a required, authorized decision is cited. It
+  does not check that the decision's text actually says `remain` or
+  `proceed`.
 - The faithful vocabulary 2 timer plan is `plan.v2-unresolved.json`. The
-  `remain` and `proceed` variants are test inputs. Neither resolves the
-  time-entry question, and no decision about it is recorded here.
+  `remain` and `proceed` variants are test inputs. They bind test-only
+  blueprints whose `DEC-TIMER-STOP-FAILURE` node says so in its
+  justification. Neither resolves the time-entry question, and no decision
+  about it is recorded here.
 - The disposition covers a single command's effect. Retries, compensation
   and partial completion are not expressible and stay host policy.

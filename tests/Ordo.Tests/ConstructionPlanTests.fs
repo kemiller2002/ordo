@@ -42,11 +42,24 @@ let private pinnedPlanDigest = "sha256:860dd8fe579b4932207e77457373bb833180653f3
 /// Vocabulary 2 variants of the same plan, one per disposition of the Stop
 /// effect (ordo.construction-vocabulary/2). Pinned for the same reason.
 let private pinnedV2Digests =
-    [ "remain", "sha256:71d6a03f48cc96da07cd6a4d115f51aa27a417cee053740fe353cb1d0a5aec87"
-      "proceed", "sha256:ff29f0ad53416d03f3bf63e635f1622476b59cd060da57b05e9aa8c232b28d05"
+    [ "remain", "sha256:d0aa4619c6739dd185241031288acff0ecb155efbef689cd7fceb76b458a1a32"
+      "proceed", "sha256:05c9f7b75b754082192cd77ca4f78aad464a6479b6d6187b7334066ab0804daf"
       "unresolved", "sha256:b498ab7c4e4b3d96cfa7e31347e119a5d0b900770dc47676f394a158a07542c9" ]
 
 let private draftV2 disposition = readPlan (read (sprintf "plan.v2-%s.json" disposition)) |> ok ("plan v2 " + disposition)
+
+/// A decided disposition (remain, proceed) must cite a required decision, so
+/// those variants bind a test-only blueprint that adds DEC-TIMER-STOP-FAILURE.
+/// Its approval here stands in for the external authority; it is a test
+/// input, not a recorded decision.
+let private stopDecision = "DEC-TIMER-STOP-FAILURE"
+
+let private preparedV2 disposition =
+    match disposition with
+    | "unresolved" -> prepared ()
+    | decided ->
+        let b = readBlueprint (read (sprintf "blueprint.v2-%s.json" decided)) |> ok ("blueprint v2 " + decided)
+        prepareCohort (manifest ()) b cohort (Set.add stopDecision approved) |> ok ("prepare v2 " + decided)
 
 [<Fact>]
 let ``fixture requirement digests are the digests of the verbatim source excerpts`` () =
@@ -126,7 +139,7 @@ let ``the vocabulary 1 timer plan keeps its meaning: no disposition, no effect l
 [<Fact>]
 let ``the vocabulary 2 timer plans validate with pinned digests and carry their disposition`` () =
     for disposition, pinned in pinnedV2Digests do
-        let plan = validate (prepared ()) (draftV2 disposition) |> ok ("validate " + disposition)
+        let plan = validate (preparedV2 disposition) (draftV2 disposition) |> ok ("validate " + disposition)
         Assert.Equal(pinned, digest plan)
         Assert.Equal(VocabularyVersion2, (view plan).Binding.VocabularyVersion)
         Assert.Contains(sprintf "\"onFailure\": \"%s\"" disposition, canonicalJson plan)
@@ -135,6 +148,21 @@ let ``the vocabulary 2 timer plans validate with pinned digests and carry their 
     let unresolved = validate (prepared ()) (draftV2 "unresolved") |> ok "unresolved"
     let linked = (view unresolved).Workflow.Unresolved |> List.filter (fun u -> u.Effect.IsSome)
     Assert.Equal<string list>([ "StopCompletionRefused" ], linked |> List.map _.Subject.Key)
+
+[<Fact>]
+let ``a decided Stop disposition is refused without the decision it cites`` () =
+    for disposition in [ "remain"; "proceed" ] do
+        let d = draftV2 disposition
+        // Against the original blueprint the stop decision does not exist, so
+        // the cohort does not require it and the plan cannot cite it.
+        match validate (prepared ()) { d with Binding = { d.Binding with BlueprintDigest = blueprintDigest (blueprint ()); DecisionIds = [ "DEC-TIMER-STATES" ] } } with
+        | Ok _ -> failwithf "%s accepted without an authorized decision" disposition
+        | Error errors ->
+            Assert.Contains(EffectDispositionWithoutDecision "port:transitionEffect/Stop", errors)
+            Assert.Contains(UnauthorizedNodeReference("port:transitionEffect/Stop", stopDecision), errors)
+        // Withholding the approval blocks preparation of the decided blueprint.
+        let b = readBlueprint (read (sprintf "blueprint.v2-%s.json" disposition)) |> ok "blueprint"
+        Assert.True(Result.isError (prepareCohort (manifest ()) b cohort approved))
 
 [<Fact>]
 let ``the same timer plan read as vocabulary 2 without dispositions is refused, not upgraded`` () =

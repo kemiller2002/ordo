@@ -133,12 +133,17 @@ effect port without a disposition (`MissingEffectDisposition`). A vocabulary
 1 plan is never read as vocabulary 2: relabelling one is refused until every
 effect declares its disposition.
 
-**Out of scope, recorded in DF-SDE-2026-0020.** A `remain` or `proceed`
-disposition need not cite a decision node, unlike `bindCapability`. The
-disposition is now an explicit, digest-pinned and reviewable plan choice
-rather than an untracked line of session code, but the agent writing the plan
-can still choose it. Requiring an authorized decision for it is a candidate
-follow-up.
+**A decided disposition needs an authorized decision.** `remain` and
+`proceed` settle what a failed effect means for the workflow. As with
+`bindCapability`, the agent's word is not enough: the port's trace must cite
+a decision node that the prepared cohort requires, and therefore one that was
+authorized externally before the cohort could be prepared. Otherwise the plan
+is refused with `EffectDispositionWithoutDecision(label)`. A plan fails this
+check when it cites no node, only non-decision nodes, or a decision outside
+the cohort; the last also fails `UnauthorizedNodeReference`. Without such a
+decision, the only legal disposition is `unresolved`, which settles nothing and
+becomes an open obligation. So an agent can no longer settle effect-failure
+semantics on its own.
 
 ## Semantic validation: `ConstructionPlan.validate prepared draft`
 
@@ -168,6 +173,9 @@ already been established. They cannot be skipped. Validation then checks:
      (`CapabilityWithoutDecision`). A capability requirement is authorization
      policy, so the agent's word is not enough; the decision must have been
      authorized externally before the cohort could be prepared.
+   - Under the same rule, a `transitionEffect` port whose disposition is
+     `remain` or `proceed` must cite a required decision node
+     (`EffectDispositionWithoutDecision`). `unresolved` needs none.
    - Every assigned requirement is covered by at least one operation, so a requirement cannot silently vanish between ECIR and construction.
 3. **Names and identifiers.**
    - Names follow the grammar above.
@@ -266,7 +274,9 @@ unchanged meaning. New plans use `VocabularyVersion2`.
 - Real fixture: `tests/fixtures/construction/time-entry-timer/`, taken from
   `kemiller2002/time-entry-state-machine@73a63f1` requirement text. Its
   vocabulary 2 variants are `plan.v2-remain.json`, `plan.v2-proceed.json`
-  and `plan.v2-unresolved.json`.
+  and `plan.v2-unresolved.json`. The decided variants bind test-only
+  blueprints (`blueprint.v2-remain.json`, `blueprint.v2-proceed.json`) that
+  add the decision node `DEC-TIMER-STOP-FAILURE`.
 - Vocabulary 2 negatives: section 9 of
   `tests/Ordo.Tests/ConstructionPlanAdversarialTests.fs`.
 - Compile negatives: `tests/Ordo.Tests/ConstructionPlanTests.fs`.

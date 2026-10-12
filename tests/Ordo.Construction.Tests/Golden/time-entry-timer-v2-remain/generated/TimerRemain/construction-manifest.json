@@ -1,12 +1,13 @@
 {
   "generatorVersion": "ordo.construction/2",
-  "planDigest": "sha256:71d6a03f48cc96da07cd6a4d115f51aa27a417cee053740fe353cb1d0a5aec87",
+  "planDigest": "sha256:d0aa4619c6739dd185241031288acff0ecb155efbef689cd7fceb76b458a1a32",
   "binding": {
     "sourceManifestDigest": "sha256:03e29eddb6e528baea0707ec6660f18b0495ac8a6424f3c794a53cc2f5925a01",
-    "blueprintDigest": "sha256:28dd3964f9c49f3492f3c34174ab04d57f4ddcba298276b2a287b4a6f3fdc4cb",
+    "blueprintDigest": "sha256:6f391cb8e3691dac3f9b35c042929d7a52629b0390cb30244a1333f24a62b4d5",
     "cohortId": "COH-TIMER",
     "decisionIds": [
-      "DEC-TIMER-STATES"
+      "DEC-TIMER-STATES",
+      "DEC-TIMER-STOP-FAILURE"
     ]
   },
   "notice": "Generated structure only. Not authorization to apply, not evidence of behavioral verification.",
@@ -16,7 +17,7 @@
       "path": "generated/TimerRemain/TimerRemain.Model.g.fs",
       "tier": "semantic-model",
       "ownership": "generated",
-      "sha256": "sha256:dd13b593980645c8acf23cb8946f07b879a470210fac838d976d9c84aabf4395",
+      "sha256": "sha256:6edf42c42bf86f455a012e9e584f287e997585cedfca0776304559e790a3bcfa",
       "operations": [
         "port:transitionEffect/Stop",
         "state:NoTimer",
@@ -41,7 +42,7 @@
       "path": "generated/TimerRemain/TimerRemain.Transition.g.fs",
       "tier": "transition",
       "ownership": "generated",
-      "sha256": "sha256:7c7711c0deb666fc0eed6d8b7a87e820bfeddd2230e842042287c8c2fb8d0b3d",
+      "sha256": "sha256:f666db2fad5f8995d1f90ed200d8cc457386da28d6b40a5cc2c2538401b6e565",
       "operations": [
         "port:transitionEffect/Stop",
         "transition:NoTimer/Start",
@@ -63,7 +64,7 @@
       "path": "generated/TimerRemain/TimerRemain.Orchestration.g.fs",
       "tier": "orchestration",
       "ownership": "generated",
-      "sha256": "sha256:dddeba365ccdcf33ebe150a0226f2043ee25133e44eaad4bf38b301c6f9183c0",
+      "sha256": "sha256:090de2c889233839097db0a98af45c4f4ba55396549b02af41eac4de2c668306",
       "operations": [
         "port:currentTime",
         "port:transitionEffect/Stop",

@@ -63,8 +63,20 @@ compiled goldens in separate namespaces (`TimerRemain`, `TimerProceed`,
   inputs only**, to exercise generation. They drop the "Stop completion
   refused" obligation, because a decided effect has no open question. Neither
   is a resolution of the source question, and no decision is recorded.
+- A decided disposition must cite a decision the cohort requires
+  (`EffectDispositionWithoutDecision`). The source has no such decision, and
+  citing `DEC-TIMER-STATES` would be false: it decides the three states, and
+  it does not anchor the Stop-completion requirement (L131-L144). So the
+  decided variants bind test-only blueprints, `blueprint.v2-remain.json` and
+  `blueprint.v2-proceed.json`. Each is `blueprint.json` plus a decision node
+  `DEC-TIMER-STOP-FAILURE` on L131-L144, and that node's justification
+  begins "TEST INPUT ONLY, not a recorded decision". The tests approve it as a
+  test input that stands in for the external authority, exactly as they
+  approve `DEC-TIMER-STATES`. `plan.v2-unresolved.json` binds the original
+  blueprint and needs no decision.
 
-They were produced from `plan.json` with `encodePlan`, like the original.
+They were produced from `plan.json` and `blueprint.json` with `encodePlan`
+and `encodeBlueprint`, like the originals.
 
 ## Regenerating
 

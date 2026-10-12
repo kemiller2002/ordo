@@ -368,6 +368,11 @@ type PlanViolation =
     | EffectAlreadyDecided of operation: string * effect: string
     /// Several `declareUnresolved` operations name the same effect.
     | DuplicateEffectObligation of effect: string * operations: string list
+    /// A decided disposition (`remain` or `proceed`) settles what a failed
+    /// effect means for the workflow; like a capability requirement, it must
+    /// cite an externally authorized decision node the cohort requires rather
+    /// than the agent's say-so. Without one, only `unresolved` is legal.
+    | EffectDispositionWithoutDecision of operation: string
 
 // ---------------------------------------------------------------------------
 // Encoding. The draft is the wire shape; the canonical plan is the draft of
@@ -555,9 +560,11 @@ let private traceViolations (view: PreparedCohortView) (operations: OperationDra
                       let anchored = not (List.isEmpty node.RequirementKeys)
                       if anchored && not (node.RequirementKeys |> List.exists (fun k -> List.contains k trace.RequirementKeys)) then
                           InconsistentTrace(label, id)
+              let citesRequiredDecision = trace.NodeIds |> List.exists (fun id -> Set.contains id view.RequiredDecisionIds)
               match operation with
-              | BindCapability _ when not (trace.NodeIds |> List.exists (fun id -> Set.contains id view.RequiredDecisionIds)) ->
-                  CapabilityWithoutDecision label
+              | BindCapability _ when not citesRequiredDecision -> CapabilityWithoutDecision label
+              | DeclarePort { Kind = TransitionEffect(_, Some(EffectFailureDisposition.Remain | EffectFailureDisposition.Proceed)) }
+                  when not citesRequiredDecision -> EffectDispositionWithoutDecision label
               | _ -> () ])
     let covered = operations |> List.collect (fun o -> (traceOf o).RequirementKeys) |> Set.ofList
     perOperation @ (Set.difference view.AssignedRequirementKeys covered |> Seq.map UncoveredRequirement |> Seq.toList)
