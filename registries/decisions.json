@@ -410,5 +410,50 @@
     "title": "Prepare cohorts only after transitive dependency readiness checks",
     "type": "decision-record",
     "updated": "2026-10-11"
+  },
+  {
+    "created": "2026-10-12",
+    "id": "DF-SDE-2026-0018",
+    "path": "research/decisions/DF-SDE-2026-0018--constrain-construction-to-a-typed-vocabulary.md",
+    "provenance": {
+      "contributions": {
+        "EXE-20261012T125044669Z-9fb1c008": {
+          "actor": {
+            "id": "anthropic/claude-code",
+            "kind": "agent",
+            "model": "unknown",
+            "provider": "anthropic",
+            "runtime": "claude-code"
+          },
+          "at": "2026-10-12T13:02:41.000Z",
+          "operations": [
+            "created"
+          ],
+          "reason": "Record the typed construction vocabulary decision for GH-64"
+        }
+      }
+    },
+    "related_documents": [
+      "docs/architecture/construction-plan-v1.md",
+      "docs/architecture/ecir-v1.md",
+      "src/Ordo.Core/ConstructionPlan.fs",
+      "src/Ordo.Core/ConstructionPlanWire.fs",
+      "schemas/ordo-construction-plan.v1.schema.json",
+      "tests/Ordo.Tests/ConstructionPlanTests.fs",
+      "tests/Ordo.Tests/ConstructionPlanAdversarialTests.fs"
+    ],
+    "status": "draft",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "ecir",
+      "construction",
+      "prevention",
+      "gh-64",
+      "gh-65"
+    ],
+    "title": "Constrain agent construction to a typed, versioned vocabulary bound to a prepared ECIR cohort",
+    "type": "decision-record",
+    "updated": "2026-10-12"
   }
 ]

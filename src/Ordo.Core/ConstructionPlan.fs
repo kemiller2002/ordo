@@ -240,12 +240,26 @@ type PlanBinding =
       CohortId: string
       DecisionIds: string list }
 
+/// How an assigned requirement is reflected in the plan. Coverage is a
+/// claim about the plan, not evidence of implementation. A requirement that
+/// only an unresolved obligation or the workflow declaration mentions is
+/// reported as such, so it cannot pass as constructed.
+type RequirementCoverage =
+    /// Defined by states, transitions, invariants, ports or capabilities.
+    | Constructed of operations: string list
+    /// Only open obligations mention it: the behavior is explicitly undecided.
+    | UnresolvedOnly of operations: string list
+    /// Only the workflow declaration mentions it (a whole-workflow constraint
+    /// with no construct of its own).
+    | WorkflowLevel
+
 type ValidatedPlanView =
     { Binding: PlanBinding
       Workflow: Workflow
       /// Requirements this cohort implements, as prepared. Prerequisite scope
       /// is not implementation scope.
       AssignedRequirementKeys: Set<string>
+      Coverage: Map<string, RequirementCoverage>
       /// Content address of the canonical plan.
       Digest: string }
 
@@ -263,9 +277,18 @@ type PlanViolation =
     | StaleBlueprint of bound: string * prepared: string
     | CohortMismatch of bound: string * prepared: string
     | UnboundDecision of decisionId: string
-    | UnauthorizedDecision of decisionId: string
+    | DecisionOutOfScope of decisionId: string
+    /// The prepared manifest's digest does not match its own content.
+    | UnverifiedSourceManifest of reason: string
     | InvalidName of operation: string * raw: string * reason: NameError
     | InvalidCapability of operation: string * raw: string
+    /// A capability requirement is authorization policy; it must cite an
+    /// externally authorized decision node rather than the agent's say-so.
+    | CapabilityWithoutDecision of operation: string
+    /// The cohort node is the delivery container, linked to every assigned
+    /// requirement; citing it would justify anything.
+    | CohortNodeCited of operation: string * nodeId: string
+    | QuestionTooLong of operation: string * length: int
     | MissingSourceTrace of operation: string
     | MissingNodeTrace of operation: string
     | UnassignedRequirement of operation: string * requirementKey: string
@@ -438,7 +461,7 @@ let private bindingViolations (view: PreparedCohortView) (preparedBlueprintDiges
           StaleBlueprint(binding.BlueprintDigest, preparedBlueprintDigest)
       if binding.CohortId <> view.CohortId then CohortMismatch(binding.CohortId, view.CohortId)
       yield! Set.difference required bound |> Seq.map UnboundDecision
-      yield! Set.difference bound required |> Seq.map UnauthorizedDecision ]
+      yield! Set.difference bound required |> Seq.map DecisionOutOfScope ]
 
 let private traceViolations (view: PreparedCohortView) (operations: OperationDraft list) =
     let nodes = view.Blueprint.Nodes |> List.map (fun n -> n.Id, n) |> Map.ofList
@@ -453,13 +476,31 @@ let private traceViolations (view: PreparedCohortView) (operations: OperationDra
                   if not (Set.contains key view.AssignedRequirementKeys) then UnassignedRequirement(label, key)
               for id in List.distinct trace.NodeIds do
                   if not (Set.contains id view.RequiredNodeIds) then UnauthorizedNodeReference(label, id)
+                  elif nodes[id].Kind = Cohort then CohortNodeCited(label, id)
                   else
                       let node = nodes[id]
                       let anchored = not (List.isEmpty node.RequirementKeys)
                       if anchored && not (node.RequirementKeys |> List.exists (fun k -> List.contains k trace.RequirementKeys)) then
-                          InconsistentTrace(label, id) ])
+                          InconsistentTrace(label, id)
+              match operation with
+              | BindCapability _ when not (trace.NodeIds |> List.exists (fun id -> Set.contains id view.RequiredDecisionIds)) ->
+                  CapabilityWithoutDecision label
+              | _ -> () ])
     let covered = operations |> List.collect (fun o -> (traceOf o).RequirementKeys) |> Set.ofList
     perOperation @ (Set.difference view.AssignedRequirementKeys covered |> Seq.map UncoveredRequirement |> Seq.toList)
+
+[<Literal>]
+let MaxQuestionLength = 1000
+
+/// Capability identifiers in a plan are dotted/colon-separated ASCII words,
+/// narrower than `CapabilityId` itself, so no generated literal can carry
+/// quotes, whitespace or operators.
+let private isCapabilityText (raw: string) =
+    not (String.IsNullOrEmpty raw)
+    && raw.Length <= 128
+    && Char.IsAsciiLetter raw[0]
+    && raw |> Seq.forall (fun ch -> Char.IsAsciiLetterOrDigit ch || ch = '.' || ch = ':' || ch = '-' || ch = '_')
+    && (CapabilityId.create raw |> Result.isOk)
 
 let private nameViolations (operations: OperationDraft list) =
     operations
@@ -473,10 +514,8 @@ let private nameViolations (operations: OperationDraft list) =
                 | Ok _ -> None)
         let capability =
             match operation with
-            | BindCapability c ->
-                match CapabilityId.create c.Capability with
-                | Error _ -> [ InvalidCapability(label, c.Capability) ]
-                | Ok _ -> []
+            | BindCapability c when not (isCapabilityText c.Capability) -> [ InvalidCapability(label, c.Capability) ]
+            | DeclareUnresolved u when u.Question.Length > MaxQuestionLength -> [ QuestionTooLong(label, u.Question.Length) ]
             | _ -> []
         names @ capability)
 
@@ -492,7 +531,8 @@ let private structureViolations (operations: OperationDraft list) =
     let transitions = operations |> List.choose (function DefineTransition t -> Some t | _ -> None)
     let stateKeys = states |> List.map (fun s -> (name s.Name).Key) |> Set.ofList
     let commandKeys = transitions |> List.map (fun t -> (name t.Command).Key) |> Set.ofList
-    let roleOf key = states |> List.tryFind (fun s -> (name s.Name).Key = key) |> Option.map _.Role
+    let roles = states |> List.map (fun s -> (name s.Name).Key, s.Role) |> Map.ofList
+    let roleOf key = Map.tryFind key roles
     let initials = states |> List.filter (fun s -> s.Role = Initial) |> List.map (fun s -> (name s.Name).Key)
 
     let duplicates =
@@ -538,17 +578,33 @@ let private structureViolations (operations: OperationDraft list) =
         |> List.filter (fun t -> roleOf (name t.From).Key = Some Terminal)
         |> List.map (DefineTransition >> operationLabel >> TransitionFromTerminal)
 
-    let rec reach (seen: Set<string>) =
-        let next =
-            edges |> List.filter (fun (from, _, _) -> Set.contains from seen) |> List.map (fun (_, _, target) -> target)
-            |> Set.ofList |> Set.union seen
-        if next = seen then seen else reach next
-    let reachable = reach (Set.ofList initials)
+    let successors =
+        edges
+        |> List.groupBy (fun (from, _, _) -> from)
+        |> List.map (fun (from, group) -> from, group |> List.map (fun (_, _, target) -> target) |> Set.ofList)
+        |> Map.ofList
+    let next key = Map.tryFind key successors |> Option.defaultValue Set.empty
+    let rec reach (seen: Set<string>) (frontier: string list) =
+        match frontier with
+        | [] -> seen
+        | key :: rest ->
+            let fresh = Set.difference (next key) seen
+            reach (Set.union seen fresh) (Set.toList fresh @ rest)
+    let reachable = reach (Set.ofList initials) initials
     let graph =
         [ for s in states do
               let key = (name s.Name).Key
               if not (List.isEmpty initials) && not (Set.contains key reachable) then UnreachableState key
-              if s.Role <> Terminal && not (edges |> List.exists (fun (from, _, _) -> from = key)) then DeadEndState key ]
+              // A self-loop alone does not leave the state.
+              if s.Role <> Terminal && Set.isEmpty (Set.remove key (next key)) then DeadEndState key ]
+
+    let duplicateGuards =
+        transitions
+        |> List.collect (fun t ->
+            t.Guards
+            |> List.countBy (fun g -> (name g.Name).Key)
+            |> List.filter (fun (_, count) -> count > 1)
+            |> List.map (fun (guard, _) -> DuplicateDefinition(sprintf "%s/guard:%s" (operationLabel (DefineTransition t)) guard)))
 
     let unresolvedQuestions =
         operations
@@ -565,7 +621,7 @@ let private structureViolations (operations: OperationDraft list) =
       | [] -> MissingInitialState
       | [ _ ] -> ()
       | many -> MultipleInitialStates(List.sort many) ]
-    @ duplicates @ transitionConflicts @ unknownStates @ unknownCommands @ fromTerminal @ graph @ unresolvedQuestions
+    @ duplicates @ duplicateGuards @ transitionConflicts @ unknownStates @ unknownCommands @ fromTerminal @ graph @ unresolvedQuestions
 
 /// The typed workflow, in canonical order. Called only after every check passed.
 let private buildWorkflow (operations: OperationDraft list) : Workflow =
@@ -584,7 +640,7 @@ let private buildWorkflow (operations: OperationDraft list) : Workflow =
                        To = name t.To
                        Guards =
                          t.Guards |> List.map (fun g -> { Name = name g.Name; Predicate = g.Predicate })
-                         |> List.distinctBy (fun g -> g.Name.Key) |> List.sortBy (fun g -> g.Name.Key)
+                         |> List.sortBy (fun g -> g.Name.Key)
                        Trace = normalizeTrace t.Trace }
             | _ -> None)
         |> List.sortBy (fun t -> t.From.Key, t.Command.Key)
@@ -624,6 +680,22 @@ let private buildWorkflow (operations: OperationDraft list) : Workflow =
         |> List.choose (function DeclareUnresolved u -> Some { Subject = name u.Subject; Question = u.Question; Trace = normalizeTrace u.Trace } | _ -> None)
         |> byKey _.Subject }
 
+let private coverage (assigned: Set<string>) (operations: OperationDraft list) =
+    let tracing key =
+        operations |> List.filter (fun o -> List.contains key (traceOf o).RequirementKeys)
+    let labels ops = ops |> List.map operationLabel |> List.distinct |> List.sort
+    assigned
+    |> Seq.map (fun key ->
+        let ops = tracing key
+        let constructs = ops |> List.filter (function DefineWorkflow _ | DeclareUnresolved _ -> false | _ -> true)
+        let unresolved = ops |> List.filter (function DeclareUnresolved _ -> true | _ -> false)
+        key,
+        match constructs, unresolved with
+        | _ :: _, _ -> Constructed(labels constructs)
+        | [], _ :: _ -> UnresolvedOnly(labels unresolved)
+        | [], [] -> WorkflowLevel)
+    |> Map.ofSeq
+
 /// The canonical JSON rendering of a validated plan: normalized names,
 /// canonical list order, sorted object keys.
 let canonicalJson (plan: ValidatedPlan) =
@@ -639,7 +711,11 @@ let validate (prepared: PreparedCohort) (plan: PlanDraft) : Result<ValidatedPlan
     let view = preparedCohortView prepared
     let preparedDigest = ConstructionIrWire.blueprintDigest view.Blueprint
     let finish violations = violations |> List.distinct |> List.sortBy (sprintf "%A")
-    let early = bindingViolations view preparedDigest plan @ traceViolations view plan.Operations @ nameViolations plan.Operations
+    let manifestCheck =
+        match ConstructionIrWire.verifyManifestDigest view.Manifest with
+        | Error reason -> [ UnverifiedSourceManifest reason ]
+        | Ok () -> []
+    let early = manifestCheck @ bindingViolations view preparedDigest plan @ traceViolations view plan.Operations @ nameViolations plan.Operations
     match early with
     | _ :: _ -> Error(finish early)
     | [] ->
@@ -659,8 +735,18 @@ let validate (prepared: PreparedCohort) (plan: PlanDraft) : Result<ValidatedPlan
                 { Binding = binding
                   Workflow = workflow
                   AssignedRequirementKeys = view.AssignedRequirementKeys
+                  Coverage = coverage view.AssignedRequirementKeys plan.Operations
                   Digest = digest })
 
 let view (ValidatedPlan view) = view
 
 let digest (ValidatedPlan view) = view.Digest
+
+/// Whether a validated plan was formed against exactly this prepared cohort.
+/// Hosts that hold both use this instead of comparing fields by hand.
+let isBoundTo (prepared: PreparedCohort) (ValidatedPlan plan) =
+    let cohort = preparedCohortView prepared
+    plan.Binding.SourceManifestDigest = cohort.Manifest.Digest
+    && plan.Binding.BlueprintDigest = ConstructionIrWire.blueprintDigest cohort.Blueprint
+    && plan.Binding.CohortId = cohort.CohortId
+    && Set.ofList plan.Binding.DecisionIds = Set.union cohort.RequiredDecisionIds cohort.RequiredRationaleIds
