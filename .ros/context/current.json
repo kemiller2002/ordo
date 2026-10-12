@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-12T16:20:57.000Z",
+  "updatedAt": "2026-10-12T16:36:31.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -1432,10 +1432,19 @@
     {
       "id": "GH-69",
       "type": "feature",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-10-12T16:20:57.000Z",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Construction/Ordo.Construction.fsproj"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Construction.Tests/EngineTests.fs"
+        }
+      ],
+      "updatedAt": "2026-10-12T16:36:31.000Z",
       "telemetryExecutionIds": [
         "EXE-20261012T162058040Z-ad4aff38"
       ],
@@ -1458,7 +1467,8 @@
           "status": "verified",
           "mechanism": "git-remote-observation"
         }
-      }
+      },
+      "completedAt": "2026-10-12T16:36:31.000Z"
     }
   ]
 }
