@@ -1438,7 +1438,27 @@
       "updatedAt": "2026-10-12T16:20:57.000Z",
       "telemetryExecutionIds": [
         "EXE-20261012T162058040Z-ad4aff38"
-      ]
+      ],
+      "latestCheckpoint": {
+        "id": "b5b344408ae5cfdf9a9cf73d",
+        "recordedAt": "2026-10-12T16:36:28.000Z",
+        "executionId": "EXE-20261012T162058040Z-ad4aff38",
+        "repository": "ordo",
+        "branch": "feat/gh-69-construction-package",
+        "commit": "0c50bce13bfc065ca0f3d646cd86791ef28d593a",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "feat/gh-69-construction-package",
+        "remoteCommit": "0c50bce13bfc065ca0f3d646cd86791ef28d593a",
+        "summary": "Ordo.Construction packable as EchelonFoundry.Ordo.Construction (only Ordo.Core dependency); native-release packs ordo-construction.nupkg with checksums; release input declares it; packaging test added. CI green on PR 70.",
+        "nextAction": "Merge PR 70 and cut the minor release so Praxis 242 can pin ordo-core and ordo-construction.",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      }
     }
   ]
 }
