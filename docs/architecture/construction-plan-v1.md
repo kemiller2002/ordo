@@ -4,6 +4,7 @@ Status: **draft / implemented in `Ordo.Core`**. Contract owner: Ordo. Tracking:
 [ordo#64](https://github.com/kemiller2002/ordo/issues/64) (CONSTRUCT-001).
 Consumer: [ordo#65](https://github.com/kemiller2002/ordo/issues/65) (`Ordo.Construction`).
 Decision: [`DF-SDE-2026-0018`](../../research/decisions/DF-SDE-2026-0018--constrain-construction-to-a-typed-vocabulary.md).
+Vocabulary 2 (effect-failure disposition): [`DF-SDE-2026-0020`](../../research/decisions/DF-SDE-2026-0020--require-a-declared-effect-failure-disposition.md).
 
 ## Purpose
 
@@ -19,10 +20,15 @@ The plan extends `ConstructionIr` rather than restating it. It does not keep a
 second requirement registry, does not re-decide readiness, and does not mint
 authority.
 
-## Wire: `ordo.construction-plan/1`, vocabulary `ordo.construction-vocabulary/1`
+## Wire: `ordo.construction-plan/1`, vocabularies `ordo.construction-vocabulary/1` and `/2`
 
-Schema: [`schemas/ordo-construction-plan.v1.schema.json`](../../schemas/ordo-construction-plan.v1.schema.json)
-(structural only). Reader: `ConstructionPlanWire.readPlan`, which is strict.
+Schemas (structural only):
+- vocabulary 1: [`schemas/ordo-construction-plan.v1.schema.json`](../../schemas/ordo-construction-plan.v1.schema.json);
+- vocabulary 2: [`schemas/ordo-construction-plan.vocabulary-2.schema.json`](../../schemas/ordo-construction-plan.vocabulary-2.schema.json).
+
+The plan envelope (`schemaVersion`) is the same for both. Vocabulary 2 is
+vocabulary 1 plus the effect-failure disposition described
+[below](#vocabulary-2-effect-failure-disposition). Reader: `ConstructionPlanWire.readPlan`, which is strict.
 Unknown or duplicate members are refused, as are blank names and unknown
 `op`/`port`/`predicate`/`role` values. Each refusal names the offending value
 and its JSON path.
@@ -39,9 +45,9 @@ and its JSON path.
 | `defineState` | name, role `initial`/`ordinary`/`terminal` | a domain state; exactly one initial |
 | `defineTransition` | command, from, to, guards[] | the command is legal from `from` and leads to `to`; commands are derived from transitions |
 | `defineInvariant` | name, predicate, holdsIn[] | a named property that must hold in the listed states |
-| `declarePort` | `currentTime`, or `transitionEffect` + command | an orchestration need; the engine picks the signature |
+| `declarePort` | `currentTime`, or `transitionEffect` + command (+ `onFailure` in vocabulary 2) | an orchestration need; the engine picks the signature |
 | `bindCapability` | command, capability | a semantic capability (`Ordo.Core.Capability`) required to issue the command |
-| `declareUnresolved` | subject, question | behavior the plan must not guess; becomes an open obligation |
+| `declareUnresolved` | subject, question (+ optional `effect` in vocabulary 2) | behavior the plan must not guess; becomes an open obligation |
 
 Every operation carries `trace: { requirementKeys[], nodeIds[] }`.
 
@@ -67,6 +73,72 @@ could express any of these:
 
 The reader refuses each attempt as an unsupported operation or an unknown
 member. The compiler refuses each attempt made in F#.
+
+## Vocabulary 2: effect-failure disposition
+
+**Why.** In vocabulary 1 the generated orchestration reports a `Failed` or
+`Unknown` effect outcome but does not say what it means for the workflow. In
+the time-entry timer pilot (`construction-by-design/time-entry-timer-01`,
+finding F2, research-documents PR #7), two of the three construction-arm
+agents decided it silently in handwritten session code: they discarded the
+timer, because `state <- decision.Next` ran whatever the Stop outcome was. Two
+of the three baseline agents chose the opposite. Only one run of six surfaced
+the question. Vocabulary 2 removes that decision from session code: the plan
+must state it, and the generated orchestration applies it.
+
+**`onFailure` (required on every `transitionEffect` port).**
+
+| Value | Meaning | Generated result on `Failed` or `Unknown` |
+|---|---|---|
+| `remain` | the workflow stays in the transition's source state | `Remained(..., failure, state = source)` |
+| `proceed` | the transition's target state stands and the failure is reported | `Proceeded(..., failure, state = target)` |
+| `unresolved` | the plan does not decide; generated code may pick neither outcome | `Unresolved(..., failure)` with no state; the host must handle it |
+
+```json
+{ "op": "declarePort", "port": "transitionEffect", "command": "Stop",
+  "onFailure": "unresolved", "trace": { ... } }
+{ "op": "declareUnresolved", "subject": "Stop completion refused",
+  "effect": "Stop", "question": "...", "trace": { ... } }
+```
+
+**Linking an unresolved disposition.** An `unresolved` disposition must be
+linked to exactly one `declareUnresolved` whose `effect` member names the
+effect's command. The link is a checked semantic name compared by its
+normalized form, not by matching prose in `subject` or `question`. Rules:
+- an `unresolved` port with no linked obligation is refused
+  (`UnresolvedEffectWithoutObligation`); an obligation about the same thing
+  that does not carry `effect` is not a link;
+- a link must name a declared `transitionEffect` port (`UnknownEffect`),
+  even when the command itself exists;
+- a link to an effect whose disposition is `remain` or `proceed` is refused
+  (`EffectAlreadyDecided`): a decided effect has no open question;
+- two links to one effect are refused (`DuplicateEffectObligation`).
+
+The linked obligation becomes the construction obligation
+`RESOLVE:<subject>` with kind `ResolveEffectFailure(effect, subject,
+question)`.
+
+**Only an effect port can carry a disposition.** In F#, `onFailure` is a
+field of the `TransitionEffect` case, so `CurrentTime` has nowhere to put one
+(a compile probe asserts FS0003). On the wire, `onFailure` on a
+`currentTime` port is refused as `incorrect fields for port currentTime`.
+`EffectFailureDisposition` is a closed union with no free-text or custom
+case.
+
+**Vocabulary gating.** The reader admits `onFailure` and `effect` only in a
+vocabulary 2 plan. In vocabulary 1 they are unknown members. `validate`
+refuses a draft built in F# that carries either under vocabulary 1
+(`NotInVocabulary(label, member, vocabulary)`), and refuses a vocabulary 2
+effect port without a disposition (`MissingEffectDisposition`). A vocabulary
+1 plan is never read as vocabulary 2: relabelling one is refused until every
+effect declares its disposition.
+
+**Out of scope, recorded in DF-SDE-2026-0020.** A `remain` or `proceed`
+disposition need not cite a decision node, unlike `bindCapability`. The
+disposition is now an explicit, digest-pinned and reviewable plan choice
+rather than an untracked line of session code, but the agent writing the plan
+can still choose it. Requiring an authorized decision for it is a candidate
+follow-up.
 
 ## Semantic validation: `ConstructionPlan.validate prepared draft`
 
@@ -116,7 +188,11 @@ already been established. They cannot be skipped. Validation then checks:
    - duplicate guards on one transition, compared by normalized name. They are
      refused, not merged;
    - invariants with an empty scope;
-   - blank unresolved questions.
+   - blank unresolved questions;
+   - in vocabulary 2, a missing disposition, an `unresolved` disposition
+     without its linked obligation, a link to an unknown or already decided
+     effect, and two links to one effect (see above). In vocabulary 1, a
+     disposition or link at all (`NotInVocabulary`).
 
 Failures are `PlanViolation` values that name the operation by its derived
 label, for example `transition:Running/Pause`. The agent never assigns
@@ -147,11 +223,15 @@ the built assembly and assert the specific error code for each attempt.
 - states are ordered initial first, then by name;
 - transitions are ordered by (from, command);
 - every other list is sorted and deduplicated;
-- object keys are sorted.
+- object keys are sorted;
+- in vocabulary 2, `onFailure` and the `effect` link are part of the
+  canonical form. A vocabulary 1 plan has neither member, so its canonical
+  JSON and digest are byte-identical to what earlier releases produced.
 
 Reordering operations, trace lists or decision IDs, or respelling a name,
-leaves the digest unchanged. Any semantic change alters it. The time-entry
-fixture's digest is pinned in the tests. Changing canonicalization requires a
+leaves the digest unchanged. Any semantic change alters it, including a
+change of disposition or of vocabulary. The time-entry fixture's vocabulary 1
+digest and its three vocabulary 2 variants' digests are pinned in the tests. Changing canonicalization requires a
 schema or vocabulary version change, not an updated constant.
 
 `ConstructionPlan.isBoundTo prepared plan` tells a host that holds both values
@@ -165,13 +245,28 @@ evidence of implementation and not evidence of verification. Hosts (Praxis
 ## Versioning
 
 An unknown `schemaVersion` or `vocabularyVersion` is refused, never upgraded
-in place. A future vocabulary that adds an operation or predicate gets a new
-version. Plans in an older version stay readable only while that reader is
-kept. A change to canonical encoding is a breaking change.
+in place. A future vocabulary that adds an operation, predicate or member gets
+a new version, as vocabulary 2 did for `onFailure` and `effect`. Plans in an
+older version stay readable only while that reader is kept. A change to
+canonical encoding is a breaking change.
+
+| Vocabulary | Accepted by | Canonical form |
+|---|---|---|
+| `ordo.construction-vocabulary/1` | Ordo 1.6.0 and later | unchanged since Ordo 1.6.0 |
+| `ordo.construction-vocabulary/2` | Ordo 1.7.0 and later | adds `onFailure` and `effect` |
+
+`ConstructionPlan.VocabularyVersion` keeps its original value (vocabulary 1),
+so code that authors plans with it keeps producing vocabulary 1 plans with
+unchanged meaning. New plans use `VocabularyVersion2`.
+`SupportedVocabularyVersions` lists what the reader accepts.
 
 ## Evidence
 
 - Runtime negatives: `tests/Ordo.Tests/ConstructionPlanAdversarialTests.fs`.
 - Real fixture: `tests/fixtures/construction/time-entry-timer/`, taken from
-  `kemiller2002/time-entry-state-machine@73a63f1` requirement text.
+  `kemiller2002/time-entry-state-machine@73a63f1` requirement text. Its
+  vocabulary 2 variants are `plan.v2-remain.json`, `plan.v2-proceed.json`
+  and `plan.v2-unresolved.json`.
+- Vocabulary 2 negatives: section 9 of
+  `tests/Ordo.Tests/ConstructionPlanAdversarialTests.fs`.
 - Compile negatives: `tests/Ordo.Tests/ConstructionPlanTests.fs`.

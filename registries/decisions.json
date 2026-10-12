@@ -497,5 +497,54 @@
     "title": "Generate Four-Tier finite-state workflow structure deterministically from validated plans",
     "type": "decision-record",
     "updated": "2026-10-12"
+  },
+  {
+    "created": "2026-10-12",
+    "id": "DF-SDE-2026-0020",
+    "path": "research/decisions/DF-SDE-2026-0020--require-a-declared-effect-failure-disposition.md",
+    "provenance": {
+      "contributions": {
+        "EXE-20261012T184706791Z-71fb8dee": {
+          "actor": {
+            "id": "anthropic/claude-code",
+            "kind": "agent",
+            "model": "unknown",
+            "provider": "anthropic",
+            "runtime": "claude-code"
+          },
+          "at": "2026-10-12T19:03:39.294Z",
+          "evidence": [
+            "tests/Ordo.Construction.Tests/EffectFailureTests.fs"
+          ],
+          "operations": [
+            "created"
+          ],
+          "reason": "Record the vocabulary 2 effect-failure disposition decision (CONSTRUCT-VOCAB-2)"
+        }
+      }
+    },
+    "related_documents": [
+      "docs/architecture/construction-plan-v1.md",
+      "docs/architecture/construction-engine-v1.md",
+      "research/decisions/DF-SDE-2026-0018--constrain-construction-to-a-typed-vocabulary.md",
+      "research/decisions/DF-SDE-2026-0019--generate-four-tier-workflow-structure-deterministically.md",
+      "schemas/ordo-construction-plan.vocabulary-2.schema.json",
+      "src/Ordo.Core/ConstructionPlan.fs",
+      "src/Ordo.Construction/Emit.fs",
+      "tests/Ordo.Construction.Tests/EffectFailureTests.fs"
+    ],
+    "status": "draft",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "construction",
+      "vocabulary",
+      "effects",
+      "four-tier",
+      "construct-vocab-2"
+    ],
+    "title": "Require a declared effect-failure disposition in construction vocabulary 2",
+    "type": "decision-record",
+    "updated": "2026-10-12"
   }
 ]

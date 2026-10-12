@@ -1511,7 +1511,27 @@
       "updatedAt": "2026-10-12T18:47:06.458Z",
       "telemetryExecutionIds": [
         "EXE-20261012T184706791Z-71fb8dee"
-      ]
+      ],
+      "latestCheckpoint": {
+        "id": "ec618061a4c536c8ae735b2c",
+        "recordedAt": "2026-10-12T18:59:27.779Z",
+        "executionId": "EXE-20261012T184706791Z-71fb8dee",
+        "repository": "ordo",
+        "branch": "construct/effect-failure-disposition",
+        "commit": "760b9c6501f43ee0408b699acb19a0ade0fa50ff",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "construct/effect-failure-disposition",
+        "remoteCommit": "760b9c6501f43ee0408b699acb19a0ade0fa50ff",
+        "summary": "Vocabulary 2 model, reader, validation, generator and tests committed (Ordo.Tests construction-plan 106 pass, Ordo.Construction.Tests 54 pass)",
+        "nextAction": "Docs, schema, decision record, version bump, full suite, PR",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      }
     }
   ]
 }
