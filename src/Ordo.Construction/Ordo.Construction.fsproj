@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <AssemblyName>Ordo.Construction</AssemblyName>
+    <RootNamespace>Ordo.Construction</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+
+  <!--
+    The deterministic construction engine (CONSTRUCT-002 / GH-65). A pure
+    projection from Ordo.Core's ValidatedPlan to immutable artifact
+    descriptions and source text. It writes no file, starts no process and
+    opens no connection; the host applies artifacts. Tests in
+    Ordo.Construction.Tests assert that against this assembly's metadata.
+    It references Ordo.Core only, and no package.
+  -->
+  <ItemGroup>
+    <Compile Include="Naming.fs" />
+    <Compile Include="Artifacts.fs" />
+    <Compile Include="Emit.fs" />
+    <Compile Include="Construction.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Ordo.Core/Ordo.Core.fsproj" />
+  </ItemGroup>
+
+</Project>

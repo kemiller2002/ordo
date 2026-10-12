@@ -455,5 +455,47 @@
     "title": "Constrain agent construction to a typed, versioned vocabulary bound to a prepared ECIR cohort",
     "type": "decision-record",
     "updated": "2026-10-12"
+  },
+  {
+    "created": "2026-10-12",
+    "id": "DF-SDE-2026-0019",
+    "path": "research/decisions/DF-SDE-2026-0019--generate-four-tier-workflow-structure-deterministically.md",
+    "provenance": {
+      "contributions": {
+        "EXE-20261012T130500312Z-ff47f231": {
+          "actor": {
+            "id": "anthropic/claude-code",
+            "kind": "agent",
+            "model": "unknown",
+            "provider": "anthropic",
+            "runtime": "claude-code"
+          },
+          "at": "2026-10-12T13:15:43.000Z",
+          "operations": [
+            "created"
+          ],
+          "reason": "Record the deterministic construction engine decision for GH-65"
+        }
+      }
+    },
+    "related_documents": [
+      "docs/architecture/construction-engine-v1.md",
+      "docs/architecture/construction-plan-v1.md",
+      "research/decisions/DF-SDE-2026-0018--constrain-construction-to-a-typed-vocabulary.md",
+      "src/Ordo.Construction/Construction.fs",
+      "tests/Ordo.Construction.Tests/TimerSmokeTests.fs"
+    ],
+    "status": "draft",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "construction",
+      "four-tier",
+      "determinism",
+      "gh-65"
+    ],
+    "title": "Generate Four-Tier finite-state workflow structure deterministically from validated plans",
+    "type": "decision-record",
+    "updated": "2026-10-12"
   }
 ]

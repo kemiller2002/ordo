@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>Ordo.Construction.Tests</AssemblyName>
+    <RootNamespace>Ordo.Construction.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <GenerateProgramFile>true</GenerateProgramFile>
+  </PropertyGroup>
+
+  <!--
+    The golden outputs are compiled here, in tier order, under the
+    repository's TreatWarningsAsErrors. That is the "generated F# compiles"
+    evidence, and it lets behavior tests call the generated code with
+    ordinary types. GoldenTests prove the engine still produces these exact
+    bytes; a golden file is never edited to make a test pass.
+  -->
+  <ItemGroup>
+    <Compile Include="Golden/time-entry-timer/generated/Timer/Timer.Model.g.fs" />
+    <Compile Include="Golden/time-entry-timer/generated/Timer/Timer.Transition.g.fs" />
+    <Compile Include="Golden/time-entry-timer/generated/Timer/Timer.Orchestration.g.fs" />
+    <Compile Include="Golden/door-synthetic/generated/Door/Door.Model.g.fs" />
+    <Compile Include="Golden/door-synthetic/generated/Door/Door.Transition.g.fs" />
+    <Compile Include="Golden/door-synthetic/generated/Door/Door.Orchestration.g.fs" />
+    <Compile Include="../Ordo.Tests/FsiProbe.fs" Link="FsiProbe.fs" />
+    <Compile Include="Fixtures.fs" />
+    <Compile Include="GoldenTests.fs" />
+    <Compile Include="EngineTests.fs" />
+    <Compile Include="TimerSmokeTests.fs" />
+    <Compile Include="DoorBehaviorTests.fs" />
+    <Compile Include="CompileNegativeTests.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Ordo.Core/Ordo.Core.fsproj" />
+    <ProjectReference Include="../../src/Ordo.Construction/Ordo.Construction.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+</Project>
