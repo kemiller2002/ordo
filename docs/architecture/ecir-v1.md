@@ -125,6 +125,8 @@ member to nothing.
 
 ## Work sequence
 
+**Construction by design:** prepared cohorts feed typed construction plans ([construction-plan-v1](construction-plan-v1.md), #64) and the deterministic workflow constructor ([construction-engine-v1](construction-engine-v1.md), #65).
+
 **First increment (this PR):** versioned contract, source-set semantic validator, adversarial unit tests, schema and fixture. Keep package and dependencies unchanged. **Next:** strict JSON decoding/encoding and canonical artifact hashing; Conditor import bridge; Praxis execution gate and cohort dispatch; independent Dokimos verification; controlled trial versus natural-language and batch-only execution.
 
 These are proposals until a CI run and approved decision/evidence records confirm implementation. No pass/fail claim should be based on this document alone.

@@ -46,3 +46,11 @@ jobs:
       # in it needs a network or an API key; the one live-provider test skips
       # itself unless ORDO_LIVE_PROVIDER_TESTS is set.
       - run: dotnet test tests/Ordo.Tests/Ordo.Tests.fsproj --nologo
+
+      # The deterministic construction engine (GH-65): golden byte-for-byte
+      # regeneration, the generated F# compiled under TreatWarningsAsErrors,
+      # behavior of the generated time-entry timer against expectations
+      # written from the original requirement text, compile-negative probes
+      # run through `dotnet fsi`, and metadata checks that the engine itself
+      # performs no file, network or process effects.
+      - run: dotnet test tests/Ordo.Construction.Tests/Ordo.Construction.Tests.fsproj --nologo

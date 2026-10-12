@@ -750,3 +750,11 @@ let isBoundTo (prepared: PreparedCohort) (ValidatedPlan plan) =
     && plan.Binding.BlueprintDigest = ConstructionIrWire.blueprintDigest cohort.Blueprint
     && plan.Binding.CohortId = cohort.CohortId
     && Set.ofList plan.Binding.DecisionIds = Set.union cohort.RequiredDecisionIds cohort.RequiredRationaleIds
+
+/// The plan's operations in canonical form (normalized names, canonical
+/// order). Consumers derive labels with `operationLabel` and traces from
+/// these, so labels and traces have one authority.
+let canonicalOperations (ValidatedPlan plan) = (canonicalDraft plan.Binding plan.Workflow).Operations
+
+/// The trace an operation carries.
+let operationTrace (operation: OperationDraft) = traceOf operation

@@ -1,0 +1,54 @@
+/// The engine's naming policy. Plans carry semantic names (grammar-checked
+/// ASCII words); the engine alone decides the F# identifiers, namespaces and
+/// paths derived from them. A name the policy cannot place safely is refused
+/// with a typed reason, never mangled into something the plan did not say.
+module Ordo.Construction.Naming
+
+open Ordo.Core.ConstructionPlan
+
+/// Union-case names F# reserves or generates members for. A case named `Tag`
+/// collides with the generated `Tag` property; `Is<Case>` names collide with
+/// generated `Is<Case>` testers; the others shadow core library cases.
+let private reservedCaseNames =
+    set [ "Tag"; "Item"; "None"; "Some"; "Ok"; "Error"; "True"; "False"; "Null"; "Unit"; "ValueNone"; "ValueSome" ]
+
+type NamingRefusal =
+    /// The name is reserved by F# or by generated members.
+    | ReservedName of role: string * name: string
+    /// `IsX` would collide with the tester F# generates for a case `X`.
+    | TesterCollision of role: string * name: string
+
+let private startsWithTester (key: string) =
+    key.Length > 2 && key.StartsWith "Is" && System.Char.IsAsciiLetterUpper key[2]
+
+/// Checks one closed set of union-case names.
+let checkCases (role: string) (names: SemanticName list) : NamingRefusal list =
+    names
+    |> List.collect (fun name ->
+        let key = name.Key
+        [ if Set.contains key reservedCaseNames then ReservedName(role, key)
+          if startsWithTester key then TesterCollision(role, key) ])
+
+/// Type and module names are the workflow name plus a fixed suffix, so they
+/// cannot collide with each other or with case names (cases are always
+/// accessed qualified).
+let stateType (workflow: SemanticName) = workflow.Key + "State"
+let commandType (workflow: SemanticName) = workflow.Key + "Command"
+let guardType (workflow: SemanticName) = workflow.Key + "Guard"
+let invariantType (workflow: SemanticName) = workflow.Key + "Invariant"
+let effectType (workflow: SemanticName) = workflow.Key + "Effect"
+let refusalType (workflow: SemanticName) = workflow.Key + "Refusal"
+let decisionType (workflow: SemanticName) = workflow.Key + "Decision"
+let rulesType (workflow: SemanticName) = workflow.Key + "Rules"
+let transitionModule (workflow: SemanticName) = workflow.Key + "Transition"
+let portsType (workflow: SemanticName) = "I" + workflow.Key + "Ports"
+let effectOutcomeType (workflow: SemanticName) = workflow.Key + "EffectOutcome"
+let resultType (workflow: SemanticName) = workflow.Key + "Result"
+let orchestrationModule (workflow: SemanticName) = workflow.Key + "Orchestration"
+
+/// Every generated file lives in one namespace per workflow.
+let rootNamespace (workflow: SemanticName) = "Generated." + workflow.Key
+
+/// Every generated path lives under one ownership root per workflow. Paths
+/// are relative, forward-slashed and contain only grammar-checked words.
+let ownershipRoot (workflow: SemanticName) = "generated/" + workflow.Key + "/"
