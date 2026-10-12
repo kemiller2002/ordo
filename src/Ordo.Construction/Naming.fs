@@ -43,6 +43,8 @@ let rulesType (workflow: SemanticName) = workflow.Key + "Rules"
 let transitionModule (workflow: SemanticName) = workflow.Key + "Transition"
 let portsType (workflow: SemanticName) = "I" + workflow.Key + "Ports"
 let effectOutcomeType (workflow: SemanticName) = workflow.Key + "EffectOutcome"
+let effectFailureType (workflow: SemanticName) = workflow.Key + "EffectFailure"
+let failureDispositionType (workflow: SemanticName) = workflow.Key + "FailureDisposition"
 let resultType (workflow: SemanticName) = workflow.Key + "Result"
 let orchestrationModule (workflow: SemanticName) = workflow.Key + "Orchestration"
 

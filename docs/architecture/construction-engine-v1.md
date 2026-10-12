@@ -4,6 +4,7 @@ Status: **draft / implemented in `src/Ordo.Construction`**. Tracking:
 [ordo#65](https://github.com/kemiller2002/ordo/issues/65) (CONSTRUCT-002).
 Input contract: [construction plan v1](construction-plan-v1.md).
 Decision: [`DF-SDE-2026-0019`](../../research/decisions/DF-SDE-2026-0019--generate-four-tier-workflow-structure-deterministically.md).
+Generator version 2 (effect-failure disposition): [`DF-SDE-2026-0020`](../../research/decisions/DF-SDE-2026-0020--require-a-declared-effect-failure-disposition.md).
 
 ## What it is
 
@@ -33,7 +34,7 @@ exactly one shape: a finite-state workflow.
 | Placement | `generated/<Workflow>/`, one ownership root per workflow |
 | Files | `<Workflow>.Model.g.fs` (Tier 1), `.Transition.g.fs` (Tier 2), `.Orchestration.g.fs` (Tier 3, only when the plan declares ports), `construction-manifest.json` |
 | Namespace | `Generated.<Workflow>` |
-| Type names | `<Workflow>State`, `Command`, `Guard`, `Invariant`, `Effect`, `Refusal`, `Decision`, `Rules`, `I<Workflow>Ports`, `EffectOutcome`, `Result`; modules `<Workflow>Transition` and `<Workflow>Orchestration` |
+| Type names | `<Workflow>State`, `Command`, `Guard`, `Invariant`, `Effect`, `Refusal`, `Decision`, `Rules`, `I<Workflow>Ports`, `EffectOutcome`, `Result`, and for generator version 2 `EffectFailure` and `FailureDisposition`; modules `<Workflow>Transition` and `<Workflow>Orchestration` |
 | Case names | the semantic name's PascalCase key, always accessed qualified (`[<RequireQualifiedAccess>]`) |
 | Ordering | initial state first, then states by name; commands, guards and invariants by name; transitions by (from, command) |
 | Dependencies | none added. Tier 1 refers to nothing generated; Tier 2 refers only to Tier 1; Tier 3 refers to Tiers 1 and 2. Tier 4 (Host) is never generated. |
@@ -73,8 +74,62 @@ Collisions after normalization are refused earlier, by plan validation.
   - `handle`.
 
   `handle` reads the clock, delegates the decision to Tier 2 and asks the host
-  to perform the effects. It reports outcomes. It does not decide what a failed
-  or unknown effect means.
+  to perform the effects. Under generator version 1 (vocabulary 1 plans) it
+  reports outcomes and does not decide what a failed or unknown effect means.
+  Under generator version 2 (vocabulary 2 plans) it applies the disposition
+  the plan declares; see below.
+
+## Generator version 2: the declared effect-failure disposition
+
+A vocabulary 2 plan selects `ordo.construction/2`. The plan cannot select a
+generator any other way. Tiers 1 and 2 have the same shape as version 1.
+Tier 3 differs:
+
+- `<Workflow>EffectFailure = Failed of effect * reason | Unknown of effect *
+  reason`. `Unknown` stays distinct from `Failed`.
+- `<Workflow>FailureDisposition`, with only the cases the plan uses
+  (`Remain`, `Proceed`, `Unresolved`), and `onFailure : Effect ->
+  FailureDisposition`, an exhaustive table generated from the plan.
+- `firstFailure`, which returns the first requested effect, in request order,
+  that did not complete. Each command requests at most one effect, because
+  the effect is named by its command and ports are unique per command.
+- `<Workflow>Result`, whose cases carry the post-command `state` wherever the
+  plan decides one, so a host never derives it from `decision.Next`:
+
+  | Case | When | `state` |
+  |---|---|---|
+  | `Accepted(decision, at, effects, state)` | every requested effect completed | target |
+  | `Remained(decision, at, effects, failure, state)` | an effect failed or is unknown and the plan says `remain` | source |
+  | `Proceeded(decision, at, effects, failure, state)` | an effect failed or is unknown and the plan says `proceed` | target |
+  | `Unresolved(decision, at, effects, failure)` | an effect failed or is unknown and the plan says `unresolved` | none: the host must handle it |
+  | `Refused(refusal, at, state)` | Tier 2 refused the command; nothing was performed | unchanged source |
+
+  `Remained`, `Proceeded` and `Unresolved` exist only when the plan uses the
+  matching disposition. `at` and `effects` are present only when the plan
+  declares the clock or an effect, as in version 1.
+
+For the time-entry timer with `onFailure: remain` on Stop, the generated
+`handle` ends:
+
+```fsharp
+| Ok decision ->
+    let effects = decision.Effects |> List.map (fun effect -> effect, ports.Perform(effect, decision))
+    match firstFailure effects with
+    | None -> TimerRemainResult.Accepted(decision, at, effects, decision.Next)
+    | Some failure ->
+        match failure with
+        | TimerRemainEffectFailure.Failed(effect, _)
+        | TimerRemainEffectFailure.Unknown(effect, _) ->
+            match onFailure effect with
+            | TimerRemainFailureDisposition.Remain -> TimerRemainResult.Remained(decision, at, effects, failure, decision.Previous)
+```
+
+With `proceed` the last line is `Proceeded(..., decision.Next)`. With
+`unresolved` it is `Unresolved(decision, at, effects, failure)`, and the
+construction records the linked obligation as
+`RESOLVE:<subject>` (`ResolveEffectFailure`). The manifest of a version 2
+construction has an additional `effectFailure` list of `{ effect, onFailure }`,
+and a linked `resolve` obligation carries an `effect` member.
 
 ## No permissive defaults
 
@@ -104,7 +159,11 @@ changes. Any change to emitted bytes is a new generator version. The goldens
 are regenerated in the same commit, and that commit records the version
 change. A golden is never edited by hand to make a test pass. Every generated
 file starts with
-`// <auto-generated by ordo.construction/1 from <planDigest>>`.
+`// <auto-generated by ordo.construction/<version> from <planDigest>>`.
+
+The plan's vocabulary selects the generator version (`generatorVersionFor`):
+vocabulary 1 plans keep `ordo.construction/1` byte for byte, and vocabulary 2
+plans use `ordo.construction/2`.
 
 ## Ownership and applying artifacts
 
@@ -149,6 +208,17 @@ of behavioral verification.
   generated `legal`.
 - **Door synthetic fixture.** Guards, an invariant, a capability, the clock
   and an effect.
+- **Effect-failure dispositions (generator version 2).** Three compiled
+  goldens of the timer, one per disposition of the Stop effect
+  (`Golden/time-entry-timer-v2-*`), with behavior tests in
+  `EffectFailureTests.fs`. They check that a failed or unknown Stop under
+  `remain` leaves `Running` and `Paused` in place, that `proceed` reaches
+  `NoTimer` and reports the failure, and that `unresolved` picks no state and
+  carries a linked `RESOLVE` obligation. The `remain` and `proceed` plans cite
+  a test-only decision node, because the plan rules require one for a decided
+  disposition. Compile probes check that the
+  `Unresolved` case has no state to read and that a failure cannot be built
+  as an acceptance.
 - **Engine tests.** Naming refusals, justified tiers only, ownership and write
   planning, tier direction, forbidden tokens, metadata purity and architecture.
 - **Compile probes.** Each asserts its exact error code.
@@ -171,7 +241,8 @@ obligation.
    `Construction` or a manifest from an agent as input.
 2. **Construct inside the trusted process.** Call `Construction.construct`
    there, never in the agent sandbox. Pin the Ordo.Core and Ordo.Construction
-   versions and the generator version (`ordo.construction/1`).
+   versions and the generator version (`ordo.construction/1` for vocabulary 1
+   plans, `ordo.construction/2` for vocabulary 2 plans).
 3. **Plan writes from fresh state.** Read the current content of the target
    paths and of every file under `OwnershipRoot` from the target repository.
    Call `planWrites`. On any refusal, apply nothing.
@@ -182,7 +253,10 @@ obligation.
    host-policy decision; it is not part of construction.
 5. **Carry obligations forward.** Record `Obligations` as Praxis work.
    - Each `IMPLEMENT:*` becomes a handwritten extension task (Praxis #243).
-   - Each `RESOLVE:*` becomes a decision request.
+   - Each `RESOLVE:*` becomes a decision request. A `ResolveEffectFailure`
+     obligation also names the effect whose failure is undecided; until it is
+     resolved, the host handles the generated `Unresolved` result case
+     explicitly and records what it did.
    - `VERIFY:*` goes to Dokimos (#30).
 
    A construction with open obligations is structure, not a completed feature.

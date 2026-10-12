@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-12T16:55:29.182Z",
+  "updatedAt": "2026-10-12T19:15:17.513Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -1501,6 +1501,100 @@
         }
       },
       "completedAt": "2026-10-12T16:55:29.182Z"
+    },
+    {
+      "id": "CONSTRUCT-VOCAB-2",
+      "type": "task",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Construction/Emit.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ConstructionPlan.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Construction.Tests/EffectFailureTests.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ConstructionPlanAdversarialTests.fs"
+        }
+      ],
+      "updatedAt": "2026-10-12T19:07:25.529Z",
+      "telemetryExecutionIds": [
+        "EXE-20261012T184706791Z-71fb8dee"
+      ],
+      "latestCheckpoint": {
+        "id": "ec618061a4c536c8ae735b2c",
+        "recordedAt": "2026-10-12T18:59:27.779Z",
+        "executionId": "EXE-20261012T184706791Z-71fb8dee",
+        "repository": "ordo",
+        "branch": "construct/effect-failure-disposition",
+        "commit": "760b9c6501f43ee0408b699acb19a0ade0fa50ff",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "construct/effect-failure-disposition",
+        "remoteCommit": "760b9c6501f43ee0408b699acb19a0ade0fa50ff",
+        "summary": "Vocabulary 2 model, reader, validation, generator and tests committed (Ordo.Tests construction-plan 106 pass, Ordo.Construction.Tests 54 pass)",
+        "nextAction": "Docs, schema, decision record, version bump, full suite, PR",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-12T19:07:25.529Z"
+    },
+    {
+      "id": "CONSTRUCT-VOCAB-2-DECISION",
+      "type": "task",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ConstructionPlan.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ConstructionPlanAdversarialTests.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ConstructionPlanTests.fs"
+        }
+      ],
+      "updatedAt": "2026-10-12T19:15:17.513Z",
+      "telemetryExecutionIds": [
+        "EXE-20261012T190938992Z-699c43cb"
+      ],
+      "latestCheckpoint": {
+        "id": "7fff02650e9d508771ea3b4c",
+        "recordedAt": "2026-10-12T19:15:10.398Z",
+        "executionId": "EXE-20261012T190938992Z-699c43cb",
+        "repository": "ordo",
+        "branch": "construct/effect-failure-disposition",
+        "commit": "23a48213c65befbf5f2e793ad843bbdaf1703553",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "construct/effect-failure-disposition",
+        "remoteCommit": "23a48213c65befbf5f2e793ad843bbdaf1703553",
+        "summary": "Decided dispositions require a required decision (EffectDispositionWithoutDecision); fixtures, docs and DF-SDE-2026-0020 updated; full suite and praxis validate pass",
+        "nextAction": "Complete work item and commit Praxis state",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-12T19:15:17.513Z"
     }
   ]
 }

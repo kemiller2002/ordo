@@ -23,12 +23,22 @@
     <Compile Include="Golden/door-synthetic/generated/Door/Door.Model.g.fs" />
     <Compile Include="Golden/door-synthetic/generated/Door/Door.Transition.g.fs" />
     <Compile Include="Golden/door-synthetic/generated/Door/Door.Orchestration.g.fs" />
+    <Compile Include="Golden/time-entry-timer-v2-remain/generated/TimerRemain/TimerRemain.Model.g.fs" />
+    <Compile Include="Golden/time-entry-timer-v2-remain/generated/TimerRemain/TimerRemain.Transition.g.fs" />
+    <Compile Include="Golden/time-entry-timer-v2-remain/generated/TimerRemain/TimerRemain.Orchestration.g.fs" />
+    <Compile Include="Golden/time-entry-timer-v2-proceed/generated/TimerProceed/TimerProceed.Model.g.fs" />
+    <Compile Include="Golden/time-entry-timer-v2-proceed/generated/TimerProceed/TimerProceed.Transition.g.fs" />
+    <Compile Include="Golden/time-entry-timer-v2-proceed/generated/TimerProceed/TimerProceed.Orchestration.g.fs" />
+    <Compile Include="Golden/time-entry-timer-v2-unresolved/generated/TimerUnresolved/TimerUnresolved.Model.g.fs" />
+    <Compile Include="Golden/time-entry-timer-v2-unresolved/generated/TimerUnresolved/TimerUnresolved.Transition.g.fs" />
+    <Compile Include="Golden/time-entry-timer-v2-unresolved/generated/TimerUnresolved/TimerUnresolved.Orchestration.g.fs" />
     <Compile Include="../Ordo.Tests/FsiProbe.fs" Link="FsiProbe.fs" />
     <Compile Include="Fixtures.fs" />
     <Compile Include="GoldenTests.fs" />
     <Compile Include="EngineTests.fs" />
     <Compile Include="TimerSmokeTests.fs" />
     <Compile Include="DoorBehaviorTests.fs" />
+    <Compile Include="EffectFailureTests.fs" />
     <Compile Include="CompileNegativeTests.fs" />
   </ItemGroup>
 

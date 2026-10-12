@@ -21,23 +21,54 @@ let repositoryRoot =
 let ok label value = match value with Ok x -> x | Error e -> failwithf "%s: %A" label e
 
 type Fixture =
-    { Name: string
+    { /// The golden directory under Golden/.
+      Name: string
+      /// The source fixture directory under tests/fixtures/construction/.
+      Source: string
+      /// The plan file in that directory.
+      Plan: string
+      /// The blueprint file in that directory.
+      Blueprint: string
       Cohort: string
       /// Stands in for the external decision authority. A test input only.
       Approved: Set<string> }
 
-let timer = { Name = "time-entry-timer"; Cohort = "COH-TIMER"; Approved = Set.singleton "DEC-TIMER-STATES" }
-let door = { Name = "door-synthetic"; Cohort = "COH-DOOR"; Approved = Set.singleton "DEC-DOOR" }
+let timer =
+    { Name = "time-entry-timer"; Source = "time-entry-timer"; Plan = "plan.json"; Blueprint = "blueprint.json"
+      Cohort = "COH-TIMER"; Approved = Set.singleton "DEC-TIMER-STATES" }
+
+let door =
+    { Name = "door-synthetic"; Source = "door-synthetic"; Plan = "plan.json"; Blueprint = "blueprint.json"
+      Cohort = "COH-DOOR"; Approved = Set.singleton "DEC-DOOR" }
+
+/// Vocabulary 2 variants of the timer plan, one per effect-failure
+/// disposition of the Stop effect. Same sources and cohort. A decided
+/// disposition must cite a required decision, so `remain` and `proceed` use a
+/// test-only blueprint variant that adds DEC-TIMER-STOP-FAILURE, approved
+/// here by a test input; `unresolved` uses the original blueprint.
+let private timerV2 disposition =
+    { timer with Name = "time-entry-timer-v2-" + disposition; Plan = sprintf "plan.v2-%s.json" disposition }
+
+let private decided disposition =
+    { timerV2 disposition with
+        Blueprint = sprintf "blueprint.v2-%s.json" disposition
+        Approved = Set.ofList [ "DEC-TIMER-STATES"; "DEC-TIMER-STOP-FAILURE" ] }
+
+let timerRemain = decided "remain"
+let timerProceed = decided "proceed"
+let timerUnresolved = timerV2 "unresolved"
+
+let timerV2Fixtures = [ timerRemain; timerProceed; timerUnresolved ]
 
 let private read (fixture: Fixture) name =
-    File.ReadAllText(Path.Combine(repositoryRoot, "tests", "fixtures", "construction", fixture.Name, name))
+    File.ReadAllText(Path.Combine(repositoryRoot, "tests", "fixtures", "construction", fixture.Source, name))
 
 let prepared fixture =
     let manifest = readManifest (read fixture "source-manifest.json") |> ok "manifest"
-    let blueprint = readBlueprint (read fixture "blueprint.json") |> ok "blueprint"
+    let blueprint = readBlueprint (read fixture fixture.Blueprint) |> ok "blueprint"
     prepareCohort manifest blueprint fixture.Cohort fixture.Approved |> ok "prepare"
 
-let draft fixture = readPlan (read fixture "plan.json") |> ok "plan"
+let draft fixture = readPlan (read fixture fixture.Plan) |> ok "plan"
 
 let validated fixture = validate (prepared fixture) (draft fixture) |> ok "validate"
 

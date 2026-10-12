@@ -62,9 +62,18 @@ let private extensionName kind =
 
 let private strings values = JArray(values |> List.map JString)
 
-let private manifestJson (plan: ValidatedPlanView) root (artifacts: Artifact list) contracts obligations checks =
-    JObject [
-        "generatorVersion", JString GeneratorVersion
+let private manifestJson (plan: ValidatedPlanView) generator root (artifacts: Artifact list) contracts obligations checks =
+    let effectFailure =
+        if generator = GeneratorVersion then []
+        else
+            [ "effectFailure",
+              JArray [ for p in plan.Workflow.Ports do
+                         match p.Kind with
+                         | TransitionEffectPort(effect, Some disposition) ->
+                             JObject [ "effect", JString effect.Key; "onFailure", JString(effectFailureDispositionName disposition) ]
+                         | TransitionEffectPort(_, None) | PortKind.CurrentTimePort -> () ] ]
+    JObject([
+        "generatorVersion", JString generator
         "planDigest", JString plan.Digest
         "binding",
         JObject [ "sourceManifestDigest", JString plan.Binding.SourceManifestDigest
@@ -87,6 +96,8 @@ let private manifestJson (plan: ValidatedPlanView) root (artifacts: Artifact lis
                         match o.Kind with
                         | Implement contract -> [ "kind", JString "implement"; "contract", JString contract ]
                         | ResolveUnresolved(subject, question) -> [ "kind", JString "resolve"; "subject", JString subject; "question", JString question ]
+                        | ResolveEffectFailure(effect, subject, question) ->
+                            [ "kind", JString "resolve"; "subject", JString subject; "effect", JString effect; "question", JString question ]
                         | VerifyIndependently what -> [ "kind", JString "verify-independently"; "what", JString what ]
                     JObject([ "id", JString o.Id ] @ kind @ [ "requirementKeys", strings o.RequirementKeys ]) ]
         "structuralChecks",
@@ -102,6 +113,7 @@ let private manifestJson (plan: ValidatedPlanView) root (artifacts: Artifact lis
                     | Constructed _ -> JString "constructed"
                     | UnresolvedOnly _ -> JString "unresolved-only"
                     | WorkflowLevel -> JString "workflow-level" ] ]
+        @ effectFailure)
     |> render
     |> fun text -> text + "\n"
 
@@ -114,7 +126,8 @@ let private refusals (shape: Emit.Shape) =
 let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefusal list> =
     let plan = view validated
     let w = plan.Workflow
-    let shape = Emit.shapeOf w
+    let generator = generatorVersionFor plan.Binding.VocabularyVersion
+    let shape = Emit.shapeOf generator w
     match refusals shape with
     | _ :: _ as refused -> Error refused
     | [] ->
@@ -123,9 +136,12 @@ let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefu
         let pick predicate = operations |> List.filter predicate
         let isWorkflow = function DefineWorkflow _ -> true | _ -> false
         let isEffectPort = function DeclarePort { Kind = TransitionEffect _ } -> true | _ -> false
+        // Vocabulary 2: an obligation linked to an effect is realized by the
+        // orchestration's Unresolved result case. Vocabulary 1 has no links.
+        let isEffectObligation = function DeclareUnresolved { Effect = Some _ } -> true | _ -> false
         let modelOps = pick (function DefineWorkflow _ | DefineState _ | DefineTransition _ | DefineInvariant _ -> true | op -> isEffectPort op)
         let transitionOps = pick (function DefineWorkflow _ | DefineTransition _ | DefineInvariant _ | BindCapability _ -> true | op -> isEffectPort op)
-        let orchestrationOps = pick (function DefineWorkflow _ | DeclarePort _ -> true | _ -> false)
+        let orchestrationOps = pick (function DefineWorkflow _ | DeclarePort _ -> true | op -> isEffectObligation op)
         let digest = plan.Digest
         let generated =
             [ artifact (root + w.Name.Key + ".Model.g.fs") (Some SemanticModel) modelOps (Emit.semanticModel digest shape)
@@ -143,12 +159,17 @@ let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefu
             @ (if shape.HasClock then [ contract (portsType w.Name + ".CurrentTime") CurrentTimePort (pick (function DeclarePort { Kind = CurrentTime } -> true | _ -> false)) ] else [])
             @ (shape.Effects |> List.map (fun e ->
                 contract (sprintf "%s.Perform/%s" (portsType w.Name) e.Key) EffectPort
-                    (pick (function DeclarePort { Kind = TransitionEffect c } -> c = e.Key | _ -> false))))
+                    (pick (function DeclarePort { Kind = TransitionEffect(c, _) } -> c = e.Key | _ -> false))))
 
         let obligations =
             (contracts |> List.map (fun c -> { Id = "IMPLEMENT:" + c.Name; Kind = Implement c.Name; RequirementKeys = c.RequirementKeys }))
             @ (w.Unresolved |> List.map (fun u ->
-                { Id = "RESOLVE:" + u.Subject.Key; Kind = ResolveUnresolved(u.Subject.Key, u.Question); RequirementKeys = u.Trace.RequirementKeys }))
+                { Id = "RESOLVE:" + u.Subject.Key
+                  Kind =
+                    match u.Effect with
+                    | Some effect -> ResolveEffectFailure(effect.Key, u.Subject.Key, u.Question)
+                    | None -> ResolveUnresolved(u.Subject.Key, u.Question)
+                  RequirementKeys = u.Trace.RequirementKeys }))
             @ [ { Id = "VERIFY:" + w.Name.Key
                   Kind = VerifyIndependently "Behavior against the original requirements. Generated structure and its derived checks are not independent acceptance evidence."
                   RequirementKeys = plan.AssignedRequirementKeys |> Set.toList } ]
@@ -165,9 +186,9 @@ let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefu
 
         let manifest =
             artifact (root + "construction-manifest.json") None operations
-                (manifestJson plan root generated contracts obligations checks)
+                (manifestJson plan generator root generated contracts obligations checks)
 
-        Ok { GeneratorVersion = GeneratorVersion
+        Ok { GeneratorVersion = generator
              PlanDigest = digest
              OwnershipRoot = root
              Artifacts = generated @ [ manifest ]

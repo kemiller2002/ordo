@@ -96,6 +96,10 @@ belongs to whichever ROS work item executes the validation.
 - `Ordo.Construction` depends on `Ordo.Core` only, performs no file,
   network or process effects, and accepts only a `ValidatedPlan`; asserted in
   `tests/Ordo.Construction.Tests/EngineTests.fs`.
+- Under construction vocabulary 2, the plan declares what a failed or unknown
+  effect means (`onFailure`) and the generated orchestration applies it;
+  handwritten host code does not decide it (`DF-SDE-2026-0020`); asserted in
+  `tests/Ordo.Construction.Tests/EffectFailureTests.fs`.
 - Executable Ordo must not depend on ROS, and `Ordo.Core` must not depend on
   any model-provider SDK. Both are asserted against the loaded assemblies in
   `tests/Ordo.Tests/ArchitectureTests.fs` rather than by review.

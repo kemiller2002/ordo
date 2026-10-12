@@ -109,7 +109,7 @@ let private capabilityOp command capability =
     BindCapability { CapabilityDraft.Command = command; Capability = capability; Trace = trace [ rA; rL ] [ "CONTRACT-L"; "DEC-A" ] }
 
 let private unresolvedOp subject question =
-    DeclareUnresolved { UnresolvedDraft.Subject = subject; Question = question; Trace = trace [ rL ] [ "VERIFY-L" ] }
+    DeclareUnresolved { UnresolvedDraft.Subject = subject; Effect = None; Question = question; Trace = trace [ rL ] [ "VERIFY-L" ] }
 
 let private operations =
     [ workflowOp "door"
@@ -124,7 +124,7 @@ let private operations =
       transition "decommission" "closed" "decommissioned" [] tA
       invariantOp "locked implies closed" [ "locked" ]
       portOp CurrentTime tA
-      portOp (TransitionEffect "lock") tL
+      portOp (TransitionEffect("lock", None)) tL
       capabilityOp "unlock" "door.unlock"
       unresolvedOp "no timer" "How long may a door stay open before it relocks?" ]
 
@@ -359,12 +359,12 @@ let ``a non-terminal state with no way out is refused`` () =
 
 [<Fact>]
 let ``a port or capability naming an unknown command is refused`` () =
-    refusedWith (UnknownCommand("port:transitionEffect/Explode", "Explode")) (addOps [ portOp (TransitionEffect "explode") tL ])
+    refusedWith (UnknownCommand("port:transitionEffect/Explode", "Explode")) (addOps [ portOp (TransitionEffect("explode", None)) tL ])
     refusedWith (UnknownCommand("capability:OpenSesame/door.magic", "OpenSesame")) (addOps [ capabilityOp "open sesame" "door.magic" ])
 
 [<Fact>]
 let ``a respelled port is a duplicate`` () =
-    refusedWith (DuplicateDefinition "port:transitionEffect/Lock") (addOps [ portOp (TransitionEffect "Lock") tL ])
+    refusedWith (DuplicateDefinition "port:transitionEffect/Lock") (addOps [ portOp (TransitionEffect("Lock", None)) tL ])
     refusedWith (DuplicateDefinition "port:currentTime") (addOps [ portOp CurrentTime tA ])
 
 [<Fact>]
@@ -433,7 +433,7 @@ let ``smuggled names are refused in every name position`` () =
     refusedWith (InvalidName("transition:Closed/Open", raw, reason)) (replaceOp "transition:Closed/Open" (transition "open" "closed" raw [] tA))
     refusedWith (InvalidName("invariant:LockedImpliesClosed", raw, reason))
         (replaceOp "invariant:LockedImpliesClosed" (invariantOp "locked implies closed" [ raw ]))
-    refusedWith (InvalidName("port:transitionEffect/" + raw, raw, reason)) (addOps [ portOp (TransitionEffect raw) tL ])
+    refusedWith (InvalidName("port:transitionEffect/" + raw, raw, reason)) (addOps [ portOp (TransitionEffect(raw, None)) tL ])
     refusedWith (InvalidName(sprintf "capability:%s/door.x" raw, raw, reason)) (addOps [ capabilityOp raw "door.x" ])
     refusedWith (InvalidName("unresolved:" + raw, raw, reason)) (addOps [ unresolvedOp raw "why?" ])
 
@@ -593,10 +593,10 @@ let private mapNames (f: string -> string) (draft: PlanDraft) =
             DefineTransition
                 { t with Command = f t.Command; From = f t.From; To = f t.To; Guards = t.Guards |> List.map (fun g -> { g with Name = f g.Name }) }
         | DefineInvariant i -> DefineInvariant { i with Name = f i.Name; HoldsIn = List.map f i.HoldsIn }
-        | DeclarePort { Kind = TransitionEffect c; Trace = t } -> DeclarePort { Kind = TransitionEffect(f c); Trace = t }
+        | DeclarePort { Kind = TransitionEffect(c, d); Trace = t } -> DeclarePort { Kind = TransitionEffect(f c, d); Trace = t }
         | DeclarePort p -> DeclarePort p
         | BindCapability c -> BindCapability { c with Command = f c.Command }
-        | DeclareUnresolved u -> DeclareUnresolved { u with Subject = f u.Subject }
+        | DeclareUnresolved u -> DeclareUnresolved { u with Subject = f u.Subject; Effect = Option.map f u.Effect }
     { draft with Operations = List.map mapOp draft.Operations }
 
 let private mapTraces (f: TraceDraft -> TraceDraft) (draft: PlanDraft) =
@@ -751,3 +751,229 @@ let ``a plan for an unready cohort cannot be validated against any prepared coho
         match ConstructionPlan.validate other plan with
         | Ok _ -> failwith "a plan for one cohort must not validate against another"
         | Error errors -> Assert.Contains(CohortMismatch(cohortId, "COHORT-P"), errors)
+
+// ---------------------------------------------------------------------------
+// 9. Vocabulary 2: every transition effect declares what a failed or unknown
+//    outcome means (onFailure), and an unresolved disposition is linked, by
+//    effect, to an explicit open obligation.
+// ---------------------------------------------------------------------------
+
+/// A decided disposition must cite a decision the cohort requires. DEC-A is
+/// the door's authorized decision, cited the same way the capability is.
+let private tDecided = trace [ rA; rL ] [ "CONTRACT-L"; "DEC-A" ]
+
+let private lockPort disposition =
+    match disposition with
+    | Some EffectFailureDisposition.Remain | Some EffectFailureDisposition.Proceed -> portOp (TransitionEffect("lock", disposition)) tDecided
+    | Some EffectFailureDisposition.Unresolved | None -> portOp (TransitionEffect("lock", disposition)) tL
+
+let private linkedUnresolvedOp subject effect =
+    DeclareUnresolved { UnresolvedDraft.Subject = subject; Effect = Some effect; Question = "Does a failed lock leave the door closed or locked?"; Trace = tL }
+
+/// The door plan in vocabulary 2, with the given disposition on the lock effect.
+let private planV2 disposition extra =
+    { plan with
+        VocabularyVersion = VocabularyVersion2
+        Operations = (operations |> List.map (fun op -> if operationLabel op = "port:transitionEffect/Lock" then lockPort disposition else op)) @ extra }
+
+let private remainV2 = planV2 (Some EffectFailureDisposition.Remain) []
+let private unresolvedV2 = planV2 (Some EffectFailureDisposition.Unresolved) [ linkedUnresolvedOp "lock failure" "lock" ]
+
+let private validates draft =
+    match ConstructionPlan.validate prepared draft with
+    | Ok validated -> validated
+    | Error found -> failwithf "expected a valid plan; got %A" found
+
+[<Fact>]
+let ``vocabulary 2 plans validate with each disposition`` () =
+    for disposition in [ EffectFailureDisposition.Remain; EffectFailureDisposition.Proceed ] do
+        let v = validates (planV2 (Some disposition) [])
+        let lock = (ConstructionPlan.view v).Workflow.Ports |> List.pick (fun p -> match p.Kind with TransitionEffectPort(c, d) -> Some(c.Key, d) | CurrentTimePort -> None)
+        Assert.Equal(("Lock", Some disposition), lock)
+    let v = validates unresolvedV2
+    let linked = (ConstructionPlan.view v).Workflow.Unresolved |> List.filter (fun u -> u.Effect.IsSome)
+    Assert.Equal<(string * string) list>([ "LockFailure", "Lock" ], linked |> List.map (fun u -> u.Subject.Key, u.Effect.Value.Key))
+
+[<Fact>]
+let ``vocabulary 2 refuses a transition effect without a disposition`` () =
+    refusedWith (MissingEffectDisposition "port:transitionEffect/Lock") (planV2 None [])
+
+[<Fact>]
+let ``vocabulary 1 refuses a disposition or an effect link as outside its vocabulary`` () =
+    refusedWith (NotInVocabulary("port:transitionEffect/Lock", "onFailure", VocabularyVersion1))
+        (replaceOp "port:transitionEffect/Lock" (lockPort (Some EffectFailureDisposition.Remain)))
+    refusedWith (NotInVocabulary("unresolved:LockFailure", "effect", VocabularyVersion1))
+        (addOps [ linkedUnresolvedOp "lock failure" "lock" ])
+
+[<Fact>]
+let ``an unresolved disposition without its linked obligation is refused`` () =
+    refusedWith (UnresolvedEffectWithoutObligation "port:transitionEffect/Lock") (planV2 (Some EffectFailureDisposition.Unresolved) [])
+    // An obligation about the same thing that does not name the effect is not a link.
+    refusedWith (UnresolvedEffectWithoutObligation "port:transitionEffect/Lock")
+        (planV2 (Some EffectFailureDisposition.Unresolved) [ unresolvedOp "lock failure" "Does a failed lock leave the door locked?" ])
+
+[<Fact>]
+let ``an effect link must name a declared effect whose disposition is unresolved`` () =
+    // `open` is a command, but no effect port is declared for it.
+    refusedWith (UnknownEffect("unresolved:OpenFailure", "Open"))
+        (planV2 (Some EffectFailureDisposition.Remain) [ linkedUnresolvedOp "open failure" "open" ])
+    refusedWith (UnknownEffect("unresolved:Ghost", "Explode"))
+        (planV2 (Some EffectFailureDisposition.Remain) [ linkedUnresolvedOp "ghost" "explode" ])
+    for decided in [ EffectFailureDisposition.Remain; EffectFailureDisposition.Proceed ] do
+        refusedWith (EffectAlreadyDecided("unresolved:LockFailure", "Lock"))
+            (planV2 (Some decided) [ linkedUnresolvedOp "lock failure" "lock" ])
+
+[<Fact>]
+let ``one effect cannot be linked by two obligations`` () =
+    refusedWith (DuplicateEffectObligation("Lock", [ "unresolved:LockFailure"; "unresolved:LockOutcome" ]))
+        (planV2 (Some EffectFailureDisposition.Unresolved) [ linkedUnresolvedOp "lock failure" "lock"; linkedUnresolvedOp "lock outcome" "Lock" ])
+
+[<Fact>]
+let ``a duplicate effect port with another disposition is a duplicate, not a second opinion`` () =
+    refusedWith (DuplicateDefinition "port:transitionEffect/Lock")
+        { remainV2 with Operations = remainV2.Operations @ [ portOp (TransitionEffect("Lock", Some EffectFailureDisposition.Proceed)) tDecided ] }
+
+/// Replaces the lock effect port of a vocabulary 2 draft.
+let private withLockPort disposition t (draft: PlanDraft) =
+    { draft with
+        Operations =
+            draft.Operations
+            |> List.map (fun op -> if operationLabel op = "port:transitionEffect/Lock" then portOp (TransitionEffect("lock", Some disposition)) t else op) }
+
+[<Fact>]
+let ``remain without a decision is refused`` () =
+    refusedWith (EffectDispositionWithoutDecision "port:transitionEffect/Lock") (remainV2 |> withLockPort EffectFailureDisposition.Remain tL)
+
+[<Fact>]
+let ``proceed citing a non-decision node is refused`` () =
+    for nodes in [ [ "CONTRACT-L" ]; [ "CONTRACT-L"; "VERIFY-L" ] ] do
+        refusedWith (EffectDispositionWithoutDecision "port:transitionEffect/Lock")
+            (remainV2 |> withLockPort EffectFailureDisposition.Proceed (trace [ rL ] nodes))
+
+[<Fact>]
+let ``proceed citing a decision outside the cohort is refused`` () =
+    // DEC-OUT is a real decision node, but on the deferred alarm requirement,
+    // which the door cohort neither implements nor requires.
+    let outside =
+        let b = blueprintWith [ "CONTRACT-P" ]
+        { b with
+            Requirements = b.Requirements |> List.map (fun r -> if r.Source.Key = rD then { r with NodeIds = r.NodeIds @ [ "DEC-OUT" ] } else r)
+            Nodes = b.Nodes @ [ node "DEC-OUT" Decision [ rD ] [] ] }
+    Assert.Empty(ConstructionIr.validate manifest outside)
+    let cohort =
+        match prepareCohort manifest outside cohortId approvals with
+        | Ok c -> c
+        | Error e -> failwithf "%A" e
+    Assert.DoesNotContain("DEC-OUT", (preparedCohortView cohort).RequiredDecisionIds)
+    let draft =
+        { remainV2 with Binding = { remainV2.Binding with BlueprintDigest = Ordo.Core.ConstructionIrWire.blueprintDigest outside } }
+        |> withLockPort EffectFailureDisposition.Proceed (trace [ rL ] [ "CONTRACT-L"; "DEC-OUT" ])
+    match ConstructionPlan.validate cohort draft with
+    | Ok _ -> failwith "a disposition justified by a decision outside the cohort was accepted"
+    | Error errors ->
+        Assert.Contains(EffectDispositionWithoutDecision "port:transitionEffect/Lock", errors)
+        Assert.Contains(UnauthorizedNodeReference("port:transitionEffect/Lock", "DEC-OUT"), errors)
+    // The same plan citing the cohort's own decision is accepted.
+    Assert.True(Result.isOk (ConstructionPlan.validate cohort { draft with Operations = (remainV2 |> withLockPort EffectFailureDisposition.Proceed tDecided).Operations }))
+
+[<Fact>]
+let ``unresolved needs no decision: it settles nothing`` () =
+    Assert.True(Result.isOk (ConstructionPlan.validate prepared unresolvedV2))
+
+[<Fact>]
+let ``an effect link is a checked name`` () =
+    let raw = "src/Program.fs"
+    refusedWith (InvalidName("unresolved:LockFailure", raw, NameHasIllegalCharacter '/'))
+        (planV2 (Some EffectFailureDisposition.Unresolved) [ linkedUnresolvedOp "lock failure" raw ])
+
+[<Fact>]
+let ``unknown vocabulary versions are refused, never upgraded`` () =
+    for version in [ "ordo.construction-vocabulary/3"; "ordo.construction-vocabulary/2.0"; "ordo.construction-vocabulary"; "" ] do
+        refusedWith (UnsupportedVocabulary version) { remainV2 with VocabularyVersion = version }
+
+[<Fact>]
+let ``the disposition and the vocabulary are part of identity`` () =
+    let digests =
+        [ validDigest plan
+          validDigest remainV2
+          validDigest (planV2 (Some EffectFailureDisposition.Proceed) [])
+          validDigest unresolvedV2 ]
+    Assert.Equal(4, List.length (List.distinct digests))
+    Assert.Contains("\"onFailure\": \"remain\"", canonical remainV2)
+    Assert.Contains("\"effect\": \"Lock\"", canonical unresolvedV2)
+    Assert.DoesNotContain("onFailure", canonical plan)
+
+[<Fact>]
+let ``a vocabulary 2 plan's identity ignores order and spelling like vocabulary 1`` () =
+    let same variant =
+        Assert.Equal(validDigest unresolvedV2, validDigest variant)
+        Assert.Equal(canonical unresolvedV2, canonical variant)
+    same { unresolvedV2 with Operations = List.rev unresolvedV2.Operations }
+    same (unresolvedV2 |> mapNames (fun raw -> raw.Replace(' ', '-')))
+    same (unresolvedV2 |> mapNames (fun raw -> if raw = "lock" then "Lock" else raw))
+
+[<Fact>]
+let ``a vocabulary 2 plan round trips through the wire and its canonical form`` () =
+    for draft in [ remainV2; planV2 (Some EffectFailureDisposition.Proceed) []; unresolvedV2 ] do
+        Assert.Equal(Ok draft, ConstructionPlanWire.readPlan (ConstructionPlanWire.encodePlan draft))
+        match ConstructionPlanWire.readPlan (canonical draft) with
+        | Error message -> failwith message
+        | Ok reread -> Assert.Equal(validDigest draft, validDigest reread)
+
+// ---- wire ----
+
+let private planV2Json = toJson unresolvedV2
+let private lockIndexV2 = unresolvedV2.Operations |> List.findIndex (fun o -> operationLabel o = "port:transitionEffect/Lock")
+let private linkIndexV2 = unresolvedV2.Operations |> List.findIndex (fun o -> operationLabel o = "unresolved:LockFailure")
+let private lockIndexV1 = plan.Operations |> List.findIndex (fun o -> operationLabel o = "port:transitionEffect/Lock")
+
+let private removeMember name json =
+    match json with
+    | JObject members -> JObject(members |> List.filter (fun (k, _) -> k <> name))
+    | other -> other
+
+[<Fact>]
+let ``the wire refuses an unknown onFailure value`` () =
+    for value in [ "stay"; "Remain"; "REMAIN"; "ignore"; "retry"; "discard"; "default"; "remain " ] do
+        refusedOnWire ("unsupported onFailure: " + value) (mapOperation lockIndexV2 (mapMember "onFailure" (fun _ -> JString value)) planV2Json)
+
+[<Fact>]
+let ``the wire refuses a blank or non-string onFailure`` () =
+    for value in [ JString ""; JString "  "; JBool true; JNull; JArray [ JString "remain" ]; JObject [ "kind", JString "remain" ] ] do
+        refusedOnWire "onFailure: expected nonblank string" (mapOperation lockIndexV2 (mapMember "onFailure" (fun _ -> value)) planV2Json)
+
+[<Fact>]
+let ``the wire refuses a vocabulary 2 effect port without onFailure`` () =
+    refusedOnWire "missing JSON member onFailure" (mapOperation lockIndexV2 (removeMember "onFailure") planV2Json)
+
+[<Fact>]
+let ``the wire refuses onFailure and effect in vocabulary 1 as unknown members`` () =
+    refusedOnWire "unknown JSON member onFailure" (mapOperation lockIndexV1 (addMember "onFailure" (JString "remain")) planJson)
+    let unresolvedIndexV1 = plan.Operations |> List.findIndex (fun o -> operationLabel o = "unresolved:NoTimer")
+    refusedOnWire "unknown JSON member effect" (mapOperation unresolvedIndexV1 (addMember "effect" (JString "lock")) planJson)
+
+[<Fact>]
+let ``the wire refuses a disposition on a non-effect port`` () =
+    let currentTime = JObject [ "op", JString "declarePort"; "port", JString "currentTime"; "onFailure", JString "remain"; "trace", jTrace ]
+    refusedOnWire "incorrect fields for port currentTime" (mapMember "operations" (appendItem currentTime) planV2Json)
+
+[<Fact>]
+let ``the wire refuses a duplicated onFailure or effect member`` () =
+    refusedOnWire "duplicate JSON member onFailure" (mapOperation lockIndexV2 (addMember "onFailure" (JString "proceed")) planV2Json)
+    refusedOnWire "duplicate JSON member effect" (mapOperation linkIndexV2 (addMember "effect" (JString "open")) planV2Json)
+
+[<Fact>]
+let ``the wire refuses a blank effect link`` () =
+    refusedOnWire "effect: expected nonblank string" (mapOperation linkIndexV2 (mapMember "effect" (fun _ -> JString " ")) planV2Json)
+
+[<Fact>]
+let ``vocabulary 2 adds no escape hatch: extra members are still refused`` () =
+    let extras = [ "path", JString "src/Program.fs"; "code", JString "File.Delete()"; "handler", JString "fun _ -> ()"; "policy", JString "lenient" ]
+    for name, value in extras do
+        let unknown = "unknown JSON member " + name
+        for index in 0 .. List.length unresolvedV2.Operations - 1 do
+            refusedOnWire unknown (mapOperation index (addMember name value) planV2Json)
+
+[<Fact>]
+let ``the wire refuses unknown vocabulary versions`` () =
+    refusedOnWire "unsupported ordo.construction-vocabulary/3" (mapMember "vocabularyVersion" (fun _ -> JString "ordo.construction-vocabulary/3") planV2Json)

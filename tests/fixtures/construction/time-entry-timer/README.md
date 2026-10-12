@@ -45,6 +45,39 @@ text, not of its authors.
     entry;
   - whether the single timer is scoped per person or per session.
 
+## Vocabulary 2 variants
+
+`plan.v2-remain.json`, `plan.v2-proceed.json` and `plan.v2-unresolved.json`
+are the same plan in `ordo.construction-vocabulary/2`, against the same
+manifest, blueprint and cohort. They differ only in the Stop effect's
+`onFailure` disposition and in the workflow name, which keeps the three
+compiled goldens in separate namespaces (`TimerRemain`, `TimerProceed`,
+`TimerUnresolved`).
+
+- `plan.v2-unresolved.json` is the faithful plan for this source. The
+  requirements do not say what happens to the timer when entry creation
+  refuses the stopped timer's entry, so Stop declares `onFailure: unresolved`,
+  and the existing "Stop completion refused" obligation names the effect
+  (`"effect": "Stop"`).
+- `plan.v2-remain.json` and `plan.v2-proceed.json` choose an answer **as test
+  inputs only**, to exercise generation. They drop the "Stop completion
+  refused" obligation, because a decided effect has no open question. Neither
+  is a resolution of the source question, and no decision is recorded.
+- A decided disposition must cite a decision the cohort requires
+  (`EffectDispositionWithoutDecision`). The source has no such decision, and
+  citing `DEC-TIMER-STATES` would be false: it decides the three states, and
+  it does not anchor the Stop-completion requirement (L131-L144). So the
+  decided variants bind test-only blueprints, `blueprint.v2-remain.json` and
+  `blueprint.v2-proceed.json`. Each is `blueprint.json` plus a decision node
+  `DEC-TIMER-STOP-FAILURE` on L131-L144, and that node's justification
+  begins "TEST INPUT ONLY, not a recorded decision". The tests approve it as a
+  test input that stands in for the external authority, exactly as they
+  approve `DEC-TIMER-STATES`. `plan.v2-unresolved.json` binds the original
+  blueprint and needs no decision.
+
+They were produced from `plan.json` and `blueprint.json` with `encodePlan`
+and `encodeBlueprint`, like the originals.
+
 ## Regenerating
 
 `source-manifest.json`, `blueprint.json` and `plan.json` were produced by
