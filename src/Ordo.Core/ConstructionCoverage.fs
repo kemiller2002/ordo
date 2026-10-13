@@ -89,12 +89,26 @@ type Route =
     /// Mechanical-first: Ordo generates the default plan and structure; the
     /// agent meets the obligations.
     | C
-    /// Conventional implementation with Ordo's trace, classification and
-    /// obligations as the handoff, and no generated structure.
+    /// Constrained agent implementation (the operator brief's Mode A+), for
+    /// low vocabulary coverage. Not unrestricted agent coding: it still uses
+    /// pinned requirements, approved decisions, the complete disposition
+    /// ledger, typed implementation obligations, capability-scoped execution,
+    /// architecture constraints and independent Dokimos verification.
     | APlus
-    /// The typed-plan authoring workflow: author and approve decision records
-    /// first, because no default plan can be generated yet.
+    /// Agent-authored construction plans, retained for research and approved
+    /// decision-record authoring, not the preferred production path.
+    /// Recommended only when no default plan can be generated.
     | B
+
+/// One measured slice a calibration was fitted on.
+type CalibrationPoint =
+    { Slice: string
+      /// This report's structure ratio, computed on the slice's frozen inputs.
+      StructureRatio: float
+      /// The arm measured as cheaper on the primary metric: "C" or "A".
+      CheaperArm: string
+      /// Whether the arms' ranges were separated rather than overlapping.
+      Separated: bool }
 
 /// The evidence a recommendation is computed from. The default value is
 /// `measuredCalibration`; a host may supply its own, and the report names it.
@@ -105,6 +119,9 @@ type RouteCalibration =
       /// nothing generates). A proxy for how much handwritten work generation
       /// replaces, not a measured cost.
       StructureRatioThreshold: float
+      /// The measured slices the threshold was fitted on, so a later
+      /// out-of-sample check can compare against them mechanically.
+      FittedOn: CalibrationPoint list
       /// Short statements of the evidence and its limits.
       Evidence: string list }
 
@@ -114,6 +131,9 @@ type RouteRecommendation =
       GeneratedShare: float
       StructureRatio: float
       Calibration: string
+      /// The calibration's threshold and fitted points, reported next to the ratio.
+      Threshold: float
+      FittedOn: CalibrationPoint list
       Rationale: string
       /// Why this recommendation may be wrong. Never empty.
       Uncertainty: string list
@@ -141,6 +161,11 @@ type CoverageReport =
 let measuredCalibration =
     { Id = "construct-008-pilot/1"
       StructureRatioThreshold = 0.45
+      FittedOn =
+        [ { Slice = "time-entry-timer-pilot-01"; StructureRatio = 0.7692; CheaperArm = "C"; Separated = false }
+          { Slice = "summa-delivery"; StructureRatio = 0.4783; CheaperArm = "C"; Separated = true }
+          { Slice = "chrona-timer"; StructureRatio = 0.3913; CheaperArm = "A"; Separated = false }
+          { Slice = "time-entry-expanded-01"; StructureRatio = 0.1304; CheaperArm = "A"; Separated = true } ]
       Evidence =
         [ "time-entry timer pilot 01: ratio 0.77 (10 constructs, 3 not generated); C cheaper than A by median (primary -4%, cumulative -12%), ranges overlapping"
           "Summa delivery (Phase 9): ratio 0.48 (22 constructs, 24 not generated); C cheaper than A, separated on the primary metric (-13.6%)"
@@ -262,6 +287,8 @@ let private recommend (calibration: RouteCalibration) (totals: CoverageTotals) =
       GeneratedShare = Math.Round(generated, 4)
       StructureRatio = Math.Round(ratio, 4)
       Calibration = calibration.Id
+      Threshold = calibration.StructureRatioThreshold
+      FittedOn = calibration.FittedOn
       Rationale = rationale
       Uncertainty = uncertainty
       Advisory = true }
@@ -329,6 +356,8 @@ let recommendWithoutPlan (refusals: DefaultPlanRefusal list) : RouteRecommendati
       GeneratedShare = 0.0
       StructureRatio = 0.0
       Calibration = measuredCalibration.Id
+      Threshold = measuredCalibration.StructureRatioThreshold
+      FittedOn = measuredCalibration.FittedOn
       Rationale =
         sprintf "No default plan can be generated (%d refusals), so nothing can be generated yet. Author and approve construction decision records first; B is the authoring path for them."
             refusals.Length
@@ -365,6 +394,13 @@ let recommendationJson (r: RouteRecommendation) =
               "generatedShare", JFloat r.GeneratedShare
               "structureRatio", JFloat r.StructureRatio
               "calibration", JString r.Calibration
+              "threshold", JFloat r.Threshold
+              "fittedOn",
+              JArray [ for p in r.FittedOn ->
+                         JObject [ "slice", JString p.Slice
+                                   "structureRatio", JFloat p.StructureRatio
+                                   "cheaperArm", JString p.CheaperArm
+                                   "separated", JBool p.Separated ] ]
               "rationale", JString r.Rationale
               "uncertainty", jStrings r.Uncertainty ]
 
