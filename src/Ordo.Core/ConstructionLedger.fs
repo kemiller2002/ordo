@@ -46,7 +46,8 @@ type ResolutionClass =
     /// assigned requirement nothing constructs, a blueprint `unresolved`
     /// disposition, or a requirement no plan constructs and nothing approves.
     | GenuineDomainDecision
-    /// Approved content the selected vocabulary cannot express.
+    /// Approved or requirement-fixed content the selected vocabulary cannot
+    /// express (including an uncovered requirement tagged `FixedByRequirement`).
     | UnsupportedByVocabulary
 
 /// What happened to a requirement. Every case but `Implemented` carries a
@@ -305,14 +306,20 @@ let private deriveRow
     let obligations =
         plans |> List.collect _.Obligations |> List.filter (fun o -> List.contains key o.RequirementKeys)
         |> List.distinctBy _.Id
-    let openObligations = obligations |> List.filter (fun o -> isOpen o.Kind)
+    let fixedByRequirement = Set.contains key tags.FixedByRequirement
+    // An uncovered requirement whose behavior the operator tags as fixed by the
+    // requirement text is a vocabulary gap, not an open domain question:
+    // handwritten code may implement it, and independent acceptance closes it.
+    let fixedButInexpressible (o: TypedObligation) =
+        fixedByRequirement && o.Kind = TypedObligationKind.UncoveredRequirement
+    let openObligations =
+        obligations |> List.filter (fun o -> isOpen o.Kind && not (fixedButInexpressible o))
     let constructed = cohortPlan |> Option.exists (fun p -> constructs p key)
     let anchoringApproved =
         linked
         |> List.filter (fun n -> (n.Kind = Decision || n.Kind = EngineeringRationale) && Set.contains n.Id approvedSet)
         |> ids
     let acceptance = Map.tryFind key evidence
-    let fixedByRequirement = Set.contains key tags.FixedByRequirement
     let blueprintConflicts = ofKind NodeKind.Conflict |> ids
     let verificationIds = ofKind VerificationObligation |> ids
 
@@ -349,21 +356,24 @@ let private deriveRow
                     let why = sprintf "Open obligations in cohort %s: %s." cohort (String.concat ", " openIds)
                     (if constructed then FinalDisposition.PartiallyImplemented why else FinalDisposition.Unresolved why), []
                 else
+                    let how =
+                        if constructed then "Constructed"
+                        else "Handwritten (requirement text fixes it; the vocabulary cannot express it)"
                     match acceptance with
                     | Some a when independent verificationIds (Some a.Verdict) a.CaseIds ->
                         FinalDisposition.Implemented, []
                     | Some a when a.Verdict = AcceptanceVerdict.Failed ->
                         FinalDisposition.PartiallyImplemented(
-                            sprintf "Constructed in cohort %s; independent acceptance failed (%s)." cohort (String.concat ", " (sorted a.CaseIds))),
+                            sprintf "%s in cohort %s; independent acceptance failed (%s)." how cohort (String.concat ", " (sorted a.CaseIds))),
                         []
                     | _ ->
                         FinalDisposition.PartiallyImplemented(
-                            sprintf "Constructed in cohort %s; no passing independent acceptance evidence." cohort),
+                            sprintf "%s in cohort %s; no passing independent acceptance evidence." how cohort),
                         []
 
     let approvedIds = anchoringApproved
     let genuine =
-        obligations |> List.exists (fun o -> isDomainQuestion o.Kind)
+        obligations |> List.exists (fun o -> isDomainQuestion o.Kind && not (fixedButInexpressible o))
         || (match record.Disposition with Unresolved _ -> true | _ -> false)
         || not (List.isEmpty blueprintConflicts)
         || (not constructed && List.isEmpty approvedIds && not fixedByRequirement)
@@ -397,7 +407,8 @@ let private deriveRow
           if not (List.isEmpty approvedIds) then ResolutionClass.AlreadyApproved
           if constructed then ResolutionClass.MechanicallyDetermined
           if genuine then ResolutionClass.GenuineDomainDecision
-          if openObligations |> List.exists (fun o -> o.Kind = TypedObligationKind.UnsupportedVocabulary) then
+          if openObligations |> List.exists (fun o -> o.Kind = TypedObligationKind.UnsupportedVocabulary)
+             || obligations |> List.exists fixedButInexpressible then
               ResolutionClass.UnsupportedByVocabulary ]
       Disposition = disposition }
 

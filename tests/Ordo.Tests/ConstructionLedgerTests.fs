@@ -511,3 +511,48 @@ let ``the reader is strict`` () =
     refuse "\"acceptanceVerdict\": \"passed\"" "\"acceptanceVerdict\": \"waived\""
     refuse "\"cohortId\": null" "\"cohortId\": \" \""
     Assert.True(Result.isError (readLedger "{}"))
+
+// ---------------------------------------------------------------------------
+// Requirement-fixed but inexpressible: a vocabulary gap, not a domain question.
+// ---------------------------------------------------------------------------
+
+let private fixedTags keys = { noTags with FixedByRequirement = Set.ofList keys }
+
+[<Fact>]
+let ``an uncovered requirement the operator tags as fixed is a vocabulary gap that acceptance can close`` () =
+    let evidence = fullEvidence |> Map.add keySession (passed [ "ACC-TIMER-SESSION" ])
+    let ledger = build [ timerPlan () ] evidence (fixedTags [ keySession ]) |> ok "ledger"
+    let session = rowOf keySession ledger
+    Assert.Equal<ResolutionClass list>(
+        [ ResolutionClass.FixedByRequirement; ResolutionClass.AlreadyApproved; ResolutionClass.UnsupportedByVocabulary ],
+        session.Classes)
+    Assert.Empty(session.OpenObligationIds)
+    Assert.Equal(FinalDisposition.Implemented, session.Disposition)
+
+[<Fact>]
+let ``a fixed but inexpressible requirement without acceptance is only partially implemented, as handwritten`` () =
+    let ledger = build [ timerPlan () ] fullEvidence (fixedTags [ keySession ]) |> ok "ledger"
+    match (rowOf keySession ledger).Disposition with
+    | FinalDisposition.PartiallyImplemented why -> Assert.Contains("Handwritten", why)
+    | other -> failwithf "session: %A" other
+
+[<Fact>]
+let ``without the operator tag the uncovered requirement stays a genuine domain decision`` () =
+    let evidence = fullEvidence |> Map.add keySession (passed [ "ACC-TIMER-SESSION" ])
+    let session = rowOf keySession (build [ timerPlan () ] evidence noTags |> ok "ledger")
+    Assert.Contains(ResolutionClass.GenuineDomainDecision, session.Classes)
+    Assert.DoesNotContain(ResolutionClass.UnsupportedByVocabulary, session.Classes)
+    Assert.Contains(obligationUncovered, session.OpenObligationIds)
+    Assert.False(isImplemented session)
+
+[<Fact>]
+let ``the fixed tag neither closes conflicts nor undecided effect failures`` () =
+    let tags = fixedTags [ keyShort; keyStop ]
+    let ledger = build [ timerPlan () ] fullEvidence tags |> ok "ledger"
+    let short = rowOf keyShort ledger
+    Assert.Contains(ResolutionClass.GenuineDomainDecision, short.Classes)
+    Assert.False(isImplemented short)
+    let stop = rowOf keyStop ledger
+    Assert.Contains(ResolutionClass.GenuineDomainDecision, stop.Classes)
+    Assert.Contains(obligationEffect, stop.OpenObligationIds)
+    Assert.False(isImplemented stop)

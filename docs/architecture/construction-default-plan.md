@@ -258,6 +258,21 @@ sorted, rows are in key order, and object members are sorted.
 its inputs. A ledger is a report, not authority to apply or ship anything.
 There is no CLI surface yet.
 
+### Requirement-fixed but inexpressible requirements
+
+An `uncoveredRequirement` obligation means no generated operation constructs
+the requirement. That is a genuine domain question only when the requirement
+text does not fix the behavior. When the operator tags the key
+`FixedByRequirement`, the ledger treats the obligation as a vocabulary gap:
+- the row is classed `UnsupportedByVocabulary`, not `GenuineDomainDecision`;
+- the obligation is not counted as open;
+- handwritten code may implement the requirement, and passing independent
+  acceptance makes the row `Implemented`.
+
+The tag never closes a conflict or an undecided effect failure. Found by the
+expanded time-entry benchmark: 40 of 46 keys are uncovered under vocabulary 2,
+and most of them are fixed by their text.
+
 ## Evidence
 
 - `tests/Ordo.Tests/ConstructionDefaultPlanTests.fs` covers:
