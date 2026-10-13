@@ -114,3 +114,83 @@ let scaffoldFile (asJson: bool) (manifestPath: string) (outputPath: string) =
             else
                 "ECIR scaffold refused: " + issue
         1, (if asJson then [ message ] else []), (if asJson then [] else [ message ])
+
+/// Pattern recognition report (`ordo.pattern-recognition/1`) and, with
+/// `--packets`, one `ordo.delegation-contract/1` file per delegation packet.
+/// The approvals file only shapes this report: unapproved decisions show as
+/// DecisionRequired, and nothing here authorizes construction.
+let recognizeFiles (asJson: bool) (options: Sde.Cli.Args.EcirRecognizeOptions) =
+    let readFile label path =
+        try
+            if not (File.Exists path) then Error(label + " missing: " + path) else Ok(File.ReadAllText path)
+        with :? IOException as ex -> Error(label + ": " + ex.Message)
+    let optional label reader path =
+        match path with
+        | None -> Ok None
+        | Some p -> readFile label p |> Result.bind reader |> Result.map Some
+    let approvals (text: string) =
+        match Ordo.Core.Json.parse text with
+        | Ok(Ordo.Core.Json.JArray items) ->
+            items
+            |> List.map (function Ordo.Core.Json.JString id -> Ok id | _ -> Error "approvals: expected an array of decision ids")
+            |> List.fold (fun acc next -> Result.bind (fun xs -> Result.map (fun x -> x :: xs) next) acc) (Ok [])
+            |> Result.map Set.ofList
+        | _ -> Error "approvals: expected an array of decision ids"
+    let outcome =
+        readFile "source manifest" options.Manifest
+        |> Result.bind readManifest
+        |> Result.bind (fun manifest ->
+            readFile "construction blueprint" options.Blueprint
+            |> Result.bind readBlueprint
+            |> Result.bind (fun blueprint ->
+                optional "decision records" Ordo.Core.ConstructionDecisions.readDecisionRecords options.Decisions
+                |> Result.bind (fun records ->
+                    optional "approvals" approvals options.Approvals
+                    |> Result.bind (fun approved ->
+                        optional "registry pin" Ordo.Core.PatternRecognitionWire.readPin options.Pin
+                        |> Result.bind (fun pin ->
+                            let input: Ordo.Core.PatternRecognition.RecognitionInput =
+                                { Manifest = manifest
+                                  Blueprint = blueprint
+                                  CohortId = options.Cohort
+                                  AuthorizedDecisionIds = approved |> Option.defaultValue Set.empty
+                                  Records = records
+                                  Policy =
+                                    { AllowedPaths = options.AllowedPaths
+                                      ArchitectureConstraints = []
+                                      EscalateOpenQuestions = options.EscalateOpenQuestions } }
+                            Ordo.Core.PatternRecognitionWire.recognize Ordo.Core.PatternRegistry.BuiltIn.registry pin input
+                            |> Result.mapError (List.map (sprintf "%A") >> String.concat "; "))))))
+    let write (report: Ordo.Core.PatternRecognition.RecognitionReport) =
+        match options.PacketsDirectory with
+        | None -> Ok []
+        | Some dir ->
+            try
+                Directory.CreateDirectory dir |> ignore
+                report.Packets
+                |> List.map (fun p ->
+                    let path = Path.Combine(dir, p.Id + ".json")
+                    File.WriteAllText(path, Ordo.Core.PatternRecognitionWire.encodePacket p)
+                    path)
+                |> Ok
+            with
+            | :? IOException as e -> Error("cannot write packets: " + e.Message)
+            | :? UnauthorizedAccessException as e -> Error("cannot write packets: " + e.Message)
+    let quoted (value: string) = Ordo.Core.Json.JString value |> Ordo.Core.Json.render
+    match outcome |> Result.bind (fun report -> write report |> Result.map (fun paths -> report, paths)) with
+    | Ok(report, paths) ->
+        let m = report.Measurements
+        let message =
+            if asJson then Ordo.Core.PatternRecognitionWire.encodeReport report
+            else
+                sprintf "Recognized %d requirements of %s: %d constructible, %d awaiting a decision, %d delegated, %d blocked, %d excluded; %d packet(s), %d bytes%s. Generation %s. Execution authorization not granted."
+                    m.AssignedRequirements report.CohortId m.Constructible m.DecisionRequired m.Delegated m.Blocked m.Excluded
+                    m.DelegationPackets m.DelegationBytes
+                    (match paths with [] -> "" | ps -> " written to " + String.concat ", " ps)
+                    (if report.GenerationWorthwhile then "worthwhile" else "skipped (nothing constructible)")
+        0, [ message ], []
+    | Error issue ->
+        let message =
+            if asJson then sprintf "{\"schemaVersion\":\"ordo.pattern-recognition/1\",\"status\":\"rejected\",\"reason\":%s}" (quoted issue)
+            else "Recognition refused: " + issue
+        1, (if asJson then [ message ] else []), (if asJson then [] else [ message ])
