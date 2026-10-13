@@ -407,7 +407,7 @@ let private decidedPlan vocabulary =
                         { x with Content = PortContract(ports |> List.filter (function RecordedCurrentTime _ -> true | _ -> false)) }
                     | _ -> x))
                 @ [ { NodeId = "DEC-TIMER-STOP-FAILURE"
-                      Content = PortContract [ RecordedTransitionEffect("Stop", Some EffectFailureDisposition.Remain, [ keyStop ]) ] } ] }
+                      Content = PortContract [ RecordedTransitionEffect("Stop", Some EffectFailureDisposition.Remain, [ keyStop ], None) ] } ] }
     b, generateDefaultPlan p decided vocabulary |> ok "decided plan"
 
 [<Fact>]

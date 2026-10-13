@@ -368,7 +368,7 @@ module BuiltIn =
                     facts.Ports
                     |> List.choose (fun (nodeId, port) ->
                         match port with
-                        | RecordedTransitionEffect(command, disposition, _) -> Some(nodeId, command, disposition)
+                        | RecordedTransitionEffect(command, disposition, _, _) -> Some(nodeId, command, disposition)
                         | RecordedCurrentTime _ -> None)
                 match effects with
                 | [] -> None

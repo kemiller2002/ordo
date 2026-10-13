@@ -100,13 +100,21 @@ let private manifestJson (plan: ValidatedPlanView) generator root (artifacts: Ar
                         | ResolveEffectFailure(effect, subject, question) ->
                             [ "kind", JString "resolve"; "subject", JString subject; "effect", JString effect; "question", JString question ]
                         | VerifyIndependently what -> [ "kind", JString "verify-independently"; "what", JString what ]
+                        | ResolveUndecidedTransition(state, command, question) ->
+                            [ "kind", JString "resolve-transition"; "state", JString state; "command", JString command; "question", JString question ]
+                        | DecideExtension(contract, point, question) ->
+                            [ "kind", JString "decide-extension"; "contract", JString contract; "point", JString point; "question", JString question ]
                     JObject([ "id", JString o.Id ] @ kind @ [ "requirementKeys", strings o.RequirementKeys ]) ]
         "structuralChecks",
         JObject [ "independence", JString "derived-from-plan"
                   "pairs",
                   JArray [ for c in checks ->
                               JObject [ "state", JString c.State; "command", JString c.Command
-                                        "expected", (match c.Expected with Some target -> JString target | None -> JString "invalid-transition") ] ] ]
+                                        "expected",
+                                        (match c.Expected with
+                                         | Some target -> JString target
+                                         | None when c.Undecided -> JString "undecided"
+                                         | None -> JString "invalid-transition") ] ] ]
         "coverage",
         JObject [ for KeyValue(key, coverage) in plan.Coverage ->
                     key,
@@ -141,7 +149,11 @@ let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefu
         // orchestration's Unresolved result case. Vocabulary 1 has no links.
         let isEffectObligation = function DeclareUnresolved { Effect = Some _ } -> true | _ -> false
         let modelOps = pick (function DefineWorkflow _ | DefineState _ | DefineTransition _ | DefineInvariant _ -> true | op -> isEffectPort op)
-        let transitionOps = pick (function DefineWorkflow _ | DefineTransition _ | DefineInvariant _ | BindCapability _ -> true | op -> isEffectPort op)
+        let transitionOps =
+            pick (function
+                | DefineWorkflow _ | DefineTransition _ | DefineInvariant _ | BindCapability _
+                | DeclarePairRule _ | DefineRefusal _ | DeclareUndecidedTransition _ -> true
+                | op -> isEffectPort op)
         let orchestrationOps = pick (function DefineWorkflow _ | DeclarePort _ -> true | op -> isEffectObligation op)
         let digest = plan.Digest
         let generated =
@@ -162,8 +174,46 @@ let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefu
                 contract (Layout.effectContract w.Name e) EffectPort
                     (pick (function DeclarePort { Kind = TransitionEffect(c, _) } -> c = e.Key | _ -> false))))
 
+        // Vocabulary 3: an extension whose inventory has an undecided point is
+        // not implementable yet. It gets one decide obligation per open point
+        // and no implement obligation, so nobody is told to implement a
+        // behavior whose rules are not stated.
+        let openPoints (contract: ExtensionContract) =
+            w.Inventories
+            |> List.filter (fun i ->
+                let name =
+                    match i.Extension with
+                    | ExtensionTarget.Guard n -> Layout.guardContract w.Name n
+                    | ExtensionTarget.Invariant n -> Layout.invariantContract w.Name n
+                    | ExtensionTarget.Effect n -> Layout.effectContract w.Name n
+                name = contract.Name)
+            |> List.collect _.DecisionPoints
+            |> List.choose (fun p ->
+                match p.Resolution with
+                | DecisionPointResolution.Undecided question -> Some(p, question)
+                | DecisionPointResolution.Decided -> None)
+        let undecidedQuestion (state: SemanticName) (command: SemanticName) =
+            w.UndecidedTransitions
+            |> List.tryFind (fun u -> u.InState.Key = state.Key && u.OnCommand.Key = command.Key)
+            |> Option.map (fun u -> u.Question, u.Trace.RequirementKeys)
+            |> Option.defaultWith (fun () ->
+                sprintf "The requirements do not decide what command %s does in state %s of workflow %s." command.Key state.Key w.Name.Key,
+                (match w.PairRule with Some(_, trace) -> trace.RequirementKeys | None -> []))
         let obligations =
-            (contracts |> List.map (fun c -> { Id = "IMPLEMENT:" + c.Name; Kind = Implement c.Name; RequirementKeys = c.RequirementKeys }))
+            (contracts
+             |> List.collect (fun c ->
+                 match openPoints c with
+                 | [] -> [ { Id = "IMPLEMENT:" + c.Name; Kind = Implement c.Name; RequirementKeys = c.RequirementKeys } ]
+                 | points ->
+                     points |> List.map (fun (p, question) ->
+                         { Id = sprintf "DECIDE:%s/%s" c.Name p.Point.Key
+                           Kind = DecideExtension(c.Name, p.Point.Key, question)
+                           RequirementKeys = p.Trace.RequirementKeys })))
+            @ (shape.Undecided |> List.map (fun (state, command) ->
+                let question, keys = undecidedQuestion state command
+                { Id = sprintf "RESOLVE-PAIR:%s/%s" state.Key command.Key
+                  Kind = ResolveUndecidedTransition(state.Key, command.Key, question)
+                  RequirementKeys = keys }))
             @ (w.Unresolved |> List.map (fun u ->
                 { Id = "RESOLVE:" + u.Subject.Key
                   Kind =
@@ -183,7 +233,8 @@ let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefu
                       Expected =
                         w.Transitions
                         |> List.tryFind (fun t -> t.From.Key = state.Key && t.Command.Key = command.Key)
-                        |> Option.map _.To.Key } ]
+                        |> Option.map _.To.Key
+                      Undecided = shape.Undecided |> List.exists (fun (u, c) -> u.Key = state.Key && c.Key = command.Key) } ]
 
         let manifest =
             artifact (Layout.manifestPath w.Name) None operations

@@ -9,10 +9,13 @@
 /// against. It is never a host credential or permission to cause effects.
 /// See docs/architecture/construction-plan-v1.md.
 ///
-/// Two vocabularies are read. Vocabulary 2 differs from vocabulary 1 only in
+/// Three vocabularies are read. Vocabulary 2 differs from vocabulary 1 only in
 /// that every transition effect must declare what a failed or unknown effect
-/// outcome means for the workflow (`EffectFailureDisposition`). A vocabulary
-/// 1 plan keeps its exact semantics, canonical form and digest.
+/// outcome means for the workflow (`EffectFailureDisposition`). Vocabulary 3
+/// adds explicit classification of choices (CONSTRUCT-010): what an unlisted
+/// (state, command) pair means, explicit refusals and undecided pairs, and a
+/// mandatory decision inventory for every extension. A plan in an earlier
+/// vocabulary keeps its exact semantics, canonical form and digest.
 module Ordo.Core.ConstructionPlan
 
 open System
@@ -34,6 +37,15 @@ let VocabularyVersion1 = "ordo.construction-vocabulary/1"
 [<Literal>]
 let VocabularyVersion2 = "ordo.construction-vocabulary/2"
 
+/// Adds `declarePairRule` (mandatory), `defineRefusal`,
+/// `declareUndecidedTransition` and `declareExtensionInventory` (mandatory
+/// for every guard, invariant and transition effect). A pair the
+/// requirements leave undecided is reported as undecided, never refused by
+/// omission, and an extension cannot be handed off for implementation
+/// without stating which of its decision points are still open.
+[<Literal>]
+let VocabularyVersion3 = "ordo.construction-vocabulary/3"
+
 /// The first vocabulary, under its original name. Code that authors plans
 /// with this constant keeps producing vocabulary 1 plans with unchanged
 /// meaning; a vocabulary is never upgraded in place.
@@ -42,7 +54,7 @@ let VocabularyVersion = VocabularyVersion1
 
 /// Every vocabulary this reader and validator accept. Anything else is
 /// refused, never upgraded.
-let SupportedVocabularyVersions = [ VocabularyVersion1; VocabularyVersion2 ]
+let SupportedVocabularyVersions = [ VocabularyVersion1; VocabularyVersion2; VocabularyVersion3 ]
 
 // ---------------------------------------------------------------------------
 // The untrusted draft: everything an agent is able to say.
@@ -136,6 +148,60 @@ type UnresolvedDraft =
       Question: string
       Trace: TraceDraft }
 
+/// Vocabulary 3: what a (state, command) pair means when no transition,
+/// refusal or undecided declaration names it.
+[<RequireQualifiedAccess>]
+type UnlistedPairs =
+    /// A documented rule, cited by the trace, refuses every unlisted pair.
+    | Refused
+    /// The requirements do not decide unlisted pairs. Generated code reports
+    /// them as undecided and never refuses them by omission.
+    | Undecided
+
+type PairRuleDraft = { Unlisted: UnlistedPairs; Trace: TraceDraft }
+
+/// One (state, command) pair, named without a target.
+type PairDraft = { InState: string; OnCommand: string }
+
+/// Vocabulary 3: the pair is refused, on the authority of its trace.
+type RefusalDraft = { Pair: PairDraft; Trace: TraceDraft }
+
+/// Vocabulary 3: the requirements leave the pair undecided. The question
+/// becomes an open obligation; generated code reports the pair as undecided.
+type UndecidedTransitionDraft =
+    { Pair: PairDraft
+      Question: string
+      Trace: TraceDraft }
+
+/// The handwritten extension a decision inventory describes.
+[<RequireQualifiedAccess>]
+type ExtensionRef =
+    | Guard of name: string
+    | Invariant of name: string
+    | Effect of command: string
+
+/// Whether one behavioral choice inside an extension is settled.
+[<RequireQualifiedAccess>]
+type DecisionPointResolution =
+    /// Settled by the point's trace: requirement text or an approved decision.
+    | Decided
+    /// Not settled. The extension cannot be implemented until it is decided.
+    | Undecided of question: string
+
+type DecisionPointDraft =
+    { Point: string
+      Resolution: DecisionPointResolution
+      Trace: TraceDraft }
+
+/// Vocabulary 3: every behavioral choice an extension's implementation must
+/// make. An empty list asserts that the extension's trace fixes its behavior
+/// completely. The inventory is mandatory, so an extension can never be
+/// handed off as "implement" with its open choices left unstated.
+type ExtensionInventoryDraft =
+    { Extension: ExtensionRef
+      DecisionPoints: DecisionPointDraft list
+      Trace: TraceDraft }
+
 type OperationDraft =
     | DefineWorkflow of WorkflowDraft
     | DefineState of StateDraft
@@ -144,6 +210,10 @@ type OperationDraft =
     | DeclarePort of PortDraft
     | BindCapability of CapabilityDraft
     | DeclareUnresolved of UnresolvedDraft
+    | DeclarePairRule of PairRuleDraft
+    | DefineRefusal of RefusalDraft
+    | DeclareUndecidedTransition of UndecidedTransitionDraft
+    | DeclareExtensionInventory of ExtensionInventoryDraft
 
 /// What the plan claims to have been formed against. Every field is checked
 /// against the prepared cohort rather than believed.
@@ -263,6 +333,33 @@ type UnresolvedObligation =
       Question: string
       Trace: Trace }
 
+type PairDeclaration =
+    { InState: SemanticName
+      OnCommand: SemanticName
+      Trace: Trace }
+
+type UndecidedTransition =
+    { InState: SemanticName
+      OnCommand: SemanticName
+      Question: string
+      Trace: Trace }
+
+[<RequireQualifiedAccess>]
+type ExtensionTarget =
+    | Guard of SemanticName
+    | Invariant of SemanticName
+    | Effect of SemanticName
+
+type DecisionPoint =
+    { Point: SemanticName
+      Resolution: DecisionPointResolution
+      Trace: Trace }
+
+type ExtensionInventory =
+    { Extension: ExtensionTarget
+      DecisionPoints: DecisionPoint list
+      Trace: Trace }
+
 /// One finite-state workflow. Lists are in canonical order: states with the
 /// initial state first then by name; everything else by name.
 type Workflow =
@@ -274,7 +371,13 @@ type Workflow =
       Invariants: Invariant list
       Ports: Port list
       Capabilities: CapabilityBinding list
-      Unresolved: UnresolvedObligation list }
+      Unresolved: UnresolvedObligation list
+      /// Vocabulary 3 only: the rule for unlisted pairs. `None` in earlier
+      /// vocabularies, whose generated code refuses unlisted pairs by omission.
+      PairRule: (UnlistedPairs * Trace) option
+      Refusals: PairDeclaration list
+      UndecidedTransitions: UndecidedTransition list
+      Inventories: ExtensionInventory list }
 
 type PlanBinding =
     { SchemaVersion: string
@@ -373,6 +476,17 @@ type PlanViolation =
     /// cite an externally authorized decision node the cohort requires rather
     /// than the agent's say-so. Without one, only `unresolved` is legal.
     | EffectDispositionWithoutDecision of operation: string
+    /// Vocabulary 3: no `declarePairRule`, so unlisted pairs would be decided
+    /// by omission.
+    | MissingPairRule
+    /// A pair named by more than one of: a transition, a refusal, an
+    /// undecided declaration.
+    | ConflictingPairDisposition of from: string * command: string * declarations: string list
+    /// An inventory names an extension the plan does not define.
+    | UnknownExtension of operation: string * extension: string
+    /// Vocabulary 3: a guard, invariant or transition effect with no
+    /// decision inventory.
+    | MissingExtensionInventory of extension: string
 
 // ---------------------------------------------------------------------------
 // Encoding. The draft is the wire shape; the canonical plan is the draft of
@@ -400,6 +514,24 @@ let private roleName role =
     | Initial -> "initial"
     | Ordinary -> "ordinary"
     | Terminal -> "terminal"
+
+let private unlistedName unlisted =
+    match unlisted with
+    | UnlistedPairs.Refused -> "refused"
+    | UnlistedPairs.Undecided -> "undecided"
+
+let private jExtension extension =
+    match extension with
+    | ExtensionRef.Guard name -> JObject [ "kind", JString "guard"; "name", JString name ]
+    | ExtensionRef.Invariant name -> JObject [ "kind", JString "invariant"; "name", JString name ]
+    | ExtensionRef.Effect command -> JObject [ "kind", JString "effect"; "name", JString command ]
+
+let private jPoint (point: DecisionPointDraft) =
+    match point.Resolution with
+    | DecisionPointResolution.Decided ->
+        JObject [ "point", JString point.Point; "decided", JBool true; "trace", jTrace point.Trace ]
+    | DecisionPointResolution.Undecided question ->
+        JObject [ "point", JString point.Point; "decided", JBool false; "question", JString question; "trace", jTrace point.Trace ]
 
 let private jOperation operation =
     match operation with
@@ -434,6 +566,21 @@ let private jOperation operation =
             [ "op", JString "declareUnresolved"; "subject", JString u.Subject ]
             @ (u.Effect |> Option.map (fun effect -> "effect", JString effect) |> Option.toList)
             @ [ "question", JString u.Question; "trace", jTrace u.Trace ])
+    | DeclarePairRule r ->
+        JObject [ "op", JString "declarePairRule"; "unlisted", JString(unlistedName r.Unlisted); "trace", jTrace r.Trace ]
+    | DefineRefusal r ->
+        JObject [ "op", JString "defineRefusal"; "command", JString r.Pair.OnCommand; "from", JString r.Pair.InState; "trace", jTrace r.Trace ]
+    | DeclareUndecidedTransition u ->
+        JObject [ "op", JString "declareUndecidedTransition"
+                  "command", JString u.Pair.OnCommand
+                  "from", JString u.Pair.InState
+                  "question", JString u.Question
+                  "trace", jTrace u.Trace ]
+    | DeclareExtensionInventory i ->
+        JObject [ "op", JString "declareExtensionInventory"
+                  "extension", jExtension i.Extension
+                  "decisionPoints", JArray(i.DecisionPoints |> List.map jPoint)
+                  "trace", jTrace i.Trace ]
 
 let toJson (plan: PlanDraft) =
     JObject [ "schemaVersion", JString plan.SchemaVersion
@@ -481,7 +628,23 @@ let private canonicalDraft (binding: PlanBinding) (w: Workflow) : PlanDraft =
           for c in w.Capabilities ->
               BindCapability { Command = key c.Command; Capability = CapabilityId.value c.Capability; Trace = traceDraft c.Trace }
           for u in w.Unresolved ->
-              DeclareUnresolved { Subject = key u.Subject; Effect = u.Effect |> Option.map key; Question = u.Question; Trace = traceDraft u.Trace } ] }
+              DeclareUnresolved { Subject = key u.Subject; Effect = u.Effect |> Option.map key; Question = u.Question; Trace = traceDraft u.Trace }
+          yield! w.PairRule |> Option.map (fun (unlisted, trace) -> DeclarePairRule { Unlisted = unlisted; Trace = traceDraft trace }) |> Option.toList
+          for r in w.Refusals ->
+              DefineRefusal { Pair = { InState = key r.InState; OnCommand = key r.OnCommand }; Trace = traceDraft r.Trace }
+          for u in w.UndecidedTransitions ->
+              DeclareUndecidedTransition
+                  { Pair = { InState = key u.InState; OnCommand = key u.OnCommand }; Question = u.Question; Trace = traceDraft u.Trace }
+          for i in w.Inventories ->
+              DeclareExtensionInventory
+                  { Extension =
+                      (match i.Extension with
+                       | ExtensionTarget.Guard n -> ExtensionRef.Guard(key n)
+                       | ExtensionTarget.Invariant n -> ExtensionRef.Invariant(key n)
+                       | ExtensionTarget.Effect n -> ExtensionRef.Effect(key n))
+                    DecisionPoints =
+                      i.DecisionPoints |> List.map (fun p -> { DecisionPointDraft.Point = key p.Point; Resolution = p.Resolution; Trace = traceDraft p.Trace })
+                    Trace = traceDraft i.Trace } ] }
 
 // ---------------------------------------------------------------------------
 // Validation.
@@ -500,6 +663,14 @@ let operationLabel (operation: OperationDraft) =
     | DeclarePort { Kind = TransitionEffect(command, _) } -> "port:transitionEffect/" + norm command
     | BindCapability c -> sprintf "capability:%s/%s" (norm c.Command) c.Capability
     | DeclareUnresolved u -> "unresolved:" + norm u.Subject
+    | DeclarePairRule _ -> "pairRule"
+    | DefineRefusal r -> sprintf "refusal:%s/%s" (norm r.Pair.InState) (norm r.Pair.OnCommand)
+    | DeclareUndecidedTransition u -> sprintf "undecided:%s/%s" (norm u.Pair.InState) (norm u.Pair.OnCommand)
+    | DeclareExtensionInventory i ->
+        match i.Extension with
+        | ExtensionRef.Guard n -> "inventory:guard/" + norm n
+        | ExtensionRef.Invariant n -> "inventory:invariant/" + norm n
+        | ExtensionRef.Effect n -> "inventory:effect/" + norm n
 
 let private traceOf operation : TraceDraft =
     match operation with
@@ -510,6 +681,20 @@ let private traceOf operation : TraceDraft =
     | DeclarePort p -> p.Trace
     | BindCapability c -> c.Trace
     | DeclareUnresolved u -> u.Trace
+    | DeclarePairRule r -> r.Trace
+    | DefineRefusal r -> r.Trace
+    | DeclareUndecidedTransition u -> u.Trace
+    | DeclareExtensionInventory i -> i.Trace
+
+/// Every trace an operation carries, labelled: its own and, for an
+/// inventory, one per decision point. Each is checked like an operation's.
+let private tracesOf operation =
+    let label = operationLabel operation
+    (label, traceOf operation)
+    :: (match operation with
+        | DeclareExtensionInventory i ->
+            i.DecisionPoints |> List.map (fun p -> sprintf "%s/point:%s" label p.Point, p.Trace)
+        | _ -> [])
 
 let private normalizeTrace (trace: TraceDraft) : Trace =
     { RequirementKeys = trace.RequirementKeys |> List.distinct |> List.sort
@@ -526,6 +711,12 @@ let private namesOf operation =
     | DeclarePort { Kind = TransitionEffect(command, _) } -> [ command ]
     | BindCapability c -> [ c.Command ]
     | DeclareUnresolved u -> u.Subject :: Option.toList u.Effect
+    | DeclarePairRule _ -> []
+    | DefineRefusal r -> [ r.Pair.InState; r.Pair.OnCommand ]
+    | DeclareUndecidedTransition u -> [ u.Pair.InState; u.Pair.OnCommand ]
+    | DeclareExtensionInventory i ->
+        (match i.Extension with ExtensionRef.Guard n | ExtensionRef.Invariant n | ExtensionRef.Effect n -> n)
+        :: (i.DecisionPoints |> List.map _.Point)
 
 let private bindingViolations (view: PreparedCohortView) (preparedBlueprintDigest: string) (plan: PlanDraft) =
     let binding = plan.Binding
@@ -543,29 +734,31 @@ let private bindingViolations (view: PreparedCohortView) (preparedBlueprintDiges
 
 let private traceViolations (view: PreparedCohortView) (operations: OperationDraft list) =
     let nodes = view.Blueprint.Nodes |> List.map (fun n -> n.Id, n) |> Map.ofList
+    let checkTrace label (trace: TraceDraft) =
+        [ if List.isEmpty trace.RequirementKeys then MissingSourceTrace label
+          if List.isEmpty trace.NodeIds then MissingNodeTrace label
+          for key in List.distinct trace.RequirementKeys do
+              if not (Set.contains key view.AssignedRequirementKeys) then UnassignedRequirement(label, key)
+          for id in List.distinct trace.NodeIds do
+              if not (Set.contains id view.RequiredNodeIds) then UnauthorizedNodeReference(label, id)
+              elif nodes[id].Kind = Cohort then CohortNodeCited(label, id)
+              else
+                  let node = nodes[id]
+                  let anchored = not (List.isEmpty node.RequirementKeys)
+                  if anchored && not (node.RequirementKeys |> List.exists (fun k -> List.contains k trace.RequirementKeys)) then
+                      InconsistentTrace(label, id) ]
     let perOperation =
         operations
         |> List.collect (fun operation ->
             let label = operationLabel operation
             let trace = traceOf operation
-            [ if List.isEmpty trace.RequirementKeys then MissingSourceTrace label
-              if List.isEmpty trace.NodeIds then MissingNodeTrace label
-              for key in List.distinct trace.RequirementKeys do
-                  if not (Set.contains key view.AssignedRequirementKeys) then UnassignedRequirement(label, key)
-              for id in List.distinct trace.NodeIds do
-                  if not (Set.contains id view.RequiredNodeIds) then UnauthorizedNodeReference(label, id)
-                  elif nodes[id].Kind = Cohort then CohortNodeCited(label, id)
-                  else
-                      let node = nodes[id]
-                      let anchored = not (List.isEmpty node.RequirementKeys)
-                      if anchored && not (node.RequirementKeys |> List.exists (fun k -> List.contains k trace.RequirementKeys)) then
-                          InconsistentTrace(label, id)
-              let citesRequiredDecision = trace.NodeIds |> List.exists (fun id -> Set.contains id view.RequiredDecisionIds)
-              match operation with
-              | BindCapability _ when not citesRequiredDecision -> CapabilityWithoutDecision label
-              | DeclarePort { Kind = TransitionEffect(_, Some(EffectFailureDisposition.Remain | EffectFailureDisposition.Proceed)) }
-                  when not citesRequiredDecision -> EffectDispositionWithoutDecision label
-              | _ -> () ])
+            let citesRequiredDecision = trace.NodeIds |> List.exists (fun id -> Set.contains id view.RequiredDecisionIds)
+            (tracesOf operation |> List.collect (fun (l, t) -> checkTrace l t))
+            @ [ match operation with
+                | BindCapability _ when not citesRequiredDecision -> CapabilityWithoutDecision label
+                | DeclarePort { Kind = TransitionEffect(_, Some(EffectFailureDisposition.Remain | EffectFailureDisposition.Proceed)) }
+                    when not citesRequiredDecision -> EffectDispositionWithoutDecision label
+                | _ -> () ])
     let covered = operations |> List.collect (fun o -> (traceOf o).RequirementKeys) |> Set.ofList
     perOperation @ (Set.difference view.AssignedRequirementKeys covered |> Seq.map UncoveredRequirement |> Seq.toList)
 
@@ -596,6 +789,14 @@ let private nameViolations (operations: OperationDraft list) =
             match operation with
             | BindCapability c when not (isCapabilityText c.Capability) -> [ InvalidCapability(label, c.Capability) ]
             | DeclareUnresolved u when u.Question.Length > MaxQuestionLength -> [ QuestionTooLong(label, u.Question.Length) ]
+            | DeclareUndecidedTransition u when u.Question.Length > MaxQuestionLength -> [ QuestionTooLong(label, u.Question.Length) ]
+            | DeclareExtensionInventory i ->
+                i.DecisionPoints
+                |> List.choose (fun p ->
+                    match p.Resolution with
+                    | DecisionPointResolution.Undecided q when q.Length > MaxQuestionLength ->
+                        Some(QuestionTooLong(sprintf "%s/point:%s" label p.Point, q.Length))
+                    | _ -> None)
             | _ -> []
         names @ capability)
 
@@ -610,7 +811,13 @@ let private structureViolations (operations: OperationDraft list) =
     let states = operations |> List.choose (function DefineState s -> Some s | _ -> None)
     let transitions = operations |> List.choose (function DefineTransition t -> Some t | _ -> None)
     let stateKeys = states |> List.map (fun s -> (name s.Name).Key) |> Set.ofList
-    let commandKeys = transitions |> List.map (fun t -> (name t.Command).Key) |> Set.ofList
+    let pairCommands =
+        operations
+        |> List.choose (function
+            | DefineRefusal r -> Some r.Pair.OnCommand
+            | DeclareUndecidedTransition u -> Some u.Pair.OnCommand
+            | _ -> None)
+    let commandKeys = (transitions |> List.map _.Command) @ pairCommands |> List.map (fun c -> (name c).Key) |> Set.ofList
     let roles = states |> List.map (fun s -> (name s.Name).Key, s.Role) |> Map.ofList
     let roleOf key = Map.tryFind key roles
     let initials = states |> List.filter (fun s -> s.Role = Initial) |> List.map (fun s -> (name s.Name).Key)
@@ -642,6 +849,8 @@ let private structureViolations (operations: OperationDraft list) =
                   if List.isEmpty i.HoldsIn then EmptyInvariantScope(operationLabel operation)
                   for raw in i.HoldsIn do
                       if not (Set.contains (name raw).Key stateKeys) then UnknownState(operationLabel operation, (name raw).Key)
+              | DefineRefusal { Pair = pair } | DeclareUndecidedTransition { Pair = pair } ->
+                  if not (Set.contains (name pair.InState).Key stateKeys) then UnknownState(operationLabel operation, (name pair.InState).Key)
               | _ -> () ]
 
     let unknownCommands =
@@ -654,9 +863,15 @@ let private structureViolations (operations: OperationDraft list) =
             | _ -> None)
 
     let fromTerminal =
-        transitions
-        |> List.filter (fun t -> roleOf (name t.From).Key = Some Terminal)
-        |> List.map (DefineTransition >> operationLabel >> TransitionFromTerminal)
+        (transitions
+         |> List.filter (fun t -> roleOf (name t.From).Key = Some Terminal)
+         |> List.map (DefineTransition >> operationLabel >> TransitionFromTerminal))
+        // A terminal state decides every command: it leaves nothing undecided.
+        @ (operations
+           |> List.choose (function
+               | DeclareUndecidedTransition u as operation when roleOf (name u.Pair.InState).Key = Some Terminal ->
+                   Some(TransitionFromTerminal(operationLabel operation))
+               | _ -> None))
 
     let successors =
         edges
@@ -691,6 +906,7 @@ let private structureViolations (operations: OperationDraft list) =
         |> List.choose (fun operation ->
             match operation with
             | DeclareUnresolved u when String.IsNullOrWhiteSpace u.Question -> Some(BlankUnresolvedQuestion(operationLabel operation))
+            | DeclareUndecidedTransition u when String.IsNullOrWhiteSpace u.Question -> Some(BlankUnresolvedQuestion(operationLabel operation))
             | _ -> None)
 
     [ match workflows with
@@ -707,21 +923,86 @@ let private structureViolations (operations: OperationDraft list) =
 /// disposition and no effect link; a vocabulary 1 plan that carries one is
 /// refused, never read as vocabulary 2.
 let private vocabularyViolations (plan: PlanDraft) =
-    if plan.VocabularyVersion <> VocabularyVersion1 then []
+    let version = plan.VocabularyVersion
+    let notIn operation member' = NotInVocabulary(operationLabel operation, member', version)
+    plan.Operations
+    |> List.collect (fun operation ->
+        match operation with
+        | DeclarePort { Kind = TransitionEffect(_, Some _) } when version = VocabularyVersion1 -> [ notIn operation "onFailure" ]
+        | DeclareUnresolved { Effect = Some _ } when version = VocabularyVersion1 -> [ notIn operation "effect" ]
+        | DeclarePairRule _ when version <> VocabularyVersion3 -> [ notIn operation "declarePairRule" ]
+        | DefineRefusal _ when version <> VocabularyVersion3 -> [ notIn operation "defineRefusal" ]
+        | DeclareUndecidedTransition _ when version <> VocabularyVersion3 -> [ notIn operation "declareUndecidedTransition" ]
+        | DeclareExtensionInventory _ when version <> VocabularyVersion3 -> [ notIn operation "declareExtensionInventory" ]
+        | _ -> [])
+
+/// Vocabulary 3: every choice is stated. Exactly one pair rule; a pair is
+/// named by at most one of a transition, a refusal and an undecided
+/// declaration; every guard, invariant and transition effect has exactly one
+/// decision inventory, naming an extension the plan defines, whose points
+/// are distinct and whose undecided points ask a question.
+let private classificationViolations (vocabulary: string) (operations: OperationDraft list) =
+    if vocabulary <> VocabularyVersion3 then []
     else
-        plan.Operations
-        |> List.collect (fun operation ->
-            match operation with
-            | DeclarePort { Kind = TransitionEffect(_, Some _) } -> [ NotInVocabulary(operationLabel operation, "onFailure", plan.VocabularyVersion) ]
-            | DeclareUnresolved { Effect = Some _ } -> [ NotInVocabulary(operationLabel operation, "effect", plan.VocabularyVersion) ]
-            | _ -> [])
+        let rules = operations |> List.filter (function DeclarePairRule _ -> true | _ -> false)
+        let declarations =
+            operations
+            |> List.choose (fun operation ->
+                match operation with
+                | DefineTransition t -> Some(((name t.From).Key, (name t.Command).Key), "transition")
+                | DefineRefusal r -> Some(((name r.Pair.InState).Key, (name r.Pair.OnCommand).Key), "refusal")
+                | DeclareUndecidedTransition u -> Some(((name u.Pair.InState).Key, (name u.Pair.OnCommand).Key), "undecided")
+                | _ -> None)
+        let pairConflicts =
+            declarations
+            |> List.groupBy fst
+            |> List.choose (fun ((from, command), group) ->
+                match group |> List.map snd |> List.distinct |> List.sort with
+                | [ _ ] -> None
+                | kinds -> Some(ConflictingPairDisposition(from, command, kinds)))
+        let extensionLabel extension =
+            match extension with
+            | ExtensionRef.Guard n -> "guard/" + (name n).Key
+            | ExtensionRef.Invariant n -> "invariant/" + (name n).Key
+            | ExtensionRef.Effect n -> "effect/" + (name n).Key
+        let defined =
+            operations
+            |> List.collect (fun operation ->
+                match operation with
+                | DefineTransition t -> t.Guards |> List.map (fun g -> extensionLabel (ExtensionRef.Guard g.Name))
+                | DefineInvariant i -> [ extensionLabel (ExtensionRef.Invariant i.Name) ]
+                | DeclarePort { Kind = TransitionEffect(command, _) } -> [ extensionLabel (ExtensionRef.Effect command) ]
+                | _ -> [])
+            |> Set.ofList
+        let inventories =
+            operations |> List.choose (function DeclareExtensionInventory i as op -> Some(op, i) | _ -> None)
+        let inventoried = inventories |> List.map (fun (_, i) -> extensionLabel i.Extension) |> Set.ofList
+        let inventoryViolations =
+            inventories
+            |> List.collect (fun (operation, i) ->
+                let label = operationLabel operation
+                [ if not (Set.contains (extensionLabel i.Extension) defined) then UnknownExtension(label, extensionLabel i.Extension)
+                  yield!
+                      i.DecisionPoints
+                      |> List.countBy (fun p -> (name p.Point).Key)
+                      |> List.filter (fun (_, n) -> n > 1)
+                      |> List.map (fun (point, _) -> DuplicateDefinition(sprintf "%s/point:%s" label point))
+                  for p in i.DecisionPoints do
+                      match p.Resolution with
+                      | DecisionPointResolution.Undecided q when String.IsNullOrWhiteSpace q ->
+                          BlankUnresolvedQuestion(sprintf "%s/point:%s" label (name p.Point).Key)
+                      | _ -> () ])
+        [ if List.isEmpty rules then MissingPairRule ]
+        @ pairConflicts
+        @ (Set.difference defined inventoried |> Seq.map MissingExtensionInventory |> Seq.toList)
+        @ inventoryViolations
 
 /// Vocabulary 2: every transition effect declares its failure disposition,
 /// and an `unresolved` disposition is linked, by effect, to exactly one
 /// `declareUnresolved`, so the open question becomes an obligation. A link
 /// is valid only to an effect port whose disposition is `unresolved`.
 let private effectDispositionViolations (vocabulary: string) (operations: OperationDraft list) =
-    if vocabulary <> VocabularyVersion2 then []
+    if vocabulary = VocabularyVersion1 then []
     else
         let ports =
             operations
@@ -783,7 +1064,15 @@ let private buildWorkflow (operations: OperationDraft list) : Workflow =
     { Name = name workflow.Name
       Trace = normalizeTrace workflow.Trace
       States = states
-      Commands = transitions |> List.map _.Command |> List.distinctBy _.Key |> List.sortBy _.Key
+      Commands =
+        (transitions |> List.map _.Command)
+        @ (operations
+           |> List.choose (function
+               | DefineRefusal r -> Some(name r.Pair.OnCommand)
+               | DeclareUndecidedTransition u -> Some(name u.Pair.OnCommand)
+               | _ -> None))
+        |> List.distinctBy _.Key
+        |> List.sortBy _.Key
       Transitions = transitions
       Invariants =
         operations
@@ -817,7 +1106,42 @@ let private buildWorkflow (operations: OperationDraft list) : Workflow =
             | DeclareUnresolved u ->
                 Some { Subject = name u.Subject; Effect = u.Effect |> Option.map name; Question = u.Question; Trace = normalizeTrace u.Trace }
             | _ -> None)
-        |> byKey _.Subject }
+        |> byKey _.Subject
+      PairRule = operations |> List.tryPick (function DeclarePairRule r -> Some(r.Unlisted, normalizeTrace r.Trace) | _ -> None)
+      Refusals =
+        operations
+        |> List.choose (function
+            | DefineRefusal r -> Some { PairDeclaration.InState = name r.Pair.InState; OnCommand = name r.Pair.OnCommand; Trace = normalizeTrace r.Trace }
+            | _ -> None)
+        |> List.sortBy (fun r -> r.InState.Key, r.OnCommand.Key)
+      UndecidedTransitions =
+        operations
+        |> List.choose (function
+            | DeclareUndecidedTransition u ->
+                Some { UndecidedTransition.InState = name u.Pair.InState; OnCommand = name u.Pair.OnCommand
+                       Question = u.Question; Trace = normalizeTrace u.Trace }
+            | _ -> None)
+        |> List.sortBy (fun u -> u.InState.Key, u.OnCommand.Key)
+      Inventories =
+        operations
+        |> List.choose (function
+            | DeclareExtensionInventory i ->
+                Some { Extension =
+                         (match i.Extension with
+                          | ExtensionRef.Guard n -> ExtensionTarget.Guard(name n)
+                          | ExtensionRef.Invariant n -> ExtensionTarget.Invariant(name n)
+                          | ExtensionRef.Effect n -> ExtensionTarget.Effect(name n))
+                       DecisionPoints =
+                         i.DecisionPoints
+                         |> List.map (fun p -> { Point = name p.Point; Resolution = p.Resolution; Trace = normalizeTrace p.Trace })
+                         |> List.sortBy (fun p -> p.Point.Key)
+                       Trace = normalizeTrace i.Trace }
+            | _ -> None)
+        |> List.sortBy (fun i ->
+            match i.Extension with
+            | ExtensionTarget.Guard n -> 0, n.Key
+            | ExtensionTarget.Invariant n -> 1, n.Key
+            | ExtensionTarget.Effect n -> 2, n.Key) }
 
 let private coverage (assigned: Set<string>) (operations: OperationDraft list) =
     let tracing key =
@@ -826,8 +1150,20 @@ let private coverage (assigned: Set<string>) (operations: OperationDraft list) =
     assigned
     |> Seq.map (fun key ->
         let ops = tracing key
-        let constructs = ops |> List.filter (function DefineWorkflow _ | DeclareUnresolved _ -> false | _ -> true)
-        let unresolved = ops |> List.filter (function DeclareUnresolved _ -> true | _ -> false)
+        let undecided operation =
+            match operation with
+            | DeclareUnresolved _ | DeclareUndecidedTransition _ -> true
+            | DeclareExtensionInventory i ->
+                i.DecisionPoints |> List.exists (fun p -> p.Resolution <> DecisionPointResolution.Decided)
+            | _ -> false
+        // A pair rule or a fully decided inventory states how something is
+        // decided; it constructs nothing by itself.
+        let nonConstructing operation =
+            match operation with
+            | DefineWorkflow _ | DeclarePairRule _ | DeclareExtensionInventory _ -> true
+            | _ -> undecided operation
+        let constructs = ops |> List.filter (nonConstructing >> not)
+        let unresolved = ops |> List.filter undecided
         key,
         match constructs, unresolved with
         | _ :: _, _ -> Constructed(labels constructs)
@@ -860,7 +1196,11 @@ let validate (prepared: PreparedCohort) (plan: PlanDraft) : Result<ValidatedPlan
     match early with
     | _ :: _ -> Error(finish early)
     | [] ->
-        match structureViolations plan.Operations @ effectDispositionViolations plan.VocabularyVersion plan.Operations with
+        match
+            structureViolations plan.Operations
+            @ effectDispositionViolations plan.VocabularyVersion plan.Operations
+            @ classificationViolations plan.VocabularyVersion plan.Operations
+        with
         | _ :: _ as structural -> Error(finish structural)
         | [] ->
             let binding =

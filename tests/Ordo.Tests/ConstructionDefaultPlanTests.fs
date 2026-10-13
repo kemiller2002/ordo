@@ -314,12 +314,12 @@ let ``records that contradict the blueprint are refused with a precise reason`` 
         (generateWith (withModel (fun m -> { m with Workflow = "Timer();" }) r))
     // An effect for a command no transition defines, and a duplicate port.
     refusedWith (EffectForUnknownCommand("IFC-TIMER-PORTS", "Reset"))
-        (generateWith (withPorts (fun ps -> ps @ [ RecordedTransitionEffect("Reset", None, [ keyStop ]) ]) r))
+        (generateWith (withPorts (fun ps -> ps @ [ RecordedTransitionEffect("Reset", None, [ keyStop ], None) ]) r))
     refusedWith (DuplicateRecordedPort "port:currentTime")
         (generateWith (withPorts (fun ps -> ps @ [ RecordedCurrentTime [ keyPaused ] ]) r))
     // A decided disposition on an interface node is not an approved decision.
     refusedWith (DecidedDispositionWithoutDecision("IFC-TIMER-PORTS", "Stop"))
-        (generateWith (withPorts (List.map (function RecordedTransitionEffect(c, _, k) -> RecordedTransitionEffect(c, Some EffectFailureDisposition.Remain, k) | p -> p)) r))
+        (generateWith (withPorts (List.map (function RecordedTransitionEffect(c, _, k, points) -> RecordedTransitionEffect(c, Some EffectFailureDisposition.Remain, k, points) | p -> p)) r))
 
 [<Fact>]
 let ``a structurally invalid state model is refused with the plan violations, never patched`` () =
@@ -412,7 +412,8 @@ let ``a conflict the blueprint does not relate to the cohort produces no obligat
 
 [<Fact>]
 let ``an unsupported vocabulary version is refused, never upgraded`` () =
-    Assert.Equal(Error(UnsupportedVocabularyVersion "ordo.construction-vocabulary/3"), ConstructionVocabulary.ofVersion "ordo.construction-vocabulary/3")
+    Assert.Equal(Error(UnsupportedVocabularyVersion "ordo.construction-vocabulary/4"), ConstructionVocabulary.ofVersion "ordo.construction-vocabulary/4")
+    Assert.Equal(Ok ConstructionVocabulary.Version3, ConstructionVocabulary.ofVersion VocabularyVersion3)
     Assert.Equal(Ok ConstructionVocabulary.Version1, ConstructionVocabulary.ofVersion VocabularyVersion1)
     Assert.Equal(Ok ConstructionVocabulary.Version2, ConstructionVocabulary.ofVersion VocabularyVersion2)
 
@@ -428,7 +429,7 @@ let private decidedFixture () =
             Records =
                 (r |> withPorts (List.filter (function RecordedCurrentTime _ -> true | _ -> false))).Records
                 @ [ { NodeId = "DEC-TIMER-STOP-FAILURE"
-                      Content = PortContract [ RecordedTransitionEffect("Stop", Some EffectFailureDisposition.Remain, [ keyStop ]) ] } ] }
+                      Content = PortContract [ RecordedTransitionEffect("Stop", Some EffectFailureDisposition.Remain, [ keyStop ], None) ] } ] }
     p, decided
 
 [<Fact>]

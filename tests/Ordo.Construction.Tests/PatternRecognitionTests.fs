@@ -207,8 +207,8 @@ let ``a decided disposition recorded on a non-decision node is blocked, never ap
                         { x with
                             Content =
                                 PortContract(ports |> List.map (function
-                                    | RecordedTransitionEffect(c, None, k) ->
-                                        RecordedTransitionEffect(c, Some Ordo.Core.ConstructionPlan.EffectFailureDisposition.Remain, k)
+                                    | RecordedTransitionEffect(c, None, k, p) ->
+                                        RecordedTransitionEffect(c, Some Ordo.Core.ConstructionPlan.EffectFailureDisposition.Remain, k, p)
                                     | p -> p)) }
                     | StateModel _ -> x) }
     let report = run (inputOf (blueprint ()) (Some decided))

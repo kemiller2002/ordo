@@ -51,10 +51,29 @@ type Shape =
       /// Each effect's declared failure disposition (vocabulary 2 only).
       Dispositions: (SemanticName * EffectFailureDisposition) list
       HasClock: bool
-      HasCapabilities: bool }
+      HasCapabilities: bool
+      /// Vocabulary 3: pairs the plan leaves undecided, explicitly or by an
+      /// `undecided` pair rule. Empty for earlier vocabularies.
+      Undecided: (SemanticName * SemanticName) list }
 
     member this.HasRules = not (List.isEmpty this.Guards && List.isEmpty this.Invariants)
     member this.HasPorts = this.HasClock || not (List.isEmpty this.Effects)
+
+/// The pairs a vocabulary 3 plan leaves open: explicit undecided
+/// declarations, and every unlisted pair outside a terminal state when the
+/// pair rule says unlisted pairs are undecided.
+let undecidedPairs (w: Workflow) =
+    let named (state: SemanticName) (command: SemanticName) =
+        (w.Transitions |> List.exists (fun t -> t.From.Key = state.Key && t.Command.Key = command.Key))
+        || (w.Refusals |> List.exists (fun r -> r.InState.Key = state.Key && r.OnCommand.Key = command.Key))
+    [ for state in w.States do
+          for command in w.Commands do
+              let explicit = w.UndecidedTransitions |> List.exists (fun u -> u.InState.Key = state.Name.Key && u.OnCommand.Key = command.Key)
+              let byRule =
+                  match w.PairRule with
+                  | Some(UnlistedPairs.Undecided, _) -> state.Role <> Terminal && not (named state.Name command)
+                  | Some(UnlistedPairs.Refused, _) | None -> false
+              if explicit || byRule then state.Name, command ]
 
 let shapeOf (generator: string) (w: Workflow) =
     { Generator = generator
@@ -71,7 +90,8 @@ let shapeOf (generator: string) (w: Workflow) =
             | TransitionEffectPort(c, Some disposition) -> Some(c, disposition)
             | TransitionEffectPort(_, None) | CurrentTimePort -> None)
       HasClock = w.Ports |> List.exists (fun p -> p.Kind = CurrentTimePort)
-      HasCapabilities = not (List.isEmpty w.Capabilities) }
+      HasCapabilities = not (List.isEmpty w.Capabilities)
+      Undecided = undecidedPairs w }
 
 let private list (items: string list) =
     match items with
@@ -109,6 +129,7 @@ let transition (digest: string) (s: Shape) =
     let refusal =
         union "Why a command was not applied. Each case is a distinct remedy." (refusalType w)
             ([ sprintf "InvalidTransition of state: %s * command: %s" st cmd ]
+             @ (if List.isEmpty s.Undecided then [] else [ sprintf "Undecided of state: %s * command: %s" st cmd ])
              @ (if s.HasCapabilities then [ sprintf "MissingCapabilities of command: %s * capabilities: string list" cmd ] else [])
              @ (if List.isEmpty s.Guards then [] else [ sprintf "GuardRejected of guard: %s" (guardType w) ])
              @ (if List.isEmpty s.Invariants then [] else [ sprintf "InvariantViolated of invariant: %s" (invariantType w) ]))
@@ -153,6 +174,20 @@ let transition (digest: string) (s: Shape) =
         @ (pairs |> List.map (fun (state, command) ->
                "    " + pattern state command + " " + (match edge state command with Some t -> "Some " + qualify st t.To | None -> "None")))
         @ [ "" ]
+
+    let undecided =
+        if List.isEmpty s.Undecided then []
+        else
+            let isOpen (state: SemanticName) (command: SemanticName) =
+                s.Undecided |> List.exists (fun (u, c) -> u.Key = state.Key && c.Key = command.Key)
+            [ "/// Pairs the requirements leave undecided. They are open obligations, not"
+              "/// refusals: `decide` reports them as Undecided so no caller mistakes them"
+              "/// for a decided refusal. Every pair is listed; there is no catch-all."
+              sprintf "let undecided (state: %s) (command: %s) : bool =" st cmd
+              "    match state, command with" ]
+            @ (pairs |> List.map (fun (state, command) ->
+                   "    " + pattern state command + " " + (if isOpen state command then "true" else "false")))
+            @ [ "" ]
 
     let guards =
         if List.isEmpty s.Guards then []
@@ -238,8 +273,9 @@ let transition (digest: string) (s: Shape) =
     let decide =
         [ "/// Decides one command. Refusal is data; nothing is applied or performed here."
           sprintf "let decide %s : Result<%s, %s> =" (String.concat " " parameters) (decisionType w) rf
-          "    match target state command with"
-          sprintf "    | None -> Error(%s.InvalidTransition(state, command))" rf ]
+          "    match target state command with" ]
+        @ (if List.isEmpty s.Undecided then [] else [ sprintf "    | None when undecided state command -> Error(%s.Undecided(state, command))" rf ])
+        @ [ sprintf "    | None -> Error(%s.InvalidTransition(state, command))" rf ]
         @ accepted
 
     render (
@@ -249,7 +285,7 @@ let transition (digest: string) (s: Shape) =
         @ [ "/// The legal transitions, decided from one plan. Depends only on Tier 1."
             "[<RequireQualifiedAccess>]"
             "module " + transitionModule w + " =" ]
-        @ indent 4 ([ "" ] @ legal @ target @ guards @ invariants @ capabilities @ effects @ decide))
+        @ indent 4 ([ "" ] @ legal @ target @ undecided @ guards @ invariants @ capabilities @ effects @ decide))
 
 // ---- Tier 3: Orchestration ----
 

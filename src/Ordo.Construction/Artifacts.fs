@@ -12,10 +12,19 @@ let GeneratorVersion = "ordo.construction/1"
 [<Literal>]
 let GeneratorVersion2 = "ordo.construction/2"
 
+/// The generator for vocabulary 3 plans: version 2 plus classified pairs. A
+/// pair the plan leaves undecided is reported by Tier 2 as `Undecided`, never
+/// refused by omission, and an extension with an undecided decision point
+/// gets a decide obligation instead of an implement obligation.
+[<Literal>]
+let GeneratorVersion3 = "ordo.construction/3"
+
 /// The generator version a plan's vocabulary selects. The plan cannot choose
 /// it any other way.
 let generatorVersionFor (vocabularyVersion: string) =
-    if vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion2 then GeneratorVersion2 else GeneratorVersion
+    if vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion3 then GeneratorVersion3
+    elif vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion2 then GeneratorVersion2
+    else GeneratorVersion
 
 /// The marker every generated file starts with. A host may replace a file at
 /// a target path only if it carries this marker; anything else is
@@ -74,6 +83,13 @@ type ObligationKind =
     /// Behavior compiles but is not verified by generation; independent
     /// verification (Dokimos) is still required.
     | VerifyIndependently of what: string
+    /// Vocabulary 3: the requirements do not decide what a command does in a
+    /// state. Generated code reports the pair as `Undecided` until it is decided.
+    | ResolveUndecidedTransition of state: string * command: string * question: string
+    /// Vocabulary 3: a decision point of an extension is undecided. The
+    /// extension is not implementable until it is decided, so it gets this
+    /// obligation instead of `Implement`.
+    | DecideExtension of contract: string * point: string * question: string
 
 type ConstructionObligation =
     { Id: string
@@ -85,4 +101,6 @@ type ConstructionObligation =
 type StructuralCheck =
     { State: string
       Command: string
-      Expected: string option }
+      Expected: string option
+      /// Vocabulary 3: the pair is open, neither legal nor refused.
+      Undecided: bool }

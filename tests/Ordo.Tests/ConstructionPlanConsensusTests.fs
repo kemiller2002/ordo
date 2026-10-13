@@ -86,6 +86,10 @@ let private withoutTrace operation =
     | DeclarePort p -> DeclarePort { p with Trace = noTrace }
     | BindCapability c -> BindCapability { c with Trace = noTrace }
     | DeclareUnresolved u -> DeclareUnresolved { u with Trace = noTrace }
+    | DeclarePairRule r -> DeclarePairRule { r with Trace = noTrace }
+    | DefineRefusal r -> DefineRefusal { r with Trace = noTrace }
+    | DeclareUndecidedTransition u -> DeclareUndecidedTransition { u with Trace = noTrace }
+    | DeclareExtensionInventory i -> DeclareExtensionInventory { i with Trace = noTrace }
 
 let private structuralIdentities (operations: OperationDraft list) =
     operations

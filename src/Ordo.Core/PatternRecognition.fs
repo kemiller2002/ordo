@@ -206,7 +206,7 @@ let private dispositionName d =
 let private portKeys port =
     match port with
     | RecordedCurrentTime keys
-    | RecordedTransitionEffect(_, _, keys) -> keys
+    | RecordedTransitionEffect(_, _, keys, _) -> keys
 
 let gapLabel gap =
     match gap with

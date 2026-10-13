@@ -60,6 +60,12 @@ let timerUnresolved = timerV2 "unresolved"
 
 let timerV2Fixtures = [ timerRemain; timerProceed; timerUnresolved ]
 
+/// Vocabulary 3 (CONSTRUCT-010): the timer default plan generated from
+/// `construction-decisions-v2.json` with unlisted pairs left undecided and the
+/// workflow renamed TimerOpen, so the rounding tie and every unlisted pair
+/// are open decisions in generated code.
+let timerOpen = { timer with Name = "time-entry-timer-v3-open"; Plan = "plan.v3-open.json" }
+
 let private read (fixture: Fixture) name =
     File.ReadAllText(Path.Combine(repositoryRoot, "tests", "fixtures", "construction", fixture.Source, name))
 

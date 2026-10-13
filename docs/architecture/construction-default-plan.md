@@ -29,8 +29,10 @@ generateDefaultPlan :
   `ConstructionDecisions.readDecisionRecords`. An operator authors and
   approves it once. A host binds `ConstructionDecisions.digest` into the
   signed grant.
-- `ConstructionVocabulary`: `Version1` or `Version2`
-  (`ConstructionVocabulary.ofVersion` refuses any other version).
+- `ConstructionVocabulary`: `Version1`, `Version2` or `Version3`
+  (`ConstructionVocabulary.ofVersion` refuses any other version). `Version3`
+  needs `ordo.construction-decisions/2` records; see
+  [decision classification](decision-classification.md).
 
 Nothing else is read. No caller supplies the plan's binding: Ordo computes it
 from the prepared cohort.
