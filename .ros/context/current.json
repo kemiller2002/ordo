@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-13T20:15:40Z",
+  "updatedAt": "2026-10-13T21:53:51.957Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -1790,6 +1790,17 @@
           "mechanism": "git-remote-observation"
         }
       }
+    },
+    {
+      "id": "RELEASE-1-10-0",
+      "type": "mechanical",
+      "state": "active",
+      "semanticState": "active",
+      "evidence": [],
+      "updatedAt": "2026-10-13T21:53:51.957Z",
+      "telemetryExecutionIds": [
+        "EXE-20261013T215352150Z-b75acfc4"
+      ]
     }
   ]
 }

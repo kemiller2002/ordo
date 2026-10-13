@@ -22,6 +22,7 @@
 | GH-64 | GH-64 | complete |  |  |
 | GH-65 | GH-65 | complete |  |  |
 | GH-69 | GH-69 | complete |  |  |
+| RELEASE-1-10-0 | Release Ordo 1.10.0 | ready |  | medium |
 | RELEASE-1-4-1 | Release Ordo 1.4.1 | complete |  | medium |
 | RELEASE-1-4-2 | Release Ordo 1.4.2 | complete |  | medium |
 | RELEASE-1-5-0 | Release Ordo 1.5.0 | complete |  | medium |
@@ -71,5 +72,5 @@
 | WI-0042 | Move ordo to Praxis 3.7.2; attempt Conditor adoption | complete | praxis, toolchain, conditor | medium |
 | WI-0043 | ORDO-CORE-PACKAGE: publish Ordo.Core as an immutable package and add the ordo.execution-contract/1 reader so hosts consume Ordo semantics | complete |  | medium |
 | WI-0044 | Deterministic construction-plan consensus over N independent drafts (research-documents#6, #7) | complete | construction,consensus | high |
-| WI-0045 | Pattern registry and deterministic recognition with early delegation (ORDO-PATTERN-001) | ready |  | medium |
+| WI-0045 | Pattern registry and deterministic recognition with early delegation (ORDO-PATTERN-001) | active |  | medium |
 | WI-0046 | x | abandoned |  | medium |
