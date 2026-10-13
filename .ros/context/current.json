@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-13T22:52:42.000Z",
+  "updatedAt": "2026-10-13T23:00:31.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2194,6 +2194,51 @@
         }
       },
       "completedAt": "2026-10-13T22:52:42.000Z"
+    },
+    {
+      "id": "CONSTRUCT-010-OBLIGATION-SUBJECTS",
+      "type": "task",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ConstructionDefaultPlan.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ConstructionClassificationTests.fs"
+        },
+        {
+          "type": "documentation",
+          "path": "docs/architecture/construction-default-plan.md"
+        }
+      ],
+      "updatedAt": "2026-10-13T23:00:31.000Z",
+      "telemetryExecutionIds": [
+        "EXE-20261013T225934631Z-ac029d01"
+      ],
+      "latestCheckpoint": {
+        "id": "e465eabd46e2c11a330eedd8",
+        "recordedAt": "2026-10-13T23:00:31.000Z",
+        "executionId": "EXE-20261013T225934631Z-ac029d01",
+        "repository": "ordo",
+        "branch": "construct-010/obligation-subjects",
+        "commit": "9280d1a234e7fb854545da3432f9cb2b36f58266",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "construct-010/obligation-subjects",
+        "remoteCommit": "9280d1a234e7fb854545da3432f9cb2b36f58266",
+        "summary": "Typed planSubject on undecided obligations, default-plan/4 (9280d1a)",
+        "nextAction": "Open stacked PR",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-13T23:00:31.000Z"
     }
   ]
 }

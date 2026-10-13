@@ -282,3 +282,22 @@ let consume (plan: CompletePlan) = plan.Plan
               "complete plan constructed directly", preamble + "let f (p: ValidatedPlan) c = consume (CompletePlan(p, c))", Some "FS1093"
               "classification marked complete", preamble + "let f (c: Classification) = { c with Complete = true }", Some "FS1129" ]
     Assert.True(List.isEmpty failures, String.concat "\n\n" failures)
+
+/// Generator `ordo.default-plan/4`: an undecided pair or decision point
+/// obligation names its classification subject, so a consumer matches it
+/// exactly instead of by question wording.
+[<Fact>]
+let ``undecided obligations name the open choice they are about`` () =
+    let records = recordsV2 () |> withStateModel (fun m -> { m with Unlisted = Some RecordedUnlisted.Undecided })
+    let plan = planV3With records
+    let openSubjects = openChoices (classify plan.ValidatedPlan) |> List.map _.Subject |> Set.ofList
+    let typed =
+        plan.Obligations
+        |> List.filter (fun o -> o.Kind = TypedObligationKind.UndecidedTransition || o.Kind = TypedObligationKind.UndecidedExtensionDecision)
+    Assert.NotEmpty(typed)
+    for o in typed do
+        match o.PlanSubject with
+        | Some subject -> Assert.Contains(subject, openSubjects)
+        | None -> failwithf "obligation %s has no plan subject" o.Id
+    Assert.Contains(typed, fun o -> o.PlanSubject = Some "extension:effect/Stop/point:RoundingTie")
+    Assert.Contains(typed, fun o -> o.PlanSubject = Some "pair:NoTimer/Pause")

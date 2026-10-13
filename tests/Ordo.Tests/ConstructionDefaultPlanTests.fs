@@ -63,7 +63,7 @@ let private keyRejection = "kemiller2002/time-entry-state-machine/effort-experim
 /// values; that requires a generator version change, not an updated constant.
 let private pinnedDecisionsDigest = "sha256:3b9d190488bc80f045578f91dbd059beb393340f34dc1ba2802f5d88a198d0d3"
 let private pinnedPlanDigest = "sha256:9747faade3fbea4bb9ded5e1ed83ef457d93df4b4980183df581db9e2b964d63"
-let private pinnedDefaultPlanDigest = "sha256:920088e63fcd97a5219749b90dd4fe42d1c7747d56e7db568a17c9354342d14d"
+let private pinnedDefaultPlanDigest = "sha256:bc0970ad99a7e03f9fe693eb76dd2a49f2447d7c5e023ee277aba0b6ef724b6d"
 let private pinnedObligationIds =
     [ "OBL-COH-TIMER-conflict-f569e9ac9d77"
       "OBL-COH-TIMER-extensionBehavior-03835228233e"
@@ -502,7 +502,7 @@ let ``provenance names the generator and the digest of every input, recomputed i
     let p = generate ()
     let pv = p.Provenance
     Assert.Equal("ordo.default-plan", pv.GeneratorId)
-    Assert.Equal("ordo.default-plan/3", pv.GeneratorVersion)
+    Assert.Equal("ordo.default-plan/4", pv.GeneratorVersion)
     Assert.Equal(VocabularyVersion2, pv.VocabularyVersion)
     Assert.Equal(cohort, pv.CohortId)
     Assert.Equal((manifest ()).Digest, pv.SourceManifestDigest)
