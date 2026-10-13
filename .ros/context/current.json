@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-13T08:10:10Z",
+  "updatedAt": "2026-10-13T08:25:30Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -1701,13 +1701,43 @@
     {
       "id": "CONSTRUCT-009-LEDGER",
       "type": "task",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-10-13T08:10:10Z",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ConstructionLedger.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ConstructionLedgerTests.fs"
+        }
+      ],
+      "updatedAt": "2026-10-13T08:25:30Z",
       "telemetryExecutionIds": [
         "EXE-20261013T081007749Z-2f085b0f"
-      ]
+      ],
+      "latestCheckpoint": {
+        "id": "10749707abd5190e18ea6a33",
+        "recordedAt": "2026-10-13T08:24:30Z",
+        "executionId": "EXE-20261013T081007749Z-2f085b0f",
+        "repository": "ordo",
+        "branch": "construct/requirements-ledger",
+        "commit": "81bab6d09aaae66d6c6fa27e4ccdb69581014748",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "construct/requirements-ledger",
+        "remoteCommit": "81bab6d09aaae66d6c6fa27e4ccdb69581014748",
+        "summary": "Requirements ledger, tests, docs and 1.9.0 bump committed and pushed",
+        "nextAction": "Program lead opens the PR stacked on construct/default-plan",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-13T08:25:30Z"
     }
   ]
 }
