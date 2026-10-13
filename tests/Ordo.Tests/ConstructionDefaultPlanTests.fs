@@ -63,7 +63,7 @@ let private keyRejection = "kemiller2002/time-entry-state-machine/effort-experim
 /// values; that requires a generator version change, not an updated constant.
 let private pinnedDecisionsDigest = "sha256:3b9d190488bc80f045578f91dbd059beb393340f34dc1ba2802f5d88a198d0d3"
 let private pinnedPlanDigest = "sha256:9747faade3fbea4bb9ded5e1ed83ef457d93df4b4980183df581db9e2b964d63"
-let private pinnedDefaultPlanDigest = "sha256:6bc5876224be505ce86def6d50d104b12be99db8f8777978679a55ecfeedffad"
+let private pinnedDefaultPlanDigest = "sha256:cc6b789d528604b17c3fe2f6cec9d6dd7bf72fd9d7df6df14346bb462933134d"
 let private pinnedObligationIds =
     [ "OBL-COH-TIMER-conflict-f569e9ac9d77"
       "OBL-COH-TIMER-extensionBehavior-03835228233e"
@@ -355,6 +355,34 @@ let ``the out-of-cohort short-stop conflict stays an obligation and is not resol
     Assert.Equal<(string * string) list>([ "Paused", "NoTimer"; "Running", "NoTimer" ], stops |> List.map (fun t -> t.From.Key, t.To.Key))
     Assert.True(stops |> List.forall (fun t -> List.isEmpty t.Guards))
 
+/// The blueprint plus a conflict node on an in-cohort, modeled requirement
+/// (L131-L144). Required scope reaches it through that requirement.
+let private blueprintWithInsideConflict () =
+    let b = blueprint ()
+    { b with
+        Requirements =
+            b.Requirements |> List.map (fun r -> if r.Source.Key = keyStop then { r with NodeIds = r.NodeIds @ [ "CONFLICT-INSIDE" ] } else r)
+        Nodes = b.Nodes @ [ { Id = "CONFLICT-INSIDE"; Kind = NodeKind.Conflict; RequirementKeys = [ keyStop ]; DependsOn = []; Justification = Some "test input" } ] }
+
+[<Fact>]
+let ``a conflict inside the cohort is always an obligation and is never resolved by the plan`` () =
+    let b = blueprintWithInsideConflict ()
+    let p = prepareCohort (manifest ()) b cohort approved |> ok "prepare"
+    Assert.Contains("CONFLICT-INSIDE", (preparedCohortView p).RequiredNodeIds)
+    let plan = generateDefaultPlan p { records () with BlueprintDigest = blueprintDigest b } v2 |> ok "generate"
+    let conflicts = plan.Obligations |> List.filter (fun o -> o.Kind = TypedObligationKind.Conflict)
+    let inside = conflicts |> List.filter (fun o -> o.NodeIds = [ "CONFLICT-INSIDE" ]) |> List.exactlyOne
+    Assert.Equal<string list>([ keyStop ], inside.RequirementKeys)
+    Assert.Contains("inside cohort COH-TIMER", inside.Question)
+    Assert.Equal(None, inside.PlanSubject)
+    // The out-of-cohort short-stop conflict is still reported, once.
+    Assert.Equal(1, conflicts |> List.filter (fun o -> o.NodeIds = [ "CONFLICT-TIMER-SHORT-STOP" ]) |> List.length)
+    for op in operations plan do
+        Assert.DoesNotContain("CONFLICT-INSIDE", (operationTrace op).NodeIds)
+    // Deterministic: the same input gives the same obligations.
+    let again = generateDefaultPlan p { records () with BlueprintDigest = blueprintDigest b } v2 |> ok "again"
+    Assert.Equal(plan.Digest, again.Digest)
+
 [<Fact>]
 let ``a record cannot cite the conflicting requirement to resolve it`` () =
     let r = records () |> withModel (fun m -> { m with Transitions = m.Transitions |> List.map (fun t -> if t.Command = "Stop" then { t with RequirementKeys = keyShort :: t.RequirementKeys } else t) })
@@ -471,7 +499,7 @@ let ``provenance names the generator and the digest of every input, recomputed i
     let p = generate ()
     let pv = p.Provenance
     Assert.Equal("ordo.default-plan", pv.GeneratorId)
-    Assert.Equal("ordo.default-plan/1", pv.GeneratorVersion)
+    Assert.Equal("ordo.default-plan/2", pv.GeneratorVersion)
     Assert.Equal(VocabularyVersion2, pv.VocabularyVersion)
     Assert.Equal(cohort, pv.CohortId)
     Assert.Equal((manifest ()).Digest, pv.SourceManifestDigest)
