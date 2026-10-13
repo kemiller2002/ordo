@@ -264,7 +264,8 @@ let private isOpen kind =
     | TypedObligationKind.UncoveredRequirement
     | TypedObligationKind.UnsupportedVocabulary
     | TypedObligationKind.UndecidedTransition
-    | TypedObligationKind.UndecidedExtensionDecision -> true
+    | TypedObligationKind.UndecidedExtensionDecision
+    | TypedObligationKind.UndecidedPersistence -> true
 
 let private isDomainQuestion kind =
     match kind with
@@ -272,7 +273,8 @@ let private isDomainQuestion kind =
     | TypedObligationKind.Conflict
     | TypedObligationKind.UncoveredRequirement
     | TypedObligationKind.UndecidedTransition
-    | TypedObligationKind.UndecidedExtensionDecision -> true
+    | TypedObligationKind.UndecidedExtensionDecision
+    | TypedObligationKind.UndecidedPersistence -> true
     | TypedObligationKind.ExtensionBehavior
     | TypedObligationKind.UnsupportedVocabulary -> false
 

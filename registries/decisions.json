@@ -816,6 +816,20 @@
             "created"
           ],
           "reason": "Record CONSTRUCT-010 phase 2 increment 2 effect outcome policies"
+        },
+        "EXE-20261013T231252409Z-6e7aa000": {
+          "actor": {
+            "id": "anthropic/claude-code",
+            "kind": "agent",
+            "model": "unknown",
+            "provider": "anthropic",
+            "runtime": "claude-code"
+          },
+          "at": "2026-10-13T23:12:54.000Z",
+          "operations": [
+            "modified"
+          ],
+          "reason": "Decision records version 4 state effect policies and persistence"
         }
       }
     },
@@ -860,6 +874,20 @@
             "created"
           ],
           "reason": "Record CONSTRUCT-010 phase 2 increments 3 and 4 persisted instances"
+        },
+        "EXE-20261013T231252409Z-6e7aa000": {
+          "actor": {
+            "id": "anthropic/claude-code",
+            "kind": "agent",
+            "model": "unknown",
+            "provider": "anthropic",
+            "runtime": "claude-code"
+          },
+          "at": "2026-10-13T23:12:55.000Z",
+          "operations": [
+            "modified"
+          ],
+          "reason": "Decision records version 4 state effect policies and persistence"
         }
       }
     },

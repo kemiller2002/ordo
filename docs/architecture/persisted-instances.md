@@ -126,10 +126,61 @@ Mutation checks: six mutants each failed the suite.
 - **MP5:** an open scope is classified as decided.
 - **MP6:** persistence is accepted in vocabulary 5.
 
+## Default plans (decision records `ordo.construction-decisions/4`)
+
+Version 4 records generate vocabulary 6 default plans, and only those. Every
+other pairing is refused with `DecisionSchemaVocabularyMismatch`. Version 4 is
+version 3 plus the following:
+
+```text
+{ kind: "persistence", idempotency?: durable | session, onStale?: refuse | escalate, requirementKeys[] }
+{ kind: "effectPolicies", policies: [ { command, retries: 0..5, onFailed?: remain | proceed | compensate | escalate,
+                                        onUnknown?: reconcile | escalate, requirementKeys[] } ] }
+codeAssignments target: { kind: "notFound" } | { kind: "staleRevision" }
+```
+
+A version 4 `transitionEffect` port carries no `onFailure`; its policy record
+says what a failed effect means.
+
+**An absent choice is never defaulted.** It generates `unresolved` and a typed
+obligation:
+- `undecidedPersistence`, with `planSubject` `persistence:idempotency` or
+  `persistence:onStale`;
+- `undecidedEffectFailure`, linked to the effect.
+
+`retries` is required.
+
+Each content kind must sit on an approved Decision node and cite keys that
+the node owns. A node may hold one state model or port contract plus one of
+each other kind.
+
+The generator refuses the records when:
+- an effect has no policy record (`MissingEffectPolicyRecord`);
+- a policy names no effect (`PolicyForUnknownEffect`);
+- an effect has two policy records (`DuplicateEffectPolicyRecord`);
+- the set holds more than one persistence record (`MultiplePersistenceRecords`);
+- a persisted workflow also has effects (`PersistenceWithEffects`, through
+  plan validation).
+
+Evidence: the persisted gate's version 4 records
+(`tests/fixtures/construction/gate-persisted-synthetic/construction-decisions-v4.json`)
+construct a persistence tier identical to the hand-authored `StoredGate`
+golden, apart from the plan digest. The real timer cohort's records, converted
+to version 4 in test code with test approvals, generate the Stop effect policy
+as `approved`.
+
+Mutation checks: six mutants each failed the suite.
+
+- **MR1:** an absent scope defaults to durable.
+- **MR2:** a missing policy record is accepted.
+- **MR3:** an absent `onUnknown` raises no obligation.
+- **MR4:** version 3 accepts persistence.
+- **MR5:** a version 4 port encodes `onFailure`.
+- **MR6:** a policy for an unknown effect is accepted.
+
 ## Not in this increment
 
 - **Persistence with transition effects:** an outbox or an equivalent single
   write.
 - **Field data on the instance:** domain records and field validation. These
   stay extension contracts, as agreed.
-- **Default plans:** decision records cannot state persistence yet.

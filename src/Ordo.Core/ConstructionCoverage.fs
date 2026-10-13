@@ -183,7 +183,8 @@ let private isDecision kind =
     | TypedObligationKind.UndecidedEffectFailure
     | TypedObligationKind.UncoveredRequirement
     | TypedObligationKind.UndecidedTransition
-    | TypedObligationKind.UndecidedExtensionDecision -> true
+    | TypedObligationKind.UndecidedExtensionDecision
+    | TypedObligationKind.UndecidedPersistence -> true
     | TypedObligationKind.ExtensionBehavior
     | TypedObligationKind.UnsupportedVocabulary -> false
 

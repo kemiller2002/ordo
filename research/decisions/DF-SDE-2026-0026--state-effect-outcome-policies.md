@@ -27,6 +27,16 @@ provenance:
         model: unknown
         runtime: claude-code
       reason: "Record CONSTRUCT-010 phase 2 increment 2 effect outcome policies"
+    EXE-20261013T231252409Z-6e7aa000:
+      operations: [modified]
+      at: 2026-10-13T23:12:54.000Z
+      actor:
+        kind: agent
+        id: anthropic/claude-code
+        provider: anthropic
+        model: unknown
+        runtime: claude-code
+      reason: "Decision records version 4 state effect policies and persistence"
 ---
 
 # Context
@@ -63,6 +73,7 @@ escalation existed only in host code, unstated and unchecked.
 
 # Limits
 
-- Default plans cannot generate vocabulary 5 yet.
+- Default plans state policies through decision records version 4, which
+  generate vocabulary 6 (vocabulary 5 plus persistence).
 - The evidence is the real timer cohort with test-approved policies, not
   operator-approved ones.
