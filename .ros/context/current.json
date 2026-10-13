@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-13T20:54:10.000Z",
+  "updatedAt": "2026-10-13T21:01:09.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -1816,13 +1816,51 @@
     {
       "id": "CONSTRUCT-010-COVERAGE",
       "type": "task",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-10-13T20:54:10.000Z",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ConstructionCoverage.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ConstructionCoverageTests.fs"
+        },
+        {
+          "type": "documentation",
+          "path": "docs/architecture/coverage-report.md"
+        },
+        {
+          "type": "decision",
+          "path": "research/decisions/DF-SDE-2026-0023--advise-construction-route-by-structure-ratio.md"
+        }
+      ],
+      "updatedAt": "2026-10-13T21:01:09.000Z",
       "telemetryExecutionIds": [
         "EXE-20261013T205411288Z-a99db3f1"
-      ]
+      ],
+      "latestCheckpoint": {
+        "id": "f3011ab7a2a833c9e0e63efb",
+        "recordedAt": "2026-10-13T21:01:08.000Z",
+        "executionId": "EXE-20261013T205411288Z-a99db3f1",
+        "repository": "ordo",
+        "branch": "construct-010/coverage-report",
+        "commit": "09f58180e0a9576abd5a949981b9ddca1c8417f3",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "construct-010/coverage-report",
+        "remoteCommit": "09f58180e0a9576abd5a949981b9ddca1c8417f3",
+        "summary": "Coverage report, structure-ratio route recommendation, calibration fixtures, tests, docs",
+        "nextAction": "PR review; then phase 2 vocabulary increments",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-13T21:01:09.000Z"
     }
   ]
 }
