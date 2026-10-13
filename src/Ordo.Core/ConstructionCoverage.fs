@@ -257,7 +257,11 @@ let private extensionEstimates (plan: ValidatedPlanView) (obligations: TypedObli
                   Points = 1 }
             | TransitionEffectPort(command, _) ->
                 estimate (ConstructionLayout.effectContract w.Name command) (ExtensionTarget.Effect command) p.Trace.RequirementKeys true)
-    guards @ invariants @ ports |> List.sortBy _.Contract
+    let selectors =
+        w.BranchingTransitions
+        |> List.map (fun b ->
+            estimate (ConstructionLayout.selectionContract w.Name b.InState b.OnCommand) (ExtensionTarget.Selection(b.InState, b.OnCommand)) b.Trace.RequirementKeys false)
+    guards @ invariants @ ports @ selectors |> List.sortBy _.Contract
 
 let private share part whole = if whole = 0 then 0.0 else float part / float whole
 

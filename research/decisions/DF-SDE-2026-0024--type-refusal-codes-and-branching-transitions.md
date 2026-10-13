@@ -27,6 +27,16 @@ provenance:
         model: unknown
         runtime: claude-code
       reason: "Record CONSTRUCT-010 phase 2 vocabulary 4: typed refusal codes and branching transitions"
+    EXE-20261013T221709934Z-039c3bde:
+      operations: [modified]
+      at: 2026-10-13T22:20:16.000Z
+      actor:
+        kind: agent
+        id: anthropic/claude-code
+        provider: anthropic
+        model: unknown
+        runtime: claude-code
+      reason: "Default plans generate vocabulary 4 from decision records /3"
 ---
 
 # Context
@@ -73,7 +83,9 @@ not be stated:
 
 # Limits
 
-- Default plans do not generate vocabulary 4 yet. Decision records `/3` are
-  the next increment.
+- Default plans generate vocabulary 4 only from decision records `/3`. These
+  records add refusal codes, code assignments and branching transitions with
+  selector decision points to a `stateModel`. Version 3 records pair only
+  with vocabulary 4.
 - The evidence uses a synthetic fixture. No real cohort has been generated
   in vocabulary 4 yet.

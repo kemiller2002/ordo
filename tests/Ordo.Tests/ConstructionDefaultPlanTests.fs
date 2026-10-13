@@ -412,7 +412,7 @@ let ``a conflict the blueprint does not relate to the cohort produces no obligat
 
 [<Fact>]
 let ``an unsupported vocabulary version is refused, never upgraded`` () =
-    Assert.Equal(Error(UnsupportedVocabularyVersion "ordo.construction-vocabulary/4"), ConstructionVocabulary.ofVersion "ordo.construction-vocabulary/4")
+    Assert.Equal(Error(UnsupportedVocabularyVersion "ordo.construction-vocabulary/5"), ConstructionVocabulary.ofVersion "ordo.construction-vocabulary/5")
     Assert.Equal(Ok ConstructionVocabulary.Version3, ConstructionVocabulary.ofVersion VocabularyVersion3)
     Assert.Equal(Ok ConstructionVocabulary.Version1, ConstructionVocabulary.ofVersion VocabularyVersion1)
     Assert.Equal(Ok ConstructionVocabulary.Version2, ConstructionVocabulary.ofVersion VocabularyVersion2)

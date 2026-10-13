@@ -54,6 +54,9 @@ type ConstructionVocabulary =
     /// `ordo.construction-decisions/2` records, which state every pair rule
     /// and every effect's decision points.
     | Version3
+    /// Vocabulary 3 plus typed refusal codes and branching transitions.
+    /// Generated only from `ordo.construction-decisions/3` records.
+    | Version4
 
 [<RequireQualifiedAccess>]
 type TypedObligationKind =
@@ -204,6 +207,7 @@ module ConstructionVocabulary =
         | ConstructionVocabulary.Version1 -> VocabularyVersion1
         | ConstructionVocabulary.Version2 -> VocabularyVersion2
         | ConstructionVocabulary.Version3 -> VocabularyVersion3
+        | ConstructionVocabulary.Version4 -> VocabularyVersion4
 
     /// Anything but a supported vocabulary version is refused, never upgraded.
     let ofVersion (raw: string) : Result<ConstructionVocabulary, DefaultPlanRefusal> =
@@ -211,6 +215,7 @@ module ConstructionVocabulary =
         | VocabularyVersion1 -> Ok ConstructionVocabulary.Version1
         | VocabularyVersion2 -> Ok ConstructionVocabulary.Version2
         | VocabularyVersion3 -> Ok ConstructionVocabulary.Version3
+        | VocabularyVersion4 -> Ok ConstructionVocabulary.Version4
         | other -> Error(UnsupportedVocabularyVersion other)
 
 // ---------------------------------------------------------------------------
@@ -360,9 +365,11 @@ let private nameKey raw = SemanticName.create raw |> Result.map SemanticName.key
 let private envelopeRefusals (view: PreparedCohortView) (blueprintDigest: string) (vocabulary: ConstructionVocabulary) (records: ApprovedDecisionRecords) =
     let expected =
         match vocabulary with
+        | ConstructionVocabulary.Version4 -> DecisionsSchemaVersion3
         | ConstructionVocabulary.Version3 -> DecisionsSchemaVersion2
         | ConstructionVocabulary.Version1 | ConstructionVocabulary.Version2 -> DecisionsSchemaVersion
-    [ if records.SchemaVersion <> DecisionsSchemaVersion && records.SchemaVersion <> DecisionsSchemaVersion2 then
+    [ if records.SchemaVersion <> DecisionsSchemaVersion && records.SchemaVersion <> DecisionsSchemaVersion2
+         && records.SchemaVersion <> DecisionsSchemaVersion3 then
           UnsupportedDecisionSchema records.SchemaVersion
       elif records.SchemaVersion <> expected then
           DecisionSchemaVocabularyMismatch(records.SchemaVersion, ConstructionVocabulary.version vocabulary)
@@ -407,6 +414,11 @@ let private recordNames (record: DecisionRecord) =
         m.Workflow :: (m.States |> List.map _.Name) @ (m.Transitions |> List.collect (fun t -> [ t.Command; t.From; t.To ]))
         @ (m.Refusals |> List.collect (fun r -> [ r.Command; r.From ]))
         @ (m.Undecided |> List.collect (fun u -> [ u.Command; u.From ]))
+        @ (m.RefusalCodes |> List.map _.Code)
+        @ (m.CodeAssignments
+           |> List.collect (fun a ->
+               a.Code :: (match a.Target with RecordedCodeTarget.Pair(f, c) -> [ f; c ] | RecordedCodeTarget.Unlisted -> [])))
+        @ (m.Branching |> List.collect (fun b -> b.Command :: b.From :: b.Targets @ (b.DecisionPoints |> List.map _.Point)))
     | PortContract ports ->
         ports
         |> List.collect (function
@@ -446,6 +458,18 @@ let private citations (record: DecisionRecord) =
         @ (match m.Unlisted with
            | Some(RecordedUnlisted.Refused keys) -> [ "pairRule", keys ]
            | Some RecordedUnlisted.Undecided | None -> [])
+        @ (m.RefusalCodes |> List.map (fun c -> "code:" + key c.Code, c.RequirementKeys))
+        @ (m.CodeAssignments
+           |> List.map (fun a ->
+               (match a.Target with
+                | RecordedCodeTarget.Pair(f, c) -> sprintf "codeFor:pair/%s/%s" (key f) (key c)
+                | RecordedCodeTarget.Unlisted -> "codeFor:unlisted"),
+               a.RequirementKeys))
+        @ (m.Branching
+           |> List.collect (fun b ->
+               let label = sprintf "branching:%s/%s" (key b.From) (key b.Command)
+               (label, b.RequirementKeys)
+               :: (b.DecisionPoints |> List.map (fun p -> sprintf "%s/point:%s" label p.Point, p.RequirementKeys))))
     | PortContract ports ->
         (ports |> List.map (fun p ->
             portLabel p, (match p with RecordedCurrentTime keys | RecordedTransitionEffect(_, _, keys, _) -> keys)))
@@ -484,6 +508,19 @@ let private stateModelRefusals (nodeId: string) (m: StateModelContent) =
         |> List.collect (fun t ->
             [ for raw in [ t.From; t.To ] do
                   if not (Set.contains (key raw) known) then TransitionUnknownState(nodeId, transitionLabel t, key raw) ])
+    let branchingUnknown =
+        m.Branching
+        |> List.collect (fun b ->
+            [ for raw in b.From :: b.Targets do
+                  if not (Set.contains (key raw) known) then
+                      TransitionUnknownState(nodeId, sprintf "branching:%s/%s" (key b.From) (key b.Command), key raw) ])
+    // A pair is a single-target transition or a branching one, never both.
+    let branchingConflicts =
+        m.Branching
+        |> List.choose (fun b ->
+            let singles = m.Transitions |> List.filter (fun t -> key t.From = key b.From && key t.Command = key b.Command) |> List.map (fun t -> key t.To)
+            if List.isEmpty singles then None
+            else Some(ConflictingRecordedTransitions(nodeId, key b.From, key b.Command, singles @ (b.Targets |> List.map key) |> List.distinct |> List.sort)))
     let edges =
         m.Transitions
         |> List.groupBy (fun t -> key t.From, key t.Command)
@@ -492,10 +529,13 @@ let private stateModelRefusals (nodeId: string) (m: StateModelContent) =
             | [ _ ] when List.length group > 1 -> [ DuplicateRecordedTransition(nodeId, sprintf "transition:%s/%s" from command) ]
             | [ _ ] -> []
             | targets -> [ ConflictingRecordedTransitions(nodeId, from, command, targets) ])
-    let touched = m.Transitions |> List.collect (fun t -> [ key t.From; key t.To ]) |> Set.ofList
+    let touched =
+        (m.Transitions |> List.collect (fun t -> [ key t.From; key t.To ]))
+        @ (m.Branching |> List.collect (fun b -> b.From :: b.Targets |> List.map key))
+        |> Set.ofList
     let unconnected =
         stateKeys |> List.distinct |> List.filter (fun s -> not (Set.contains s touched)) |> List.map (fun s -> UnconnectedRecordedState(nodeId, s))
-    duplicateStates @ initialCount @ unknown @ edges @ unconnected
+    duplicateStates @ initialCount @ unknown @ branchingUnknown @ edges @ branchingConflicts @ unconnected
 
 let private portRefusals (view: PreparedCohortView) (commands: Set<string>) (records: ApprovedDecisionRecords) =
     let ports =
@@ -652,15 +692,20 @@ let private generate
     let workflowKey = key model.Workflow
     let workflowName = match SemanticName.create model.Workflow with Ok n -> n | Error e -> invalidOp (sprintf "%A" e)
     let touching stateKey =
-        model.Transitions
-        |> List.filter (fun t -> key t.From = stateKey || key t.To = stateKey)
-        |> List.collect _.RequirementKeys
+        (model.Transitions
+         |> List.filter (fun t -> key t.From = stateKey || key t.To = stateKey)
+         |> List.collect _.RequirementKeys)
+        @ (model.Branching
+           |> List.filter (fun b -> key b.From = stateKey || b.Targets |> List.exists (fun t -> key t = stateKey))
+           |> List.collect _.RequirementKeys)
     let structure =
         [ yield DefineWorkflow { Name = model.Workflow; Trace = trace (model.Transitions |> List.collect _.RequirementKeys) [ modelNode ] }
           for s in model.States ->
               DefineState { Name = s.Name; Role = s.Role; Trace = trace (touching (key s.Name)) [ modelNode ] }
           for t in model.Transitions ->
-              DefineTransition { Command = t.Command; From = t.From; To = t.To; Guards = []; Trace = trace t.RequirementKeys [ modelNode ] } ]
+              DefineTransition { Command = t.Command; From = t.From; To = t.To; Guards = []; Trace = trace t.RequirementKeys [ modelNode ] }
+          for b in model.Branching ->
+              DefineBranchingTransition { Pair = { InState = b.From; OnCommand = b.Command }; Targets = b.Targets; Trace = trace b.RequirementKeys [ modelNode ] } ]
 
     let ports =
         records.Records
@@ -680,7 +725,7 @@ let private generate
                 let onFailure =
                     match vocabulary with
                     | ConstructionVocabulary.Version1 -> None
-                    | ConstructionVocabulary.Version2 | ConstructionVocabulary.Version3 ->
+                    | ConstructionVocabulary.Version2 | ConstructionVocabulary.Version3 | ConstructionVocabulary.Version4 ->
                         Some(disposition |> Option.defaultValue EffectFailureDisposition.Unresolved)
                 DeclarePort { Kind = TransitionEffect(command, onFailure); Trace = trace keys [ nodeId ] })
 
@@ -700,7 +745,7 @@ let private generate
                             nodeId commandKey commandKey workflowKey
                     let effect =
                         match vocabulary with
-                        | ConstructionVocabulary.Version2 | ConstructionVocabulary.Version3 -> Some command
+                        | ConstructionVocabulary.Version2 | ConstructionVocabulary.Version3 | ConstructionVocabulary.Version4 -> Some command
                         | ConstructionVocabulary.Version1 -> None
                     Some(Some(DeclareUnresolved { Subject = subject; Effect = effect; Question = question; Trace = trace keys [ nodeId ] }),
                          obligation view.CohortId TypedObligationKind.UndecidedEffectFailure keys [ nodeId ] question [ surfaceOf port ] (Some subject))
@@ -709,7 +754,7 @@ let private generate
                         sprintf "Decision record %s decides that a failed %s effect means '%s', but %s cannot express an effect-failure disposition, so generated code does not apply it. Generate with %s, or implement the approved disposition in host code."
                             nodeId commandKey (effectFailureDispositionName decided) VocabularyVersion1 VocabularyVersion2
                     Some(None, obligation view.CohortId TypedObligationKind.UnsupportedVocabulary keys [ nodeId ] question [ surfaceOf port ] None)
-                | Some _, (ConstructionVocabulary.Version2 | ConstructionVocabulary.Version3) -> None)
+                | Some _, (ConstructionVocabulary.Version2 | ConstructionVocabulary.Version3 | ConstructionVocabulary.Version4) -> None)
 
     // Vocabulary 3: every choice the records make or leave open is stated.
     let pointKeys (port: RecordedPort) =
@@ -723,7 +768,7 @@ let private generate
     let classificationOperations, classificationItems =
         match vocabulary with
         | ConstructionVocabulary.Version1 | ConstructionVocabulary.Version2 -> [], []
-        | ConstructionVocabulary.Version3 ->
+        | ConstructionVocabulary.Version3 | ConstructionVocabulary.Version4 ->
             let modelKeys = model.Transitions |> List.collect _.RequirementKeys
             let rule =
                 match model.Unlisted with
@@ -760,9 +805,11 @@ let private generate
             let stateKeys = model.States |> List.map (fun st -> key st.Name, st.Role)
             let commandKeys =
                 (model.Transitions |> List.map _.Command) @ (model.Refusals |> List.map _.Command) @ (model.Undecided |> List.map _.Command)
+                @ (model.Branching |> List.map _.Command)
                 |> List.map key |> List.distinct |> List.sort
             let named from command =
                 (model.Transitions |> List.exists (fun t -> key t.From = from && key t.Command = command))
+                || (model.Branching |> List.exists (fun b -> key b.From = from && key b.Command = command))
                 || (model.Refusals |> List.exists (fun r -> key r.From = from && key r.Command = command))
             let explicitPairs =
                 model.Undecided |> List.map (fun u -> (key u.From, key u.Command), u.Question, u.RequirementKeys)
@@ -792,7 +839,60 @@ let private generate
                                 nodeId p.Point (match port with RecordedTransitionEffect(c, _, _, _) -> key c | RecordedCurrentTime _ -> "") (Option.defaultValue "" p.Question)
                         None,
                         obligation view.CohortId TypedObligationKind.UndecidedExtensionDecision (p.RequirementKeys @ pointKeys port) [ nodeId ] question [ surfaceOf port ] None))
-            (rule :: refusals @ undecided @ inventories), pairObligations @ pointObligations
+            // Vocabulary 4: typed codes, and each branching transition's selector
+            // with its decision inventory. A selector with an undecided point
+            // gets a decide obligation per point, never an implement one.
+            let codes =
+                (model.RefusalCodes |> List.map (fun c -> DefineRefusalCode { Code = c.Code; Trace = trace c.RequirementKeys [ modelNode ] }))
+                @ (model.CodeAssignments
+                   |> List.map (fun a ->
+                       AssignRefusalCode
+                           { Target =
+                               (match a.Target with
+                                | RecordedCodeTarget.Pair(f, c) -> CodeTarget.Pair { InState = f; OnCommand = c }
+                                | RecordedCodeTarget.Unlisted -> CodeTarget.Unlisted)
+                             Code = a.Code
+                             Trace = trace a.RequirementKeys [ modelNode ] }))
+            let semantic raw = match SemanticName.create raw with Ok n -> n | Error e -> invalidOp (sprintf "%A" e)
+            let selectorSurface (b: RecordedBranching) =
+                ConstructionLayout.selectionContract workflowName (semantic b.From) (semantic b.Command)
+            let selectors =
+                model.Branching
+                |> List.map (fun b ->
+                    DeclareExtensionInventory
+                        { Extension = ExtensionRef.Selection(b.From, b.Command)
+                          DecisionPoints =
+                            b.DecisionPoints
+                            |> List.map (fun p ->
+                                { DecisionPointDraft.Point = p.Point
+                                  Resolution =
+                                    match p.Question with
+                                    | None -> DecisionPointResolution.Decided
+                                    | Some q -> DecisionPointResolution.Undecided q
+                                  Trace = trace p.RequirementKeys [ modelNode ] })
+                          Trace = trace b.RequirementKeys [ modelNode ] })
+            let selectorObligations =
+                model.Branching
+                |> List.collect (fun b ->
+                    match b.DecisionPoints |> List.filter _.Question.IsSome with
+                    | [] ->
+                        let question =
+                            sprintf "Command %s from state %s of workflow %s may lead to %s. Which one is chosen is handwritten: implement the selector %s against the requirement text."
+                                (key b.Command) (key b.From) workflowKey (b.Targets |> List.map key |> List.distinct |> List.sort |> String.concat " or ") (selectorSurface b)
+                        [ None, obligation view.CohortId TypedObligationKind.ExtensionBehavior b.RequirementKeys [ modelNode ] question [ selectorSurface b ] None ]
+                    | open' ->
+                        open'
+                        |> List.map (fun p ->
+                            let question =
+                                sprintf "Decision record %s leaves decision point %s of the selector for command %s from state %s undecided: %s The selector cannot be implemented until this is decided."
+                                    modelNode p.Point (key b.Command) (key b.From) (Option.defaultValue "" p.Question)
+                            None,
+                            obligation view.CohortId TypedObligationKind.UndecidedExtensionDecision (p.RequirementKeys @ b.RequirementKeys) [ modelNode ] question [ selectorSurface b ] None))
+            match vocabulary with
+            | ConstructionVocabulary.Version4 ->
+                (rule :: refusals @ undecided @ inventories @ codes @ selectors), pairObligations @ pointObligations @ selectorObligations
+            | ConstructionVocabulary.Version1 | ConstructionVocabulary.Version2 | ConstructionVocabulary.Version3 ->
+                (rule :: refusals @ undecided @ inventories), pairObligations @ pointObligations
 
     // Requirement coverage over what the records construct.
     let constructed = structure @ classificationOperations @ portOperations
@@ -896,7 +996,7 @@ let generateDefaultPlan
         let! () = check (nameRefusals records @ citationRefusals view records @ resolutionRefusals view records)
         let modelNode, model =
             records.Records |> List.pick (fun r -> match r.Content with StateModel m -> Some(r.NodeId, m) | PortContract _ | ConflictResolution _ -> None)
-        let commands = model.Transitions |> List.map (fun t -> key t.Command) |> Set.ofList
+        let commands = (model.Transitions |> List.map (fun t -> key t.Command)) @ (model.Branching |> List.map (fun b -> key b.Command)) |> Set.ofList
         let! () = check (stateModelRefusals modelNode model @ portRefusals view commands records)
         return! generate prepared view blueprintDigest records vocabulary modelNode model
     }
