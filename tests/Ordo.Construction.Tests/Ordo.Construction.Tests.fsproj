@@ -37,6 +37,12 @@
     <Compile Include="Golden/time-entry-timer-v3-open/generated/TimerOpen/TimerOpen.Orchestration.g.fs" />
     <Compile Include="Golden/gate-synthetic-v4/generated/Gate/Gate.Model.g.fs" />
     <Compile Include="Golden/gate-synthetic-v4/generated/Gate/Gate.Transition.g.fs" />
+    <Compile Include="Golden/time-entry-timer-v5-policy/generated/TimerPolicy/TimerPolicy.Model.g.fs" />
+    <Compile Include="Golden/time-entry-timer-v5-policy/generated/TimerPolicy/TimerPolicy.Transition.g.fs" />
+    <Compile Include="Golden/time-entry-timer-v5-policy/generated/TimerPolicy/TimerPolicy.Orchestration.g.fs" />
+    <Compile Include="Golden/time-entry-timer-v5-escalate/generated/TimerEscalate/TimerEscalate.Model.g.fs" />
+    <Compile Include="Golden/time-entry-timer-v5-escalate/generated/TimerEscalate/TimerEscalate.Transition.g.fs" />
+    <Compile Include="Golden/time-entry-timer-v5-escalate/generated/TimerEscalate/TimerEscalate.Orchestration.g.fs" />
     <Compile Include="../Ordo.Tests/FsiProbe.fs" Link="FsiProbe.fs" />
     <Compile Include="Fixtures.fs" />
     <Compile Include="GoldenTests.fs" />
@@ -48,6 +54,7 @@
     <Compile Include="DefaultPlanConstructionTests.fs" />
     <Compile Include="ClassifiedConstructionTests.fs" />
     <Compile Include="CodedBranchingConstructionTests.fs" />
+    <Compile Include="EffectPolicyTests.fs" />
     <Compile Include="PatternRecognitionTests.fs" />
   </ItemGroup>
 

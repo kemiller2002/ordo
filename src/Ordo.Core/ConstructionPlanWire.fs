@@ -59,10 +59,12 @@ let private guard path value =
 let private operation (vocabulary: string) path value =
     // Vocabularies 2 and 3 both require a failure disposition on every effect.
     let second = vocabulary <> VocabularyVersion1
+    // Vocabulary 5 states failure handling in an effect policy, not on the port.
+    let portFailure = second && not (hasEffectPolicies vocabulary)
     let notIn kind = fail (path + ".op") (sprintf "operation %s is not in %s" kind vocabulary)
     // Vocabulary 4 keeps every vocabulary 3 operation.
     let onlyInThird kind = if classifiesChoices vocabulary then Ok() else notIn kind
-    let onlyInFourth kind = if vocabulary = VocabularyVersion4 then Ok() else notIn kind
+    let onlyInFourth kind = if hasCodesAndBranching vocabulary then Ok() else notIn kind
     result {
         let! kind =
             match value with
@@ -103,10 +105,10 @@ let private operation (vocabulary: string) path value =
             let! t = traceField path p
             return DefineInvariant { Name = name; Predicate = decided; HoldsIn = holdsIn; Trace = t }
         | "declarePort" ->
-            let! p = fields path [ "op"; "port"; "trace" ] ([ "command" ] @ (if second then [ "onFailure" ] else [])) value
+            let! p = fields path [ "op"; "port"; "trace" ] ([ "command" ] @ (if portFailure then [ "onFailure" ] else [])) value
             let! port = textField path "port" p
             let onFailure () =
-                match second, Map.containsKey "onFailure" p with
+                match portFailure, Map.containsKey "onFailure" p with
                 | false, _ -> Ok None
                 | true, true ->
                     textField path "onFailure" p |> Result.bind (disposition (path + ".onFailure")) |> Result.map Some
@@ -187,7 +189,7 @@ let private operation (vocabulary: string) path value =
                 | "effect" -> named ExtensionRef.Effect
                 | "selection" ->
                     result {
-                        let! () = if vocabulary = VocabularyVersion4 then Ok() else fail (extensionPath + ".kind") ("extension kind selection is not in " + vocabulary)
+                        let! () = if hasCodesAndBranching vocabulary then Ok() else fail (extensionPath + ".kind") ("extension kind selection is not in " + vocabulary)
                         let! e = fields extensionPath [ "kind"; "from"; "command" ] [] rawExtension
                         let! from = textField extensionPath "from" e
                         let! command = textField extensionPath "command" e
@@ -261,6 +263,33 @@ let private operation (vocabulary: string) path value =
             let! targets = strings (path + ".targets") rawTargets
             let! t = traceField path p
             return DefineBranchingTransition { Pair = { InState = from; OnCommand = command }; Targets = targets; Trace = t }
+        | "declareEffectPolicy" ->
+            let! () = if hasEffectPolicies vocabulary then Ok() else notIn kind
+            let! p = fields path [ "op"; "effect"; "retries"; "onFailed"; "onUnknown"; "trace" ] [] value
+            let! effect = textField path "effect" p
+            let! retries =
+                match Map.find "retries" p with
+                | JInt n when n >= 0L && n <= int64 MaxEffectRetries -> Ok(int n)
+                | JInt n -> fail (path + ".retries") (sprintf "retries must be 0 to %d, not %d" MaxEffectRetries n)
+                | _ -> fail (path + ".retries") "expected an integer"
+            let! failedText = textField path "onFailed" p
+            let! onFailed =
+                match failedText with
+                | "remain" -> Ok FailedEffectAction.Remain
+                | "proceed" -> Ok FailedEffectAction.Proceed
+                | "compensate" -> Ok FailedEffectAction.Compensate
+                | "escalate" -> Ok FailedEffectAction.Escalate
+                | "unresolved" -> Ok FailedEffectAction.Unresolved
+                | other -> fail (path + ".onFailed") ("unsupported onFailed: " + other)
+            let! unknownText = textField path "onUnknown" p
+            let! onUnknown =
+                match unknownText with
+                | "reconcile" -> Ok UnknownEffectAction.Reconcile
+                | "escalate" -> Ok UnknownEffectAction.Escalate
+                | "unresolved" -> Ok UnknownEffectAction.Unresolved
+                | other -> fail (path + ".onUnknown") ("unsupported onUnknown: " + other)
+            let! t = traceField path p
+            return DeclareEffectPolicy { Effect = effect; Retries = retries; OnFailed = onFailed; OnUnknown = onUnknown; Trace = t }
         | other -> return! fail (path + ".op") ("unsupported operation: " + other)
     }
 

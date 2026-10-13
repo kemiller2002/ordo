@@ -61,12 +61,22 @@ let private extensionName kind =
     | CurrentTimePort -> "current-time-port"
     | EffectPort -> "effect-port"
     | SelectionFunction -> "selection-function"
+    | ReconcilePort -> "reconcile-port"
+    | CompensatePort -> "compensate-port"
 
 let private strings values = JArray(values |> List.map JString)
 
 let private manifestJson (plan: ValidatedPlanView) generator root (artifacts: Artifact list) contracts obligations checks =
     let effectFailure =
         if generator = GeneratorVersion then []
+        // Vocabulary 5 states outcome handling in effect policies only.
+        elif generator = GeneratorVersion5 then
+            [ "effectPolicies",
+              JArray [ for p in plan.Workflow.EffectPolicies ->
+                         JObject [ "effect", JString p.Effect.Key
+                                   "retries", JInt(int64 p.Retries)
+                                   "onFailed", JString(failedActionName p.OnFailed)
+                                   "onUnknown", JString(unknownActionName p.OnUnknown) ] ] ]
         else
             [ "effectFailure",
               JArray [ for p in plan.Workflow.Ports do
@@ -182,6 +192,13 @@ let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefu
             @ (shape.Effects |> List.map (fun e ->
                 contract (Layout.effectContract w.Name e) EffectPort
                     (pick (function DeclarePort { Kind = TransitionEffect(c, _) } -> c = e.Key | _ -> false))))
+            // Vocabulary 5: reconciliation and compensation are host code the
+            // plan's policy requires, one contract per effect.
+            @ (shape.Policies
+               |> List.collect (fun p ->
+                   let ops = pick (function DeclareEffectPolicy d -> d.Effect = p.Effect.Key | DeclarePort { Kind = TransitionEffect(c, _) } -> c = p.Effect.Key | _ -> false)
+                   [ if p.OnUnknown = UnknownEffectAction.Reconcile then contract (Layout.reconcileContract w.Name p.Effect) ReconcilePort ops
+                     if p.OnFailed = FailedEffectAction.Compensate then contract (Layout.compensateContract w.Name p.Effect) CompensatePort ops ]))
             @ (shape.Branching |> List.map (fun (from, command, _) ->
                 contract (Layout.selectionContract w.Name from command) SelectionFunction
                     (pick (function

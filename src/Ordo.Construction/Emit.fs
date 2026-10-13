@@ -50,6 +50,8 @@ type Shape =
       Effects: SemanticName list
       /// Each effect's declared failure disposition (vocabulary 2 only).
       Dispositions: (SemanticName * EffectFailureDisposition) list
+      /// Vocabulary 5: each effect's outcome policy, in effect order.
+      Policies: EffectPolicy list
       HasClock: bool
       HasCapabilities: bool
       /// Vocabulary 3: pairs the plan leaves undecided, explicitly or by an
@@ -97,6 +99,7 @@ let shapeOf (generator: string) (w: Workflow) =
       HasClock = w.Ports |> List.exists (fun p -> p.Kind = CurrentTimePort)
       HasCapabilities = not (List.isEmpty w.Capabilities)
       Undecided = undecidedPairs w
+      Policies = w.EffectPolicies
       Codes = w.RefusalCodes |> List.map fst
       Branching = w.BranchingTransitions |> List.map (fun b -> b.InState, b.OnCommand, b.Targets) }
 
@@ -567,5 +570,234 @@ let private orchestrationV2 (digest: string) (s: Shape) =
             "module " + orchestrationModule w + " =" ]
         @ indent 4 ([ "" ] @ onFailure @ handle))
 
+let private failedCase action =
+    match action with
+    | FailedEffectAction.Remain -> "Remain"
+    | FailedEffectAction.Proceed -> "Proceed"
+    | FailedEffectAction.Compensate -> "Compensate"
+    | FailedEffectAction.Escalate -> "Escalate"
+    | FailedEffectAction.Unresolved -> "Unresolved"
+
+let private unknownCase action =
+    match action with
+    | UnknownEffectAction.Reconcile -> "Reconcile"
+    | UnknownEffectAction.Escalate -> "Escalate"
+    | UnknownEffectAction.Unresolved -> "Unresolved"
+
+/// Vocabulary 5: settles each effect outcome by the plan's policy. A definite
+/// failure is retried up to the plan's count; an unknown outcome is never
+/// retried, only reconciled by host code or escalated. No state is chosen
+/// for an escalated or unresolved outcome.
+let private orchestrationV5 (digest: string) (s: Shape) =
+    let w = s.Workflow.Name
+    let st, cmd, dt, ef = stateType w, commandType w, decisionType w, effectType w
+    let outcomeT, failureT, resultT = effectOutcomeType w, effectFailureType w, resultType w
+    let failedT, unknownT, reconT = onFailedType w, onUnknownType w, reconciliationType w
+    let instant = "global.System.DateTimeOffset"
+    let hasEffects = not (List.isEmpty s.Effects)
+    let policyOf (effect: SemanticName) = s.Policies |> List.find (fun p -> p.Effect.Key = effect.Key)
+    let failedUsed =
+        [ FailedEffectAction.Remain; FailedEffectAction.Proceed; FailedEffectAction.Compensate; FailedEffectAction.Escalate; FailedEffectAction.Unresolved ]
+        |> List.filter (fun a -> s.Policies |> List.exists (fun p -> p.OnFailed = a))
+    let unknownUsed =
+        [ UnknownEffectAction.Reconcile; UnknownEffectAction.Escalate; UnknownEffectAction.Unresolved ]
+        |> List.filter (fun a -> s.Policies |> List.exists (fun p -> p.OnUnknown = a))
+    let reconciles = List.contains UnknownEffectAction.Reconcile unknownUsed
+    let compensates = List.contains FailedEffectAction.Compensate failedUsed
+    // Compensation that does not complete, and an outcome still unknown after
+    // reconciliation, are escalated.
+    let escalates =
+        compensates || List.contains FailedEffectAction.Escalate failedUsed
+        || reconciles || List.contains UnknownEffectAction.Escalate unknownUsed
+    let unresolvedUsed = List.contains FailedEffectAction.Unresolved failedUsed || List.contains UnknownEffectAction.Unresolved unknownUsed
+    let types =
+        if not hasEffects then []
+        else
+            union "What the host reports about a requested effect. Unknown is a first-class outcome, not an error to swallow." outcomeT
+                [ "Completed"; "Failed of reason: string"; "Unknown of reason: string" ]
+            @ union "A requested effect that did not complete once the plan's policy was applied. Unknown stays distinct from Failed." failureT
+                [ sprintf "Failed of effect: %s * reason: string" ef; sprintf "Unknown of effect: %s * reason: string" ef ]
+            @ (if reconciles then
+                   union "What host reconciliation found out about an effect whose outcome was unknown." reconT
+                       [ "Applied"; "NotApplied of reason: string"; "StillUnknown of reason: string" ]
+               else [])
+            @ union "What a definitely failed effect means once its retries are spent, as the construction plan declares it." failedT
+                (failedUsed |> List.map failedCase)
+            @ union "What an effect whose outcome is unknown means, as the construction plan declares it. There is no retry." unknownT
+                (unknownUsed |> List.map unknownCase)
+    let ports =
+        [ "/// Ports this workflow requires. Implemented by a host (Tier 4); generated code never implements them."
+          "type " + portsType w + " =" ]
+        @ (if s.HasClock then [ sprintf "    abstract CurrentTime: unit -> %s" instant ] else [])
+        @ (if hasEffects then [ sprintf "    abstract Perform: effect: %s * decision: %s -> %s" ef dt outcomeT ] else [])
+        @ (if reconciles then [ sprintf "    abstract Reconcile: effect: %s * decision: %s -> %s" ef dt reconT ] else [])
+        @ (if compensates then [ sprintf "    abstract Compensate: effect: %s * decision: %s -> %s" ef dt outcomeT ] else [])
+        @ [ "" ]
+    let at = if s.HasClock then sprintf " * at: %s" instant else ""
+    let reported = if hasEffects then sprintf " * effects: (%s * %s) list" ef outcomeT else ""
+    let failure = sprintf " * failure: %s" failureT
+    let result =
+        [ "/// The result of handling one command. Every case that has a post-command state carries it as"
+          "/// `state`. Escalated and unresolved outcomes carry none: generated code chooses no state for them."
+          "[<RequireQualifiedAccess>]"
+          "type " + resultT + " =" ]
+        @ indent 4
+            ([ (if hasEffects then "/// Accepted, and every requested effect completed. `state` is the target state."
+                else "/// Accepted. `state` is the target state.")
+               sprintf "| Accepted of decision: %s%s%s * state: %s" dt at reported st ]
+             @ (if List.contains FailedEffectAction.Remain failedUsed then
+                    [ "/// An effect definitely failed and the plan says the workflow remains in its source state."
+                      sprintf "| Remained of decision: %s%s%s%s * state: %s" dt at reported failure st ]
+                else [])
+             @ (if List.contains FailedEffectAction.Proceed failedUsed then
+                    [ "/// An effect definitely failed and the plan says the target state stands. The failure is reported."
+                      sprintf "| Proceeded of decision: %s%s%s%s * state: %s" dt at reported failure st ]
+                else [])
+             @ (if compensates then
+                    [ "/// An effect definitely failed and host compensation completed. `state` is the source state."
+                      sprintf "| Compensated of decision: %s%s%s%s * state: %s" dt at reported failure st ]
+                else [])
+             @ (if escalates then
+                    [ "/// A person must decide: the plan escalates this outcome, or compensation or reconciliation"
+                      "/// did not settle it. No state is chosen."
+                      sprintf "| Escalated of decision: %s%s%s%s" dt at reported failure ]
+                else [])
+             @ (if unresolvedUsed then
+                    [ "/// The plan leaves what this outcome means unresolved. No state is chosen; a RESOLVE obligation"
+                      "/// records the open question."
+                      sprintf "| Unresolved of decision: %s%s%s%s" dt at reported failure ]
+                else [])
+             @ [ "/// Refused before any effect was requested. `state` is the unchanged source state."
+                 sprintf "| Refused of refusal: %s%s * state: %s" (refusalType w) at st ])
+        @ [ "" ]
+    let atParam = if s.HasClock then sprintf " (at: %s)" instant else ""
+    let atArg = if s.HasClock then ", at" else ""
+    let atCall = if s.HasClock then " at" else ""
+    let perEffect name typeName (render: EffectPolicy -> string) doc =
+        [ doc
+          sprintf "let %s (effect: %s) : %s =" name ef typeName
+          "    match effect with" ]
+        @ (s.Effects |> List.map (fun e -> sprintf "    | %s -> %s" (qualify ef e) (render (policyOf e))))
+        @ [ "" ]
+    let policy =
+        if not hasEffects then []
+        else
+            perEffect "retries" "int" (fun p -> string p.Retries)
+                "/// How many more times a definitely failed effect is performed, as the plan declares it."
+            @ perEffect "onFailed" failedT (fun p -> failedT + "." + failedCase p.OnFailed)
+                "/// What a definitely failed effect means once its retries are spent."
+            @ perEffect "onUnknown" unknownT (fun p -> unknownT + "." + unknownCase p.OnUnknown)
+                "/// What an effect whose outcome is unknown means. Never a retry."
+    let pp = sprintf "(ports: %s)" (portsType w)
+    let settle =
+        if not hasEffects then []
+        else
+            [ "/// Settles one effect outcome by the plan's policy. A definite failure is performed again while"
+              "/// retries remain; an unknown outcome is never performed again."
+              sprintf "let rec settle %s (decision: %s) (effect: %s) (retriesLeft: int) (outcome: %s) : %s =" pp dt ef outcomeT outcomeT
+              "    match outcome with"
+              sprintf "    | %s.Completed -> %s.Completed" outcomeT outcomeT
+              sprintf "    | %s.Failed _ when retriesLeft > 0 -> settle ports decision effect (retriesLeft - 1) (ports.Perform(effect, decision))" outcomeT
+              sprintf "    | %s.Failed reason -> %s.Failed reason" outcomeT outcomeT
+              (if reconciles then sprintf "    | %s.Unknown reason -> settleUnknown ports decision effect retriesLeft reason" outcomeT
+               else sprintf "    | %s.Unknown reason -> %s.Unknown reason" outcomeT outcomeT) ]
+            @ (if not reconciles then []
+               else
+                   [ ""
+                     "/// An unknown outcome is reconciled when the plan says so. Applied counts as completed; not"
+                     "/// applied is a definite failure, with whatever retries remain; still unknown stays unknown."
+                     sprintf "and settleUnknown %s (decision: %s) (effect: %s) (retriesLeft: int) (reason: string) : %s =" pp dt ef outcomeT
+                     "    match onUnknown effect with"
+                     sprintf "    | %s.Reconcile -> reconciled ports decision effect retriesLeft (ports.Reconcile(effect, decision))" unknownT ]
+                   @ (unknownUsed
+                      |> List.filter (fun a -> a <> UnknownEffectAction.Reconcile)
+                      |> List.map (fun a -> sprintf "    | %s.%s -> %s.Unknown reason" unknownT (unknownCase a) outcomeT))
+                   @ [ ""
+                       sprintf "and reconciled %s (decision: %s) (effect: %s) (retriesLeft: int) (found: %s) : %s =" pp dt ef reconT outcomeT
+                       "    match found with"
+                       sprintf "    | %s.Applied -> %s.Completed" reconT outcomeT
+                       sprintf "    | %s.NotApplied reason -> settle ports decision effect retriesLeft (%s.Failed reason)" reconT outcomeT
+                       sprintf "    | %s.StillUnknown reason -> %s.Unknown reason" reconT outcomeT ])
+            @ [ ""
+                "/// The first requested effect, in request order, that did not complete once settled."
+                sprintf "let firstFailure (effects: (%s * %s) list) : %s option =" ef outcomeT failureT
+                "    effects"
+                "    |> List.tryPick (fun (effect, outcome) ->"
+                "        match outcome with"
+                sprintf "        | %s.Completed -> None" outcomeT
+                sprintf "        | %s.Failed reason -> Some(%s.Failed(effect, reason))" outcomeT failureT
+                sprintf "        | %s.Unknown reason -> Some(%s.Unknown(effect, reason)))" outcomeT failureT
+                "" ]
+    let failedArm action =
+        match action with
+        | FailedEffectAction.Remain -> sprintf "    | %s.Remain -> %s.Remained(decision%s, effects, failure, decision.Previous)" failedT resultT atArg
+        | FailedEffectAction.Proceed -> sprintf "    | %s.Proceed -> %s.Proceeded(decision%s, effects, failure, decision.Next)" failedT resultT atArg
+        | FailedEffectAction.Compensate -> sprintf "    | %s.Compensate -> compensated ports decision%s effects failure effect" failedT atCall
+        | FailedEffectAction.Escalate -> sprintf "    | %s.Escalate -> %s.Escalated(decision%s, effects, failure)" failedT resultT atArg
+        | FailedEffectAction.Unresolved -> sprintf "    | %s.Unresolved -> %s.Unresolved(decision%s, effects, failure)" failedT resultT atArg
+    let unknownArm action =
+        match action with
+        | UnknownEffectAction.Reconcile | UnknownEffectAction.Escalate ->
+            sprintf "    | %s.%s -> %s.Escalated(decision%s, effects, failure)" unknownT (unknownCase action) resultT atArg
+        | UnknownEffectAction.Unresolved -> sprintf "    | %s.Unresolved -> %s.Unresolved(decision%s, effects, failure)" unknownT resultT atArg
+    let outcomes =
+        if not hasEffects then []
+        else
+            (if not compensates then []
+             else
+                 [ "/// Host compensation of a definitely failed effect. Compensation that does not complete is escalated."
+                   sprintf "let compensated %s (decision: %s)%s (effects: (%s * %s) list) (failure: %s) (effect: %s) : %s =" pp dt atParam ef outcomeT failureT ef resultT
+                   "    match ports.Compensate(effect, decision) with"
+                   sprintf "    | %s.Completed -> %s.Compensated(decision%s, effects, failure, decision.Previous)" outcomeT resultT atArg
+                   sprintf "    | %s.Failed _ | %s.Unknown _ -> %s.Escalated(decision%s, effects, failure)" outcomeT outcomeT resultT atArg
+                   "" ])
+            @ [ "/// What a definitely failed effect means for the workflow, by the plan's policy."
+                sprintf "let whenFailed %s (decision: %s)%s (effects: (%s * %s) list) (failure: %s) (effect: %s) : %s =" pp dt atParam ef outcomeT failureT ef resultT
+                "    match onFailed effect with" ]
+            @ (failedUsed |> List.map failedArm)
+            @ [ ""
+                "/// What an effect still unknown once settled means for the workflow: never a state."
+                sprintf "let whenUnknown (decision: %s)%s (effects: (%s * %s) list) (failure: %s) (effect: %s) : %s =" dt atParam ef outcomeT failureT ef resultT
+                "    match onUnknown effect with" ]
+            @ (unknownUsed |> List.map unknownArm)
+            @ [ "" ]
+    let parameters =
+        [ pp ]
+        @ (if s.HasRules then [ sprintf "(rules: %s)" (rulesType w) ] else [])
+        @ (if s.HasCapabilities then [ "(held: Set<string>)" ] else [])
+        @ [ sprintf "(state: %s)" st; sprintf "(command: %s)" cmd ]
+    let arguments =
+        (if s.HasRules then [ "rules" ] else []) @ (if s.HasCapabilities then [ "held" ] else []) @ [ "state"; "command" ]
+    let accepted =
+        if not hasEffects then [ sprintf "    | Ok decision -> %s.Accepted(decision%s, decision.Next)" resultT atArg ]
+        else
+            [ "    | Ok decision ->"
+              "        let effects ="
+              "            decision.Effects"
+              "            |> List.map (fun effect -> effect, settle ports decision effect (retries effect) (ports.Perform(effect, decision)))"
+              "        match firstFailure effects with"
+              sprintf "        | None -> %s.Accepted(decision%s, effects, decision.Next)" resultT atArg
+              sprintf "        | Some(%s.Failed(effect, _) as failure) -> whenFailed ports decision%s effects failure effect" failureT atCall
+              sprintf "        | Some(%s.Unknown(effect, _) as failure) -> whenUnknown decision%s effects failure effect" failureT atCall ]
+    let handle =
+        [ "/// Coordinates one command: reads ports, delegates the decision to Tier 2, asks the host to"
+          "/// perform requested effects and applies the plan's outcome policy. It makes no semantic"
+          "/// decision of its own."
+          sprintf "let handle %s : %s =" (String.concat " " parameters) resultT ]
+        @ (if s.HasClock then [ "    let at = ports.CurrentTime()" ] else [])
+        @ [ sprintf "    match %s.decide %s with" (transitionModule w) (String.concat " " arguments)
+            sprintf "    | Error refusal -> %s.Refused(refusal%s, state)" resultT atArg ]
+        @ accepted
+    render (
+        header s.Generator digest "Tier 3 (Orchestration): coordinates ports and decisions"
+        @ [ "namespace " + rootNamespace w; "" ]
+        @ types @ ports @ result
+        @ [ "/// Coordinates the workflow. Depends on Tiers 1 and 2 only."
+            "[<RequireQualifiedAccess>]"
+            "module " + orchestrationModule w + " =" ]
+        @ indent 4 ([ "" ] @ policy @ settle @ outcomes @ handle))
+
 let orchestration (digest: string) (s: Shape) =
-    if s.Generator = Ordo.Construction.Artifacts.GeneratorVersion then orchestrationV1 digest s else orchestrationV2 digest s
+    if s.Generator = Ordo.Construction.Artifacts.GeneratorVersion then orchestrationV1 digest s
+    elif s.Generator = Ordo.Construction.Artifacts.GeneratorVersion5 then orchestrationV5 digest s
+    else orchestrationV2 digest s

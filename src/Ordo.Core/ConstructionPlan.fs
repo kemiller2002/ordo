@@ -55,6 +55,14 @@ let VocabularyVersion3 = "ordo.construction-vocabulary/3"
 [<Literal>]
 let VocabularyVersion4 = "ordo.construction-vocabulary/4"
 
+/// Vocabulary 5 is vocabulary 4 with effect outcome policies: a transition
+/// effect port no longer carries `onFailure`; one `declareEffectPolicy` per
+/// effect states, separately, what a definitely failed outcome means (after
+/// at most five retries) and what an unknown outcome means. An unknown
+/// outcome is never retried. CONSTRUCT-010 phase 2, increment 2.
+[<Literal>]
+let VocabularyVersion5 = "ordo.construction-vocabulary/5"
+
 /// The first vocabulary, under its original name. Code that authors plans
 /// with this constant keeps producing vocabulary 1 plans with unchanged
 /// meaning; a vocabulary is never upgraded in place.
@@ -63,10 +71,17 @@ let VocabularyVersion = VocabularyVersion1
 
 /// Every vocabulary this reader and validator accept. Anything else is
 /// refused, never upgraded.
-let SupportedVocabularyVersions = [ VocabularyVersion1; VocabularyVersion2; VocabularyVersion3; VocabularyVersion4 ]
+let SupportedVocabularyVersions = [ VocabularyVersion1; VocabularyVersion2; VocabularyVersion3; VocabularyVersion4; VocabularyVersion5 ]
 
 /// Vocabularies 3 and later classify every choice (pair rule, inventories).
-let classifiesChoices (vocabulary: string) = vocabulary = VocabularyVersion3 || vocabulary = VocabularyVersion4
+let classifiesChoices (vocabulary: string) =
+    vocabulary = VocabularyVersion3 || vocabulary = VocabularyVersion4 || vocabulary = VocabularyVersion5
+
+/// Vocabularies 4 and later have typed refusal codes and branching transitions.
+let hasCodesAndBranching (vocabulary: string) = vocabulary = VocabularyVersion4 || vocabulary = VocabularyVersion5
+
+/// Vocabulary 5 replaces an effect port's `onFailure` with an effect policy.
+let hasEffectPolicies (vocabulary: string) = vocabulary = VocabularyVersion5
 
 // ---------------------------------------------------------------------------
 // The untrusted draft: everything an agent is able to say.
@@ -240,6 +255,48 @@ type BranchingTransitionDraft =
       Targets: string list
       Trace: TraceDraft }
 
+/// Vocabulary 5: what a definitely failed effect means once its retries are
+/// spent.
+[<RequireQualifiedAccess>]
+type FailedEffectAction =
+    /// The workflow stays in the transition's source state.
+    | Remain
+    /// The transition's target state stands; the failure is reported.
+    | Proceed
+    /// A handwritten compensation undoes the effect and the workflow stays in
+    /// its source state. Only on the authority of a cited, bound decision.
+    | Compensate
+    /// A person decides; generated code chooses no state.
+    | Escalate
+    /// Not decided. Requires a linked `declareUnresolved`.
+    | Unresolved
+
+/// Vocabulary 5: what an effect whose outcome is unknown means. There is no
+/// retry: re-performing an effect that may have landed could apply it twice.
+[<RequireQualifiedAccess>]
+type UnknownEffectAction =
+    /// A handwritten reconciliation asks whether the effect landed. Applied
+    /// counts as completed; not applied is handled as a failure (with its
+    /// retries); still unknown is escalated.
+    | Reconcile
+    /// A person decides; generated code chooses no state.
+    | Escalate
+    /// Not decided. Requires a linked `declareUnresolved`.
+    | Unresolved
+
+/// The largest retry count a plan may state.
+[<Literal>]
+let MaxEffectRetries = 5
+
+type EffectPolicyDraft =
+    { Effect: string
+      /// How many more times a definitely failed effect is performed before
+      /// `OnFailed` applies. 0 to `MaxEffectRetries`.
+      Retries: int
+      OnFailed: FailedEffectAction
+      OnUnknown: UnknownEffectAction
+      Trace: TraceDraft }
+
 type OperationDraft =
     | DefineWorkflow of WorkflowDraft
     | DefineState of StateDraft
@@ -255,6 +312,7 @@ type OperationDraft =
     | DefineRefusalCode of RefusalCodeDraft
     | AssignRefusalCode of CodeAssignmentDraft
     | DefineBranchingTransition of BranchingTransitionDraft
+    | DeclareEffectPolicy of EffectPolicyDraft
 
 /// What the plan claims to have been formed against. Every field is checked
 /// against the prepared cohort rather than believed.
@@ -410,6 +468,14 @@ type BranchingTransition =
       Targets: SemanticName list
       Trace: Trace }
 
+/// Vocabulary 5: what a failed or unknown outcome of one effect means.
+type EffectPolicy =
+    { Effect: SemanticName
+      Retries: int
+      OnFailed: FailedEffectAction
+      OnUnknown: UnknownEffectAction
+      Trace: Trace }
+
 type DecisionPoint =
     { Point: SemanticName
       Resolution: DecisionPointResolution
@@ -441,7 +507,9 @@ type Workflow =
       /// Vocabulary 4 only; empty otherwise.
       RefusalCodes: (SemanticName * Trace) list
       CodeAssignments: CodeAssignment list
-      BranchingTransitions: BranchingTransition list }
+      BranchingTransitions: BranchingTransition list
+      /// Vocabulary 5: one per transition effect, sorted by effect.
+      EffectPolicies: EffectPolicy list }
 
 type PlanBinding =
     { SchemaVersion: string
@@ -558,6 +626,12 @@ type PlanViolation =
     | CodeOnNonRefusal of operation: string
     /// A branching transition with fewer than two distinct targets.
     | BranchingNeedsTwoTargets of operation: string
+    /// Vocabulary 5: a transition effect has no effect policy.
+    | MissingEffectPolicy of effect: string
+    /// Vocabulary 5: a retry count outside 0 to `MaxEffectRetries`.
+    | RetriesOutOfRange of operation: string * retries: int
+    /// Vocabulary 5: compensation without a cited, bound decision.
+    | CompensationWithoutDecision of operation: string
 
 // ---------------------------------------------------------------------------
 // Encoding. The draft is the wire shape; the canonical plan is the draft of
@@ -579,6 +653,21 @@ let effectFailureDispositionName disposition =
     | EffectFailureDisposition.Remain -> "remain"
     | EffectFailureDisposition.Proceed -> "proceed"
     | EffectFailureDisposition.Unresolved -> "unresolved"
+
+/// Wire names of vocabulary 5 effect policy actions.
+let failedActionName action =
+    match action with
+    | FailedEffectAction.Remain -> "remain"
+    | FailedEffectAction.Proceed -> "proceed"
+    | FailedEffectAction.Compensate -> "compensate"
+    | FailedEffectAction.Escalate -> "escalate"
+    | FailedEffectAction.Unresolved -> "unresolved"
+
+let unknownActionName action =
+    match action with
+    | UnknownEffectAction.Reconcile -> "reconcile"
+    | UnknownEffectAction.Escalate -> "escalate"
+    | UnknownEffectAction.Unresolved -> "unresolved"
 
 let private roleName role =
     match role with
@@ -667,6 +756,13 @@ let private jOperation operation =
                   "from", JString b.Pair.InState
                   "targets", jStrings b.Targets
                   "trace", jTrace b.Trace ]
+    | DeclareEffectPolicy p ->
+        JObject [ "op", JString "declareEffectPolicy"
+                  "effect", JString p.Effect
+                  "retries", JInt(int64 p.Retries)
+                  "onFailed", JString(failedActionName p.OnFailed)
+                  "onUnknown", JString(unknownActionName p.OnUnknown)
+                  "trace", jTrace p.Trace ]
 
 let toJson (plan: PlanDraft) =
     JObject [ "schemaVersion", JString plan.SchemaVersion
@@ -746,7 +842,10 @@ let private canonicalDraft (binding: PlanBinding) (w: Workflow) : PlanDraft =
               DefineBranchingTransition
                   { Pair = { InState = key b.InState; OnCommand = key b.OnCommand }
                     Targets = b.Targets |> List.map key
-                    Trace = traceDraft b.Trace } ] }
+                    Trace = traceDraft b.Trace }
+          for p in w.EffectPolicies ->
+              DeclareEffectPolicy
+                  { Effect = key p.Effect; Retries = p.Retries; OnFailed = p.OnFailed; OnUnknown = p.OnUnknown; Trace = traceDraft p.Trace } ] }
 
 // ---------------------------------------------------------------------------
 // Validation.
@@ -781,6 +880,7 @@ let operationLabel (operation: OperationDraft) =
         | CodeTarget.Unlisted -> "codeFor:unlisted"
         | CodeTarget.Guard g -> "codeFor:guard/" + norm g
     | DefineBranchingTransition b -> sprintf "branching:%s/%s" (norm b.Pair.InState) (norm b.Pair.OnCommand)
+    | DeclareEffectPolicy p -> "effectPolicy:" + norm p.Effect
 
 let private traceOf operation : TraceDraft =
     match operation with
@@ -798,6 +898,7 @@ let private traceOf operation : TraceDraft =
     | DefineRefusalCode c -> c.Trace
     | AssignRefusalCode a -> a.Trace
     | DefineBranchingTransition b -> b.Trace
+    | DeclareEffectPolicy p -> p.Trace
 
 /// Every trace an operation carries, labelled: its own and, for an
 /// inventory, one per decision point. Each is checked like an operation's.
@@ -840,6 +941,7 @@ let private namesOf operation =
             | CodeTarget.Unlisted -> []
             | CodeTarget.Guard g -> [ g ])
     | DefineBranchingTransition b -> b.Pair.InState :: b.Pair.OnCommand :: b.Targets
+    | DeclareEffectPolicy p -> [ p.Effect ]
 
 let private bindingViolations (view: PreparedCohortView) (preparedBlueprintDigest: string) (plan: PlanDraft) =
     let binding = plan.Binding
@@ -1069,10 +1171,12 @@ let private vocabularyViolations (plan: PlanDraft) =
         | DefineRefusal _ when not (classifiesChoices version) -> [ notIn operation "defineRefusal" ]
         | DeclareUndecidedTransition _ when not (classifiesChoices version) -> [ notIn operation "declareUndecidedTransition" ]
         | DeclareExtensionInventory _ when not (classifiesChoices version) -> [ notIn operation "declareExtensionInventory" ]
-        | DeclareExtensionInventory { Extension = ExtensionRef.Selection _ } when version <> VocabularyVersion4 -> [ notIn operation "selection" ]
-        | DefineRefusalCode _ when version <> VocabularyVersion4 -> [ notIn operation "defineRefusalCode" ]
-        | AssignRefusalCode _ when version <> VocabularyVersion4 -> [ notIn operation "assignRefusalCode" ]
-        | DefineBranchingTransition _ when version <> VocabularyVersion4 -> [ notIn operation "defineBranchingTransition" ]
+        | DeclareExtensionInventory { Extension = ExtensionRef.Selection _ } when not (hasCodesAndBranching version) -> [ notIn operation "selection" ]
+        | DefineRefusalCode _ when not (hasCodesAndBranching version) -> [ notIn operation "defineRefusalCode" ]
+        | AssignRefusalCode _ when not (hasCodesAndBranching version) -> [ notIn operation "assignRefusalCode" ]
+        | DefineBranchingTransition _ when not (hasCodesAndBranching version) -> [ notIn operation "defineBranchingTransition" ]
+        | DeclareEffectPolicy _ when not (hasEffectPolicies version) -> [ notIn operation "declareEffectPolicy" ]
+        | DeclarePort { Kind = TransitionEffect(_, Some _) } when hasEffectPolicies version -> [ notIn operation "onFailure" ]
         | _ -> [])
 
 /// Vocabulary 3: every choice is stated. Exactly one pair rule; a pair is
@@ -1143,7 +1247,7 @@ let private classificationViolations (vocabulary: string) (operations: Operation
 /// goes only to something that refuses; a branching transition has at least
 /// two distinct targets.
 let private codeViolations (vocabulary: string) (operations: OperationDraft list) =
-    if vocabulary <> VocabularyVersion4 then []
+    if not (hasCodesAndBranching vocabulary) then []
     else
         let key raw = (name raw).Key
         let codes = operations |> List.choose (function DefineRefusalCode c -> Some(key c.Code) | _ -> None) |> Set.ofList
@@ -1188,7 +1292,7 @@ let private codeViolations (vocabulary: string) (operations: OperationDraft list
 /// and an `unresolved` disposition is linked, by effect, to exactly one
 /// `declareUnresolved`, so the open question becomes an obligation. A link
 /// is valid only to an effect port whose disposition is `unresolved`.
-let private effectDispositionViolations (vocabulary: string) (operations: OperationDraft list) =
+let private effectDispositionViolations (vocabulary: string) (decisionIds: string list) (operations: OperationDraft list) =
     if vocabulary = VocabularyVersion1 then []
     else
         let ports =
@@ -1204,21 +1308,47 @@ let private effectDispositionViolations (vocabulary: string) (operations: Operat
                 | DeclareUnresolved { Effect = Some effect } -> Some((name effect).Key, operationLabel operation)
                 | _ -> None)
         let isLinked key = links |> List.exists (fun (effect, _) -> effect = key)
+        // Vocabulary 5: the effect policy, not the port, states what a failed
+        // or unknown outcome means.
+        let policies =
+            operations
+            |> List.choose (fun operation ->
+                match operation with
+                | DeclareEffectPolicy p -> Some((name p.Effect).Key, operation, p)
+                | _ -> None)
+        let policyOpen (p: EffectPolicyDraft) = p.OnFailed = FailedEffectAction.Unresolved || p.OnUnknown = UnknownEffectAction.Unresolved
         let dispositions =
-            [ for key, label, disposition in ports do
-                  match disposition with
-                  | None -> MissingEffectDisposition label
-                  | Some EffectFailureDisposition.Unresolved when not (isLinked key) -> UnresolvedEffectWithoutObligation label
-                  | Some _ -> () ]
-        let decided disposition =
-            match disposition with
-            | Some EffectFailureDisposition.Remain | Some EffectFailureDisposition.Proceed -> true
-            | Some EffectFailureDisposition.Unresolved | None -> false
+            if hasEffectPolicies vocabulary then
+                [ for key, _, _ in ports do
+                      match policies |> List.tryFind (fun (effect, _, _) -> effect = key) with
+                      | None -> MissingEffectPolicy key
+                      | Some(_, operation, p) when policyOpen p && not (isLinked key) -> UnresolvedEffectWithoutObligation(operationLabel operation)
+                      | Some _ -> ()
+                  for key, operation, p in policies do
+                      let label = operationLabel operation
+                      if not (ports |> List.exists (fun (port, _, _) -> port = key)) then UnknownEffect(label, key)
+                      if p.Retries < 0 || p.Retries > MaxEffectRetries then RetriesOutOfRange(label, p.Retries)
+                      if p.OnFailed = FailedEffectAction.Compensate
+                         && not (p.Trace.NodeIds |> List.exists (fun id -> List.contains id decisionIds)) then
+                          CompensationWithoutDecision label ]
+            else
+                [ for key, label, disposition in ports do
+                      match disposition with
+                      | None -> MissingEffectDisposition label
+                      | Some EffectFailureDisposition.Unresolved when not (isLinked key) -> UnresolvedEffectWithoutObligation label
+                      | Some _ -> () ]
+        let decided key disposition =
+            if hasEffectPolicies vocabulary then
+                policies |> List.exists (fun (effect, _, p) -> effect = key && not (policyOpen p))
+            else
+                match disposition with
+                | Some EffectFailureDisposition.Remain | Some EffectFailureDisposition.Proceed -> true
+                | Some EffectFailureDisposition.Unresolved | None -> false
         let badLinks =
             [ for key, label in links do
                   match ports |> List.filter (fun (port, _, _) -> port = key) with
                   | [] -> UnknownEffect(label, key)
-                  | matching when matching |> List.exists (fun (_, _, disposition) -> decided disposition) -> EffectAlreadyDecided(label, key)
+                  | matching when matching |> List.exists (fun (_, _, disposition) -> decided key disposition) -> EffectAlreadyDecided(label, key)
                   | _ -> () ]
         let duplicateLinks =
             links
@@ -1362,7 +1492,14 @@ let private buildWorkflow (operations: OperationDraft list) : Workflow =
                        Targets = b.Targets |> List.map name |> List.distinctBy _.Key |> List.sortBy _.Key
                        Trace = normalizeTrace b.Trace }
             | _ -> None)
-        |> List.sortBy (fun b -> b.InState.Key, b.OnCommand.Key) }
+        |> List.sortBy (fun b -> b.InState.Key, b.OnCommand.Key)
+      EffectPolicies =
+        operations
+        |> List.choose (function
+            | DeclareEffectPolicy p ->
+                Some { EffectPolicy.Effect = name p.Effect; Retries = p.Retries; OnFailed = p.OnFailed; OnUnknown = p.OnUnknown; Trace = normalizeTrace p.Trace }
+            | _ -> None)
+        |> List.sortBy _.Effect.Key }
 
 let private coverage (assigned: Set<string>) (operations: OperationDraft list) =
     let tracing key =
@@ -1381,7 +1518,8 @@ let private coverage (assigned: Set<string>) (operations: OperationDraft list) =
         // decided; it constructs nothing by itself.
         let nonConstructing operation =
             match operation with
-            | DefineWorkflow _ | DeclarePairRule _ | DeclareExtensionInventory _ | DefineRefusalCode _ | AssignRefusalCode _ -> true
+            | DefineWorkflow _ | DeclarePairRule _ | DeclareExtensionInventory _ | DefineRefusalCode _ | AssignRefusalCode _
+            | DeclareEffectPolicy _ -> true
             | _ -> undecided operation
         let constructs = ops |> List.filter (nonConstructing >> not)
         let unresolved = ops |> List.filter undecided
@@ -1419,7 +1557,7 @@ let validate (prepared: PreparedCohort) (plan: PlanDraft) : Result<ValidatedPlan
     | [] ->
         match
             structureViolations plan.Operations
-            @ effectDispositionViolations plan.VocabularyVersion plan.Operations
+            @ effectDispositionViolations plan.VocabularyVersion plan.Binding.DecisionIds plan.Operations
             @ classificationViolations plan.VocabularyVersion plan.Operations
             @ codeViolations plan.VocabularyVersion plan.Operations
         with
