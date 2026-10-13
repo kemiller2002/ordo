@@ -74,15 +74,21 @@ The routes are the arms CONSTRUCT-008 measured.
 | Route | Meaning |
 |---|---|
 | `C` | mechanical-first: Ordo generates the default plan and structure, and the agent meets the obligations |
-| `A+` | conventional implementation with Ordo's trace, classification and obligations as the handoff, and no generated structure |
-| `B` | the typed-plan authoring workflow. Recommended only when no default plan can be generated, so the decision records must be authored first |
+| `A+` | constrained agent implementation, for when vocabulary coverage is low. In the operator brief's words, it is "not unrestricted agent coding". It must still use: pinned requirements; approved decisions; the complete disposition ledger; typed implementation obligations; capability-scoped execution; architecture constraints; and independent Dokimos verification. Ordo supplies none of the generated structure |
+| `B` | agent-authored construction plans, "retained for research and approved decision-record authoring, not the preferred production path". Recommended only when no default plan can be generated, so the decision records must be authored first |
+
+The `A+` and `B` definitions are taken from the operator brief. This report
+does not define them.
 
 The rule uses the **structure ratio**:
 `generated constructs / (generated constructs + assigned requirements not generated)`.
 At or above the calibrated threshold the report recommends `C`; below it, `A+`.
 Every recommendation carries:
 - `advisory: true`;
-- the calibration id;
+- the calibration id, its `threshold`, and `fittedOn`: the slices the
+  threshold was fitted on, each with its structure ratio, cheaper arm and
+  whether the arms separated. A later out-of-sample check compares fresh
+  runs against these mechanically;
 - a rationale;
 - a non-empty uncertainty list. Any open decisions are listed there too,
   because every route must escalate them.

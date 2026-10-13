@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-13T21:02:30.000Z",
+  "updatedAt": "2026-10-13T21:26:49.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -1892,6 +1892,51 @@
           "mechanism": "git-remote-observation"
         }
       }
+    },
+    {
+      "id": "CONSTRUCT-010-COVERAGE-ROUTES",
+      "type": "task",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ConstructionCoverage.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ConstructionCoverageTests.fs"
+        },
+        {
+          "type": "documentation",
+          "path": "docs/architecture/coverage-report.md"
+        }
+      ],
+      "updatedAt": "2026-10-13T21:26:49.000Z",
+      "telemetryExecutionIds": [
+        "EXE-20261013T212528591Z-324e0c0a"
+      ],
+      "latestCheckpoint": {
+        "id": "9f21f18ea4e56c147045a415",
+        "recordedAt": "2026-10-13T21:26:39.000Z",
+        "executionId": "EXE-20261013T212528591Z-324e0c0a",
+        "repository": "ordo",
+        "branch": "construct-010/coverage-report",
+        "commit": "13a7b4262206f2474774af250025beb61c38f031",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "construct-010/coverage-report",
+        "remoteCommit": "13a7b4262206f2474774af250025beb61c38f031",
+        "summary": "Brief's A+/B wording and structured fitted calibration points in the coverage report (13a7b4262206f2474774af250025beb61c38f031)",
+        "nextAction": "Merge into vocabulary-4 branch",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-13T21:26:49.000Z"
     }
   ]
 }

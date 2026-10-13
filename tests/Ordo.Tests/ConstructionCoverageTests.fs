@@ -92,6 +92,19 @@ let ``the calibration's quoted ratios are reproducible from the frozen slices`` 
     Assert.Equal(0.4783, ratio summa)
     Assert.Equal(0.3913, ratio chrona)
     Assert.Equal(0.1304, ratio expanded)
+    // The structured fitted points equal the re-derived ratios, and every
+    // recommendation reports them next to the threshold.
+    let fitted = measuredCalibration.FittedOn |> List.map (fun p -> p.Slice, p.StructureRatio)
+    Assert.Equal<(string * float) list>(
+        [ "time-entry-timer-pilot-01", ratio timerSlice; "summa-delivery", ratio summa
+          "chrona-timer", ratio chrona; "time-entry-expanded-01", ratio expanded ],
+        fitted)
+    let r = (reportOf chrona).Recommendation
+    Assert.Equal(0.45, r.Threshold)
+    Assert.Equal<CalibrationPoint list>(measuredCalibration.FittedOn, r.FittedOn)
+    // Each fitted point sits on the side of the threshold its cheaper arm predicts.
+    for p in measuredCalibration.FittedOn do
+        Assert.Equal((if p.CheaperArm = "C" then true else false), p.StructureRatio >= measuredCalibration.StructureRatioThreshold)
     for evidence, value in [ "ratio 0.77", ratio timerSlice; "ratio 0.48", ratio summa; "ratio 0.39", ratio chrona; "ratio 0.13", ratio expanded ] do
         Assert.Contains(measuredCalibration.Evidence, fun e -> e.Contains evidence)
         Assert.Equal(evidence, sprintf "ratio %.2f" value)
@@ -139,3 +152,5 @@ let ``the report is deterministic and canonical`` () =
     Assert.Contains("\"schemaVersion\": \"ordo.coverage-report/1\"", text)
     Assert.Contains("\"advisory\": true", text)
     Assert.Contains("\"route\": \"A+\"", text)
+    Assert.Contains("\"threshold\": 0.45", text)
+    Assert.Contains("\"slice\": \"chrona-timer\"", text)
