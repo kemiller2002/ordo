@@ -131,6 +131,12 @@ construction records the linked obligation as
 construction has an additional `effectFailure` list of `{ effect, onFailure }`,
 and a linked `resolve` obligation carries an `effect` member.
 
+**Generator `ordo.construction/3`** handles vocabulary 3 plans. Tier 2
+reports a pair the plan leaves open as `Undecided`, never as
+`InvalidTransition`. An extension with an undecided decision point gets
+`DECIDE:` obligations instead of `IMPLEMENT:`. See
+[decision classification](decision-classification.md).
+
 ## No permissive defaults
 
 Every guard, invariant and port is a handwritten extension contract.

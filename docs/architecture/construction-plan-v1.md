@@ -255,6 +255,14 @@ cohort. The same holds for a plan combined from several drafts by
 evidence of implementation and not evidence of verification. Hosts (Praxis
 #242) pin the plan digest, recheck approvals and control every effect.
 
+## Vocabulary 3: classified choices
+
+`ordo.construction-vocabulary/3` adds a mandatory pair rule, explicit
+refusals, undecided pairs and a mandatory decision inventory for every
+extension. With these, every semantic choice is classified as required,
+approved, implied, unresolved or unsupported, and only the first three
+generate. See [decision classification](decision-classification.md).
+
 ## Versioning
 
 An unknown `schemaVersion` or `vocabularyVersion` is refused, never upgraded

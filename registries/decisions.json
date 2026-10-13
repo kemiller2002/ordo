@@ -611,5 +611,48 @@
     "title": "Combine independent construction plans without choosing a winner",
     "type": "decision-record",
     "updated": "2026-10-12"
+  },
+  {
+    "created": "2026-10-13",
+    "id": "DF-SDE-2026-0022",
+    "path": "research/decisions/DF-SDE-2026-0022--classify-every-construction-choice.md",
+    "provenance": {
+      "contributions": {
+        "EXE-20261013T204919043Z-6855fd51": {
+          "actor": {
+            "id": "anthropic/claude-code",
+            "kind": "agent",
+            "model": "unknown",
+            "provider": "anthropic",
+            "runtime": "claude-code"
+          },
+          "at": "2026-10-13T20:49:43.000Z",
+          "operations": [
+            "created"
+          ],
+          "reason": "Record CONSTRUCT-010 phase 4 decision classification"
+        }
+      }
+    },
+    "related_documents": [
+      "docs/architecture/decision-classification.md",
+      "docs/architecture/construction-plan-v1.md",
+      "docs/architecture/construction-default-plan.md",
+      "src/Ordo.Core/ConstructionClassification.fs",
+      "tests/Ordo.Tests/ConstructionClassificationTests.fs",
+      "tests/Ordo.Construction.Tests/ClassifiedConstructionTests.fs"
+    ],
+    "status": "draft",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "construction",
+      "classification",
+      "construct-010",
+      "opt-14"
+    ],
+    "title": "Classify every construction choice; generate only required, approved and implied choices",
+    "type": "decision-record",
+    "updated": "2026-10-13"
   }
 ]
