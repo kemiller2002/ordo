@@ -1,0 +1,149 @@
+{
+  "digest": "sha256:18912d9c265ffab1c9cbb0ef08512e97b1031445b1b01f5718ee53402daf91e1",
+  "requirements": [
+    {
+      "key": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt#L324-L326",
+      "originalId": "CHX-100",
+      "document": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt",
+      "location": "L324-L326",
+      "revision": "git:50738a649dc376963cc2981519675bf0e4d8e2a4",
+      "contentDigest": "sha256:cd9322dffbba2cbea2844bda338b92a803a35d752535ff9365f847f82ebcfb15"
+    },
+    {
+      "key": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt#L328-L335",
+      "originalId": "CHX-101",
+      "document": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt",
+      "location": "L328-L335",
+      "revision": "git:50738a649dc376963cc2981519675bf0e4d8e2a4",
+      "contentDigest": "sha256:a48fe8bc1f89db31839254487c52bb24722620b8b1538f5024dcc87853e85672"
+    },
+    {
+      "key": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt#L337-L338",
+      "originalId": "CHX-102",
+      "document": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt",
+      "location": "L337-L338",
+      "revision": "git:50738a649dc376963cc2981519675bf0e4d8e2a4",
+      "contentDigest": "sha256:454aa9316e233e50f262281aae89157ab8a60ba1f116267b507e801b6aec28c1"
+    },
+    {
+      "key": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt#L340-L341",
+      "originalId": "CHX-103",
+      "document": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt",
+      "location": "L340-L341",
+      "revision": "git:50738a649dc376963cc2981519675bf0e4d8e2a4",
+      "contentDigest": "sha256:54383805c4eada7c94a8d55d543e087b00343a50403823da35b883d382dbd52f"
+    },
+    {
+      "key": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt#L343-L344",
+      "originalId": "CHX-104",
+      "document": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt",
+      "location": "L343-L344",
+      "revision": "git:50738a649dc376963cc2981519675bf0e4d8e2a4",
+      "contentDigest": "sha256:ef3fcbf306a42977d34c519c6e50f47e8b22435a899d4531ad1ff44b68b1e3ac"
+    },
+    {
+      "key": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt#L346-L347",
+      "originalId": "CHX-105",
+      "document": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt",
+      "location": "L346-L347",
+      "revision": "git:50738a649dc376963cc2981519675bf0e4d8e2a4",
+      "contentDigest": "sha256:1c7df020f1091bf9ffd95fdf91f758b23669e9fe73336e1f72cd2fc6922e84aa"
+    },
+    {
+      "key": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt#L351-L365",
+      "originalId": "CHX-110",
+      "document": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt",
+      "location": "L351-L365",
+      "revision": "git:50738a649dc376963cc2981519675bf0e4d8e2a4",
+      "contentDigest": "sha256:a4c2bd25504275c24a55f3252ee1db3167fb15a86f19014f946eff5771b56155"
+    },
+    {
+      "key": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt#L369-L381",
+      "originalId": "CHX-120",
+      "document": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt",
+      "location": "L369-L381",
+      "revision": "git:50738a649dc376963cc2981519675bf0e4d8e2a4",
+      "contentDigest": "sha256:7411c8ddcc85dc2baf96fc805790638558a85ee621a1de6d05856bb4c7bea2cb"
+    },
+    {
+      "key": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt#L589-L603",
+      "originalId": "CHX-230",
+      "document": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt",
+      "location": "L589-L603",
+      "revision": "git:50738a649dc376963cc2981519675bf0e4d8e2a4",
+      "contentDigest": "sha256:ed79eb4e174b77d7fa59e5880352cc38581adf05f6c65b584a90f81f29b420a9"
+    },
+    {
+      "key": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt#L660-L669",
+      "originalId": "CHX-260-timer",
+      "document": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt",
+      "location": "L660-L669",
+      "revision": "git:50738a649dc376963cc2981519675bf0e4d8e2a4",
+      "contentDigest": "sha256:0485fe268aed877a31848f29e592cb6c1a75c2c0fa8fa297b4a60486561ccd48"
+    },
+    {
+      "key": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt#L963-L975",
+      "originalId": "CHX-430-timer",
+      "document": "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt",
+      "location": "L963-L975",
+      "revision": "git:50738a649dc376963cc2981519675bf0e4d8e2a4",
+      "contentDigest": "sha256:8f76b2dcb805152289192f2a125d93b7f9c25ca1f152c69f7e3dd6c6aa146f7a"
+    },
+    {
+      "key": "kemiller2002/time-tracking-application/docs/DOMAIN-REQUIREMENTS.md#L58-L72",
+      "originalId": "LEG-TIME",
+      "document": "kemiller2002/time-tracking-application/docs/DOMAIN-REQUIREMENTS.md",
+      "location": "L58-L72",
+      "revision": "git:38a0b657e1c686098169630a5920acaff5dedd6f",
+      "contentDigest": "sha256:8a269eaf64299b090c99c335a81a7c07862746ae36a45a24ecff47f47d7c30c7"
+    },
+    {
+      "key": "kemiller2002/time-tracking-application/docs/DOMAIN-REQUIREMENTS.md#L89-L101",
+      "originalId": "LEG-CREATE",
+      "document": "kemiller2002/time-tracking-application/docs/DOMAIN-REQUIREMENTS.md",
+      "location": "L89-L101",
+      "revision": "git:38a0b657e1c686098169630a5920acaff5dedd6f",
+      "contentDigest": "sha256:ebfdf49c88bd36f7b0f67dfe927b9fe2bd2bed63b04add65080905faea352954"
+    },
+    {
+      "key": "kemiller2002/time-tracking-application/docs/DOMAIN-REQUIREMENTS.md#L168-L179",
+      "originalId": "LEG-TIMER",
+      "document": "kemiller2002/time-tracking-application/docs/DOMAIN-REQUIREMENTS.md",
+      "location": "L168-L179",
+      "revision": "git:38a0b657e1c686098169630a5920acaff5dedd6f",
+      "contentDigest": "sha256:57c2177d1f3e5182c7e1431f9e2d086cc89da2c875d34758e65eec8209d2df93"
+    },
+    {
+      "key": "kemiller2002/chrona/research/decisions/DF-CHRONA-2026-0002--reconstruct-not-migrate-legacy-reconciliation-and-data-status.md#L67-L73",
+      "originalId": "DF-CHRONA-2026-0002-rules",
+      "document": "kemiller2002/chrona/research/decisions/DF-CHRONA-2026-0002--reconstruct-not-migrate-legacy-reconciliation-and-data-status.md",
+      "location": "L67-L73",
+      "revision": "git:50738a649dc376963cc2981519675bf0e4d8e2a4",
+      "contentDigest": "sha256:4e4c9122f8298582071310c5381ef1a03e53f2b3ec492eaf2665db0853adfe76"
+    },
+    {
+      "key": "kemiller2002/chrona/research/decisions/DF-CHRONA-2026-0002--reconstruct-not-migrate-legacy-reconciliation-and-data-status.md#L126-L145",
+      "originalId": "DF-CHRONA-2026-0002-timer-rows",
+      "document": "kemiller2002/chrona/research/decisions/DF-CHRONA-2026-0002--reconstruct-not-migrate-legacy-reconciliation-and-data-status.md",
+      "location": "L126-L145",
+      "revision": "git:50738a649dc376963cc2981519675bf0e4d8e2a4",
+      "contentDigest": "sha256:162b60eb96f60341b61711b3ff7ae15125415a8b92daeac893eb77aa71f4f373"
+    },
+    {
+      "key": "kemiller2002/chrona/research/decisions/DF-CHRONA-2026-0003--product-ui-on-limen-in-memory-with-identity-and-store-ports.md#L59-L63",
+      "originalId": "DF-CHRONA-2026-0003-display",
+      "document": "kemiller2002/chrona/research/decisions/DF-CHRONA-2026-0003--product-ui-on-limen-in-memory-with-identity-and-store-ports.md",
+      "location": "L59-L63",
+      "revision": "git:50738a649dc376963cc2981519675bf0e4d8e2a4",
+      "contentDigest": "sha256:fc8018f0383133c8d283caca1599d9a70faa8d0541b85fc32d45b59e4bbf23d8"
+    },
+    {
+      "key": "kemiller2002/chrona/research/decisions/DF-CHRONA-2026-0005--records-on-github-through-arca-behind-the-store-port.md#L269-L276",
+      "originalId": "DF-CHRONA-2026-0005-device-timer",
+      "document": "kemiller2002/chrona/research/decisions/DF-CHRONA-2026-0005--records-on-github-through-arca-behind-the-store-port.md",
+      "location": "L269-L276",
+      "revision": "git:50738a649dc376963cc2981519675bf0e4d8e2a4",
+      "contentDigest": "sha256:1434eee20d7ba0063b667db077fdadfa9f4e35b6da07eb1dadbe1ca12c202b11"
+    }
+  ]
+}

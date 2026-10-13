@@ -1,0 +1,101 @@
+{
+  "blueprintDigest": "sha256:fbc51520653a2b75a116a06ca082f914dd03a45bf5245e35c2cc30196ac15ee6",
+  "cohortId": "COH-CHRONA-TIMER",
+  "records": [
+    {
+      "content": {
+        "kind": "portContract",
+        "ports": [
+          {
+            "command": "Stop",
+            "onFailure": null,
+            "port": "transitionEffect",
+            "requirementKeys": [
+              "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt#L340-L341",
+              "kemiller2002/chrona/research/decisions/DF-CHRONA-2026-0002--reconstruct-not-migrate-legacy-reconciliation-and-data-status.md#L126-L145",
+              "kemiller2002/time-tracking-application/docs/DOMAIN-REQUIREMENTS.md#L168-L179",
+              "kemiller2002/time-tracking-application/docs/DOMAIN-REQUIREMENTS.md#L58-L72",
+              "kemiller2002/time-tracking-application/docs/DOMAIN-REQUIREMENTS.md#L89-L101"
+            ]
+          },
+          {
+            "port": "currentTime",
+            "requirementKeys": [
+              "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt#L328-L335",
+              "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt#L351-L365",
+              "kemiller2002/chrona/research/decisions/DF-CHRONA-2026-0003--product-ui-on-limen-in-memory-with-identity-and-store-ports.md#L59-L63",
+              "kemiller2002/time-tracking-application/docs/DOMAIN-REQUIREMENTS.md#L168-L179"
+            ]
+          }
+        ]
+      },
+      "nodeId": "IFC-TIMER-PORTS"
+    },
+    {
+      "content": {
+        "kind": "stateModel",
+        "states": [
+          {
+            "name": "Idle",
+            "role": "initial"
+          },
+          {
+            "name": "Paused",
+            "role": "ordinary"
+          },
+          {
+            "name": "Running",
+            "role": "ordinary"
+          }
+        ],
+        "transitions": [
+          {
+            "command": "Pause",
+            "from": "Running",
+            "requirementKeys": [
+              "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt#L324-L326",
+              "kemiller2002/chrona/research/decisions/DF-CHRONA-2026-0002--reconstruct-not-migrate-legacy-reconciliation-and-data-status.md#L126-L145",
+              "kemiller2002/chrona/research/decisions/DF-CHRONA-2026-0002--reconstruct-not-migrate-legacy-reconciliation-and-data-status.md#L67-L73",
+              "kemiller2002/time-tracking-application/docs/DOMAIN-REQUIREMENTS.md#L168-L179"
+            ],
+            "to": "Paused"
+          },
+          {
+            "command": "Resume",
+            "from": "Paused",
+            "requirementKeys": [
+              "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt#L324-L326",
+              "kemiller2002/chrona/research/decisions/DF-CHRONA-2026-0002--reconstruct-not-migrate-legacy-reconciliation-and-data-status.md#L126-L145",
+              "kemiller2002/chrona/research/decisions/DF-CHRONA-2026-0002--reconstruct-not-migrate-legacy-reconciliation-and-data-status.md#L67-L73",
+              "kemiller2002/time-tracking-application/docs/DOMAIN-REQUIREMENTS.md#L168-L179"
+            ],
+            "to": "Running"
+          },
+          {
+            "command": "Start",
+            "from": "Idle",
+            "requirementKeys": [
+              "kemiller2002/chrona/docs/requirements/CHRONA-REQUIREMENTS-EXPANSION.txt#L324-L326",
+              "kemiller2002/chrona/research/decisions/DF-CHRONA-2026-0002--reconstruct-not-migrate-legacy-reconciliation-and-data-status.md#L126-L145",
+              "kemiller2002/chrona/research/decisions/DF-CHRONA-2026-0002--reconstruct-not-migrate-legacy-reconciliation-and-data-status.md#L67-L73",
+              "kemiller2002/time-tracking-application/docs/DOMAIN-REQUIREMENTS.md#L168-L179"
+            ],
+            "to": "Running"
+          },
+          {
+            "command": "Stop",
+            "from": "Running",
+            "requirementKeys": [
+              "kemiller2002/chrona/research/decisions/DF-CHRONA-2026-0002--reconstruct-not-migrate-legacy-reconciliation-and-data-status.md#L126-L145",
+              "kemiller2002/time-tracking-application/docs/DOMAIN-REQUIREMENTS.md#L168-L179"
+            ],
+            "to": "Idle"
+          }
+        ],
+        "workflow": "Timer"
+      },
+      "nodeId": "DEC-TIMER-LIFECYCLE"
+    }
+  ],
+  "schemaVersion": "ordo.construction-decisions/1"
+}

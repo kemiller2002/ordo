@@ -67,6 +67,7 @@
     <Compile Include="ConstructionDefaultPlan.fs" />
     <Compile Include="ConstructionLedger.fs" />
     <Compile Include="ConstructionLedgerWire.fs" />
+    <Compile Include="ConstructionCoverage.fs" />
   </ItemGroup>
 
 </Project>
