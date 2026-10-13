@@ -316,6 +316,19 @@ let private cohortScope (blueprint: Blueprint) (cohort: ConstructionNode) =
             visit (Set.add id seen) (current.DependsOn @ requiredDecisions @ obligations @ rest)
     visit Set.empty [ cohort.Id ]
 
+/// The node ids in a cohort's required scope, by the same rule `prepareCohort`
+/// uses, without the readiness gate. Pattern recognition needs the scope of a
+/// cohort that is not (yet) ready, so it can say which requirements are
+/// blocked instead of refusing the whole cohort. None when the blueprint does
+/// not validate or the id is not a cohort.
+let requiredScope (manifest: SourceManifest) (blueprint: Blueprint) (cohortId: string) : Set<string> option =
+    match validate manifest blueprint with
+    | [] ->
+        blueprint.Nodes
+        |> List.tryFind (fun n -> n.Id = cohortId && n.Kind = Cohort)
+        |> Option.map (cohortScope blueprint)
+    | _ -> None
+
 /// Execution readiness checks one cohort and its required dependency scope after whole-artifact semantic
 /// validation. The caller must obtain authorizedDecisionIds from an external,
 /// verified authority, not from an agent-authored "approved" field. The same

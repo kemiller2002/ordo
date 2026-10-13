@@ -144,6 +144,10 @@ let private runCommand (invocation: Args.Invocation) (projectRoot: string) : Emi
         let code, stdout, stderr = Ecir.scaffoldFile globals.Json options.Manifest options.Output
         { ExitCode = code; Stdout = stdout; Stderr = stderr }
 
+    | Args.EcirRecognize options ->
+        let code, stdout, stderr = Ecir.recognizeFiles globals.Json options
+        { ExitCode = code; Stdout = stdout; Stderr = stderr }
+
     // Read-only and independent of any installation: it needs no payload.
     | Args.BoundaryAssess options ->
         let exitCode, stdout, stderr = Boundary.run globals.Json releaseVersion options
@@ -167,6 +171,7 @@ let private runCommand (invocation: Args.Invocation) (projectRoot: string) : Emi
             | Args.Doctor _ -> "doctor"
             | Args.EcirValidate _
             | Args.EcirScaffold _
+            | Args.EcirRecognize _
             | Args.BoundaryAssess _
             | Args.Help _
             | Args.Version -> "sde"
@@ -218,6 +223,7 @@ let private runCommand (invocation: Args.Invocation) (projectRoot: string) : Emi
 
         | Args.EcirValidate _
         | Args.EcirScaffold _
+        | Args.EcirRecognize _
         | Args.BoundaryAssess _
         | Args.Help _
         | Args.Version -> ok []
