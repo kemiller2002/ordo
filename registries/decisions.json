@@ -654,5 +654,46 @@
     "title": "Classify every construction choice; generate only required, approved and implied choices",
     "type": "decision-record",
     "updated": "2026-10-13"
+  },
+  {
+    "created": "2026-10-13",
+    "id": "DF-SDE-2026-0023",
+    "path": "research/decisions/DF-SDE-2026-0023--advise-construction-route-by-structure-ratio.md",
+    "provenance": {
+      "contributions": {
+        "EXE-20261013T205411288Z-a99db3f1": {
+          "actor": {
+            "id": "anthropic/claude-code",
+            "kind": "agent",
+            "model": "unknown",
+            "provider": "anthropic",
+            "runtime": "claude-code"
+          },
+          "at": "2026-10-13T20:58:48.000Z",
+          "operations": [
+            "created"
+          ],
+          "reason": "Record CONSTRUCT-010 phase 7 coverage report and route calibration"
+        }
+      }
+    },
+    "related_documents": [
+      "docs/architecture/coverage-report.md",
+      "src/Ordo.Core/ConstructionCoverage.fs",
+      "tests/Ordo.Tests/ConstructionCoverageTests.fs",
+      "tests/fixtures/construction/coverage-calibration/README.md"
+    ],
+    "status": "draft",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "construction",
+      "coverage",
+      "route",
+      "construct-010"
+    ],
+    "title": "Report construction coverage before execution and advise the route by structure ratio",
+    "type": "decision-record",
+    "updated": "2026-10-13"
   }
 ]

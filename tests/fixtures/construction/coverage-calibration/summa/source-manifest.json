@@ -1,0 +1,229 @@
+{
+  "digest": "sha256:e3fe4a75c90bd1143c2bc910a424c79c36c6b1b46eb75908f8bba0bf636c9f32",
+  "requirements": [
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1188-L1194",
+      "originalId": "INV-DEL-001",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1188-L1194",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:7f51b2a04d7b476221d1412733735b3ff8ab5788f08b5317e1176132c826e90f"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1196-L1206",
+      "originalId": "INV-DEL-002",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1196-L1206",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:19da4182264e7f0336965b2b3b655a135dba9bf6602d83834b7b9061dce1c1c8"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1208-L1210",
+      "originalId": "INV-DEL-003",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1208-L1210",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:a719c71ff82e9e9500d38c3385b2a74b0b7dead68e94b7e065bb8e26a3033a56"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1212-L1218",
+      "originalId": "INV-DEL-004",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1212-L1218",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:4bfd2de924dfd53b8645edf8cbc3d2197fc8b4a2a64992a8cb01e4086714b9df"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1220-L1222",
+      "originalId": "INV-DEL-005",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1220-L1222",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:9bdac33eddcc1b1ff6369cae1eff42cc219412892a22bfee10ba3efbc25fdca3"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1224-L1228",
+      "originalId": "INV-DEL-006",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1224-L1228",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:0571c6b7faf311b0b266217386deddd7ab9ebc5aa03fbde2f0673084b87f7b5d"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1230-L1243",
+      "originalId": "INV-DEL-007",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1230-L1243",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:6259e44fc6e78d53e78e7d454bc8a52397d57e75fe33a39178af6186c84951c4"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1245-L1247",
+      "originalId": "INV-DEL-008",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1245-L1247",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:532f10d1e32e24b0ff5b14bea95df88f16b742445075c110b9db722f62384d01"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1249-L1251",
+      "originalId": "INV-DEL-009",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1249-L1251",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:0d992a4eb8ed90a3504c29d8a2f121be051819c824a3c0cadc870586471ff2d6"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1253-L1262",
+      "originalId": "INV-DEL-010",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1253-L1262",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:02a2a72dd961aa2d02b00fe4275dde7fcadee0675eb9b40bbe5d45eeb7a7b696"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L66-L78",
+      "originalId": "INV-ARCH-004",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L66-L78",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:b2ce045218d0d88ac63430c7baed152093d641711a71a215133e1cea681aa7f1"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L269-L280",
+      "originalId": "INV-STATE-001",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L269-L280",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:ce69fcc9bcdebe720c9582b827ad5fa4927bb3f38fa69c170bb8e5c29a1eb269"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L316-L329",
+      "originalId": "INV-STATE-005",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L316-L329",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:35bda2943a87a236eaa43af73f729eb8119aa6420606a4466a9798b8eb7e877b"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L341-L372",
+      "originalId": "INV-STATE-008",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L341-L372",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:65aca6ab7773834223de928f7b2af19c19d90112b4be5b3e52e6c437311c71f8"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1057-L1061",
+      "originalId": "INV-DOC-015",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1057-L1061",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:e901287bc270f738dc9819bfd14102cbf5180146dbdf3341da214c688a7b7c04"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1532-L1565",
+      "originalId": "INV-AUD-001",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1532-L1565",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:177243a3a566e80013fd2c6421146316991c471d2e363762bbfa1b5c839e302d"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1619-L1621",
+      "originalId": "INV-CON-006",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1619-L1621",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:4c555ad7a7fef734301125446f7109889d2f04e6d9f258048c44a2c77a4c3254"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1623-L1625",
+      "originalId": "INV-CON-007",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1623-L1625",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:00a862e85a4dd9b1662c07e53d890b4b9486c0dbb810b5f54a15dc7cff0cf51d"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1627-L1629",
+      "originalId": "INV-CON-008",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1627-L1629",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:1b0f42e0db6ac3a2484d1cb25916d0f8c6791c95e0efcd19565690d28346ae7f"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1656-L1658",
+      "originalId": "INV-FAIL-003",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1656-L1658",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:7f4b26104e95750abf7c68d67d630144b3142c7e5a3278f8d3dc603e5751ab4c"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1660-L1669",
+      "originalId": "INV-FAIL-004",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1660-L1669",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:6530f4a618ba618105023bc9672d6a53833c043cfd038f0f3d1a3502419a2460"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1725-L1739",
+      "originalId": "INV-OPS-006",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1725-L1739",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:7a3aebaf7c4db2f559f1754e3dac78a99b7c4033fcd5c9ec93e8bdf287f49798"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1745-L1762",
+      "originalId": "INV-SEC-001",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1745-L1762",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:f5c9353b522de9873523218041459eca00dabe14e4ea31ae5a40615f04e20a90"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1821-L1836",
+      "originalId": "INV-CONTRACT-004",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1821-L1836",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:8f30f5d3b2792916398d78ef67e124b66b7f989c2d476ab9b6e08a1ba379cfff"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1959-L1966",
+      "originalId": "INV-SCN-DELIVERY-43-48",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1959-L1966",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:b3ab7576a003f1b6f124e0f88d30a25ed0265bbcaa3df9429c8bba99c7bff0f4"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L1994-L1996",
+      "originalId": "INV-SCN-IDEMPOTENCY-70-72",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L1994-L1996",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:7cc357a8702abf1381910762eb16c0a22c4001a940dc81346c9d9e3dfe2a608f"
+    },
+    {
+      "key": "summa/input-documents/summa-invoice-generation-requirements.txt#L2124-L2147",
+      "originalId": "INV-FINAL-INVARIANTS",
+      "document": "summa/input-documents/summa-invoice-generation-requirements.txt",
+      "location": "L2124-L2147",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:bb70620d2f7e34b151de49a152a7825984b4567d36b731c1d34e548a13a41e0c"
+    },
+    {
+      "key": "summa/research/decisions/DF-SUMMA-2026-0007--invoice-documents-artifacts-and-issuance.md#L71-L75",
+      "originalId": "DF-SUMMA-2026-0007-D7",
+      "document": "summa/research/decisions/DF-SUMMA-2026-0007--invoice-documents-artifacts-and-issuance.md",
+      "location": "L71-L75",
+      "revision": "git:50cde4a259fe48c57d0649628c22ad1daab03621",
+      "contentDigest": "sha256:cbd70662196f379a6071ff1c95517e3edd2ef55ff1abca2fccd6ff4198a749e0"
+    }
+  ]
+}

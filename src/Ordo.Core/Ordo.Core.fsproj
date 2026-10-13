@@ -70,6 +70,7 @@
     <Compile Include="PatternRegistry.fs" />
     <Compile Include="PatternRecognition.fs" />
     <Compile Include="PatternRecognitionWire.fs" />
+    <Compile Include="ConstructionCoverage.fs" />
   </ItemGroup>
 
 </Project>

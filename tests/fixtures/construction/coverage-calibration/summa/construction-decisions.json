@@ -1,0 +1,209 @@
+{
+  "blueprintDigest": "sha256:86ccc351fa026d75f673315be6fc96c9f544a0ac15f745573a73c471aed4dcea",
+  "cohortId": "COH-SUMMA-DELIVERY",
+  "records": [
+    {
+      "content": {
+        "kind": "portContract",
+        "ports": [
+          {
+            "command": "ConfirmDelivery",
+            "onFailure": null,
+            "port": "transitionEffect",
+            "requirementKeys": [
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L1532-L1565"
+            ]
+          },
+          {
+            "command": "ReportBounce",
+            "onFailure": null,
+            "port": "transitionEffect",
+            "requirementKeys": [
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L1245-L1247",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L1656-L1658",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L1725-L1739"
+            ]
+          },
+          {
+            "command": "ReportFailure",
+            "onFailure": null,
+            "port": "transitionEffect",
+            "requirementKeys": [
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L1245-L1247",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L1532-L1565",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L1656-L1658",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L1660-L1669",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L1725-L1739"
+            ]
+          },
+          {
+            "port": "currentTime",
+            "requirementKeys": [
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L1230-L1243"
+            ]
+          }
+        ]
+      },
+      "nodeId": "IFC-SUMMA-DELIVERY-PORTS"
+    },
+    {
+      "content": {
+        "kind": "stateModel",
+        "states": [
+          {
+            "name": "Bounced",
+            "role": "terminal"
+          },
+          {
+            "name": "Delivered",
+            "role": "terminal"
+          },
+          {
+            "name": "Failed",
+            "role": "terminal"
+          },
+          {
+            "name": "ProviderAccepted",
+            "role": "ordinary"
+          },
+          {
+            "name": "Queued",
+            "role": "initial"
+          },
+          {
+            "name": "SentToProvider",
+            "role": "ordinary"
+          }
+        ],
+        "transitions": [
+          {
+            "command": "ConfirmDelivery",
+            "from": "ProviderAccepted",
+            "requirementKeys": [
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L1253-L1262",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L316-L329",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L66-L78",
+              "summa/research/decisions/DF-SUMMA-2026-0007--invoice-documents-artifacts-and-issuance.md#L71-L75"
+            ],
+            "to": "Delivered"
+          },
+          {
+            "command": "ConfirmDelivery",
+            "from": "Queued",
+            "requirementKeys": [
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L1253-L1262",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L316-L329",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L66-L78",
+              "summa/research/decisions/DF-SUMMA-2026-0007--invoice-documents-artifacts-and-issuance.md#L71-L75"
+            ],
+            "to": "Delivered"
+          },
+          {
+            "command": "ConfirmDelivery",
+            "from": "SentToProvider",
+            "requirementKeys": [
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L1253-L1262",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L316-L329",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L66-L78",
+              "summa/research/decisions/DF-SUMMA-2026-0007--invoice-documents-artifacts-and-issuance.md#L71-L75"
+            ],
+            "to": "Delivered"
+          },
+          {
+            "command": "ReportBounce",
+            "from": "ProviderAccepted",
+            "requirementKeys": [
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L316-L329",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L66-L78",
+              "summa/research/decisions/DF-SUMMA-2026-0007--invoice-documents-artifacts-and-issuance.md#L71-L75"
+            ],
+            "to": "Bounced"
+          },
+          {
+            "command": "ReportBounce",
+            "from": "Queued",
+            "requirementKeys": [
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L316-L329",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L66-L78",
+              "summa/research/decisions/DF-SUMMA-2026-0007--invoice-documents-artifacts-and-issuance.md#L71-L75"
+            ],
+            "to": "Bounced"
+          },
+          {
+            "command": "ReportBounce",
+            "from": "SentToProvider",
+            "requirementKeys": [
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L316-L329",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L66-L78",
+              "summa/research/decisions/DF-SUMMA-2026-0007--invoice-documents-artifacts-and-issuance.md#L71-L75"
+            ],
+            "to": "Bounced"
+          },
+          {
+            "command": "ReportFailure",
+            "from": "ProviderAccepted",
+            "requirementKeys": [
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L316-L329",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L66-L78",
+              "summa/research/decisions/DF-SUMMA-2026-0007--invoice-documents-artifacts-and-issuance.md#L71-L75"
+            ],
+            "to": "Failed"
+          },
+          {
+            "command": "ReportFailure",
+            "from": "Queued",
+            "requirementKeys": [
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L316-L329",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L66-L78",
+              "summa/research/decisions/DF-SUMMA-2026-0007--invoice-documents-artifacts-and-issuance.md#L71-L75"
+            ],
+            "to": "Failed"
+          },
+          {
+            "command": "ReportFailure",
+            "from": "SentToProvider",
+            "requirementKeys": [
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L316-L329",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L66-L78",
+              "summa/research/decisions/DF-SUMMA-2026-0007--invoice-documents-artifacts-and-issuance.md#L71-L75"
+            ],
+            "to": "Failed"
+          },
+          {
+            "command": "ReportProviderAccepted",
+            "from": "Queued",
+            "requirementKeys": [
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L1253-L1262",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L66-L78",
+              "summa/research/decisions/DF-SUMMA-2026-0007--invoice-documents-artifacts-and-issuance.md#L71-L75"
+            ],
+            "to": "ProviderAccepted"
+          },
+          {
+            "command": "ReportProviderAccepted",
+            "from": "SentToProvider",
+            "requirementKeys": [
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L1253-L1262",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L66-L78",
+              "summa/research/decisions/DF-SUMMA-2026-0007--invoice-documents-artifacts-and-issuance.md#L71-L75"
+            ],
+            "to": "ProviderAccepted"
+          },
+          {
+            "command": "ReportSentToProvider",
+            "from": "Queued",
+            "requirementKeys": [
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L1253-L1262",
+              "summa/input-documents/summa-invoice-generation-requirements.txt#L66-L78",
+              "summa/research/decisions/DF-SUMMA-2026-0007--invoice-documents-artifacts-and-issuance.md#L71-L75"
+            ],
+            "to": "SentToProvider"
+          }
+        ],
+        "workflow": "DeliveryAttempt"
+      },
+      "nodeId": "DEC-SUMMA-ATTEMPT-STATES"
+    }
+  ],
+  "schemaVersion": "ordo.construction-decisions/1"
+}
