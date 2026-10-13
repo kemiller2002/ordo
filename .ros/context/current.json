@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-13T20:49:18.000Z",
+  "updatedAt": "2026-10-13T20:52:25.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -1763,13 +1763,55 @@
     {
       "id": "CONSTRUCT-010-CLASSIFY",
       "type": "task",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-10-13T20:49:18.000Z",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ConstructionClassification.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ConstructionClassificationTests.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Construction.Tests/ClassifiedConstructionTests.fs"
+        },
+        {
+          "type": "documentation",
+          "path": "docs/architecture/decision-classification.md"
+        },
+        {
+          "type": "decision",
+          "path": "research/decisions/DF-SDE-2026-0022--classify-every-construction-choice.md"
+        }
+      ],
+      "updatedAt": "2026-10-13T20:52:25.000Z",
       "telemetryExecutionIds": [
         "EXE-20261013T204919043Z-6855fd51"
-      ]
+      ],
+      "latestCheckpoint": {
+        "id": "99c0aeae5618b3beab53ee5c",
+        "recordedAt": "2026-10-13T20:52:24.000Z",
+        "executionId": "EXE-20261013T204919043Z-6855fd51",
+        "repository": "ordo",
+        "branch": "construct-010/decision-classification",
+        "commit": "87e2c5c657decb17504117cacefd877d22000145",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "construct-010/decision-classification",
+        "remoteCommit": "87e2c5c657decb17504117cacefd877d22000145",
+        "summary": "Decision classification, vocabulary 3, decisions v2, generator /3, tests and docs",
+        "nextAction": "PR review; then phase 7 coverage report",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-13T20:52:25.000Z"
     }
   ]
 }
