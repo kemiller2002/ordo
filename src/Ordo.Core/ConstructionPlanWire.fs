@@ -57,7 +57,11 @@ let private guard path value =
     }
 
 let private operation (vocabulary: string) path value =
-    let second = vocabulary = VocabularyVersion2
+    // Vocabularies 2 and 3 both require a failure disposition on every effect.
+    let second = vocabulary <> VocabularyVersion1
+    let third = vocabulary = VocabularyVersion3
+    let onlyInThird kind =
+        if third then Ok() else fail (path + ".op") (sprintf "operation %s is not in %s" kind vocabulary)
     result {
         let! kind =
             match value with
@@ -133,6 +137,66 @@ let private operation (vocabulary: string) path value =
             let! question = textField path "question" p
             let! t = traceField path p
             return DeclareUnresolved { Subject = subject; Effect = effect; Question = question; Trace = t }
+        | "declarePairRule" ->
+            let! () = onlyInThird kind
+            let! p = fields path [ "op"; "unlisted"; "trace" ] [] value
+            let! text = textField path "unlisted" p
+            let! unlisted =
+                match text with
+                | "refused" -> Ok UnlistedPairs.Refused
+                | "undecided" -> Ok UnlistedPairs.Undecided
+                | other -> fail (path + ".unlisted") ("unsupported unlisted-pair rule: " + other)
+            let! t = traceField path p
+            return DeclarePairRule { Unlisted = unlisted; Trace = t }
+        | "defineRefusal" ->
+            let! () = onlyInThird kind
+            let! p = fields path [ "op"; "command"; "from"; "trace" ] [] value
+            let! command = textField path "command" p
+            let! from = textField path "from" p
+            let! t = traceField path p
+            return DefineRefusal { Pair = { InState = from; OnCommand = command }; Trace = t }
+        | "declareUndecidedTransition" ->
+            let! () = onlyInThird kind
+            let! p = fields path [ "op"; "command"; "from"; "question"; "trace" ] [] value
+            let! command = textField path "command" p
+            let! from = textField path "from" p
+            let! question = textField path "question" p
+            let! t = traceField path p
+            return DeclareUndecidedTransition { Pair = { InState = from; OnCommand = command }; Question = question; Trace = t }
+        | "declareExtensionInventory" ->
+            let! () = onlyInThird kind
+            let! p = fields path [ "op"; "extension"; "decisionPoints"; "trace" ] [] value
+            let! rawExtension = field path "extension" p
+            let! e = fields (path + ".extension") [ "kind"; "name" ] [] rawExtension
+            let! extensionKind = textField (path + ".extension") "kind" e
+            let! extensionName = textField (path + ".extension") "name" e
+            let! extension =
+                match extensionKind with
+                | "guard" -> Ok(ExtensionRef.Guard extensionName)
+                | "invariant" -> Ok(ExtensionRef.Invariant extensionName)
+                | "effect" -> Ok(ExtensionRef.Effect extensionName)
+                | other -> fail (path + ".extension.kind") ("unsupported extension kind: " + other)
+            let point pointPath pointValue =
+                result {
+                    let! decided =
+                        match pointValue with
+                        | JObject properties ->
+                            match properties |> List.filter (fun (n, _) -> n = "decided") with
+                            | [ _, JBool b ] -> Ok b
+                            | _ -> fail pointPath "expected exactly one boolean member decided"
+                        | _ -> fail pointPath "expected object"
+                    let! q = fields pointPath ([ "point"; "decided"; "trace" ] @ (if decided then [] else [ "question" ])) [] pointValue
+                    let! pointName = textField pointPath "point" q
+                    let! resolution =
+                        if decided then Ok DecisionPointResolution.Decided
+                        else textField pointPath "question" q |> Result.map DecisionPointResolution.Undecided
+                    let! t = traceField pointPath q
+                    return { DecisionPointDraft.Point = pointName; Resolution = resolution; Trace = t }
+                }
+            let! rawPoints = field path "decisionPoints" p
+            let! points = items (path + ".decisionPoints") point rawPoints
+            let! t = traceField path p
+            return DeclareExtensionInventory { Extension = extension; DecisionPoints = points; Trace = t }
         | other -> return! fail (path + ".op") ("unsupported operation: " + other)
     }
 

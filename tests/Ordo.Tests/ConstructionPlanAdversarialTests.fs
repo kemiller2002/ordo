@@ -578,9 +578,12 @@ let ``validate is the only public way to obtain a ValidatedPlan`` () =
     Assert.Empty(typeof<ValidatedPlan>.GetConstructors())
     // A consensus result and a default plan carry the plan their own
     // `validate` call returned (ConstructionPlanConsensus.combine,
-    // ConstructionDefaultPlan.generateDefaultPlan); their getters cannot mint one.
+    // ConstructionDefaultPlan.generateDefaultPlan); a complete plan carries the
+    // validated plan `ConstructionClassification.complete` was given. Their
+    // getters cannot mint one.
     Assert.Equal<string[]>(
-        [| "Ordo.Core.ConstructionDefaultPlan+DefaultPlan.get_ValidatedPlan"
+        [| "Ordo.Core.ConstructionClassification+CompletePlan.get_Plan"
+           "Ordo.Core.ConstructionDefaultPlan+DefaultPlan.get_ValidatedPlan"
            "Ordo.Core.ConstructionPlan.validate"
            "Ordo.Core.ConstructionPlanConsensus+ConsensusResult.get_Plan" |],
         publicProducers typeof<ValidatedPlan>)
@@ -592,6 +595,11 @@ let ``validate is the only public way to obtain a ValidatedPlan`` () =
         [| "Ordo.Core.ConstructionDefaultPlan.generateDefaultPlan" |],
         publicProducers typeof<ConstructionDefaultPlan.DefaultPlan>)
     Assert.Empty(typeof<ConstructionDefaultPlan.DefaultPlan>.GetConstructors())
+    // A complete plan exists only through `complete`, which classifies first.
+    Assert.Equal<string[]>(
+        [| "Ordo.Core.ConstructionClassification.complete" |],
+        publicProducers typeof<ConstructionClassification.CompletePlan>)
+    Assert.Empty(typeof<ConstructionClassification.CompletePlan>.GetConstructors())
     // And validate needs a PreparedCohort, which only prepareCohort produces.
     Assert.Equal<string[]>([| "Ordo.Core.ConstructionIr.prepareCohort" |], publicProducers typeof<PreparedCohort>)
 
@@ -612,6 +620,16 @@ let private mapNames (f: string -> string) (draft: PlanDraft) =
         | DeclarePort p -> DeclarePort p
         | BindCapability c -> BindCapability { c with Command = f c.Command }
         | DeclareUnresolved u -> DeclareUnresolved { u with Subject = f u.Subject; Effect = Option.map f u.Effect }
+        | DeclarePairRule r -> DeclarePairRule r
+        | DefineRefusal r -> DefineRefusal { r with Pair = { InState = f r.Pair.InState; OnCommand = f r.Pair.OnCommand } }
+        | DeclareUndecidedTransition u -> DeclareUndecidedTransition { u with Pair = { InState = f u.Pair.InState; OnCommand = f u.Pair.OnCommand } }
+        | DeclareExtensionInventory i ->
+            let extension =
+                match i.Extension with
+                | ExtensionRef.Guard n -> ExtensionRef.Guard(f n)
+                | ExtensionRef.Invariant n -> ExtensionRef.Invariant(f n)
+                | ExtensionRef.Effect n -> ExtensionRef.Effect(f n)
+            DeclareExtensionInventory { i with Extension = extension; DecisionPoints = i.DecisionPoints |> List.map (fun p -> { p with Point = f p.Point }) }
     { draft with Operations = List.map mapOp draft.Operations }
 
 let private mapTraces (f: TraceDraft -> TraceDraft) (draft: PlanDraft) =
@@ -624,6 +642,11 @@ let private mapTraces (f: TraceDraft -> TraceDraft) (draft: PlanDraft) =
         | DeclarePort p -> DeclarePort { p with Trace = f p.Trace }
         | BindCapability c -> BindCapability { c with Trace = f c.Trace }
         | DeclareUnresolved u -> DeclareUnresolved { u with Trace = f u.Trace }
+        | DeclarePairRule r -> DeclarePairRule { r with Trace = f r.Trace }
+        | DefineRefusal r -> DefineRefusal { r with Trace = f r.Trace }
+        | DeclareUndecidedTransition u -> DeclareUndecidedTransition { u with Trace = f u.Trace }
+        | DeclareExtensionInventory i ->
+            DeclareExtensionInventory { i with Trace = f i.Trace; DecisionPoints = i.DecisionPoints |> List.map (fun p -> { p with Trace = f p.Trace }) }
     { draft with Operations = List.map mapOp draft.Operations }
 
 let private assertSameIdentity variant =
@@ -903,7 +926,7 @@ let ``an effect link is a checked name`` () =
 
 [<Fact>]
 let ``unknown vocabulary versions are refused, never upgraded`` () =
-    for version in [ "ordo.construction-vocabulary/3"; "ordo.construction-vocabulary/2.0"; "ordo.construction-vocabulary"; "" ] do
+    for version in [ "ordo.construction-vocabulary/4"; "ordo.construction-vocabulary/2.0"; "ordo.construction-vocabulary"; "" ] do
         refusedWith (UnsupportedVocabulary version) { remainV2 with VocabularyVersion = version }
 
 [<Fact>]
@@ -991,4 +1014,4 @@ let ``vocabulary 2 adds no escape hatch: extra members are still refused`` () =
 
 [<Fact>]
 let ``the wire refuses unknown vocabulary versions`` () =
-    refusedOnWire "unsupported ordo.construction-vocabulary/3" (mapMember "vocabularyVersion" (fun _ -> JString "ordo.construction-vocabulary/3") planV2Json)
+    refusedOnWire "unsupported ordo.construction-vocabulary/4" (mapMember "vocabularyVersion" (fun _ -> JString "ordo.construction-vocabulary/4") planV2Json)

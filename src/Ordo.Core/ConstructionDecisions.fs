@@ -23,6 +23,13 @@ open Ordo.Core.ConstructionPlan
 [<Literal>]
 let DecisionsSchemaVersion = "ordo.construction-decisions/1"
 
+/// Version 2 (CONSTRUCT-010) makes every choice explicit. A `stateModel`
+/// must say what an unlisted pair means (`unlisted`) and may list explicit
+/// `refusals` and `undecided` pairs; every `transitionEffect` must list its
+/// `decisionPoints`. Version 2 records generate vocabulary 3 plans only.
+[<Literal>]
+let DecisionsSchemaVersion2 = "ordo.construction-decisions/2"
+
 type RecordedState = { Name: string; Role: StateRole }
 
 type RecordedTransition =
@@ -33,17 +40,51 @@ type RecordedTransition =
       /// record's node in the blueprint.
       RequirementKeys: string list }
 
+/// One choice inside an effect's handwritten behavior (version 2).
+type RecordedDecisionPoint =
+    { Point: string
+      /// `None`: not decided; the question becomes an obligation.
+      Question: string option
+      RequirementKeys: string list }
+
 /// A port an interface (or decision) node fixes.
 type RecordedPort =
     | RecordedCurrentTime of requirementKeys: string list
     /// `onFailure = None` is the wire `null`: NOT DECIDED. The generator
     /// never picks a disposition for it; it emits an obligation.
-    | RecordedTransitionEffect of command: string * onFailure: EffectFailureDisposition option * requirementKeys: string list
+    /// `decisionPoints` is `None` in version 1 records and required in
+    /// version 2; an empty list asserts the cited requirements fix the
+    /// effect's behavior completely.
+    | RecordedTransitionEffect of
+        command: string * onFailure: EffectFailureDisposition option * requirementKeys: string list * decisionPoints: RecordedDecisionPoint list option
+
+/// What an unlisted (state, command) pair means (version 2).
+[<RequireQualifiedAccess>]
+type RecordedUnlisted =
+    /// A documented rule, cited by these requirements, refuses it.
+    | Refused of requirementKeys: string list
+    /// The requirements do not decide it.
+    | Undecided
+
+type RecordedPair =
+    { Command: string
+      From: string
+      RequirementKeys: string list }
+
+type RecordedUndecidedPair =
+    { Command: string
+      From: string
+      Question: string
+      RequirementKeys: string list }
 
 type StateModelContent =
     { Workflow: string
       States: RecordedState list
-      Transitions: RecordedTransition list }
+      Transitions: RecordedTransition list
+      /// `None` in version 1 records; required in version 2.
+      Unlisted: RecordedUnlisted option
+      Refusals: RecordedPair list
+      Undecided: RecordedUndecidedPair list }
 
 type DecisionContent =
     /// Wire kind `stateModel`: the states and transitions a decision fixes.
@@ -109,7 +150,23 @@ let private onFailure path value =
     | JString other -> fail path ("unsupported onFailure: " + other)
     | _ -> fail path "expected null or a disposition string"
 
-let private port path value =
+let private decisionPoint path value =
+    result {
+        let! decided =
+            match value with
+            | JObject properties ->
+                match properties |> List.filter (fun (n, _) -> n = "decided") with
+                | [ _, JBool b ] -> Ok b
+                | _ -> fail path "expected exactly one boolean member decided"
+            | _ -> fail path "expected object"
+        let! p = fields path ([ "point"; "decided"; "requirementKeys" ] @ (if decided then [] else [ "question" ])) [] value
+        let! point = textField path "point" p
+        let! question = if decided then Ok None else textField path "question" p |> Result.map Some
+        let! keys = keysField path p
+        return { Point = point; Question = question; RequirementKeys = keys }
+    }
+
+let private port (second: bool) path value =
     result {
         let! kind =
             match value with
@@ -124,16 +181,59 @@ let private port path value =
             let! keys = keysField path p
             return RecordedCurrentTime keys
         | "transitionEffect" ->
-            let! p = fields path [ "port"; "command"; "onFailure"; "requirementKeys" ] [] value
+            let! p = fields path ([ "port"; "command"; "onFailure"; "requirementKeys" ] @ (if second then [ "decisionPoints" ] else [])) [] value
             let! command = textField path "command" p
             let! raw = field path "onFailure" p
             let! disposition = onFailure (path + ".onFailure") raw
             let! keys = keysField path p
-            return RecordedTransitionEffect(command, disposition, keys)
+            let! points =
+                if second then
+                    field path "decisionPoints" p |> Result.bind (items (path + ".decisionPoints") decisionPoint) |> Result.map Some
+                else Ok None
+            return RecordedTransitionEffect(command, disposition, keys, points)
         | other -> return! fail (path + ".port") ("unsupported port: " + other)
     }
 
-let private content path value =
+let private pair path value =
+    result {
+        let! p = fields path [ "command"; "from"; "requirementKeys" ] [] value
+        let! command = textField path "command" p
+        let! from = textField path "from" p
+        let! keys = keysField path p
+        return { RecordedPair.Command = command; From = from; RequirementKeys = keys }
+    }
+
+let private undecidedPair path value =
+    result {
+        let! p = fields path [ "command"; "from"; "question"; "requirementKeys" ] [] value
+        let! command = textField path "command" p
+        let! from = textField path "from" p
+        let! question = textField path "question" p
+        let! keys = keysField path p
+        return { RecordedUndecidedPair.Command = command; From = from; Question = question; RequirementKeys = keys }
+    }
+
+let private unlisted path value =
+    result {
+        let! disposition =
+            match value with
+            | JObject properties ->
+                match properties |> List.filter (fun (n, _) -> n = "disposition") with
+                | [ _, JString d ] -> Ok d
+                | _ -> fail path "expected exactly one string member disposition"
+            | _ -> fail path "expected object"
+        match disposition with
+        | "refused" ->
+            let! p = fields path [ "disposition"; "requirementKeys" ] [] value
+            let! keys = keysField path p
+            return RecordedUnlisted.Refused keys
+        | "undecided" ->
+            let! _ = fields path [ "disposition" ] [] value
+            return RecordedUnlisted.Undecided
+        | other -> return! fail (path + ".disposition") ("unsupported unlisted disposition: " + other)
+    }
+
+let private content (second: bool) path value =
     result {
         let! kind =
             match value with
@@ -144,27 +244,35 @@ let private content path value =
             | _ -> fail path "expected object"
         match kind with
         | "stateModel" ->
-            let! p = fields path [ "kind"; "workflow"; "states"; "transitions" ] [] value
+            let required = [ "kind"; "workflow"; "states"; "transitions" ] @ (if second then [ "unlisted" ] else [])
+            let! p = fields path required (if second then [ "refusals"; "undecided" ] else []) value
             let! workflow = textField path "workflow" p
             let! rawStates = field path "states" p
             let! states = items (path + ".states") state rawStates
             let! rawTransitions = field path "transitions" p
             let! transitions = items (path + ".transitions") transition rawTransitions
-            return StateModel { Workflow = workflow; States = states; Transitions = transitions }
+            let! rule = if second then field path "unlisted" p |> Result.bind (unlisted (path + ".unlisted")) |> Result.map Some else Ok None
+            let optionalList name reader =
+                match Map.tryFind name p with
+                | Some raw -> items (path + "." + name) reader raw
+                | None -> Ok []
+            let! refusals = optionalList "refusals" pair
+            let! undecided = optionalList "undecided" undecidedPair
+            return StateModel { Workflow = workflow; States = states; Transitions = transitions; Unlisted = rule; Refusals = refusals; Undecided = undecided }
         | "portContract" ->
             let! p = fields path [ "kind"; "ports" ] [] value
             let! rawPorts = field path "ports" p
-            let! ports = items (path + ".ports") port rawPorts
+            let! ports = items (path + ".ports") (port second) rawPorts
             return PortContract ports
         | other -> return! fail (path + ".kind") ("unsupported content kind: " + other)
     }
 
-let private record path value =
+let private record (second: bool) path value =
     result {
         let! p = fields path [ "nodeId"; "content" ] [] value
         let! nodeId = textField path "nodeId" p
         let! raw = field path "content" p
-        let! decided = content (path + ".content") raw
+        let! decided = content second (path + ".content") raw
         return { NodeId = nodeId; Content = decided }
     }
 
@@ -175,11 +283,14 @@ let readDecisionRecords (input: string) : Result<ApprovedDecisionRecords, string
         let! json = parse input |> Result.mapError (sprintf "invalid JSON: %A")
         let! p = fields "$" [ "schemaVersion"; "blueprintDigest"; "cohortId"; "records" ] [] json
         let! schema = textField "$" "schemaVersion" p
-        let! () = if schema = DecisionsSchemaVersion then Ok() else fail "$.schemaVersion" ("unsupported " + schema)
+        let! () =
+            if schema = DecisionsSchemaVersion || schema = DecisionsSchemaVersion2 then Ok()
+            else fail "$.schemaVersion" ("unsupported " + schema)
+        let second = schema = DecisionsSchemaVersion2
         let! blueprint = textField "$" "blueprintDigest" p
         let! cohort = textField "$" "cohortId" p
         let! rawRecords = field "$" "records" p
-        let! records = items "$.records" record rawRecords
+        let! records = items "$.records" (record second) rawRecords
         return { ApprovedDecisionRecords.SchemaVersion = schema; BlueprintDigest = blueprint; CohortId = cohort; Records = records }
     }
 
@@ -202,21 +313,43 @@ let private sortedBy (render: 'a -> JsonValue) (values: 'a list) =
 let private jPort port =
     match port with
     | RecordedCurrentTime keys -> JObject [ "port", JString "currentTime"; "requirementKeys", jKeys keys ]
-    | RecordedTransitionEffect(command, disposition, keys) ->
-        JObject [ "port", JString "transitionEffect"
-                  "command", JString command
-                  "onFailure", (disposition |> Option.map (effectFailureDispositionName >> JString) |> Option.defaultValue JNull)
-                  "requirementKeys", jKeys keys ]
+    | RecordedTransitionEffect(command, disposition, keys, points) ->
+        JObject(
+            [ "port", JString "transitionEffect"
+              "command", JString command
+              "onFailure", (disposition |> Option.map (effectFailureDispositionName >> JString) |> Option.defaultValue JNull)
+              "requirementKeys", jKeys keys ]
+            @ (points
+               |> Option.map (fun ps ->
+                   "decisionPoints",
+                   JArray(ps |> sortedBy (fun p ->
+                       JObject(
+                           [ "point", JString p.Point
+                             "decided", JBool p.Question.IsNone
+                             "requirementKeys", jKeys p.RequirementKeys ]
+                           @ (p.Question |> Option.map (fun q -> "question", JString q) |> Option.toList)))))
+               |> Option.toList))
 
 let private jContent content =
     match content with
     | StateModel m ->
-        JObject [ "kind", JString "stateModel"
-                  "workflow", JString m.Workflow
-                  "states", JArray(m.States |> sortedBy (fun s -> JObject [ "name", JString s.Name; "role", JString(roleName s.Role) ]))
-                  "transitions",
-                  JArray(m.Transitions |> sortedBy (fun t ->
-                      JObject [ "command", JString t.Command; "from", JString t.From; "to", JString t.To; "requirementKeys", jKeys t.RequirementKeys ])) ]
+        JObject(
+            [ "kind", JString "stateModel"
+              "workflow", JString m.Workflow
+              "states", JArray(m.States |> sortedBy (fun s -> JObject [ "name", JString s.Name; "role", JString(roleName s.Role) ]))
+              "transitions",
+              JArray(m.Transitions |> sortedBy (fun t ->
+                  JObject [ "command", JString t.Command; "from", JString t.From; "to", JString t.To; "requirementKeys", jKeys t.RequirementKeys ])) ]
+            @ (match m.Unlisted with
+               | None -> []
+               | Some(RecordedUnlisted.Refused keys) ->
+                   [ "unlisted", JObject [ "disposition", JString "refused"; "requirementKeys", jKeys keys ]
+                     "refusals", JArray(m.Refusals |> sortedBy (fun r -> JObject [ "command", JString r.Command; "from", JString r.From; "requirementKeys", jKeys r.RequirementKeys ]))
+                     "undecided", JArray(m.Undecided |> sortedBy (fun u -> JObject [ "command", JString u.Command; "from", JString u.From; "question", JString u.Question; "requirementKeys", jKeys u.RequirementKeys ])) ]
+               | Some RecordedUnlisted.Undecided ->
+                   [ "unlisted", JObject [ "disposition", JString "undecided" ]
+                     "refusals", JArray(m.Refusals |> sortedBy (fun r -> JObject [ "command", JString r.Command; "from", JString r.From; "requirementKeys", jKeys r.RequirementKeys ]))
+                     "undecided", JArray(m.Undecided |> sortedBy (fun u -> JObject [ "command", JString u.Command; "from", JString u.From; "question", JString u.Question; "requirementKeys", jKeys u.RequirementKeys ])) ]))
     | PortContract ports -> JObject [ "kind", JString "portContract"; "ports", JArray(sortedBy jPort ports) ]
 
 let toJson (records: ApprovedDecisionRecords) =

@@ -131,6 +131,12 @@ let private withTrace (trace: TraceDraft) operation =
     | DeclarePort p -> DeclarePort { p with Trace = trace }
     | BindCapability c -> BindCapability { c with Trace = trace }
     | DeclareUnresolved u -> DeclareUnresolved { u with Trace = trace }
+    | DeclarePairRule r -> DeclarePairRule { r with Trace = trace }
+    | DefineRefusal r -> DefineRefusal { r with Trace = trace }
+    | DeclareUndecidedTransition u -> DeclareUndecidedTransition { u with Trace = trace }
+    // Only the operation's own trace: decision-point traces are part of an
+    // inventory's identity, so drafts must agree on what justifies each point.
+    | DeclareExtensionInventory i -> DeclareExtensionInventory { i with Trace = trace }
 
 /// Identity ignores trace. Operations are already canonical (normalized
 /// names, guards and scopes sorted and distinct), so equality compares
@@ -169,6 +175,20 @@ let private describe operation =
         + (disposition |> Option.map (fun d -> " onFailure " + effectFailureDispositionName d) |> Option.defaultValue "")
     | BindCapability c -> sprintf "bindCapability %s %s" c.Command c.Capability
     | DeclareUnresolved u -> "declareUnresolved " + u.Subject
+    | DeclarePairRule r ->
+        "declarePairRule unlisted " + (match r.Unlisted with UnlistedPairs.Refused -> "refused" | UnlistedPairs.Undecided -> "undecided")
+    | DefineRefusal r -> sprintf "defineRefusal %s from %s" r.Pair.OnCommand r.Pair.InState
+    | DeclareUndecidedTransition u -> sprintf "declareUndecidedTransition %s from %s" u.Pair.OnCommand u.Pair.InState
+    | DeclareExtensionInventory i ->
+        let extension =
+            match i.Extension with
+            | ExtensionRef.Guard n -> "guard " + n
+            | ExtensionRef.Invariant n -> "invariant " + n
+            | ExtensionRef.Effect n -> "effect " + n
+        let points =
+            i.DecisionPoints
+            |> List.map (fun p -> p.Point + (match p.Resolution with DecisionPointResolution.Decided -> " decided" | DecisionPointResolution.Undecided _ -> " undecided"))
+        sprintf "declareExtensionInventory %s%s" extension (if List.isEmpty points then " with no decision points" else " with " + commaList points)
 
 let private dispositionText operation =
     match operation with

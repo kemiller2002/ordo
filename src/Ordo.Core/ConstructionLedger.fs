@@ -262,13 +262,17 @@ let private isOpen kind =
     | TypedObligationKind.UndecidedEffectFailure
     | TypedObligationKind.Conflict
     | TypedObligationKind.UncoveredRequirement
-    | TypedObligationKind.UnsupportedVocabulary -> true
+    | TypedObligationKind.UnsupportedVocabulary
+    | TypedObligationKind.UndecidedTransition
+    | TypedObligationKind.UndecidedExtensionDecision -> true
 
 let private isDomainQuestion kind =
     match kind with
     | TypedObligationKind.UndecidedEffectFailure
     | TypedObligationKind.Conflict
-    | TypedObligationKind.UncoveredRequirement -> true
+    | TypedObligationKind.UncoveredRequirement
+    | TypedObligationKind.UndecidedTransition
+    | TypedObligationKind.UndecidedExtensionDecision -> true
     | TypedObligationKind.ExtensionBehavior
     | TypedObligationKind.UnsupportedVocabulary -> false
 
