@@ -36,6 +36,14 @@ let DecisionsSchemaVersion2 = "ordo.construction-decisions/2"
 [<Literal>]
 let DecisionsSchemaVersion3 = "ordo.construction-decisions/3"
 
+/// Version 4 (CONSTRUCT-010 phase 2) is version 3 plus effect outcome
+/// policies and a persisted instance, as their own content kinds, and code
+/// assignments to `notFound` and `staleRevision`. A version 4 effect port
+/// carries no `onFailure`; its policy record states it. Version 4 records
+/// generate vocabulary 6 plans only.
+[<Literal>]
+let DecisionsSchemaVersion4 = "ordo.construction-decisions/4"
+
 type RecordedState = { Name: string; Role: StateRole }
 
 type RecordedTransition =
@@ -94,6 +102,10 @@ type RecordedRefusalCode =
 type RecordedCodeTarget =
     | Pair of from: string * command: string
     | Unlisted
+    /// Version 4: a missing persisted instance.
+    | NotFound
+    /// Version 4: a refused stale write.
+    | StaleRevision
 
 type RecordedCodeAssignment =
     { Target: RecordedCodeTarget
@@ -108,6 +120,21 @@ type RecordedBranching =
       Targets: string list
       RequirementKeys: string list
       DecisionPoints: RecordedDecisionPoint list }
+
+/// Version 4: what a failed or unknown outcome of one effect means. An
+/// absent action is not decided; it is never defaulted.
+type RecordedEffectPolicy =
+    { Command: string
+      Retries: int
+      OnFailed: FailedEffectAction option
+      OnUnknown: UnknownEffectAction option
+      RequirementKeys: string list }
+
+/// Version 4: the persisted instance. An absent choice is not decided.
+type RecordedPersistence =
+    { Idempotency: IdempotencyScope option
+      OnStale: StaleAction option
+      RequirementKeys: string list }
 
 type StateModelContent =
     { Workflow: string
@@ -137,6 +164,10 @@ type DecisionContent =
     /// Wire kind `conflictResolution`: the conflicts a decision settles.
     /// Accepted in every record schema version; additive.
     | ConflictResolution of ConflictResolutionContent
+    /// Version 4, wire kind `effectPolicies`: the outcome policy of effects.
+    | EffectPolicies of RecordedEffectPolicy list
+    /// Version 4, wire kind `persistence`: the persisted instance.
+    | Persistence of RecordedPersistence
 
 type DecisionRecord = { NodeId: string; Content: DecisionContent }
 
@@ -212,7 +243,7 @@ let private decisionPoint path value =
         return { Point = point; Question = question; RequirementKeys = keys }
     }
 
-let private port (second: bool) path value =
+let private port (second: bool) (fourth: bool) path value =
     result {
         let! kind =
             match value with
@@ -227,10 +258,11 @@ let private port (second: bool) path value =
             let! keys = keysField path p
             return RecordedCurrentTime keys
         | "transitionEffect" ->
-            let! p = fields path ([ "port"; "command"; "onFailure"; "requirementKeys" ] @ (if second then [ "decisionPoints" ] else [])) [] value
+            // Version 4: the effect's policy record states failure handling.
+            let required = [ "port"; "command"; "requirementKeys" ] @ (if fourth then [] else [ "onFailure" ]) @ (if second then [ "decisionPoints" ] else [])
+            let! p = fields path required [] value
             let! command = textField path "command" p
-            let! raw = field path "onFailure" p
-            let! disposition = onFailure (path + ".onFailure") raw
+            let! disposition = if fourth then Ok None else field path "onFailure" p |> Result.bind (onFailure (path + ".onFailure"))
             let! keys = keysField path p
             let! points =
                 if second then
@@ -287,7 +319,7 @@ let private refusalCode path value =
         return { RecordedRefusalCode.Code = code; RequirementKeys = keys }
     }
 
-let private codeAssignment path value =
+let private codeAssignment (fourth: bool) path value =
     result {
         let! p = fields path [ "target"; "code"; "requirementKeys" ] [] value
         let! rawTarget = field path "target" p
@@ -310,6 +342,8 @@ let private codeAssignment path value =
                         return RecordedCodeTarget.Pair(from, command)
                     })
             | "unlisted" -> fields targetPath [ "kind" ] [] rawTarget |> Result.map (fun _ -> RecordedCodeTarget.Unlisted)
+            | "notFound" when fourth -> fields targetPath [ "kind" ] [] rawTarget |> Result.map (fun _ -> RecordedCodeTarget.NotFound)
+            | "staleRevision" when fourth -> fields targetPath [ "kind" ] [] rawTarget |> Result.map (fun _ -> RecordedCodeTarget.StaleRevision)
             | other -> fail (targetPath + ".kind") ("unsupported refusal-code target: " + other)
         let! code = textField path "code" p
         let! keys = keysField path p
@@ -327,7 +361,37 @@ let private branching path value =
         return { RecordedBranching.Command = command; From = from; Targets = targets; RequirementKeys = keys; DecisionPoints = points }
     }
 
-let private content (second: bool) (third: bool) path value =
+let private effectPolicy path value =
+    result {
+        let! p = fields path [ "command"; "retries"; "requirementKeys" ] [ "onFailed"; "onUnknown" ] value
+        let! command = textField path "command" p
+        let! retries =
+            match Map.find "retries" p with
+            | JInt n when n >= 0L && n <= int64 MaxEffectRetries -> Ok(int n)
+            | JInt n -> fail (path + ".retries") (sprintf "retries must be 0 to %d, not %d" MaxEffectRetries n)
+            | _ -> fail (path + ".retries") "expected an integer"
+        let optionalText name = if Map.containsKey name p then textField path name p |> Result.map Some else Ok None
+        let! failedText = optionalText "onFailed"
+        let! onFailed =
+            match failedText with
+            | None -> Ok None
+            | Some "remain" -> Ok(Some FailedEffectAction.Remain)
+            | Some "proceed" -> Ok(Some FailedEffectAction.Proceed)
+            | Some "compensate" -> Ok(Some FailedEffectAction.Compensate)
+            | Some "escalate" -> Ok(Some FailedEffectAction.Escalate)
+            | Some other -> fail (path + ".onFailed") ("unsupported onFailed: " + other + " (omit it to leave it undecided)")
+        let! unknownText = optionalText "onUnknown"
+        let! onUnknown =
+            match unknownText with
+            | None -> Ok None
+            | Some "reconcile" -> Ok(Some UnknownEffectAction.Reconcile)
+            | Some "escalate" -> Ok(Some UnknownEffectAction.Escalate)
+            | Some other -> fail (path + ".onUnknown") ("unsupported onUnknown: " + other + " (omit it to leave it undecided)")
+        let! keys = keysField path p
+        return { RecordedEffectPolicy.Command = command; Retries = retries; OnFailed = onFailed; OnUnknown = onUnknown; RequirementKeys = keys }
+    }
+
+let private content (second: bool) (third: bool) (fourth: bool) path value =
     result {
         let! kind =
             match value with
@@ -355,7 +419,7 @@ let private content (second: bool) (third: bool) path value =
             let! refusals = optionalList "refusals" pair
             let! undecided = optionalList "undecided" undecidedPair
             let! codes = optionalList "refusalCodes" refusalCode
-            let! assignments = optionalList "codeAssignments" codeAssignment
+            let! assignments = optionalList "codeAssignments" (codeAssignment fourth)
             let! branches = optionalList "branching" branching
             return
                 StateModel
@@ -364,7 +428,7 @@ let private content (second: bool) (third: bool) path value =
         | "portContract" ->
             let! p = fields path [ "kind"; "ports" ] [] value
             let! rawPorts = field path "ports" p
-            let! ports = items (path + ".ports") (port second) rawPorts
+            let! ports = items (path + ".ports") (port second fourth) rawPorts
             return PortContract ports
         | "conflictResolution" ->
             let! p = fields path [ "kind"; "conflicts"; "requirementKeys" ] [] value
@@ -373,15 +437,38 @@ let private content (second: bool) (third: bool) path value =
             let! () = if List.isEmpty conflicts then fail (path + ".conflicts") "expected at least one conflict id" else Ok()
             let! keys = keysField path p
             return ConflictResolution { Conflicts = conflicts; RequirementKeys = keys }
+        | "effectPolicies" when fourth ->
+            let! p = fields path [ "kind"; "policies" ] [] value
+            let! policies = field path "policies" p |> Result.bind (items (path + ".policies") effectPolicy)
+            return EffectPolicies policies
+        | "persistence" when fourth ->
+            let! p = fields path [ "kind"; "requirementKeys" ] [ "idempotency"; "onStale" ] value
+            let optionalText name = if Map.containsKey name p then textField path name p |> Result.map Some else Ok None
+            let! scopeText = optionalText "idempotency"
+            let! scope =
+                match scopeText with
+                | None -> Ok None
+                | Some "durable" -> Ok(Some IdempotencyScope.Durable)
+                | Some "session" -> Ok(Some IdempotencyScope.Session)
+                | Some other -> fail (path + ".idempotency") ("unsupported idempotency: " + other + " (omit it to leave it undecided)")
+            let! staleText = optionalText "onStale"
+            let! onStale =
+                match staleText with
+                | None -> Ok None
+                | Some "refuse" -> Ok(Some StaleAction.Refuse)
+                | Some "escalate" -> Ok(Some StaleAction.Escalate)
+                | Some other -> fail (path + ".onStale") ("unsupported onStale: " + other + " (omit it to leave it undecided)")
+            let! keys = keysField path p
+            return Persistence { Idempotency = scope; OnStale = onStale; RequirementKeys = keys }
         | other -> return! fail (path + ".kind") ("unsupported content kind: " + other)
     }
 
-let private record (second: bool) (third: bool) path value =
+let private record (second: bool) (third: bool) (fourth: bool) path value =
     result {
         let! p = fields path [ "nodeId"; "content" ] [] value
         let! nodeId = textField path "nodeId" p
         let! raw = field path "content" p
-        let! decided = content second third (path + ".content") raw
+        let! decided = content second third fourth (path + ".content") raw
         return { NodeId = nodeId; Content = decided }
     }
 
@@ -393,15 +480,17 @@ let readDecisionRecords (input: string) : Result<ApprovedDecisionRecords, string
         let! p = fields "$" [ "schemaVersion"; "blueprintDigest"; "cohortId"; "records" ] [] json
         let! schema = textField "$" "schemaVersion" p
         let! () =
-            if schema = DecisionsSchemaVersion || schema = DecisionsSchemaVersion2 || schema = DecisionsSchemaVersion3 then Ok()
+            if List.contains schema [ DecisionsSchemaVersion; DecisionsSchemaVersion2; DecisionsSchemaVersion3; DecisionsSchemaVersion4 ] then Ok()
             else fail "$.schemaVersion" ("unsupported " + schema)
         // Version 3 keeps every version 2 requirement.
         let second = schema <> DecisionsSchemaVersion
-        let third = schema = DecisionsSchemaVersion3
+        // Version 4 keeps every version 3 member.
+        let third = schema = DecisionsSchemaVersion3 || schema = DecisionsSchemaVersion4
+        let fourth = schema = DecisionsSchemaVersion4
         let! blueprint = textField "$" "blueprintDigest" p
         let! cohort = textField "$" "cohortId" p
         let! rawRecords = field "$" "records" p
-        let! records = items "$.records" (record second third) rawRecords
+        let! records = items "$.records" (record second third fourth) rawRecords
         return { ApprovedDecisionRecords.SchemaVersion = schema; BlueprintDigest = blueprint; CohortId = cohort; Records = records }
     }
 
@@ -428,22 +517,23 @@ let private jDecisionPoint (p: RecordedDecisionPoint) =
           "requirementKeys", jKeys p.RequirementKeys ]
         @ (p.Question |> Option.map (fun q -> "question", JString q) |> Option.toList))
 
-let private jPort port =
+let private jPort (fourth: bool) port =
     match port with
     | RecordedCurrentTime keys -> JObject [ "port", JString "currentTime"; "requirementKeys", jKeys keys ]
     | RecordedTransitionEffect(command, disposition, keys, points) ->
         JObject(
             [ "port", JString "transitionEffect"
               "command", JString command
-              "onFailure", (disposition |> Option.map (effectFailureDispositionName >> JString) |> Option.defaultValue JNull)
               "requirementKeys", jKeys keys ]
+            // Version 4 effect ports carry no onFailure; their policy record does.
+            @ (if fourth then [] else [ "onFailure", (disposition |> Option.map (effectFailureDispositionName >> JString) |> Option.defaultValue JNull) ])
             @ (points
                |> Option.map (fun ps ->
                    "decisionPoints",
                    JArray(ps |> sortedBy jDecisionPoint))
                |> Option.toList))
 
-let private jContent content =
+let private jContent (fourth: bool) content =
     match content with
     | StateModel m ->
         JObject(
@@ -473,7 +563,9 @@ let private jContent content =
                          JObject [ "target",
                                    (match a.Target with
                                     | RecordedCodeTarget.Pair(from, command) -> JObject [ "kind", JString "pair"; "from", JString from; "command", JString command ]
-                                    | RecordedCodeTarget.Unlisted -> JObject [ "kind", JString "unlisted" ])
+                                    | RecordedCodeTarget.Unlisted -> JObject [ "kind", JString "unlisted" ]
+                                    | RecordedCodeTarget.NotFound -> JObject [ "kind", JString "notFound" ]
+                                    | RecordedCodeTarget.StaleRevision -> JObject [ "kind", JString "staleRevision" ])
                                    "code", JString a.Code
                                    "requirementKeys", jKeys a.RequirementKeys ])) ])
             @ (if List.isEmpty m.Branching then []
@@ -485,7 +577,20 @@ let private jContent content =
                                    "targets", JArray(b.Targets |> List.distinct |> List.sort |> List.map JString)
                                    "requirementKeys", jKeys b.RequirementKeys
                                    "decisionPoints", JArray(b.DecisionPoints |> sortedBy jDecisionPoint) ])) ]))
-    | PortContract ports -> JObject [ "kind", JString "portContract"; "ports", JArray(sortedBy jPort ports) ]
+    | PortContract ports -> JObject [ "kind", JString "portContract"; "ports", JArray(sortedBy (jPort fourth) ports) ]
+    | EffectPolicies policies ->
+        JObject [ "kind", JString "effectPolicies"
+                  "policies",
+                  JArray(policies |> sortedBy (fun p ->
+                      JObject(
+                          [ "command", JString p.Command; "retries", JInt(int64 p.Retries); "requirementKeys", jKeys p.RequirementKeys ]
+                          @ (p.OnFailed |> Option.map (fun a -> "onFailed", JString(failedActionName a)) |> Option.toList)
+                          @ (p.OnUnknown |> Option.map (fun a -> "onUnknown", JString(unknownActionName a)) |> Option.toList)))) ]
+    | Persistence p ->
+        JObject(
+            [ "kind", JString "persistence"; "requirementKeys", jKeys p.RequirementKeys ]
+            @ (p.Idempotency |> Option.map (fun i -> "idempotency", JString(idempotencyName i)) |> Option.toList)
+            @ (p.OnStale |> Option.map (fun a -> "onStale", JString(staleActionName a)) |> Option.toList))
     | ConflictResolution c ->
         JObject [ "kind", JString "conflictResolution"
                   "conflicts", JArray(c.Conflicts |> List.distinct |> List.sort |> List.map JString)
@@ -496,7 +601,7 @@ let toJson (records: ApprovedDecisionRecords) =
               "blueprintDigest", JString records.BlueprintDigest
               "cohortId", JString records.CohortId
               "records",
-              JArray(records.Records |> sortedBy (fun r -> JObject [ "nodeId", JString r.NodeId; "content", jContent r.Content ])) ]
+              JArray(records.Records |> sortedBy (fun r -> JObject [ "nodeId", JString r.NodeId; "content", jContent (records.SchemaVersion = DecisionsSchemaVersion4) r.Content ])) ]
 
 /// Canonical serialization: sorted object keys, sorted lists, distinct sorted
 /// requirement keys. Equal meaning gives equal bytes. A file written with

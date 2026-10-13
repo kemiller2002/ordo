@@ -140,8 +140,9 @@ Mutation checks: six mutants each failed the suite.
 
 ## Not in this increment
 
-- **Default plans.** Decision records cannot state a policy yet, so
-  `generateDefaultPlan` does not produce vocabulary 5.
+- **Default plans for vocabulary 5.** Decision records version 4 state
+  policies, but generate vocabulary 6 only. See
+  [persisted instances](persisted-instances.md#default-plans-decision-records-ordoconstruction-decisions4).
 - **Durable idempotency.** Persisted aggregates, revision compare-and-swap,
   and durable versus session idempotency scope come in increments 3 and 4.
   A retry here is safe only because the outcome is a *definite* failure.

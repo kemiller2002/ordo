@@ -1,0 +1,163 @@
+{
+  "schemaVersion": "ordo.construction-decisions/4",
+  "blueprintDigest": "sha256:7995f51955bef374ae8af0df1ca631d596ddbf93a1389070b528b0e8887066fe",
+  "cohortId": "COH-GATE",
+  "records": [
+    {
+      "nodeId": "DEC-GATE",
+      "content": {
+        "kind": "stateModel",
+        "workflow": "Stored Gate",
+        "states": [
+          {
+            "name": "Closed",
+            "role": "initial"
+          },
+          {
+            "name": "Open",
+            "role": "ordinary"
+          },
+          {
+            "name": "Jammed",
+            "role": "ordinary"
+          }
+        ],
+        "transitions": [
+          {
+            "command": "Lower",
+            "from": "Open",
+            "to": "Closed",
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-1"
+            ]
+          },
+          {
+            "command": "Reset",
+            "from": "Jammed",
+            "to": "Closed",
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-1"
+            ]
+          }
+        ],
+        "unlisted": {
+          "disposition": "refused",
+          "requirementKeys": [
+            "synthetic/gate.md#GATE-1"
+          ]
+        },
+        "refusals": [
+          {
+            "command": "Raise",
+            "from": "Open",
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-1",
+              "synthetic/gate.md#GATE-4"
+            ]
+          }
+        ],
+        "undecided": [],
+        "refusalCodes": [
+          {
+            "code": "AlreadyOpen",
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-4"
+            ]
+          },
+          {
+            "code": "NotAccepted",
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-4"
+            ]
+          },
+          {
+            "code": "NoSuchGate",
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-5"
+            ]
+          },
+          {
+            "code": "StaleRevision",
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-5"
+            ]
+          }
+        ],
+        "codeAssignments": [
+          {
+            "target": {
+              "kind": "pair",
+              "from": "Open",
+              "command": "Raise"
+            },
+            "code": "AlreadyOpen",
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-4"
+            ]
+          },
+          {
+            "target": {
+              "kind": "unlisted"
+            },
+            "code": "NotAccepted",
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-4"
+            ]
+          },
+          {
+            "target": {
+              "kind": "notFound"
+            },
+            "code": "NoSuchGate",
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-5"
+            ]
+          },
+          {
+            "target": {
+              "kind": "staleRevision"
+            },
+            "code": "StaleRevision",
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-5"
+            ]
+          }
+        ],
+        "branching": [
+          {
+            "command": "Raise",
+            "from": "Closed",
+            "targets": [
+              "Open",
+              "Jammed"
+            ],
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-1",
+              "synthetic/gate.md#GATE-2"
+            ],
+            "decisionPoints": [
+              {
+                "point": "motor report",
+                "decided": true,
+                "requirementKeys": [
+                  "synthetic/gate.md#GATE-2"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "nodeId": "DEC-GATE",
+      "content": {
+        "kind": "persistence",
+        "idempotency": "durable",
+        "onStale": "refuse",
+        "requirementKeys": [
+          "synthetic/gate.md#GATE-5"
+        ]
+      }
+    }
+  ]
+}

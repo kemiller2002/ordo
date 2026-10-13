@@ -178,3 +178,21 @@ let ``rebasing a stale write cannot be expressed, and session records cannot car
               "session record has no durable applied ids",
               session + "let r = { SessionGateRecord.Id = SessionGateId \"g\"; Revision = 1L; State = SessionGateState.Closed; Applied = Set.empty }", Some "FS0039" ]
     Assert.True(List.isEmpty failures, String.concat "\n\n" failures)
+
+/// Decision records version 4: the same persisted gate, generated from
+/// approved records instead of a hand-authored plan, constructs the same
+/// persistence tier as the StoredGate golden (only the plan digest in the
+/// header differs).
+[<Fact>]
+let ``a default plan from version 4 records constructs the golden persistence tier`` () =
+    let records =
+        System.IO.File.ReadAllText(System.IO.Path.Combine(repositoryRoot, "tests", "fixtures", "construction", "gate-persisted-synthetic", "construction-decisions-v4.json"))
+        |> Ordo.Core.ConstructionDecisions.readDecisionRecords |> ok "decisions"
+    let plan =
+        Ordo.Core.ConstructionDefaultPlan.generateDefaultPlan (prepared storedGate) records Ordo.Core.ConstructionDefaultPlan.ConstructionVocabulary.Version6
+        |> ok "default plan"
+    let c = construct plan.ValidatedPlan |> ok "construct"
+    let fromRecords = (c.Artifacts |> List.find (fun a -> a.Path.EndsWith ".Persistence.g.fs")).Content
+    let golden = System.IO.File.ReadAllText(goldenPath storedGate "generated/StoredGate/StoredGate.Persistence.g.fs")
+    let body (text: string) = text.Substring(text.IndexOf '\n')
+    Assert.Equal(body golden, body fromRecords)

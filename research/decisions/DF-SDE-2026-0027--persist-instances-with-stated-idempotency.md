@@ -26,6 +26,16 @@ provenance:
         model: unknown
         runtime: claude-code
       reason: "Record CONSTRUCT-010 phase 2 increments 3 and 4 persisted instances"
+    EXE-20261013T231252409Z-6e7aa000:
+      operations: [modified]
+      at: 2026-10-13T23:12:55.000Z
+      actor:
+        kind: agent
+        id: anthropic/claude-code
+        provider: anthropic
+        model: unknown
+        runtime: claude-code
+      reason: "Decision records version 4 state effect policies and persistence"
 ---
 
 # Context
@@ -67,5 +77,5 @@ protocol.
 # Limits
 
 - The evidence is a synthetic fixture.
-- Decision records cannot state persistence yet, so default plans do not
-  produce vocabulary 6.
+- Decision records version 4 state persistence and effect policies; an
+  absent choice stays unresolved. They generate vocabulary 6 default plans.
