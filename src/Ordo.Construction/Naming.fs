@@ -39,9 +39,9 @@ let invariantType (workflow: SemanticName) = workflow.Key + "Invariant"
 let effectType (workflow: SemanticName) = workflow.Key + "Effect"
 let refusalType (workflow: SemanticName) = workflow.Key + "Refusal"
 let decisionType (workflow: SemanticName) = workflow.Key + "Decision"
-let rulesType (workflow: SemanticName) = workflow.Key + "Rules"
+let rulesType (workflow: SemanticName) = Ordo.Core.ConstructionLayout.rulesType workflow
 let transitionModule (workflow: SemanticName) = workflow.Key + "Transition"
-let portsType (workflow: SemanticName) = "I" + workflow.Key + "Ports"
+let portsType (workflow: SemanticName) = Ordo.Core.ConstructionLayout.portsType workflow
 let effectOutcomeType (workflow: SemanticName) = workflow.Key + "EffectOutcome"
 let effectFailureType (workflow: SemanticName) = workflow.Key + "EffectFailure"
 let failureDispositionType (workflow: SemanticName) = workflow.Key + "FailureDisposition"
@@ -51,6 +51,6 @@ let orchestrationModule (workflow: SemanticName) = workflow.Key + "Orchestration
 /// Every generated file lives in one namespace per workflow.
 let rootNamespace (workflow: SemanticName) = "Generated." + workflow.Key
 
-/// Every generated path lives under one ownership root per workflow. Paths
-/// are relative, forward-slashed and contain only grammar-checked words.
-let ownershipRoot (workflow: SemanticName) = "generated/" + workflow.Key + "/"
+/// Every generated path lives under one ownership root per workflow
+/// (`Ordo.Core.ConstructionLayout`, the single naming scheme for paths).
+let ownershipRoot (workflow: SemanticName) = Ordo.Core.ConstructionLayout.ownershipRoot workflow

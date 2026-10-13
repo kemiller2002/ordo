@@ -10,6 +10,7 @@ open System.Security.Cryptography
 open Ordo.Core.Json
 open Ordo.Core.ConstructionPlan
 open Ordo.Construction.Naming
+module Layout = Ordo.Core.ConstructionLayout
 open Ordo.Construction.Artifacts
 
 /// A valid plan the engine cannot place safely. Anything the vocabulary
@@ -144,21 +145,21 @@ let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefu
         let orchestrationOps = pick (function DefineWorkflow _ | DeclarePort _ -> true | op -> isEffectObligation op)
         let digest = plan.Digest
         let generated =
-            [ artifact (root + w.Name.Key + ".Model.g.fs") (Some SemanticModel) modelOps (Emit.semanticModel digest shape)
-              artifact (root + w.Name.Key + ".Transition.g.fs") (Some Transition) transitionOps (Emit.transition digest shape) ]
-            @ (if shape.HasPorts then [ artifact (root + w.Name.Key + ".Orchestration.g.fs") (Some Orchestration) orchestrationOps (Emit.orchestration digest shape) ] else [])
+            [ artifact (Layout.modelPath w.Name) (Some SemanticModel) modelOps (Emit.semanticModel digest shape)
+              artifact (Layout.transitionPath w.Name) (Some Transition) transitionOps (Emit.transition digest shape) ]
+            @ (if shape.HasPorts then [ artifact (Layout.orchestrationPath w.Name) (Some Orchestration) orchestrationOps (Emit.orchestration digest shape) ] else [])
 
         let guardOps (guard: SemanticName) =
             pick (function DefineTransition t -> t.Guards |> List.exists (fun g -> g.Name = guard.Key) | _ -> false)
         let contract name kind ops = { Name = name; Kind = kind; Ownership = Handwritten; Operations = labels ops; RequirementKeys = keysOf ops }
         let contracts =
-            (shape.Guards |> List.map (fun g -> contract (sprintf "%s.Guard/%s" (rulesType w.Name) g.Key) GuardPredicate (guardOps g)))
+            (shape.Guards |> List.map (fun g -> contract (Layout.guardContract w.Name g) GuardPredicate (guardOps g)))
             @ (shape.Invariants |> List.map (fun i ->
-                contract (sprintf "%s.Invariant/%s" (rulesType w.Name) i.Key) InvariantPredicate
+                contract (Layout.invariantContract w.Name i) InvariantPredicate
                     (pick (function DefineInvariant d -> d.Name = i.Key | _ -> false))))
-            @ (if shape.HasClock then [ contract (portsType w.Name + ".CurrentTime") CurrentTimePort (pick (function DeclarePort { Kind = CurrentTime } -> true | _ -> false)) ] else [])
+            @ (if shape.HasClock then [ contract (Layout.currentTimeContract w.Name) CurrentTimePort (pick (function DeclarePort { Kind = CurrentTime } -> true | _ -> false)) ] else [])
             @ (shape.Effects |> List.map (fun e ->
-                contract (sprintf "%s.Perform/%s" (portsType w.Name) e.Key) EffectPort
+                contract (Layout.effectContract w.Name e) EffectPort
                     (pick (function DeclarePort { Kind = TransitionEffect(c, _) } -> c = e.Key | _ -> false))))
 
         let obligations =
@@ -185,7 +186,7 @@ let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefu
                         |> Option.map _.To.Key } ]
 
         let manifest =
-            artifact (root + "construction-manifest.json") None operations
+            artifact (Layout.manifestPath w.Name) None operations
                 (manifestJson plan generator root generated contracts obligations checks)
 
         Ok { GeneratorVersion = generator

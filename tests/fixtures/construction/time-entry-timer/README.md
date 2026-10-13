@@ -78,6 +78,30 @@ compiled goldens in separate namespaces (`TimerRemain`, `TimerProceed`,
 They were produced from `plan.json` and `blueprint.json` with `encodePlan`
 and `encodeBlueprint`, like the originals.
 
+## Construction decision records
+
+`construction-decisions.json` is an `ordo.construction-decisions/1` record set
+for `COH-TIMER`, bound to the canonical blueprint digest of `blueprint.json`.
+`ConstructionDefaultPlan.generateDefaultPlan` turns it into the default plan
+without agent input.
+- `DEC-TIMER-STATES` (`stateModel`): the states NoTimer (initial), Running and
+  Paused, and the transitions Start NoTimer->Running, Pause Running->Paused,
+  Resume Paused->Running, and Stop from Running and from Paused to NoTimer.
+  All of them come from L116-L129. Every transition also cites L367-L368
+  (wrong-state commands are rejected), and Start cites L104 (one active
+  timer).
+- `IFC-TIMER-PORTS` (`portContract`):
+  - `currentTime`, citing L131-L144 and L105-L107;
+  - a Stop `transitionEffect` citing L131-L144, with `onFailure: null`. The
+    sources do not decide what a failed entry creation means, so the
+    generator emits an obligation and does not choose.
+
+Like the `DEC-TIMER-STATES` approval in the tests, this record set is a
+**test input**. It stands in for an operator-approved set; no approval is
+recorded anywhere. The file is written in canonical form
+(`encodeDecisionRecords`), so its SHA-256 equals
+`ConstructionDecisions.digest`. Do not edit it to make a test pass.
+
 ## Regenerating
 
 `source-manifest.json`, `blueprint.json` and `plan.json` were produced by

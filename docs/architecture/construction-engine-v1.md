@@ -180,6 +180,13 @@ the ownership root, and returns either a list of `Create`, `Replace`,
 Files outside the root are never touched. Extension contracts are always
 `Handwritten`. The engine names them but never emits their files.
 
+Generated paths and extension contract names come from
+`Ordo.Core.ConstructionLayout`, the single naming scheme. A host can state a
+plan's generated layout before construction runs
+(`ConstructionLayout.generatedLayout`); the
+[default construction plan](construction-default-plan.md) records it, and
+`DefaultPlanConstructionTests` prove it equals the engine's artifact paths.
+
 ## Manifest
 
 `construction-manifest.json` records:

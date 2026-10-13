@@ -36,6 +36,7 @@
     <Compile Include="ConstructionPlanTests.fs" />
     <Compile Include="ConstructionPlanAdversarialTests.fs" />
     <Compile Include="ConstructionPlanConsensusTests.fs" />
+    <Compile Include="ConstructionDefaultPlanTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

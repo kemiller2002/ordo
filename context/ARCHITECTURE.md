@@ -15,7 +15,7 @@ root README links here rather than creating a competing `SDE-MAP.md`.
 | Distribution package | generated execution package and installer/verifier | `distribution/` | `distribution/DISTRIBUTION-MAP.json` and `distribution/README.md` |
 | Public website | the Ordo site: content, evidence manifest, generator, validator | `site/`, `src/Ordo.Site/`, `tests/Ordo.Site.Tests/` | `site/README.md` |
 | Executable Ordo | runtime primitives for resolution modes, evidence, capabilities, obligations, bounded decisions, transitions and observation | `src/Ordo.Core/`, `src/Ordo.Decisions/`, `src/Ordo.Providers.Anthropic/`, `tests/Ordo.Tests/` | `docs/architecture/executable-ordo.md` |
-| Construction by design | ECIR, typed construction plans and the deterministic Four-Tier workflow constructor | `src/Ordo.Core/ConstructionIr*.fs`, `src/Ordo.Core/ConstructionPlan*.fs`, `src/Ordo.Construction/`, `tests/Ordo.Construction.Tests/`, `tests/fixtures/construction/` | `docs/architecture/ecir-v1.md`, `docs/architecture/construction-plan-v1.md`, `docs/architecture/construction-plan-consensus.md`, `docs/architecture/construction-engine-v1.md` |
+| Construction by design | ECIR, typed construction plans and the deterministic Four-Tier workflow constructor | `src/Ordo.Core/Construction*.fs`, `src/Ordo.Construction/`, `tests/Ordo.Construction.Tests/`, `tests/fixtures/construction/` | `docs/architecture/ecir-v1.md`, `docs/architecture/construction-plan-v1.md`, `docs/architecture/construction-plan-consensus.md`, `docs/architecture/construction-default-plan.md`, `docs/architecture/construction-engine-v1.md` |
 
 This repository contains methodology domains rather than application
 features. Separate feature manifests would duplicate the indexes above and are
@@ -106,6 +106,12 @@ belongs to whichever ROS work item executes the validation.
   majority and refuses rather than repairs an invalid result
   (`DF-SDE-2026-0021`); asserted in
   `tests/Ordo.Tests/ConstructionPlanConsensusTests.fs`.
+- A default plan (`ConstructionDefaultPlan.generateDefaultPlan`) is generated
+  only from the prepared cohort, approved `ordo.construction-decisions/1`
+  records and the vocabulary. What they leave open becomes a typed
+  `ordo.construction-obligations/1` obligation, and a missing essential
+  decision is a refusal. Asserted in
+  `tests/Ordo.Tests/ConstructionDefaultPlanTests.fs`.
 - Executable Ordo must not depend on ROS, and `Ordo.Core` must not depend on
   any model-provider SDK. Both are asserted against the loaded assemblies in
   `tests/Ordo.Tests/ArchitectureTests.fs` rather than by review.

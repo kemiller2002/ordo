@@ -40,6 +40,7 @@
     <Compile Include="DoorBehaviorTests.fs" />
     <Compile Include="EffectFailureTests.fs" />
     <Compile Include="CompileNegativeTests.fs" />
+    <Compile Include="DefaultPlanConstructionTests.fs" />
   </ItemGroup>
 
   <ItemGroup>
