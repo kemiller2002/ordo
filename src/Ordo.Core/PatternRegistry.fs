@@ -298,7 +298,7 @@ module BuiltIn =
         | _ -> []
 
     let stateMachineContract =
-        { Ref = { Id = "ordo.state-machine"; Version = 1 }
+        { Ref = { Id = "ordo.state-machine"; Version = 2 }
           Title = "Typed state machine with deterministic transitions"
           Family = "state.machine-guarded-transition"
           RequiredInputs = [ "construction decision record of kind stateModel on an approved decision node" ]
@@ -348,7 +348,7 @@ module BuiltIn =
                           Defects = kindDefects @ modelDefects } }
 
     let transitionEffectContract =
-        { Ref = { Id = "ordo.transition-effect-port"; Version = 1 }
+        { Ref = { Id = "ordo.transition-effect-port"; Version = 2 }
           Title = "Typed effect port on a transition with a decided failure disposition"
           Family = "integration.external-adapter"
           RequiredInputs = [ "portContract record with a transitionEffect port"; "the state model whose command it names" ]
@@ -407,7 +407,7 @@ module BuiltIn =
                           Defects = defects |> List.distinct } }
 
     let currentTimeContract =
-        { Ref = { Id = "ordo.current-time-port"; Version = 1 }
+        { Ref = { Id = "ordo.current-time-port"; Version = 2 }
           Title = "Injected current-time port"
           Family = "integration.external-adapter"
           RequiredInputs = [ "portContract record with a currentTime port"; "the state model it belongs to" ]
@@ -442,7 +442,7 @@ module BuiltIn =
                           Defects = defects } }
 
     [<Literal>]
-    let RegistryVersion = "ordo.patterns/1"
+    let RegistryVersion = "ordo.patterns/2"
 
     let definitions = [ stateMachine; transitionEffect; currentTime ]
 
