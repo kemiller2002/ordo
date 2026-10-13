@@ -60,6 +60,49 @@ content = { kind: "stateModel", workflow, states: [ { name, role } ],
 
 Example: [`tests/fixtures/construction/time-entry-timer/construction-decisions.json`](../../tests/fixtures/construction/time-entry-timer/construction-decisions.json).
 
+### Conflict resolutions (`conflictResolution`)
+
+A decision record can also state which blueprint conflicts the decision
+settles:
+
+```text
+content = { kind: "conflictResolution", conflicts: [conflictId…], requirementKeys[] }
+```
+
+The kind is accepted in decision records `/1` and `/2`. It is additive:
+record sets without it keep their bytes and digests. The decision is
+[`DF-SDE-2026-0025`](../../research/decisions/DF-SDE-2026-0025--link-decisions-to-the-conflicts-they-settle.md).
+
+**What generation checks.** The link is the record author's claim, bound by
+the record set's digest. Generation checks only its structure:
+
+- the node is an authorized decision of the cohort (`RecordForUnapprovedNode`
+  otherwise, as for every content kind);
+- every conflict id is a blueprint node (`ResolvesUnknownNode`) of kind
+  conflict (`ResolvesNonConflict`);
+- the resolution shares a requirement key with every conflict it names
+  (`UnrelatedConflictResolution`);
+- its keys are owned by the decision node and assigned to the cohort, like
+  any citation.
+
+A node may hold one structural record and one resolution, but never two
+resolutions (`DuplicateRecord`).
+
+**Whether the decision actually answers the conflict's question is not
+checked.** That remains the approver's responsibility.
+
+**Effect.**
+
+- A settled conflict emits no `conflict` obligation.
+- The default plan lists it under `resolvedConflicts`. The key is present only
+  when non-empty, so plans without resolutions keep their digests.
+- `DefaultPlan.ResolvedConflicts` exposes the same list.
+- The requirements ledger counts the deciding node as an approval of the
+  conflict's requirements. A settled conflict no longer makes a requirement a
+  genuine domain decision; anything else still can, such as an uncovered
+  requirement or another, unsettled conflict.
+- The coverage report counts one fewer open decision per settled conflict.
+
 ## What is generated
 
 Only what the records state:
