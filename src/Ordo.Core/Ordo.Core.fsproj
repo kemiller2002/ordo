@@ -66,6 +66,9 @@
     <Compile Include="ConstructionDefaultPlan.fs" />
     <Compile Include="ConstructionLedger.fs" />
     <Compile Include="ConstructionLedgerWire.fs" />
+    <Compile Include="PatternRegistry.fs" />
+    <Compile Include="PatternRecognition.fs" />
+    <Compile Include="PatternRecognitionWire.fs" />
   </ItemGroup>
 
 </Project>
