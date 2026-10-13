@@ -98,7 +98,7 @@ obligation, when the plan can carry it. `readObligations` is strict, and
 | `undecidedEffectFailure` | an effect's `onFailure` is `null` or `unresolved` | port `onFailure: unresolved` plus a `declareUnresolved` linked by `effect` (vocabulary 1: unlinked) |
 | `extensionBehavior` | an assigned requirement is cited only by ports | no extra operation; the port covers the key |
 | `uncoveredRequirement` | an assigned requirement no record cites | a `declareUnresolved` citing the requirement and its in-scope owners |
-| `conflict` | a blueprint conflict node outside the cohort that the blueprint relates to it, by a shared requirement, a dependency edge or a shared source document | none: citing it would violate validation |
+| `conflict` | every blueprint conflict node inside the cohort's required scope, and a conflict node outside it that the blueprint relates to the cohort by a shared requirement, a dependency edge or a shared source document | none: citing it would violate validation |
 | `unsupportedVocabulary` | vocabulary 1 with a decided `remain`/`proceed` disposition | the port has no disposition |
 
 ## Refusals (fail closed)
@@ -137,7 +137,7 @@ A refusal means no plan is generated, not even a partial one.
 - `GeneratedLayout`: the paths `Ordo.Construction` will emit,
   from `ConstructionLayout`, the one naming scheme the engine itself uses.
 - `Provenance`:
-  - generator `ordo.default-plan` at version `ordo.default-plan/1`;
+  - generator `ordo.default-plan` at version `ordo.default-plan/2` (`/2`: in-cohort conflicts became obligations; `/1` emitted only out-of-cohort ones);
   - the vocabulary version and cohort;
   - the manifest, canonical blueprint, decision records, plan and
     obligations digests;

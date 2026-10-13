@@ -31,7 +31,7 @@ let GeneratorId = "ordo.default-plan"
 /// The generator's own semantic version. Same inputs and same generator
 /// version give a byte-identical default plan.
 [<Literal>]
-let GeneratorVersion = "ordo.default-plan/1"
+let GeneratorVersion = "ordo.default-plan/2"
 
 [<Literal>]
 let ObligationsSchemaVersion = "ordo.construction-obligations/1"
@@ -58,7 +58,7 @@ type TypedObligationKind =
     | ExtensionBehavior
     /// A transition effect's failure disposition is not decided.
     | UndecidedEffectFailure
-    /// A blueprint conflict outside the cohort that the blueprint relates to
+    /// A blueprint conflict inside the cohort, or outside it when the blueprint relates it to
     /// it. Not resolved by the plan.
     | Conflict
     /// An assigned requirement that no approved record constructs.
@@ -499,21 +499,31 @@ let private conflictObligations (view: PreparedCohortView) =
             | Unresolved reason -> Some(r.Source.Key, reason)
             | _ -> None)
         |> Map.ofList
+    /// A conflict inside the cohort's required scope is always the cohort's
+    /// open question; one outside it only when the blueprint relates it.
+    let placement (conflict: ConstructionNode) =
+        if Set.contains conflict.Id view.RequiredNodeIds then
+            Some(sprintf "Conflict %s is inside cohort %s and no approved decision resolves it." conflict.Id view.CohortId)
+        else
+            match conflictRelation view conflict with
+            | [] -> None
+            | basis ->
+                Some(sprintf "Conflict %s is outside cohort %s and this plan does not resolve it. The blueprint relates it to the cohort by %s."
+                        conflict.Id view.CohortId (String.concat "; " basis))
     view.Blueprint.Nodes
-    |> List.filter (fun n -> n.Kind = NodeKind.Conflict && not (Set.contains n.Id view.RequiredNodeIds))
+    |> List.filter (fun n -> n.Kind = NodeKind.Conflict)
     |> List.sortBy _.Id
     |> List.choose (fun conflict ->
-        match conflictRelation view conflict with
-        | [] -> None
-        | basis ->
+        placement conflict
+        |> Option.map (fun statement ->
             let recorded =
                 conflict.RequirementKeys |> List.distinct |> List.sort
                 |> List.choose (fun k -> Map.tryFind k reasons |> Option.map (sprintf "%s: %s" k))
             let question =
-                sprintf "Conflict %s is outside cohort %s and this plan does not resolve it. The blueprint relates it to the cohort by %s.%s Which outcome is authoritative for the cohort's behavior?"
-                    conflict.Id view.CohortId (String.concat "; " basis)
+                sprintf "%s%s Which outcome is authoritative for the cohort's behavior?"
+                    statement
                     (match recorded with [] -> "" | reasons -> " Recorded as unresolved: " + String.concat "; " reasons + ".")
-            Some(obligation view.CohortId TypedObligationKind.Conflict conflict.RequirementKeys [ conflict.Id ] question [] None))
+            obligation view.CohortId TypedObligationKind.Conflict conflict.RequirementKeys [ conflict.Id ] question [] None))
 
 /// Builds the plan and obligations from records already checked against
 /// the cohort; refuses only when the generated draft does not validate.
