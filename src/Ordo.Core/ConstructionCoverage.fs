@@ -189,9 +189,10 @@ let private isDecision kind =
 
 let private isStructural operation =
     match operation with
-    | DefineState _ | DefineTransition _ | DefineRefusal _ | DefineInvariant _ | BindCapability _ -> true
+    | DefineState _ | DefineTransition _ | DefineRefusal _ | DefineInvariant _ | BindCapability _
+    | DefineBranchingTransition _ -> true
     | DefineWorkflow _ | DeclarePort _ | DeclareUnresolved _ | DeclarePairRule _
-    | DeclareUndecidedTransition _ | DeclareExtensionInventory _ -> false
+    | DeclareUndecidedTransition _ | DeclareExtensionInventory _ | DefineRefusalCode _ | AssignRefusalCode _ -> false
 
 let private distinctSorted values = values |> List.distinct |> List.sort
 
@@ -334,7 +335,7 @@ let reportWith (calibration: RouteCalibration) (prepared: PreparedCohort) (plan:
           OpenChoices = openChoices.Length
           UnsupportedChoices = openChoices |> List.filter (fun c -> match c.Class with ChoiceClass.Unsupported _ -> true | _ -> false) |> List.length
           GeneratedFiles = plan.GeneratedLayout.Length
-          GeneratedConstructs = w.States.Length + w.Transitions.Length + w.Refusals.Length + w.Ports.Length
+          GeneratedConstructs = w.States.Length + w.Transitions.Length + w.BranchingTransitions.Length + w.Refusals.Length + w.Ports.Length
           ExtensionContracts = extensions.Length
           EstimatedExtensionComplexity = extensions |> List.sumBy _.Points
           VerificationObligations = verification + 1 }

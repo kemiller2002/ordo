@@ -137,6 +137,9 @@ let private withTrace (trace: TraceDraft) operation =
     // Only the operation's own trace: decision-point traces are part of an
     // inventory's identity, so drafts must agree on what justifies each point.
     | DeclareExtensionInventory i -> DeclareExtensionInventory { i with Trace = trace }
+    | DefineRefusalCode c -> DefineRefusalCode { c with Trace = trace }
+    | AssignRefusalCode a -> AssignRefusalCode { a with Trace = trace }
+    | DefineBranchingTransition b -> DefineBranchingTransition { b with Trace = trace }
 
 /// Identity ignores trace. Operations are already canonical (normalized
 /// names, guards and scopes sorted and distinct), so equality compares
@@ -185,10 +188,20 @@ let private describe operation =
             | ExtensionRef.Guard n -> "guard " + n
             | ExtensionRef.Invariant n -> "invariant " + n
             | ExtensionRef.Effect n -> "effect " + n
+            | ExtensionRef.Selection(f, c) -> sprintf "selection %s from %s" c f
         let points =
             i.DecisionPoints
             |> List.map (fun p -> p.Point + (match p.Resolution with DecisionPointResolution.Decided -> " decided" | DecisionPointResolution.Undecided _ -> " undecided"))
         sprintf "declareExtensionInventory %s%s" extension (if List.isEmpty points then " with no decision points" else " with " + commaList points)
+    | DefineRefusalCode c -> "defineRefusalCode " + c.Code
+    | AssignRefusalCode a ->
+        let target =
+            match a.Target with
+            | CodeTarget.Pair p -> sprintf "%s from %s" p.OnCommand p.InState
+            | CodeTarget.Unlisted -> "unlisted pairs"
+            | CodeTarget.Guard g -> "guard " + g
+        sprintf "assignRefusalCode %s to %s" a.Code target
+    | DefineBranchingTransition b -> sprintf "defineBranchingTransition %s from %s to one of %s" b.Pair.OnCommand b.Pair.InState (commaList b.Targets)
 
 let private dispositionText operation =
     match operation with

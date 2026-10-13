@@ -51,6 +51,8 @@ type ChoiceKind =
     | ExtensionDecision
     /// An open question the plan states explicitly.
     | OpenQuestion
+    /// Which typed code a refusal reports (vocabulary 4).
+    | RefusalCode
 
 type ClassifiedChoice =
     { /// Stable, deterministic subject, e.g. `pair:Paused/Stop`.
@@ -93,6 +95,7 @@ let private extensionSubject extension =
     | ExtensionTarget.Guard n -> "extension:guard/" + n.Key
     | ExtensionTarget.Invariant n -> "extension:invariant/" + n.Key
     | ExtensionTarget.Effect n -> "extension:effect/" + n.Key
+    | ExtensionTarget.Selection(f, c) -> sprintf "extension:selection/%s/%s" f.Key c.Key
 
 /// Classifies every semantic choice of a validated plan. Deterministic:
 /// the same plan gives the same classification.
@@ -113,6 +116,9 @@ let classify (plan: ValidatedPlan) : Classification =
                   let is (s: SemanticName) (c: SemanticName) = s.Key = state.Name.Key && c.Key = command.Key
                   match w.Transitions |> List.tryFind (fun t -> is t.From t.Command) with
                   | Some t -> choice subject ChoiceKind.Pair t.Trace.RequirementKeys (basisOf t.Trace)
+                  | None ->
+                  match w.BranchingTransitions |> List.tryFind (fun b -> is b.InState b.OnCommand) with
+                  | Some b -> choice subject ChoiceKind.Pair b.Trace.RequirementKeys (basisOf b.Trace)
                   | None ->
                       match w.Refusals |> List.tryFind (fun r -> is r.InState r.OnCommand) with
                       | Some r -> choice subject ChoiceKind.Pair r.Trace.RequirementKeys (basisOf r.Trace)
@@ -175,6 +181,7 @@ let classify (plan: ValidatedPlan) : Classification =
         (w.Transitions |> List.collect (fun t -> t.Guards |> List.map (fun g -> ExtensionTarget.Guard g.Name, t.Trace)))
         @ (w.Invariants |> List.map (fun i -> ExtensionTarget.Invariant i.Name, i.Trace))
         @ (w.Ports |> List.choose (fun p -> match p.Kind with TransitionEffectPort(c, _) -> Some(ExtensionTarget.Effect c, p.Trace) | CurrentTimePort -> None))
+        @ (w.BranchingTransitions |> List.map (fun b -> ExtensionTarget.Selection(b.InState, b.OnCommand), b.Trace))
         |> List.distinctBy (fst >> extensionSubject)
     let extensionChoices =
         extensions
@@ -200,9 +207,20 @@ let classify (plan: ValidatedPlan) : Classification =
         |> List.filter (fun u -> u.Effect.IsNone)
         |> List.map (fun u -> choice ("unresolved:" + u.Subject.Key) ChoiceKind.OpenQuestion u.Trace.RequirementKeys (ChoiceClass.Unresolved u.Question))
 
+    // Which code a refusal reports is a choice of its own (vocabulary 4).
+    let codes =
+        w.CodeAssignments
+        |> List.map (fun a ->
+            let target =
+                match a.Target with
+                | CodeSubject.Pair(f, c) -> sprintf "pair/%s/%s" f.Key c.Key
+                | CodeSubject.Unlisted -> "unlisted"
+                | CodeSubject.Guard g -> "guard/" + g.Key
+            choice ("refusalCode:" + target) ChoiceKind.RefusalCode a.Trace.RequirementKeys (basisOf a.Trace))
+
     { PlanDigest = view.Digest
       VocabularyVersion = version
-      Choices = states @ pairs @ invariants @ ports @ capabilities @ extensionChoices @ questions |> List.sortBy _.Subject }
+      Choices = states @ pairs @ invariants @ ports @ capabilities @ extensionChoices @ questions @ codes |> List.sortBy _.Subject }
 
 /// A plan with no unresolved or unsupported choice. Only `complete` makes one,
 /// so open decisions cannot be represented as completed construction. It is
@@ -237,6 +255,7 @@ let kindName kind =
     | ChoiceKind.ExtensionBehavior -> "extensionBehavior"
     | ChoiceKind.ExtensionDecision -> "extensionDecision"
     | ChoiceKind.OpenQuestion -> "openQuestion"
+    | ChoiceKind.RefusalCode -> "refusalCode"
 
 let className cls =
     match cls with

@@ -90,6 +90,9 @@ let private withoutTrace operation =
     | DefineRefusal r -> DefineRefusal { r with Trace = noTrace }
     | DeclareUndecidedTransition u -> DeclareUndecidedTransition { u with Trace = noTrace }
     | DeclareExtensionInventory i -> DeclareExtensionInventory { i with Trace = noTrace }
+    | DefineRefusalCode c -> DefineRefusalCode { c with Trace = noTrace }
+    | AssignRefusalCode a -> AssignRefusalCode { a with Trace = noTrace }
+    | DefineBranchingTransition b -> DefineBranchingTransition { b with Trace = noTrace }
 
 let private structuralIdentities (operations: OperationDraft list) =
     operations

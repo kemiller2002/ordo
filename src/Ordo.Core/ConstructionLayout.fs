@@ -29,6 +29,9 @@ let guardContract (workflow: SemanticName) (guard: SemanticName) = sprintf "%s.G
 let invariantContract (workflow: SemanticName) (invariant: SemanticName) = sprintf "%s.Invariant/%s" (rulesType workflow) invariant.Key
 let currentTimeContract (workflow: SemanticName) = portsType workflow + ".CurrentTime"
 let effectContract (workflow: SemanticName) (effect: SemanticName) = sprintf "%s.Perform/%s" (portsType workflow) effect.Key
+/// Vocabulary 4: the handwritten selector that picks one target of a branching transition.
+let selectionContract (workflow: SemanticName) (from: SemanticName) (command: SemanticName) =
+    sprintf "%s.Select/%s/%s" (rulesType workflow) from.Key command.Key
 
 /// The files construction emits for a validated workflow, in tier order then
 /// the construction manifest. The orchestration tier exists only when the

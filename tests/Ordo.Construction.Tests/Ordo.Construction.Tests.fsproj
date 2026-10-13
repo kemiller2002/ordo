@@ -35,6 +35,8 @@
     <Compile Include="Golden/time-entry-timer-v3-open/generated/TimerOpen/TimerOpen.Model.g.fs" />
     <Compile Include="Golden/time-entry-timer-v3-open/generated/TimerOpen/TimerOpen.Transition.g.fs" />
     <Compile Include="Golden/time-entry-timer-v3-open/generated/TimerOpen/TimerOpen.Orchestration.g.fs" />
+    <Compile Include="Golden/gate-synthetic-v4/generated/Gate/Gate.Model.g.fs" />
+    <Compile Include="Golden/gate-synthetic-v4/generated/Gate/Gate.Transition.g.fs" />
     <Compile Include="../Ordo.Tests/FsiProbe.fs" Link="FsiProbe.fs" />
     <Compile Include="Fixtures.fs" />
     <Compile Include="GoldenTests.fs" />
@@ -45,6 +47,7 @@
     <Compile Include="CompileNegativeTests.fs" />
     <Compile Include="DefaultPlanConstructionTests.fs" />
     <Compile Include="ClassifiedConstructionTests.fs" />
+    <Compile Include="CodedBranchingConstructionTests.fs" />
     <Compile Include="PatternRecognitionTests.fs" />
   </ItemGroup>
 

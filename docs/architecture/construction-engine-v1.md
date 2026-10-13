@@ -137,6 +137,12 @@ reports a pair the plan leaves open as `Undecided`, never as
 `DECIDE:` obligations instead of `IMPLEMENT:`. See
 [decision classification](decision-classification.md).
 
+**Generator `ordo.construction/4`** handles vocabulary 4 plans. It adds a
+typed `RefusalCode` union with exhaustive `refusalCode`, and per branching
+transition a closed target union and a required `Rules.Select_<From>_<Command>`
+selector. Without codes or branching, its F# tiers equal generator 3's. See
+[refusal codes and branching](refusal-codes-and-branching.md).
+
 ## No permissive defaults
 
 Every guard, invariant and port is a handwritten extension contract.

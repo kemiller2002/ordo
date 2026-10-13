@@ -695,5 +695,49 @@
     "title": "Report construction coverage before execution and advise the route by structure ratio",
     "type": "decision-record",
     "updated": "2026-10-13"
+  },
+  {
+    "created": "2026-10-13",
+    "id": "DF-SDE-2026-0024",
+    "path": "research/decisions/DF-SDE-2026-0024--type-refusal-codes-and-branching-transitions.md",
+    "provenance": {
+      "contributions": {
+        "EXE-20261013T210230431Z-892ee45c": {
+          "actor": {
+            "id": "anthropic/claude-code",
+            "kind": "agent",
+            "model": "unknown",
+            "provider": "anthropic",
+            "runtime": "claude-code"
+          },
+          "at": "2026-10-13T21:20:17.000Z",
+          "operations": [
+            "created"
+          ],
+          "reason": "Record CONSTRUCT-010 phase 2 vocabulary 4: typed refusal codes and branching transitions"
+        }
+      }
+    },
+    "related_documents": [
+      "docs/architecture/refusal-codes-and-branching.md",
+      "schemas/ordo-construction-plan.vocabulary-4.schema.json",
+      "src/Ordo.Core/ConstructionPlan.fs",
+      "src/Ordo.Construction/Emit.fs",
+      "tests/Ordo.Tests/ConstructionVocabulary4Tests.fs",
+      "tests/Ordo.Construction.Tests/CodedBranchingConstructionTests.fs"
+    ],
+    "status": "draft",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "construction",
+      "vocabulary",
+      "refusal-codes",
+      "branching",
+      "construct-010"
+    ],
+    "title": "Type refusal codes and branching transitions in plan vocabulary 4",
+    "type": "decision-record",
+    "updated": "2026-10-13"
   }
 ]
