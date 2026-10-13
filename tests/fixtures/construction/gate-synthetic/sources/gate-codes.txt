@@ -1,0 +1,1 @@
+Every refused command reports a code. Raising an open gate reports AlreadyOpen. Lowering with the path blocked reports Obstructed. Any other command the gate does not accept reports NotAccepted.

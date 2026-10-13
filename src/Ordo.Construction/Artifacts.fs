@@ -19,10 +19,17 @@ let GeneratorVersion2 = "ordo.construction/2"
 [<Literal>]
 let GeneratorVersion3 = "ordo.construction/3"
 
+/// The generator for vocabulary 4 plans: version 3 plus typed refusal codes
+/// and branching transitions. For a plan that uses neither, Tiers 1 to 3 are
+/// version 3's output with only the generator name changed.
+[<Literal>]
+let GeneratorVersion4 = "ordo.construction/4"
+
 /// The generator version a plan's vocabulary selects. The plan cannot choose
 /// it any other way.
 let generatorVersionFor (vocabularyVersion: string) =
-    if vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion3 then GeneratorVersion3
+    if vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion4 then GeneratorVersion4
+    elif vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion3 then GeneratorVersion3
     elif vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion2 then GeneratorVersion2
     else GeneratorVersion
 
@@ -61,6 +68,8 @@ type ExtensionKind =
     | InvariantPredicate
     | CurrentTimePort
     | EffectPort
+    /// Vocabulary 4: picks one target of a branching transition from a closed union.
+    | SelectionFunction
 
 /// A handwritten implementation the generated code requires and cannot
 /// supply. Missing ones fail compilation; there is no permissive default.
@@ -103,4 +112,6 @@ type StructuralCheck =
       Command: string
       Expected: string option
       /// Vocabulary 3: the pair is open, neither legal nor refused.
-      Undecided: bool }
+      Undecided: bool
+      /// Vocabulary 4: the targets a branching transition may select; empty otherwise.
+      Targets: string list }

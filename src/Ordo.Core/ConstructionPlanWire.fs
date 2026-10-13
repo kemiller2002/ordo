@@ -59,9 +59,10 @@ let private guard path value =
 let private operation (vocabulary: string) path value =
     // Vocabularies 2 and 3 both require a failure disposition on every effect.
     let second = vocabulary <> VocabularyVersion1
-    let third = vocabulary = VocabularyVersion3
-    let onlyInThird kind =
-        if third then Ok() else fail (path + ".op") (sprintf "operation %s is not in %s" kind vocabulary)
+    let notIn kind = fail (path + ".op") (sprintf "operation %s is not in %s" kind vocabulary)
+    // Vocabulary 4 keeps every vocabulary 3 operation.
+    let onlyInThird kind = if classifiesChoices vocabulary then Ok() else notIn kind
+    let onlyInFourth kind = if vocabulary = VocabularyVersion4 then Ok() else notIn kind
     result {
         let! kind =
             match value with
@@ -167,15 +168,32 @@ let private operation (vocabulary: string) path value =
             let! () = onlyInThird kind
             let! p = fields path [ "op"; "extension"; "decisionPoints"; "trace" ] [] value
             let! rawExtension = field path "extension" p
-            let! e = fields (path + ".extension") [ "kind"; "name" ] [] rawExtension
-            let! extensionKind = textField (path + ".extension") "kind" e
-            let! extensionName = textField (path + ".extension") "name" e
+            let extensionPath = path + ".extension"
+            let! extensionKind =
+                match rawExtension with
+                | JObject properties ->
+                    match properties |> List.filter (fun (n, _) -> n = "kind") with
+                    | [ _, JString k ] -> Ok k
+                    | _ -> fail extensionPath "expected exactly one string member kind"
+                | _ -> fail extensionPath "expected object"
+            let named make =
+                fields extensionPath [ "kind"; "name" ] [] rawExtension
+                |> Result.bind (textField extensionPath "name")
+                |> Result.map make
             let! extension =
                 match extensionKind with
-                | "guard" -> Ok(ExtensionRef.Guard extensionName)
-                | "invariant" -> Ok(ExtensionRef.Invariant extensionName)
-                | "effect" -> Ok(ExtensionRef.Effect extensionName)
-                | other -> fail (path + ".extension.kind") ("unsupported extension kind: " + other)
+                | "guard" -> named ExtensionRef.Guard
+                | "invariant" -> named ExtensionRef.Invariant
+                | "effect" -> named ExtensionRef.Effect
+                | "selection" ->
+                    result {
+                        let! () = if vocabulary = VocabularyVersion4 then Ok() else fail (extensionPath + ".kind") ("extension kind selection is not in " + vocabulary)
+                        let! e = fields extensionPath [ "kind"; "from"; "command" ] [] rawExtension
+                        let! from = textField extensionPath "from" e
+                        let! command = textField extensionPath "command" e
+                        return ExtensionRef.Selection(from, command)
+                    }
+                | other -> fail (extensionPath + ".kind") ("unsupported extension kind: " + other)
             let point pointPath pointValue =
                 result {
                     let! decided =
@@ -197,6 +215,52 @@ let private operation (vocabulary: string) path value =
             let! points = items (path + ".decisionPoints") point rawPoints
             let! t = traceField path p
             return DeclareExtensionInventory { Extension = extension; DecisionPoints = points; Trace = t }
+        | "defineRefusalCode" ->
+            let! () = onlyInFourth kind
+            let! p = fields path [ "op"; "code"; "trace" ] [] value
+            let! code = textField path "code" p
+            let! t = traceField path p
+            return DefineRefusalCode { Code = code; Trace = t }
+        | "assignRefusalCode" ->
+            let! () = onlyInFourth kind
+            let! p = fields path [ "op"; "target"; "code"; "trace" ] [] value
+            let! rawTarget = field path "target" p
+            let targetPath = path + ".target"
+            let! targetKind =
+                match rawTarget with
+                | JObject properties ->
+                    match properties |> List.filter (fun (n, _) -> n = "kind") with
+                    | [ _, JString k ] -> Ok k
+                    | _ -> fail targetPath "expected exactly one string member kind"
+                | _ -> fail targetPath "expected object"
+            let! target =
+                match targetKind with
+                | "pair" ->
+                    fields targetPath [ "kind"; "from"; "command" ] [] rawTarget
+                    |> Result.bind (fun q ->
+                        result {
+                            let! from = textField targetPath "from" q
+                            let! command = textField targetPath "command" q
+                            return CodeTarget.Pair { InState = from; OnCommand = command }
+                        })
+                | "unlisted" -> fields targetPath [ "kind" ] [] rawTarget |> Result.map (fun _ -> CodeTarget.Unlisted)
+                | "guard" ->
+                    fields targetPath [ "kind"; "name" ] [] rawTarget
+                    |> Result.bind (textField targetPath "name")
+                    |> Result.map CodeTarget.Guard
+                | other -> fail (targetPath + ".kind") ("unsupported refusal-code target: " + other)
+            let! code = textField path "code" p
+            let! t = traceField path p
+            return AssignRefusalCode { Target = target; Code = code; Trace = t }
+        | "defineBranchingTransition" ->
+            let! () = onlyInFourth kind
+            let! p = fields path [ "op"; "command"; "from"; "targets"; "trace" ] [] value
+            let! command = textField path "command" p
+            let! from = textField path "from" p
+            let! rawTargets = field path "targets" p
+            let! targets = strings (path + ".targets") rawTargets
+            let! t = traceField path p
+            return DefineBranchingTransition { Pair = { InState = from; OnCommand = command }; Targets = targets; Trace = t }
         | other -> return! fail (path + ".op") ("unsupported operation: " + other)
     }
 

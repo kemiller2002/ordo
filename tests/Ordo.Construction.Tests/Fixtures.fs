@@ -66,6 +66,13 @@ let timerV2Fixtures = [ timerRemain; timerProceed; timerUnresolved ]
 /// are open decisions in generated code.
 let timerOpen = { timer with Name = "time-entry-timer-v3-open"; Plan = "plan.v3-open.json" }
 
+/// Vocabulary 4 (CONSTRUCT-010 phase 2): a synthetic gate whose Raise
+/// command branches to Open or Jammed and whose refusals carry typed codes.
+/// Its sources are synthetic test input, not requirements of any product.
+let gate =
+    { Name = "gate-synthetic-v4"; Source = "gate-synthetic"; Plan = "plan.v4.json"; Blueprint = "blueprint.json"
+      Cohort = "COH-GATE"; Approved = Set.singleton "DEC-GATE" }
+
 let private read (fixture: Fixture) name =
     File.ReadAllText(Path.Combine(repositoryRoot, "tests", "fixtures", "construction", fixture.Source, name))
 

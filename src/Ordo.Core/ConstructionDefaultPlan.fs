@@ -515,9 +515,10 @@ let private uncoveredSubject (requirementKey: string) = "Uncovered requirement "
 
 let private isStructural operation =
     match operation with
-    | DefineState _ | DefineTransition _ | DefineInvariant _ | BindCapability _ | DefineRefusal _ -> true
+    | DefineState _ | DefineTransition _ | DefineInvariant _ | BindCapability _ | DefineRefusal _
+    | DefineBranchingTransition _ -> true
     | DefineWorkflow _ | DeclarePort _ | DeclareUnresolved _ | DeclarePairRule _
-    | DeclareUndecidedTransition _ | DeclareExtensionInventory _ -> false
+    | DeclareUndecidedTransition _ | DeclareExtensionInventory _ | DefineRefusalCode _ | AssignRefusalCode _ -> false
 
 /// The blueprint's relation between a conflict node outside the cohort and
 /// the cohort, as evidence strings. Empty when the blueprint relates them in

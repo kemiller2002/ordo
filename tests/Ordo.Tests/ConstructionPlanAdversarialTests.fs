@@ -629,7 +629,18 @@ let private mapNames (f: string -> string) (draft: PlanDraft) =
                 | ExtensionRef.Guard n -> ExtensionRef.Guard(f n)
                 | ExtensionRef.Invariant n -> ExtensionRef.Invariant(f n)
                 | ExtensionRef.Effect n -> ExtensionRef.Effect(f n)
+                | ExtensionRef.Selection(from, command) -> ExtensionRef.Selection(f from, f command)
             DeclareExtensionInventory { i with Extension = extension; DecisionPoints = i.DecisionPoints |> List.map (fun p -> { p with Point = f p.Point }) }
+        | DefineRefusalCode c -> DefineRefusalCode { c with Code = f c.Code }
+        | AssignRefusalCode a ->
+            let target =
+                match a.Target with
+                | CodeTarget.Pair p -> CodeTarget.Pair { InState = f p.InState; OnCommand = f p.OnCommand }
+                | CodeTarget.Unlisted -> CodeTarget.Unlisted
+                | CodeTarget.Guard g -> CodeTarget.Guard(f g)
+            AssignRefusalCode { a with Target = target; Code = f a.Code }
+        | DefineBranchingTransition b ->
+            DefineBranchingTransition { b with Pair = { InState = f b.Pair.InState; OnCommand = f b.Pair.OnCommand }; Targets = List.map f b.Targets }
     { draft with Operations = List.map mapOp draft.Operations }
 
 let private mapTraces (f: TraceDraft -> TraceDraft) (draft: PlanDraft) =
@@ -647,6 +658,9 @@ let private mapTraces (f: TraceDraft -> TraceDraft) (draft: PlanDraft) =
         | DeclareUndecidedTransition u -> DeclareUndecidedTransition { u with Trace = f u.Trace }
         | DeclareExtensionInventory i ->
             DeclareExtensionInventory { i with Trace = f i.Trace; DecisionPoints = i.DecisionPoints |> List.map (fun p -> { p with Trace = f p.Trace }) }
+        | DefineRefusalCode c -> DefineRefusalCode { c with Trace = f c.Trace }
+        | AssignRefusalCode a -> AssignRefusalCode { a with Trace = f a.Trace }
+        | DefineBranchingTransition b -> DefineBranchingTransition { b with Trace = f b.Trace }
     { draft with Operations = List.map mapOp draft.Operations }
 
 let private assertSameIdentity variant =
@@ -926,7 +940,7 @@ let ``an effect link is a checked name`` () =
 
 [<Fact>]
 let ``unknown vocabulary versions are refused, never upgraded`` () =
-    for version in [ "ordo.construction-vocabulary/4"; "ordo.construction-vocabulary/2.0"; "ordo.construction-vocabulary"; "" ] do
+    for version in [ "ordo.construction-vocabulary/5"; "ordo.construction-vocabulary/2.0"; "ordo.construction-vocabulary"; "" ] do
         refusedWith (UnsupportedVocabulary version) { remainV2 with VocabularyVersion = version }
 
 [<Fact>]
@@ -1014,4 +1028,4 @@ let ``vocabulary 2 adds no escape hatch: extra members are still refused`` () =
 
 [<Fact>]
 let ``the wire refuses unknown vocabulary versions`` () =
-    refusedOnWire "unsupported ordo.construction-vocabulary/4" (mapMember "vocabularyVersion" (fun _ -> JString "ordo.construction-vocabulary/4") planV2Json)
+    refusedOnWire "unsupported ordo.construction-vocabulary/5" (mapMember "vocabularyVersion" (fun _ -> JString "ordo.construction-vocabulary/5") planV2Json)

@@ -54,9 +54,13 @@ type Shape =
       HasCapabilities: bool
       /// Vocabulary 3: pairs the plan leaves undecided, explicitly or by an
       /// `undecided` pair rule. Empty for earlier vocabularies.
-      Undecided: (SemanticName * SemanticName) list }
+      Undecided: (SemanticName * SemanticName) list
+      /// Vocabulary 4: typed refusal codes, sorted. Empty for earlier vocabularies.
+      Codes: SemanticName list
+      /// Vocabulary 4: branching transitions as (from, command, targets).
+      Branching: (SemanticName * SemanticName * SemanticName list) list }
 
-    member this.HasRules = not (List.isEmpty this.Guards && List.isEmpty this.Invariants)
+    member this.HasRules = not (List.isEmpty this.Guards && List.isEmpty this.Invariants && List.isEmpty this.Branching)
     member this.HasPorts = this.HasClock || not (List.isEmpty this.Effects)
 
 /// The pairs a vocabulary 3 plan leaves open: explicit undecided
@@ -65,6 +69,7 @@ type Shape =
 let undecidedPairs (w: Workflow) =
     let named (state: SemanticName) (command: SemanticName) =
         (w.Transitions |> List.exists (fun t -> t.From.Key = state.Key && t.Command.Key = command.Key))
+        || (w.BranchingTransitions |> List.exists (fun b -> b.InState.Key = state.Key && b.OnCommand.Key = command.Key))
         || (w.Refusals |> List.exists (fun r -> r.InState.Key = state.Key && r.OnCommand.Key = command.Key))
     [ for state in w.States do
           for command in w.Commands do
@@ -91,7 +96,9 @@ let shapeOf (generator: string) (w: Workflow) =
             | TransitionEffectPort(_, None) | CurrentTimePort -> None)
       HasClock = w.Ports |> List.exists (fun p -> p.Kind = CurrentTimePort)
       HasCapabilities = not (List.isEmpty w.Capabilities)
-      Undecided = undecidedPairs w }
+      Undecided = undecidedPairs w
+      Codes = w.RefusalCodes |> List.map fst
+      Branching = w.BranchingTransitions |> List.map (fun b -> b.InState, b.OnCommand, b.Targets) }
 
 let private list (items: string list) =
     match items with
@@ -114,6 +121,12 @@ let semanticModel (digest: string) (s: Shape) =
            else union "Named invariants. Their bodies are handwritten extension contracts." (invariantType w) (s.Invariants |> List.map key))
         @ (if List.isEmpty s.Effects then []
            else union "Effects an accepted command requests. Requested as data; only a host performs them." (effectType w) (s.Effects |> List.map key))
+        @ (if List.isEmpty s.Codes then []
+           else union "Typed refusal codes. Each names one documented reason a command is refused." (refusalCodeType w) (s.Codes |> List.map key))
+        @ (s.Branching
+           |> List.collect (fun (from, command, targets) ->
+               union (sprintf "The states command %s may lead to from %s. A handwritten selector picks one." command.Key from.Key)
+                   (branchType w from command) (targets |> List.map key)))
         |> fun lines -> List.take (List.length lines - 1) lines)
 
 // ---- Tier 2: Transition ----
@@ -147,17 +160,24 @@ let transition (digest: string) (s: Shape) =
     let rules =
         if not s.HasRules then []
         else
-            [ "/// Handwritten extension contract. Every guard and invariant must be decided"
-              "/// by supplied code; there is no default, so a missing rule does not compile."
-              "type " + rulesType w + " =" ]
+            (if List.isEmpty s.Branching then
+                 [ "/// Handwritten extension contract. Every guard and invariant must be decided"
+                   "/// by supplied code; there is no default, so a missing rule does not compile." ]
+             else
+                 [ "/// Handwritten extension contract. Every guard, invariant and branching selector must be"
+                   "/// decided by supplied code; there is no default, so a missing rule does not compile. A"
+                   "/// selector returns a closed union of its transition's targets, so it cannot pick another state." ])
+            @ [ "type " + rulesType w + " =" ]
             @ ((if List.isEmpty s.Guards then [] else [ sprintf "Guard: %s -> %s -> %s -> bool" (guardType w) st cmd ])
                @ (if List.isEmpty s.Invariants then [] else [ sprintf "Invariant: %s -> %s -> bool" (invariantType w) st ])
+               @ (s.Branching |> List.map (fun (from, command, _) -> sprintf "%s: unit -> %s" (selectorField from command) (branchType w from command)))
                |> List.mapi (fun i field -> (if i = 0 then "    { " else "      ") + field)
                |> fun fields -> List.mapi (fun i (f: string) -> if i = List.length fields - 1 then f + " }" else f) fields)
             @ [ "" ]
 
     let legal =
-        [ "/// Every legal transition as (from, command, to)."
+        [ (if List.isEmpty s.Branching then "/// Every legal transition as (from, command, to)."
+           else "/// Every legal single-target transition as (from, command, to). Branching ones are in `branching`.")
           sprintf "let legal : (%s * %s * %s) list =" st cmd st ]
         @ (s.Workflow.Transitions
            |> List.mapi (fun i t ->
@@ -166,11 +186,50 @@ let transition (digest: string) (s: Shape) =
            |> fun rows -> List.mapi (fun i (r: string) -> if i = List.length rows - 1 then r + " ]" else r) rows)
         @ [ "" ]
 
+    let branching =
+        if List.isEmpty s.Branching then []
+        else
+            [ "/// Every branching transition as (from, command, the targets its selector may pick)."
+              sprintf "let branching : (%s * %s * %s list) list =" st cmd st ]
+            @ (s.Branching
+               |> List.mapi (fun i (from, command, targets) ->
+                   (if i = 0 then "    [ " else "      ")
+                   + sprintf "%s, %s, %s" (qualify st from) (qualify cmd command) (list (targets |> List.map (qualify st))))
+               |> fun rows -> List.mapi (fun i (r: string) -> if i = List.length rows - 1 then r + " ]" else r) rows)
+            @ [ "" ]
+
+    let branchOf (state: SemanticName) (command: SemanticName) =
+        s.Branching |> List.tryFind (fun (from, c, _) -> from.Key = state.Key && c.Key = command.Key)
+
+    // The selector's union is closed over the plan's targets, so a selector
+    // cannot pick a state the plan does not allow.
+    let next =
+        if List.isEmpty s.Branching then []
+        else
+            [ "/// The target of a command: fixed for a single-target transition, picked by the handwritten"
+              "/// selector for a branching one, None where the command is not legal. Every pair is listed;"
+              "/// there is no catch-all."
+              sprintf "let next (rules: %s) (state: %s) (command: %s) : %s option =" (rulesType w) st cmd st
+              "    match state, command with" ]
+            @ (pairs |> List.map (fun (state, command) ->
+                   match branchOf state command with
+                   | Some(from, c, targets) ->
+                       let bt = branchType w from c
+                       let arms = targets |> List.map (fun t -> sprintf "%s -> %s" (qualify bt t) (qualify st t)) |> String.concat " | "
+                       sprintf "    %s Some(match rules.%s () with %s)" (pattern state command) (selectorField from c) arms
+                   | None -> sprintf "    %s target state command" (pattern state command)))
+            @ [ "" ]
+
     let target =
-        [ "/// The target of a command, or None where the command is not legal. Every"
-          "/// (state, command) pair is listed; there is no catch-all."
-          sprintf "let target (state: %s) (command: %s) : %s option =" st cmd st
-          "    match state, command with" ]
+        (if List.isEmpty s.Branching then
+             [ "/// The target of a command, or None where the command is not legal. Every"
+               "/// (state, command) pair is listed; there is no catch-all." ]
+         else
+             [ "/// The fixed target of a single-target transition, or None where the plan lists none; a"
+               "/// branching transition's target is picked in `next`. Every (state, command) pair is listed;"
+               "/// there is no catch-all." ])
+        @ [ sprintf "let target (state: %s) (command: %s) : %s option =" st cmd st
+            "    match state, command with" ]
         @ (pairs |> List.map (fun (state, command) ->
                "    " + pattern state command + " " + (match edge state command with Some t -> "Some " + qualify st t.To | None -> "None")))
         @ [ "" ]
@@ -240,6 +299,46 @@ let transition (digest: string) (s: Shape) =
                    sprintf "    | %s -> %s" (qualify cmd command) (list requested)))
             @ [ "" ]
 
+    // Vocabulary 4: which typed code each refusal reports. Pair and guard
+    // codes are separate exhaustive functions, so no match arm is shadowed and
+    // there is no catch-all.
+    let codes =
+        if List.isEmpty s.Codes then []
+        else
+            let rc = refusalCodeType w
+            let assigned subject = s.Workflow.CodeAssignments |> List.tryFind (fun a -> a.Target = subject) |> Option.map _.Code
+            let named (state: SemanticName) (command: SemanticName) =
+                Option.isSome (edge state command) || Option.isSome (branchOf state command)
+                || (s.Workflow.Refusals |> List.exists (fun r -> r.InState.Key = state.Key && r.OnCommand.Key = command.Key))
+                || (s.Undecided |> List.exists (fun (u, c) -> u.Key = state.Key && c.Key = command.Key))
+            let pairCode (state: SemanticName) (command: SemanticName) =
+                match assigned (CodeSubject.Pair(state, command)) with
+                | Some code -> Some code
+                | None when not (named state command) -> assigned CodeSubject.Unlisted
+                | None -> None
+            let some code = code |> Option.map (fun c -> sprintf "Some %s" (qualify rc c)) |> Option.defaultValue "None"
+            let rf = refusalType w
+            [ "/// The typed code the plan assigns to a refused pair, or None where it assigns none."
+              sprintf "let pairCode (state: %s) (command: %s) : %s option =" st cmd rc
+              "    match state, command with" ]
+            @ (pairs |> List.map (fun (state, command) -> sprintf "    %s %s" (pattern state command) (some (pairCode state command))))
+            @ [ "" ]
+            @ (if List.isEmpty s.Guards then []
+               else
+                   [ "/// The typed code the plan assigns to a rejected guard, or None where it assigns none."
+                     sprintf "let guardCode (guard: %s) : %s option =" (guardType w) rc
+                     "    match guard with" ]
+                   @ (s.Guards |> List.map (fun g -> sprintf "    | %s -> %s" (qualify (guardType w) g) (some (assigned (CodeSubject.Guard g)))))
+                   @ [ "" ])
+            @ [ "/// The typed code of a refusal, as the plan assigns it; None where the plan assigns none."
+                sprintf "let refusalCode (refusal: %s) : %s option =" rf rc
+                "    match refusal with"
+                sprintf "    | %s.InvalidTransition(state, command) -> pairCode state command" rf ]
+            @ (if List.isEmpty s.Undecided then [] else [ sprintf "    | %s.Undecided _ -> None" rf ])
+            @ (if s.HasCapabilities then [ sprintf "    | %s.MissingCapabilities _ -> None" rf ] else [])
+            @ (if List.isEmpty s.Guards then [] else [ sprintf "    | %s.GuardRejected guard -> guardCode guard" rf ])
+            @ (if List.isEmpty s.Invariants then [] else [ sprintf "    | %s.InvariantViolated _ -> None" rf ])
+
     let rf = refusalType w
     let parameters =
         (if s.HasRules then [ sprintf "(rules: %s)" (rulesType w) ] else [])
@@ -273,10 +372,11 @@ let transition (digest: string) (s: Shape) =
     let decide =
         [ "/// Decides one command. Refusal is data; nothing is applied or performed here."
           sprintf "let decide %s : Result<%s, %s> =" (String.concat " " parameters) (decisionType w) rf
-          "    match target state command with" ]
+          (if List.isEmpty s.Branching then "    match target state command with" else "    match next rules state command with") ]
         @ (if List.isEmpty s.Undecided then [] else [ sprintf "    | None when undecided state command -> Error(%s.Undecided(state, command))" rf ])
         @ [ sprintf "    | None -> Error(%s.InvalidTransition(state, command))" rf ]
         @ accepted
+        @ (if List.isEmpty codes then [] else [ "" ])
 
     render (
         header s.Generator digest "Tier 2 (Transition): what legal change may happen"
@@ -285,7 +385,7 @@ let transition (digest: string) (s: Shape) =
         @ [ "/// The legal transitions, decided from one plan. Depends only on Tier 1."
             "[<RequireQualifiedAccess>]"
             "module " + transitionModule w + " =" ]
-        @ indent 4 ([ "" ] @ legal @ target @ undecided @ guards @ invariants @ capabilities @ effects @ decide))
+        @ indent 4 ([ "" ] @ legal @ branching @ target @ next @ undecided @ guards @ invariants @ capabilities @ effects @ decide @ codes))
 
 // ---- Tier 3: Orchestration ----
 

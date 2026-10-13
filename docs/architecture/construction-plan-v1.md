@@ -263,6 +263,10 @@ extension. With these, every semantic choice is classified as required,
 approved, implied, unresolved or unsupported, and only the first three
 generate. See [decision classification](decision-classification.md).
 
+`ordo.construction-vocabulary/4` adds typed refusal codes and branching
+transitions, whose target a handwritten selector picks from a generated
+closed union. See [refusal codes and branching](refusal-codes-and-branching.md).
+
 ## Versioning
 
 An unknown `schemaVersion` or `vocabularyVersion` is refused, never upgraded

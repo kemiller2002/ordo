@@ -164,9 +164,10 @@ let private isDecision kind =
 
 let private isStructural operation =
     match operation with
-    | DefineState _ | DefineTransition _ | DefineRefusal _ | DefineInvariant _ | BindCapability _ -> true
+    | DefineState _ | DefineTransition _ | DefineRefusal _ | DefineInvariant _ | BindCapability _
+    | DefineBranchingTransition _ -> true
     | DefineWorkflow _ | DeclarePort _ | DeclareUnresolved _ | DeclarePairRule _
-    | DeclareUndecidedTransition _ | DeclareExtensionInventory _ -> false
+    | DeclareUndecidedTransition _ | DeclareExtensionInventory _ | DefineRefusalCode _ | AssignRefusalCode _ -> false
 
 let private distinctSorted values = values |> List.distinct |> List.sort
 

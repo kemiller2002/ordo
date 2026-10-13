@@ -60,6 +60,7 @@ let private extensionName kind =
     | InvariantPredicate -> "invariant-predicate"
     | CurrentTimePort -> "current-time-port"
     | EffectPort -> "effect-port"
+    | SelectionFunction -> "selection-function"
 
 let private strings values = JArray(values |> List.map JString)
 
@@ -109,12 +110,14 @@ let private manifestJson (plan: ValidatedPlanView) generator root (artifacts: Ar
         JObject [ "independence", JString "derived-from-plan"
                   "pairs",
                   JArray [ for c in checks ->
-                              JObject [ "state", JString c.State; "command", JString c.Command
+                              JObject([ "state", JString c.State; "command", JString c.Command
                                         "expected",
                                         (match c.Expected with
                                          | Some target -> JString target
                                          | None when c.Undecided -> JString "undecided"
-                                         | None -> JString "invalid-transition") ] ] ]
+                                         | None when not (List.isEmpty c.Targets) -> JString "branching"
+                                         | None -> JString "invalid-transition") ]
+                                       @ (if List.isEmpty c.Targets then [] else [ "targets", strings c.Targets ])) ] ]
         "coverage",
         JObject [ for KeyValue(key, coverage) in plan.Coverage ->
                     key,
@@ -129,6 +132,7 @@ let private manifestJson (plan: ValidatedPlanView) generator root (artifacts: Ar
 let private refusals (shape: Emit.Shape) =
     checkCases "state" shape.States @ checkCases "command" shape.Commands
     @ checkCases "guard" shape.Guards @ checkCases "invariant" shape.Invariants
+    @ checkCases "refusal code" shape.Codes
     |> List.map Naming
 
 /// Same plan and same generator version give byte-identical output.
@@ -148,11 +152,16 @@ let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefu
         // Vocabulary 2: an obligation linked to an effect is realized by the
         // orchestration's Unresolved result case. Vocabulary 1 has no links.
         let isEffectObligation = function DeclareUnresolved { Effect = Some _ } -> true | _ -> false
-        let modelOps = pick (function DefineWorkflow _ | DefineState _ | DefineTransition _ | DefineInvariant _ -> true | op -> isEffectPort op)
+        let modelOps =
+            pick (function
+                | DefineWorkflow _ | DefineState _ | DefineTransition _ | DefineInvariant _
+                | DefineRefusalCode _ | DefineBranchingTransition _ -> true
+                | op -> isEffectPort op)
         let transitionOps =
             pick (function
                 | DefineWorkflow _ | DefineTransition _ | DefineInvariant _ | BindCapability _
-                | DeclarePairRule _ | DefineRefusal _ | DeclareUndecidedTransition _ -> true
+                | DeclarePairRule _ | DefineRefusal _ | DeclareUndecidedTransition _
+                | DefineRefusalCode _ | AssignRefusalCode _ | DefineBranchingTransition _ -> true
                 | op -> isEffectPort op)
         let orchestrationOps = pick (function DefineWorkflow _ | DeclarePort _ -> true | op -> isEffectObligation op)
         let digest = plan.Digest
@@ -173,6 +182,11 @@ let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefu
             @ (shape.Effects |> List.map (fun e ->
                 contract (Layout.effectContract w.Name e) EffectPort
                     (pick (function DeclarePort { Kind = TransitionEffect(c, _) } -> c = e.Key | _ -> false))))
+            @ (shape.Branching |> List.map (fun (from, command, _) ->
+                contract (Layout.selectionContract w.Name from command) SelectionFunction
+                    (pick (function
+                        | DefineBranchingTransition b -> b.Pair.InState = from.Key && b.Pair.OnCommand = command.Key
+                        | _ -> false))))
 
         // Vocabulary 3: an extension whose inventory has an undecided point is
         // not implementable yet. It gets one decide obligation per open point
@@ -186,6 +200,7 @@ let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefu
                     | ExtensionTarget.Guard n -> Layout.guardContract w.Name n
                     | ExtensionTarget.Invariant n -> Layout.invariantContract w.Name n
                     | ExtensionTarget.Effect n -> Layout.effectContract w.Name n
+                    | ExtensionTarget.Selection(f, c) -> Layout.selectionContract w.Name f c
                 name = contract.Name)
             |> List.collect _.DecisionPoints
             |> List.choose (fun p ->
@@ -234,7 +249,12 @@ let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefu
                         w.Transitions
                         |> List.tryFind (fun t -> t.From.Key = state.Key && t.Command.Key = command.Key)
                         |> Option.map _.To.Key
-                      Undecided = shape.Undecided |> List.exists (fun (u, c) -> u.Key = state.Key && c.Key = command.Key) } ]
+                      Undecided = shape.Undecided |> List.exists (fun (u, c) -> u.Key = state.Key && c.Key = command.Key)
+                      Targets =
+                        shape.Branching
+                        |> List.tryFind (fun (f, c, _) -> f.Key = state.Key && c.Key = command.Key)
+                        |> Option.map (fun (_, _, targets) -> targets |> List.map _.Key)
+                        |> Option.defaultValue [] } ]
 
         let manifest =
             artifact (Layout.manifestPath w.Name) None operations

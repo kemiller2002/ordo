@@ -47,6 +47,14 @@ let effectFailureType (workflow: SemanticName) = workflow.Key + "EffectFailure"
 let failureDispositionType (workflow: SemanticName) = workflow.Key + "FailureDisposition"
 let resultType (workflow: SemanticName) = workflow.Key + "Result"
 let orchestrationModule (workflow: SemanticName) = workflow.Key + "Orchestration"
+let refusalCodeType (workflow: SemanticName) = workflow.Key + "RefusalCode"
+
+/// Vocabulary 4: per branching transition, the closed union of its targets and
+/// the rules field that selects one. Semantic-name keys are ASCII letters and
+/// digits only, so the `_` separators keep every (from, command) pair distinct.
+let branchType (workflow: SemanticName) (from: SemanticName) (command: SemanticName) =
+    sprintf "%sBranch_%s_%s" workflow.Key from.Key command.Key
+let selectorField (from: SemanticName) (command: SemanticName) = sprintf "Select_%s_%s" from.Key command.Key
 
 /// Every generated file lives in one namespace per workflow.
 let rootNamespace (workflow: SemanticName) = "Generated." + workflow.Key
