@@ -53,6 +53,8 @@ type ChoiceKind =
     | OpenQuestion
     /// Which typed code a refusal reports (vocabulary 4).
     | RefusalCode
+    /// How a persisted instance deduplicates and treats a stale write (vocabulary 6).
+    | Persistence
 
 type ClassifiedChoice =
     { /// Stable, deterministic subject, e.g. `pair:Paused/Stop`.
@@ -225,11 +227,29 @@ let classify (plan: ValidatedPlan) : Classification =
                 | CodeSubject.Pair(f, c) -> sprintf "pair/%s/%s" f.Key c.Key
                 | CodeSubject.Unlisted -> "unlisted"
                 | CodeSubject.Guard g -> "guard/" + g.Key
+                | CodeSubject.NotFound -> "notFound"
+                | CodeSubject.StaleRevision -> "staleRevision"
             choice ("refusalCode:" + target) ChoiceKind.RefusalCode a.Trace.RequirementKeys (basisOf a.Trace))
+
+    // Vocabulary 6: the idempotency scope and the stale-write action are
+    // separate choices; either may be open.
+    let persistence =
+        match w.Persistence with
+        | None -> []
+        | Some p ->
+            let keys = p.Trace.RequirementKeys
+            [ choice "persistence:idempotency" ChoiceKind.Persistence keys
+                  (if p.Idempotency = IdempotencyScope.Unresolved then
+                       ChoiceClass.Unresolved(sprintf "Whether operation ids of workflow %s are deduplicated durably or for one session only is not decided." w.Name.Key)
+                   else basisOf p.Trace)
+              choice "persistence:onStale" ChoiceKind.Persistence keys
+                  (if p.OnStale = StaleAction.Unresolved then
+                       ChoiceClass.Unresolved(sprintf "What a write against a stale revision of workflow %s means is not decided." w.Name.Key)
+                   else basisOf p.Trace) ]
 
     { PlanDigest = view.Digest
       VocabularyVersion = version
-      Choices = states @ pairs @ invariants @ ports @ capabilities @ extensionChoices @ questions @ codes |> List.sortBy _.Subject }
+      Choices = states @ pairs @ invariants @ ports @ capabilities @ extensionChoices @ questions @ codes @ persistence |> List.sortBy _.Subject }
 
 /// A plan with no unresolved or unsupported choice. Only `complete` makes one,
 /// so open decisions cannot be represented as completed construction. It is
@@ -265,6 +285,7 @@ let kindName kind =
     | ChoiceKind.ExtensionDecision -> "extensionDecision"
     | ChoiceKind.OpenQuestion -> "openQuestion"
     | ChoiceKind.RefusalCode -> "refusalCode"
+    | ChoiceKind.Persistence -> "persistence"
 
 let className cls =
     match cls with

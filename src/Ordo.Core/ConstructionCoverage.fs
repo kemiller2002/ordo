@@ -190,7 +190,7 @@ let private isDecision kind =
 let private isStructural operation =
     match operation with
     | DefineState _ | DefineTransition _ | DefineRefusal _ | DefineInvariant _ | BindCapability _
-    | DefineBranchingTransition _ -> true
+    | DefineBranchingTransition _ | DeclarePersistence _ -> true
     | DefineWorkflow _ | DeclarePort _ | DeclareUnresolved _ | DeclarePairRule _
     | DeclareUndecidedTransition _ | DeclareExtensionInventory _ | DefineRefusalCode _ | AssignRefusalCode _
     | DeclareEffectPolicy _ -> false

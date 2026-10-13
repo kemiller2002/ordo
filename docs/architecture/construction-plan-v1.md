@@ -273,6 +273,10 @@ proceed, approved compensation, escalate) and unknown outcomes (reconcile,
 escalate; never retried) separately. See
 [effect outcome policies](effect-outcome-policies.md).
 
+`ordo.construction-vocabulary/6` adds a persisted instance: a stated
+idempotency scope (durable, session or unresolved) and stale-write action
+(refuse, escalate or unresolved). See [persisted instances](persisted-instances.md).
+
 ## Versioning
 
 An unknown `schemaVersion` or `vocabularyVersion` is refused, never upgraded

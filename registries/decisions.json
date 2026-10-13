@@ -840,5 +840,48 @@
     "title": "State what failed and unknown effect outcomes mean, separately, in plan vocabulary 5",
     "type": "decision-record",
     "updated": "2026-10-13"
+  },
+  {
+    "created": "2026-10-13",
+    "id": "DF-SDE-2026-0027",
+    "path": "research/decisions/DF-SDE-2026-0027--persist-instances-with-stated-idempotency.md",
+    "provenance": {
+      "contributions": {
+        "EXE-20261013T224925726Z-c1b416b1": {
+          "actor": {
+            "id": "anthropic/claude-code",
+            "kind": "agent",
+            "model": "unknown",
+            "provider": "anthropic",
+            "runtime": "claude-code"
+          },
+          "at": "2026-10-13T22:50:01.000Z",
+          "operations": [
+            "created"
+          ],
+          "reason": "Record CONSTRUCT-010 phase 2 increments 3 and 4 persisted instances"
+        }
+      }
+    },
+    "related_documents": [
+      "docs/architecture/persisted-instances.md",
+      "schemas/ordo-construction-plan.vocabulary-6.schema.json",
+      "src/Ordo.Construction/Emit.fs",
+      "tests/Ordo.Construction.Tests/PersistenceTests.fs",
+      "tests/Ordo.Tests/ConstructionVocabulary6Tests.fs"
+    ],
+    "status": "draft",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "construction",
+      "vocabulary",
+      "persistence",
+      "idempotency",
+      "construct-010"
+    ],
+    "title": "Persist workflow instances with stated idempotency scope and stale-write action",
+    "type": "decision-record",
+    "updated": "2026-10-13"
   }
 ]

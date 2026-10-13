@@ -1,0 +1,1 @@
+The gate is stored with a revision. Every command carries an operation id, and an operation that already landed is never applied again, even after a restart. A write against a revision that has moved is refused and reports StaleRevision. A command for a gate that does not exist reports NoSuchGate.

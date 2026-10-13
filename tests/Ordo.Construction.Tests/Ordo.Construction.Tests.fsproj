@@ -43,6 +43,12 @@
     <Compile Include="Golden/time-entry-timer-v5-escalate/generated/TimerEscalate/TimerEscalate.Model.g.fs" />
     <Compile Include="Golden/time-entry-timer-v5-escalate/generated/TimerEscalate/TimerEscalate.Transition.g.fs" />
     <Compile Include="Golden/time-entry-timer-v5-escalate/generated/TimerEscalate/TimerEscalate.Orchestration.g.fs" />
+    <Compile Include="Golden/gate-persisted-durable/generated/StoredGate/StoredGate.Model.g.fs" />
+    <Compile Include="Golden/gate-persisted-durable/generated/StoredGate/StoredGate.Transition.g.fs" />
+    <Compile Include="Golden/gate-persisted-durable/generated/StoredGate/StoredGate.Persistence.g.fs" />
+    <Compile Include="Golden/gate-persisted-session/generated/SessionGate/SessionGate.Model.g.fs" />
+    <Compile Include="Golden/gate-persisted-session/generated/SessionGate/SessionGate.Transition.g.fs" />
+    <Compile Include="Golden/gate-persisted-session/generated/SessionGate/SessionGate.Persistence.g.fs" />
     <Compile Include="../Ordo.Tests/FsiProbe.fs" Link="FsiProbe.fs" />
     <Compile Include="Fixtures.fs" />
     <Compile Include="GoldenTests.fs" />
@@ -55,6 +61,7 @@
     <Compile Include="ClassifiedConstructionTests.fs" />
     <Compile Include="CodedBranchingConstructionTests.fs" />
     <Compile Include="EffectPolicyTests.fs" />
+    <Compile Include="PersistenceTests.fs" />
     <Compile Include="PatternRecognitionTests.fs" />
   </ItemGroup>
 

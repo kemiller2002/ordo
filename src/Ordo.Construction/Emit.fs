@@ -799,5 +799,200 @@ let private orchestrationV5 (digest: string) (s: Shape) =
 
 let orchestration (digest: string) (s: Shape) =
     if s.Generator = Ordo.Construction.Artifacts.GeneratorVersion then orchestrationV1 digest s
-    elif s.Generator = Ordo.Construction.Artifacts.GeneratorVersion5 then orchestrationV5 digest s
+    elif s.Generator = Ordo.Construction.Artifacts.GeneratorVersion5 || s.Generator = Ordo.Construction.Artifacts.GeneratorVersion6 then
+        orchestrationV5 digest s
     else orchestrationV2 digest s
+
+// ---- Tier 3: Persistence (vocabulary 6) ----
+
+/// Load, deduplicate, decide and save one persisted instance. The save is a
+/// compare-and-swap on the revision the decision was made against. An
+/// unknown save is settled by reading the instance back (durable scope) or
+/// escalated (session scope); it is never assumed to have failed and never
+/// written again. Depends on Tiers 1 and 2 only.
+let persistence (digest: string) (s: Shape) (p: Persistence) =
+    let w = s.Workflow.Name
+    let st, cmd, dt, rf = stateType w, commandType w, decisionType w, refusalType w
+    let idT, opT, recT, loadT, saveT, exT, storeT = idType w, operationIdType w, recordType w, loadedType w, savedType w, executionType w, storeType w
+    let durable = p.Idempotency = IdempotencyScope.Durable
+    let session = p.Idempotency = IdempotencyScope.Session
+    let unresolvedScope = p.Idempotency = IdempotencyScope.Unresolved
+    let staleCase =
+        match p.OnStale with
+        | StaleAction.Refuse -> sprintf "%s.StaleRevision(decision, expected, current)" exT
+        | StaleAction.Escalate -> sprintf "%s.Escalated(decision, sprintf \"revision %%d is stale; the stored revision is %%d\" expected current)" exT
+        | StaleAction.Unresolved -> sprintf "%s.Unresolved(decision, sprintf \"revision %%d is stale; the stored revision is %%d\" expected current)" exT
+    let unresolvedUsed = unresolvedScope || p.OnStale = StaleAction.Unresolved
+    let escalatedUsed = session || p.OnStale = StaleAction.Escalate || durable
+    let types =
+        [ "/// The identity of one persisted instance. Its text is the host's; generated code only compares it."
+          sprintf "type %s = %s of string" idT idT
+          "" ]
+        @ (if unresolvedScope then []
+           else
+               [ "/// The identity of one requested operation, chosen by the caller and stable across retries."
+                 sprintf "type %s = %s of string" opT opT
+                 "" ])
+        @ [ (if durable then "/// A stored instance. `Applied` holds every operation id that has landed, so it survives reload."
+             else "/// A stored instance.")
+            "type " + recT + " ="
+            sprintf "    { Id: %s" idT
+            "      Revision: int64"
+            (if durable then sprintf "      State: %s" st else sprintf "      State: %s }" st) ]
+        @ (if durable then [ sprintf "      Applied: Set<%s> }" opT ] else [])
+        @ [ "" ]
+        @ union "What the store reports for a load. Unknown is a first-class outcome." loadT
+            [ "Found of record: " + recT; "Missing"; "LoadUnknown of reason: string" ]
+        @ union "What the store reports for a compare-and-swap save. Unknown is a first-class outcome, distinct from a definite failure." saveT
+            [ "Saved"; "Stale of current: int64"; "SaveFailed of reason: string"; "SaveUnknown of reason: string" ]
+        @ [ "/// The store a persisted instance lives in. Implemented by a host (Tier 4)."
+            "type " + storeT + " ="
+            sprintf "    abstract Load: id: %s -> %s" idT loadT
+            sprintf "    abstract Save: expected: int64 * record: %s -> %s" recT saveT
+            "" ]
+    let execution =
+        [ "/// The outcome of executing one command against the stored instance."
+          "[<RequireQualifiedAccess>]"
+          "type " + exT + " =" ]
+        @ indent 4
+            ([ "/// Decided and saved. `record` is the stored instance."
+               sprintf "| Executed of decision: %s * record: %s" dt recT ]
+             @ (if unresolvedScope then []
+                else [ "/// The operation already landed; nothing was decided or written."
+                       sprintf "| AlreadyApplied of operation: %s" opT ])
+             @ [ "/// Tier 2 refused the command; nothing was written."
+                 sprintf "| Refused of refusal: %s * record: %s" rf recT
+                 "/// No stored instance has this id."
+                 sprintf "| NotFound of id: %s" idT
+                 "/// The store could not say whether the instance exists; nothing was decided."
+                 sprintf "| LoadUnknown of id: %s * reason: string" idT
+                 "/// Definitely not saved. The stored instance is unchanged, so the caller may try again."
+                 sprintf "| NotSaved of decision: %s * reason: string" dt ]
+             @ (if p.OnStale = StaleAction.Refuse then
+                    [ "/// Another write landed first; the plan refuses a stale write. Nothing was written."
+                      sprintf "| StaleRevision of decision: %s * expected: int64 * current: int64" dt ]
+                else [])
+             @ (if escalatedUsed then
+                    [ "/// A person must decide: the outcome could not be settled, or the plan escalates it."
+                      sprintf "| Escalated of decision: %s * reason: string" dt ]
+                else [])
+             @ (if unresolvedUsed then
+                    [ "/// The plan leaves what this outcome means unresolved; a RESOLVE obligation records it."
+                      sprintf "| Unresolved of decision: %s * reason: string" dt ]
+                else []))
+        @ [ "" ]
+    let decideArgs =
+        (if s.HasRules then [ "rules" ] else []) @ (if s.HasCapabilities then [ "held" ] else []) @ [ "record.State"; "command" ]
+    let ruleParams =
+        (if s.HasRules then [ sprintf "(rules: %s)" (rulesType w) ] else []) @ (if s.HasCapabilities then [ "(held: Set<string>)" ] else [])
+    let ruleArgs = (if s.HasRules then [ "rules" ] else []) @ (if s.HasCapabilities then [ "held" ] else [])
+    let opParam = if unresolvedScope then "" else sprintf " (operation: %s)" opT
+    let opArg = if unresolvedScope then "" else " operation"
+    let nextRecord =
+        if durable then "{ record with Revision = record.Revision + 1L; State = decision.Next; Applied = Set.add operation record.Applied }"
+        else "{ record with Revision = record.Revision + 1L; State = decision.Next }"
+    let stale =
+        [ "/// What a write against a stale revision means, as the plan declares it."
+          sprintf "let stale (decision: %s) (expected: int64) (current: int64) : %s =" dt exT
+          "    " + staleCase
+          "" ]
+    let settle =
+        if durable then
+            [ "/// Settles an unknown save by reading the instance back. The operation landed if the stored"
+              "/// instance records it; it did not if the revision is unchanged; a moved revision without it"
+              "/// means another write won the compare-and-swap. Nothing is written again."
+              sprintf "let settle (store: %s) (record: %s) (operation: %s) (decision: %s) (reason: string) : %s =" storeT recT opT dt exT
+              "    match store.Load record.Id with"
+              sprintf "    | %s.Found stored when Set.contains operation stored.Applied -> %s.Executed(decision, stored)" loadT exT
+              sprintf "    | %s.Found stored when stored.Revision = record.Revision -> %s.NotSaved(decision, reason)" loadT exT
+              sprintf "    | %s.Found stored -> stale decision record.Revision stored.Revision" loadT
+              sprintf "    | %s.Missing | %s.LoadUnknown _ -> %s.Escalated(decision, reason)" loadT loadT exT
+              "" ]
+        else []
+    let unknownSave =
+        if durable then "settle store record operation decision reason"
+        elif session then sprintf "%s.Escalated(decision, reason)" exT
+        else sprintf "%s.Unresolved(decision, reason)" exT
+    let save =
+        [ "/// Saves the decided instance with a compare-and-swap on the revision it was decided against."
+          sprintf "let save (store: %s) (record: %s)%s (decision: %s) : %s =" storeT recT opParam dt exT
+          "    let next = " + nextRecord
+          "    match store.Save(record.Revision, next) with"
+          sprintf "    | %s.Saved -> %s.Executed(decision, next)" saveT exT
+          sprintf "    | %s.SaveFailed reason -> %s.NotSaved(decision, reason)" saveT exT
+          sprintf "    | %s.Stale current -> stale decision record.Revision current" saveT
+          sprintf "    | %s.SaveUnknown reason -> %s" saveT unknownSave
+          "" ]
+    let decideAndSave =
+        [ sprintf "    match %s.decide %s with" (transitionModule w) (String.concat " " decideArgs)
+          sprintf "    | Error refusal -> %s.Refused(refusal, record)" exT
+          sprintf "    | Ok decision -> save store record%s decision" opArg ]
+    let execute =
+        let parameters = [ sprintf "(store: %s)" storeT ] @ ruleParams
+        if durable then
+            [ "/// Executes one command: load, skip an operation that already landed, decide, save."
+              sprintf "let execute %s (id: %s) (operation: %s) (command: %s) : %s =" (String.concat " " parameters) idT opT cmd exT
+              "    match store.Load id with"
+              sprintf "    | %s.Missing -> %s.NotFound id" loadT exT
+              sprintf "    | %s.LoadUnknown reason -> %s.LoadUnknown(id, reason)" loadT exT
+              sprintf "    | %s.Found record when Set.contains operation record.Applied -> %s.AlreadyApplied operation" loadT exT
+              sprintf "    | %s.Found record -> decideAndSave store%s record operation command" loadT (ruleArgs |> List.map ((+) " ") |> String.concat "") ]
+            |> fun lines ->
+                [ "/// Decides the command against the loaded instance and saves the result."
+                  sprintf "let decideAndSave %s (record: %s) (operation: %s) (command: %s) : %s =" (String.concat " " parameters) recT opT cmd exT ]
+                @ decideAndSave @ [ "" ] @ lines
+        elif session then
+            [ "/// Executes one command. The caller holds this session's applied operation ids: they do not"
+              "/// survive reload, so an unknown save is escalated rather than settled."
+              sprintf "let execute %s (seen: Set<%s>) (id: %s) (operation: %s) (command: %s) : %s * Set<%s> =" (String.concat " " parameters) opT idT opT cmd exT opT
+              "    if Set.contains operation seen then"
+              sprintf "        %s.AlreadyApplied operation, seen" exT
+              "    else"
+              "        let result ="
+              "            match store.Load id with"
+              sprintf "            | %s.Missing -> %s.NotFound id" loadT exT
+              sprintf "            | %s.LoadUnknown reason -> %s.LoadUnknown(id, reason)" loadT exT
+              sprintf "            | %s.Found record -> decideAndSave store%s record operation command" loadT (ruleArgs |> List.map ((+) " ") |> String.concat "")
+              "        match result with"
+              sprintf "        | %s.Executed _ -> result, Set.add operation seen" exT
+              "        | _ -> result, seen" ]
+            |> fun lines ->
+                [ "/// Decides the command against the loaded instance and saves the result."
+                  sprintf "let decideAndSave %s (record: %s) (operation: %s) (command: %s) : %s =" (String.concat " " parameters) recT opT cmd exT ]
+                @ decideAndSave @ [ "" ] @ lines
+        else
+            [ "/// Executes one command: load, decide, save. Operation ids are not deduplicated: the plan"
+              "/// leaves the idempotency scope unresolved."
+              sprintf "let execute %s (id: %s) (command: %s) : %s =" (String.concat " " parameters) idT cmd exT
+              "    match store.Load id with"
+              sprintf "    | %s.Missing -> %s.NotFound id" loadT exT
+              sprintf "    | %s.LoadUnknown reason -> %s.LoadUnknown(id, reason)" loadT exT
+              sprintf "    | %s.Found record ->" loadT ]
+            @ indent 4 decideAndSave
+    let codes =
+        let assigned subject = s.Workflow.CodeAssignments |> List.tryFind (fun a -> a.Target = subject) |> Option.map _.Code
+        if List.isEmpty s.Codes then []
+        else
+            let rc = refusalCodeType w
+            let some code = code |> Option.map (fun c -> sprintf "Some %s" (qualify rc c)) |> Option.defaultValue "None"
+            [ ""
+              "/// The typed code of an execution outcome, as the plan assigns it; None where it assigns none."
+              sprintf "let executionCode (execution: %s) : %s option =" exT rc
+              "    match execution with"
+              sprintf "    | %s.Refused(refusal, _) -> %s.refusalCode refusal" exT (transitionModule w)
+              sprintf "    | %s.NotFound _ -> %s" exT (some (assigned CodeSubject.NotFound)) ]
+            @ (if p.OnStale = StaleAction.Refuse then [ sprintf "    | %s.StaleRevision _ -> %s" exT (some (assigned CodeSubject.StaleRevision)) ] else [])
+            @ [ sprintf "    | %s.Executed _" exT ]
+            @ (if unresolvedScope then [] else [ sprintf "    | %s.AlreadyApplied _" exT ])
+            @ [ sprintf "    | %s.LoadUnknown _" exT; sprintf "    | %s.NotSaved _" exT ]
+            @ (if escalatedUsed then [ sprintf "    | %s.Escalated _" exT ] else [])
+            @ (if unresolvedUsed then [ sprintf "    | %s.Unresolved _" exT ] else [])
+            |> fun lines -> List.take (List.length lines - 1) lines @ [ List.last lines + " -> None" ]
+    render (
+        header s.Generator digest "Tier 3 (Persistence): loads, deduplicates, decides and saves one instance"
+        @ [ "namespace " + rootNamespace w; "" ]
+        @ types @ execution
+        @ [ "/// Executes commands against the stored instance. Depends on Tiers 1 and 2 only."
+            "[<RequireQualifiedAccess>]"
+            "module " + persistenceModule w + " =" ]
+        @ indent 4 ([ "" ] @ stale @ settle @ save @ execute @ codes))

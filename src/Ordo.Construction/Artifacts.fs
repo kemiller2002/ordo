@@ -32,10 +32,18 @@ let GeneratorVersion4 = "ordo.construction/4"
 [<Literal>]
 let GeneratorVersion5 = "ordo.construction/5"
 
+/// The generator for vocabulary 6 plans: version 5 plus a persisted instance
+/// (`<W>.Persistence.g.fs`): load, deduplicate by operation id, decide, and
+/// save with a revision compare-and-swap. An unknown save is settled by
+/// reading the instance back, never by assuming failure or writing again.
+[<Literal>]
+let GeneratorVersion6 = "ordo.construction/6"
+
 /// The generator version a plan's vocabulary selects. The plan cannot choose
 /// it any other way.
 let generatorVersionFor (vocabularyVersion: string) =
-    if vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion5 then GeneratorVersion5
+    if vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion6 then GeneratorVersion6
+    elif vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion5 then GeneratorVersion5
     elif vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion4 then GeneratorVersion4
     elif vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion3 then GeneratorVersion3
     elif vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion2 then GeneratorVersion2
@@ -82,6 +90,8 @@ type ExtensionKind =
     | ReconcilePort
     /// Vocabulary 5: undoes a definitely failed effect, on approved authority.
     | CompensatePort
+    /// Vocabulary 6: loads and compare-and-swap saves the persisted instance.
+    | StorePort
 
 /// A handwritten implementation the generated code requires and cannot
 /// supply. Missing ones fail compilation; there is no permissive default.

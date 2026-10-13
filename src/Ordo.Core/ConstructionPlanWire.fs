@@ -250,6 +250,11 @@ let private operation (vocabulary: string) path value =
                     fields targetPath [ "kind"; "name" ] [] rawTarget
                     |> Result.bind (textField targetPath "name")
                     |> Result.map CodeTarget.Guard
+                | ("notFound" | "staleRevision") as persisted ->
+                    if not (hasPersistence vocabulary) then fail (targetPath + ".kind") (sprintf "refusal-code target %s is not in %s" persisted vocabulary)
+                    else
+                        fields targetPath [ "kind" ] [] rawTarget
+                        |> Result.map (fun _ -> if persisted = "notFound" then CodeTarget.NotFound else CodeTarget.StaleRevision)
                 | other -> fail (targetPath + ".kind") ("unsupported refusal-code target: " + other)
             let! code = textField path "code" p
             let! t = traceField path p
@@ -290,6 +295,25 @@ let private operation (vocabulary: string) path value =
                 | other -> fail (path + ".onUnknown") ("unsupported onUnknown: " + other)
             let! t = traceField path p
             return DeclareEffectPolicy { Effect = effect; Retries = retries; OnFailed = onFailed; OnUnknown = onUnknown; Trace = t }
+        | "declarePersistence" ->
+            let! () = if hasPersistence vocabulary then Ok() else notIn kind
+            let! p = fields path [ "op"; "idempotency"; "onStale"; "trace" ] [] value
+            let! scopeText = textField path "idempotency" p
+            let! scope =
+                match scopeText with
+                | "durable" -> Ok IdempotencyScope.Durable
+                | "session" -> Ok IdempotencyScope.Session
+                | "unresolved" -> Ok IdempotencyScope.Unresolved
+                | other -> fail (path + ".idempotency") ("unsupported idempotency scope: " + other)
+            let! staleText = textField path "onStale" p
+            let! onStale =
+                match staleText with
+                | "refuse" -> Ok StaleAction.Refuse
+                | "escalate" -> Ok StaleAction.Escalate
+                | "unresolved" -> Ok StaleAction.Unresolved
+                | other -> fail (path + ".onStale") ("unsupported onStale: " + other)
+            let! t = traceField path p
+            return DeclarePersistence { Idempotency = scope; OnStale = onStale; Trace = t }
         | other -> return! fail (path + ".op") ("unsupported operation: " + other)
     }
 

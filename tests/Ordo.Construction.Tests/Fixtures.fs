@@ -84,6 +84,16 @@ let timerPolicy =
 
 let timerEscalate = { timer with Name = "time-entry-timer-v5-escalate"; Plan = "plan.v5-escalate.json" }
 
+/// Vocabulary 6 (CONSTRUCT-010 phase 2, increments 3 and 4): the synthetic
+/// gate, persisted. `storedGate` deduplicates durably and refuses stale
+/// writes; `sessionGate` deduplicates for one session and escalates them.
+let private persisted name plan =
+    { Name = name; Source = "gate-persisted-synthetic"; Plan = plan; Blueprint = "blueprint.json"
+      Cohort = "COH-GATE"; Approved = Set.singleton "DEC-GATE" }
+
+let storedGate = persisted "gate-persisted-durable" "plan.v6-durable.json"
+let sessionGate = persisted "gate-persisted-session" "plan.v6-session.json"
+
 let private read (fixture: Fixture) name =
     File.ReadAllText(Path.Combine(repositoryRoot, "tests", "fixtures", "construction", fixture.Source, name))
 

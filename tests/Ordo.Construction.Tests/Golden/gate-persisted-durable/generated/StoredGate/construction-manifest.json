@@ -1,0 +1,252 @@
+{
+  "generatorVersion": "ordo.construction/6",
+  "planDigest": "sha256:40bc96cf55586dfa377d2254dcb3fcce40edeaaa54c09515a08017e8ff9e8776",
+  "binding": {
+    "sourceManifestDigest": "sha256:08ab2de381bcd68850640d0d4ac20917bdab934e2fff19d8215dea1b347d42ce",
+    "blueprintDigest": "sha256:7995f51955bef374ae8af0df1ca631d596ddbf93a1389070b528b0e8887066fe",
+    "cohortId": "COH-GATE",
+    "decisionIds": [
+      "DEC-GATE"
+    ]
+  },
+  "notice": "Generated structure only. Not authorization to apply, not evidence of behavioral verification.",
+  "ownershipRoot": "generated/StoredGate/",
+  "artifacts": [
+    {
+      "path": "generated/StoredGate/StoredGate.Model.g.fs",
+      "tier": "semantic-model",
+      "ownership": "generated",
+      "sha256": "sha256:3bf52773ecc8266629fb0af18b2c1786332e0d542eefd075dcabc39dd3ff00b6",
+      "operations": [
+        "branching:Closed/Raise",
+        "code:AlreadyOpen",
+        "code:NoSuchGate",
+        "code:NotAccepted",
+        "code:Obstructed",
+        "code:StaleRevision",
+        "state:Closed",
+        "state:Jammed",
+        "state:Open",
+        "transition:Jammed/Reset",
+        "transition:Open/Lower",
+        "workflow:StoredGate"
+      ],
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-1",
+        "synthetic/gate.md#GATE-2",
+        "synthetic/gate.md#GATE-3",
+        "synthetic/gate.md#GATE-4",
+        "synthetic/gate.md#GATE-5"
+      ]
+    },
+    {
+      "path": "generated/StoredGate/StoredGate.Transition.g.fs",
+      "tier": "transition",
+      "ownership": "generated",
+      "sha256": "sha256:fcc70f4216a65f2cf82b912f2d7971de552e3a7c707091e7c46222666ec598a2",
+      "operations": [
+        "branching:Closed/Raise",
+        "code:AlreadyOpen",
+        "code:NoSuchGate",
+        "code:NotAccepted",
+        "code:Obstructed",
+        "code:StaleRevision",
+        "codeFor:guard/PathClear",
+        "codeFor:notFound",
+        "codeFor:pair/Open/Raise",
+        "codeFor:staleRevision",
+        "codeFor:unlisted",
+        "pairRule",
+        "refusal:Open/Raise",
+        "transition:Jammed/Reset",
+        "transition:Open/Lower",
+        "workflow:StoredGate"
+      ],
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-1",
+        "synthetic/gate.md#GATE-2",
+        "synthetic/gate.md#GATE-3",
+        "synthetic/gate.md#GATE-4",
+        "synthetic/gate.md#GATE-5"
+      ]
+    },
+    {
+      "path": "generated/StoredGate/StoredGate.Persistence.g.fs",
+      "tier": "orchestration",
+      "ownership": "generated",
+      "sha256": "sha256:1997cb55b9d8d890ef02f7ac4b44f7d1644ea005ed592e90b06c6260b3b2d50e",
+      "operations": [
+        "codeFor:notFound",
+        "codeFor:staleRevision",
+        "persistence",
+        "workflow:StoredGate"
+      ],
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-1",
+        "synthetic/gate.md#GATE-5"
+      ]
+    }
+  ],
+  "extensionContracts": [
+    {
+      "name": "StoredGateRules.Guard/PathClear",
+      "kind": "guard-predicate",
+      "ownership": "handwritten",
+      "operations": [
+        "transition:Open/Lower"
+      ],
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-1",
+        "synthetic/gate.md#GATE-3"
+      ]
+    },
+    {
+      "name": "IStoredGateStore.Load",
+      "kind": "store-port",
+      "ownership": "handwritten",
+      "operations": [
+        "persistence"
+      ],
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-5"
+      ]
+    },
+    {
+      "name": "IStoredGateStore.Save",
+      "kind": "store-port",
+      "ownership": "handwritten",
+      "operations": [
+        "persistence"
+      ],
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-5"
+      ]
+    },
+    {
+      "name": "StoredGateRules.Select/Closed/Raise",
+      "kind": "selection-function",
+      "ownership": "handwritten",
+      "operations": [
+        "branching:Closed/Raise"
+      ],
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-1",
+        "synthetic/gate.md#GATE-2"
+      ]
+    }
+  ],
+  "obligations": [
+    {
+      "id": "IMPLEMENT:StoredGateRules.Guard/PathClear",
+      "kind": "implement",
+      "contract": "StoredGateRules.Guard/PathClear",
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-1",
+        "synthetic/gate.md#GATE-3"
+      ]
+    },
+    {
+      "id": "IMPLEMENT:IStoredGateStore.Load",
+      "kind": "implement",
+      "contract": "IStoredGateStore.Load",
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-5"
+      ]
+    },
+    {
+      "id": "IMPLEMENT:IStoredGateStore.Save",
+      "kind": "implement",
+      "contract": "IStoredGateStore.Save",
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-5"
+      ]
+    },
+    {
+      "id": "IMPLEMENT:StoredGateRules.Select/Closed/Raise",
+      "kind": "implement",
+      "contract": "StoredGateRules.Select/Closed/Raise",
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-1",
+        "synthetic/gate.md#GATE-2"
+      ]
+    },
+    {
+      "id": "VERIFY:StoredGate",
+      "kind": "verify-independently",
+      "what": "Behavior against the original requirements. Generated structure and its derived checks are not independent acceptance evidence.",
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-1",
+        "synthetic/gate.md#GATE-2",
+        "synthetic/gate.md#GATE-3",
+        "synthetic/gate.md#GATE-4",
+        "synthetic/gate.md#GATE-5"
+      ]
+    }
+  ],
+  "structuralChecks": {
+    "independence": "derived-from-plan",
+    "pairs": [
+      {
+        "state": "Closed",
+        "command": "Lower",
+        "expected": "invalid-transition"
+      },
+      {
+        "state": "Closed",
+        "command": "Raise",
+        "expected": "branching",
+        "targets": [
+          "Jammed",
+          "Open"
+        ]
+      },
+      {
+        "state": "Closed",
+        "command": "Reset",
+        "expected": "invalid-transition"
+      },
+      {
+        "state": "Jammed",
+        "command": "Lower",
+        "expected": "invalid-transition"
+      },
+      {
+        "state": "Jammed",
+        "command": "Raise",
+        "expected": "invalid-transition"
+      },
+      {
+        "state": "Jammed",
+        "command": "Reset",
+        "expected": "Closed"
+      },
+      {
+        "state": "Open",
+        "command": "Lower",
+        "expected": "Closed"
+      },
+      {
+        "state": "Open",
+        "command": "Raise",
+        "expected": "invalid-transition"
+      },
+      {
+        "state": "Open",
+        "command": "Reset",
+        "expected": "invalid-transition"
+      }
+    ]
+  },
+  "coverage": {
+    "synthetic/gate.md#GATE-1": "constructed",
+    "synthetic/gate.md#GATE-2": "constructed",
+    "synthetic/gate.md#GATE-3": "constructed",
+    "synthetic/gate.md#GATE-4": "constructed",
+    "synthetic/gate.md#GATE-5": "constructed"
+  },
+  "effectPolicies": [],
+  "persistence": {
+    "idempotency": "durable",
+    "onStale": "refuse"
+  }
+}

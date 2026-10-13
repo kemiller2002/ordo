@@ -63,6 +63,7 @@ let private extensionName kind =
     | SelectionFunction -> "selection-function"
     | ReconcilePort -> "reconcile-port"
     | CompensatePort -> "compensate-port"
+    | StorePort -> "store-port"
 
 let private strings values = JArray(values |> List.map JString)
 
@@ -70,13 +71,18 @@ let private manifestJson (plan: ValidatedPlanView) generator root (artifacts: Ar
     let effectFailure =
         if generator = GeneratorVersion then []
         // Vocabulary 5 states outcome handling in effect policies only.
-        elif generator = GeneratorVersion5 then
+        elif generator = GeneratorVersion5 || generator = GeneratorVersion6 then
             [ "effectPolicies",
               JArray [ for p in plan.Workflow.EffectPolicies ->
                          JObject [ "effect", JString p.Effect.Key
                                    "retries", JInt(int64 p.Retries)
                                    "onFailed", JString(failedActionName p.OnFailed)
                                    "onUnknown", JString(unknownActionName p.OnUnknown) ] ] ]
+            @ (match plan.Workflow.Persistence with
+               | Some p ->
+                   [ "persistence",
+                     JObject [ "idempotency", JString(idempotencyName p.Idempotency); "onStale", JString(staleActionName p.OnStale) ] ]
+               | None -> [])
         else
             [ "effectFailure",
               JArray [ for p in plan.Workflow.Ports do
@@ -179,6 +185,12 @@ let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefu
             [ artifact (Layout.modelPath w.Name) (Some SemanticModel) modelOps (Emit.semanticModel digest shape)
               artifact (Layout.transitionPath w.Name) (Some Transition) transitionOps (Emit.transition digest shape) ]
             @ (if shape.HasPorts then [ artifact (Layout.orchestrationPath w.Name) (Some Orchestration) orchestrationOps (Emit.orchestration digest shape) ] else [])
+            @ (match w.Persistence with
+               | Some p ->
+                   [ artifact (Layout.persistencePath w.Name) (Some Orchestration)
+                         (pick (function DefineWorkflow _ | DeclarePersistence _ | AssignRefusalCode { Target = CodeTarget.NotFound | CodeTarget.StaleRevision } -> true | _ -> false))
+                         (Emit.persistence digest shape p) ]
+               | None -> [])
 
         let guardOps (guard: SemanticName) =
             pick (function DefineTransition t -> t.Guards |> List.exists (fun g -> g.Name = guard.Key) | _ -> false)
@@ -199,6 +211,12 @@ let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefu
                    let ops = pick (function DeclareEffectPolicy d -> d.Effect = p.Effect.Key | DeclarePort { Kind = TransitionEffect(c, _) } -> c = p.Effect.Key | _ -> false)
                    [ if p.OnUnknown = UnknownEffectAction.Reconcile then contract (Layout.reconcileContract w.Name p.Effect) ReconcilePort ops
                      if p.OnFailed = FailedEffectAction.Compensate then contract (Layout.compensateContract w.Name p.Effect) CompensatePort ops ]))
+            // Vocabulary 6: the host's store, loaded and compare-and-swap saved.
+            @ (match w.Persistence with
+               | Some _ ->
+                   let ops = pick (function DeclarePersistence _ -> true | _ -> false)
+                   [ contract (Layout.loadContract w.Name) StorePort ops; contract (Layout.saveContract w.Name) StorePort ops ]
+               | None -> [])
             @ (shape.Branching |> List.map (fun (from, command, _) ->
                 contract (Layout.selectionContract w.Name from command) SelectionFunction
                     (pick (function
@@ -246,6 +264,18 @@ let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefu
                 { Id = sprintf "RESOLVE-PAIR:%s/%s" state.Key command.Key
                   Kind = ResolveUndecidedTransition(state.Key, command.Key, question)
                   RequirementKeys = keys }))
+            @ (match w.Persistence with
+               | Some p ->
+                   let keys = p.Trace.RequirementKeys
+                   [ if p.Idempotency = IdempotencyScope.Unresolved then
+                         { Id = "RESOLVE-PERSISTENCE:idempotency"
+                           Kind = ResolveUnresolved("PersistenceIdempotency", sprintf "Whether operation ids of workflow %s are deduplicated durably or for one session only is not decided." w.Name.Key)
+                           RequirementKeys = keys }
+                     if p.OnStale = StaleAction.Unresolved then
+                         { Id = "RESOLVE-PERSISTENCE:onStale"
+                           Kind = ResolveUnresolved("PersistenceOnStale", sprintf "What a write against a stale revision of workflow %s means is not decided." w.Name.Key)
+                           RequirementKeys = keys } ]
+               | None -> [])
             @ (w.Unresolved |> List.map (fun u ->
                 { Id = "RESOLVE:" + u.Subject.Key
                   Kind =

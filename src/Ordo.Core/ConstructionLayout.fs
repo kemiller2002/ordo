@@ -18,10 +18,14 @@ let ownershipRoot (workflow: SemanticName) = "generated/" + workflow.Key + "/"
 let modelPath (workflow: SemanticName) = ownershipRoot workflow + workflow.Key + ".Model.g.fs"
 let transitionPath (workflow: SemanticName) = ownershipRoot workflow + workflow.Key + ".Transition.g.fs"
 let orchestrationPath (workflow: SemanticName) = ownershipRoot workflow + workflow.Key + ".Orchestration.g.fs"
+/// Vocabulary 6: the persisted instance's load, deduplicate, decide and save path.
+let persistencePath (workflow: SemanticName) = ownershipRoot workflow + workflow.Key + ".Persistence.g.fs"
 let manifestPath (workflow: SemanticName) = ownershipRoot workflow + "construction-manifest.json"
 
 let rulesType (workflow: SemanticName) = workflow.Key + "Rules"
 let portsType (workflow: SemanticName) = "I" + workflow.Key + "Ports"
+/// Vocabulary 6: the store a persisted instance is loaded from and saved to.
+let storeType (workflow: SemanticName) = "I" + workflow.Key + "Store"
 
 /// Extension contract names. A handwritten implementation is identified by
 /// these names in the construction manifest and in obligations.
@@ -29,6 +33,9 @@ let guardContract (workflow: SemanticName) (guard: SemanticName) = sprintf "%s.G
 let invariantContract (workflow: SemanticName) (invariant: SemanticName) = sprintf "%s.Invariant/%s" (rulesType workflow) invariant.Key
 let currentTimeContract (workflow: SemanticName) = portsType workflow + ".CurrentTime"
 let effectContract (workflow: SemanticName) (effect: SemanticName) = sprintf "%s.Perform/%s" (portsType workflow) effect.Key
+/// Vocabulary 6: loading and compare-and-swap saving of a persisted instance.
+let loadContract (workflow: SemanticName) = storeType workflow + ".Load"
+let saveContract (workflow: SemanticName) = storeType workflow + ".Save"
 /// Vocabulary 5: the host's reconciliation of an effect whose outcome is unknown.
 let reconcileContract (workflow: SemanticName) (effect: SemanticName) = sprintf "%s.Reconcile/%s" (portsType workflow) effect.Key
 /// Vocabulary 5: the host's compensation of a definitely failed effect.
@@ -44,4 +51,5 @@ let generatedLayout (workflow: Workflow) : string list =
     [ modelPath workflow.Name
       transitionPath workflow.Name
       if not (List.isEmpty workflow.Ports) then orchestrationPath workflow.Name
+      if workflow.Persistence.IsSome then persistencePath workflow.Name
       manifestPath workflow.Name ]
