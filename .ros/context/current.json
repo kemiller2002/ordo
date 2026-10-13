@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-13T22:34:25.000Z",
+  "updatedAt": "2026-10-13T22:37:36.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2108,13 +2108,47 @@
     {
       "id": "CONSTRUCT-010-EFFECT-POLICY",
       "type": "task",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-10-13T22:34:25.000Z",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Construction/Emit.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Construction.Tests/EffectPolicyTests.fs"
+        },
+        {
+          "type": "documentation",
+          "path": "docs/architecture/effect-outcome-policies.md"
+        }
+      ],
+      "updatedAt": "2026-10-13T22:37:36.000Z",
       "telemetryExecutionIds": [
         "EXE-20261013T223426040Z-917561db"
-      ]
+      ],
+      "latestCheckpoint": {
+        "id": "71a58f18e58193863aef6b53",
+        "recordedAt": "2026-10-13T22:37:36.000Z",
+        "executionId": "EXE-20261013T223426040Z-917561db",
+        "repository": "ordo",
+        "branch": "construct-010/effect-policy",
+        "commit": "09044a47b66f565aa1819e9f6259a343c975896a",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "construct-010/effect-policy",
+        "remoteCommit": "09044a47b66f565aa1819e9f6259a343c975896a",
+        "summary": "Vocabulary 5 effect outcome policies and generator /5 (09044a4)",
+        "nextAction": "Open stacked PR; increment 3",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-13T22:37:36.000Z"
     }
   ]
 }
