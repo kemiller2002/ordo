@@ -96,7 +96,7 @@ unrepresentable as completed construction.
   `Refusals`, `Undecided`) changes. Code that constructs these values directly
   must add the new fields. The JSON wire for decision records version 1 and
   for plan vocabularies 1 and 2 is unchanged.
-- Ordo moves to 1.10.0 (minor): new wire versions and union cases, no changed
+- Ordo moves to 1.11.0 (minor): new wire versions and union cases, no changed
   existing wire meaning.
 - Unresolved and unsupported choices now hold back completion.
   CONSTRUCT-010's coverage report (phase 7) counts them; it does not hide them.

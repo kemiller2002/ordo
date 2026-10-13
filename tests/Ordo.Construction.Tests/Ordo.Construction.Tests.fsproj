@@ -45,6 +45,7 @@
     <Compile Include="CompileNegativeTests.fs" />
     <Compile Include="DefaultPlanConstructionTests.fs" />
     <Compile Include="ClassifiedConstructionTests.fs" />
+    <Compile Include="PatternRecognitionTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

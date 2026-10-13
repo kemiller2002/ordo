@@ -44,9 +44,21 @@ type EcirScaffoldOptions =
     { Manifest: string
       Output: string }
 
+type EcirRecognizeOptions =
+    { Manifest: string
+      Blueprint: string
+      Cohort: string
+      Decisions: string option
+      Approvals: string option
+      Pin: string option
+      PacketsDirectory: string option
+      AllowedPaths: string list
+      EscalateOpenQuestions: bool }
+
 type Command =
     | EcirValidate of EcirValidateOptions
     | EcirScaffold of EcirScaffoldOptions
+    | EcirRecognize of EcirRecognizeOptions
     | Init of InitOptions
     | Status of StatusOptions
     | Verify of VerifyOptions
@@ -136,17 +148,21 @@ let private parseBoundary (globals: GlobalOptions) (argv: string list) : ParseRe
         | _ -> ParseFailed boundaryUsage
 
 let ecirUsage =
-    "Usage: sde ecir validate --manifest FILE --blueprint FILE [--cohort ID] [--json] | sde ecir scaffold --manifest FILE --output FILE [--json]"
+    "Usage: sde ecir validate --manifest FILE --blueprint FILE [--cohort ID] [--json] | sde ecir scaffold --manifest FILE --output FILE [--json] | sde ecir recognize --manifest FILE --blueprint FILE --cohort ID [--decisions FILE] [--approvals FILE] [--pin FILE] [--allow GLOB]... [--escalate-open-questions] [--packets DIR] [--json]"
 
 /// Only structural/semantic validation can be authorized by this CLI.
 //// Cohort-level execution also needs externally verified decision approvals;
 /// passing a string on the command line is deliberately not authorization.
 let private parseEcir (globals: GlobalOptions) (argv: string list) : ParseResult =
-    let valued = [ "--manifest"; "--blueprint"; "--cohort"; "--output" ]
-    let switches = [ "--json"; "--verbose"; "-v"; "--help"; "-h" ]
+    let valued = [ "--manifest"; "--blueprint"; "--cohort"; "--output"; "--decisions"; "--approvals"; "--pin"; "--packets" ]
+    let switches = [ "--json"; "--verbose"; "-v"; "--help"; "-h"; "--escalate-open-questions" ]
+    let allowed =
+        argv |> List.pairwise |> List.choose (fun (flag, value) -> if flag = "--allow" then Some value else None)
     let rec walk args values positionals =
         match args with
         | [] -> Ok(values, List.rev positionals)
+        | "--allow" :: value :: rest when not (value.StartsWith "--") -> walk rest values positionals
+        | "--allow" :: _ -> Error "Missing value: --allow"
         | flag :: value :: rest when List.contains flag valued && not (value.StartsWith "--") ->
             if Map.containsKey flag values then
                 Error(sprintf "Option given twice: %s" flag)
@@ -170,6 +186,23 @@ let private parseEcir (globals: GlobalOptions) (argv: string list) : ParseResult
             not (Map.containsKey "--cohort" values)
             && not (Map.containsKey "--blueprint" values) ->
             Parsed { Command = EcirScaffold { Manifest = manifest; Output = output }; Global = globals }
+        | _ -> ParseFailed ecirUsage
+    | Ok(values, [ "ecir"; "recognize" ]) ->
+        match Map.tryFind "--manifest" values, Map.tryFind "--blueprint" values, Map.tryFind "--cohort" values with
+        | Some manifest, Some blueprint, Some cohort when not (Map.containsKey "--output" values) ->
+            Parsed
+                { Command =
+                    EcirRecognize
+                        { Manifest = manifest
+                          Blueprint = blueprint
+                          Cohort = cohort
+                          Decisions = Map.tryFind "--decisions" values
+                          Approvals = Map.tryFind "--approvals" values
+                          Pin = Map.tryFind "--pin" values
+                          PacketsDirectory = Map.tryFind "--packets" values
+                          AllowedPaths = allowed
+                          EscalateOpenQuestions = List.contains "--escalate-open-questions" argv }
+                  Global = globals }
         | _ -> ParseFailed ecirUsage
     | _ -> ParseFailed ecirUsage
 
