@@ -2,6 +2,9 @@
 
 | ID | Work | Status | Tags | Priority |
 |---|---|---|---|---|
+| CONSTRUCT-008-ORDO | CONSTRUCT-008-ORDO | complete |  |  |
+| CONSTRUCT-009-LEDGER | CONSTRUCT-009-LEDGER | complete |  |  |
+| CONSTRUCT-009-LEDGER-FIX | CONSTRUCT-009-LEDGER-FIX | complete |  |  |
 | CONSTRUCT-VOCAB-2 | Construction vocabulary 2: mandatory effect-failure disposition | complete |  | medium |
 | CONSTRUCT-VOCAB-2-DECISION | Vocabulary 2: a decided effect-failure disposition must cite a required decision | complete |  | medium |
 | GH-18 | GH-18 | complete |  |  |
@@ -68,3 +71,5 @@
 | WI-0042 | Move ordo to Praxis 3.7.2; attempt Conditor adoption | complete | praxis, toolchain, conditor | medium |
 | WI-0043 | ORDO-CORE-PACKAGE: publish Ordo.Core as an immutable package and add the ordo.execution-contract/1 reader so hosts consume Ordo semantics | complete |  | medium |
 | WI-0044 | Deterministic construction-plan consensus over N independent drafts (research-documents#6, #7) | complete | construction,consensus | high |
+| WI-0045 | Pattern registry and deterministic recognition with early delegation (ORDO-PATTERN-001) | ready |  | medium |
+| WI-0046 | x | abandoned |  | medium |

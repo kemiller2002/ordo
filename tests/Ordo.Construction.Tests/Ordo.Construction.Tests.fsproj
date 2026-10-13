@@ -41,6 +41,7 @@
     <Compile Include="EffectFailureTests.fs" />
     <Compile Include="CompileNegativeTests.fs" />
     <Compile Include="DefaultPlanConstructionTests.fs" />
+    <Compile Include="PatternRecognitionTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

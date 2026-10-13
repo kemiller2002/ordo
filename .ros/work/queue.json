@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "repository": "state-directed-engineering",
-  "nextSeq": 45,
+  "nextSeq": 47,
   "items": [
     {
       "id": "WI-0001",
@@ -896,6 +896,49 @@
       },
       "source": "manual",
       "sourceReference": null
+    },
+    {
+      "id": "WI-0045",
+      "title": "Pattern registry and deterministic recognition with early delegation (ORDO-PATTERN-001)",
+      "description": null,
+      "tags": [],
+      "priority": "medium",
+      "status": "ready",
+      "attachments": [],
+      "createdAt": "2026-10-13T20:15:28.028Z",
+      "updatedAt": "2026-10-13T20:15:40Z",
+      "createdBy": "unknown",
+      "createdByActor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
+      },
+      "source": "manual",
+      "sourceReference": null
+    },
+    {
+      "id": "WI-0046",
+      "title": "x",
+      "description": null,
+      "tags": [],
+      "priority": "medium",
+      "status": "abandoned",
+      "attachments": [],
+      "createdAt": "2026-10-13T20:15:30.790Z",
+      "updatedAt": "2026-10-13T20:15:34Z",
+      "createdBy": "unknown",
+      "createdByActor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
+      },
+      "source": "manual",
+      "sourceReference": null,
+      "abandonedReason": "created by mistake while probing CLI help"
     }
   ]
 }
