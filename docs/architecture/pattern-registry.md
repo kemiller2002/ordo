@@ -47,9 +47,9 @@ Initial library. All three wrap `ordo.default-plan/4`; no new generator was adde
 
 | Pattern | Claims | Kind |
 |---|---|---|
-| `ordo.state-machine@1` | requirements cited by `stateModel` transitions on an approved decision node | constructs |
-| `ordo.transition-effect-port@1` | requirements cited by a `transitionEffect` port | interface only; the effect body is handwritten |
-| `ordo.current-time-port@1` | requirements cited by a `currentTime` port | interface only |
+| `ordo.state-machine@2` | requirements cited by `stateModel` transitions on an approved decision node | constructs |
+| `ordo.transition-effect-port@2` | requirements cited by a `transitionEffect` port | interface only; the effect body is handwritten |
+| `ordo.current-time-port@2` | requirements cited by a `currentTime` port | interface only |
 
 Further patterns are admitted only on the evidence in
 `research/pattern-construction/pattern-ranking.md`. A pattern that raises total

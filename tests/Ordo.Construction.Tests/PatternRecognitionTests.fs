@@ -278,9 +278,9 @@ let ``a changed contract under the same version is refused for an approved pin``
 let ``a newer pattern version or a new pattern does not join previously approved construction`` () =
     let approved = run (timerInput ())
     let v2 =
-        { Contract = { BuiltIn.stateMachineContract with Ref = { Id = "ordo.state-machine"; Version = 2 }; Unsupported = [] }
+        { Contract = { BuiltIn.stateMachineContract with Ref = { Id = "ordo.state-machine"; Version = BuiltIn.stateMachineContract.Ref.Version + 1 }; Unsupported = [] }
           Claim = fun _ _ -> None }
-    let updated = Registry.create "ordo.patterns/2" (competing :: v2 :: BuiltIn.definitions) |> ok "registry"
+    let updated = Registry.create (BuiltIn.RegistryVersion + "-next") (competing :: v2 :: BuiltIn.definitions) |> ok "registry"
     let pinned = recognize updated (Some approved.Pin) (timerInput ()) |> ok "pinned"
     Assert.Equal(encodeReport approved, encodeReport pinned)
     // Unpinned, the latest versions are selected and the result may differ, visibly.
