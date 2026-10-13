@@ -152,6 +152,112 @@ byte-identical output.
 A default plan is not authority. A host still pins the digests, checks the
 grant and controls every write.
 
+## Requirements ledger: `ordo.requirements-ledger/1`
+
+Tracking: CONSTRUCT-009. `ConstructionLedger` and `ConstructionLedgerWire`
+guarantee that no source requirement silently disappears between intake and
+construction.
+
+```fsharp
+buildLedger :
+    SourceManifest -> Blueprint -> DefaultPlan list
+    -> Map<string, AcceptanceEvidence> -> LedgerTags
+    -> Result<Ledger, LedgerViolation list>
+```
+
+The ledger is derived, not authored. Every manifest key gets exactly one
+row. A row records:
+
+- the `SourceRequirement`;
+- its semantic categories (the anchoring node kinds);
+- its blueprint disposition and dependencies;
+- approved and closing decision ids, and conflict nodes;
+- the cohort, operation labels, generated files and extension surface of the
+  supplied default plan that assigns it;
+- its open obligations and verification nodes;
+- independent acceptance cases and their verdict;
+- its resolution classes and its final disposition.
+
+The plan list may be empty or partial. A requirement no supplied plan assigns
+is `Unresolved` with a rationale, never omitted. A blueprint `deferred`
+disposition is carried through. A blueprint `rejected` or `superseded`
+disposition is carried through only when an approved decision or rationale
+anchors it; otherwise the requirement is `Unresolved`.
+
+### Resolution classes
+
+A row carries a set of classes, one per aspect. It does not carry one class:
+the timer Stop requirement is mechanically constructed (its ports) and also
+waits on a domain decision (what a failed effect means).
+
+| Class | Derived from |
+|---|---|
+| `fixedByRequirement` | an explicit `LedgerTags.FixedByRequirement` tag only; never inferred |
+| `alreadyApproved` | an approved decision or engineering rationale node anchors it, or a claim cites a program-level approval |
+| `mechanicallyDetermined` | the plan constructs it (`Constructed` coverage: states, transitions, ports) |
+| `genuineDomainDecision` | one of the following: a `conflict`, `undecidedEffectFailure` or `uncoveredRequirement` obligation; a blueprint `unresolved` disposition; a linked conflict node; or nothing constructs or approves it |
+| `unsupportedByVocabulary` | an `unsupportedVocabulary` obligation |
+
+`extensionBehavior` obligations are handwritten work, not open questions.
+Independent acceptance discharges them.
+
+### Final disposition
+
+The final disposition is one of `implemented`, `partiallyImplemented`,
+`deferred`, `unresolved`, `rejected` or `superseded`. Every case except
+`implemented` needs a nonblank rationale, and `superseded` also names its
+decision.
+
+The derived disposition works like this:
+
+- A row with an open obligation is `partiallyImplemented` if it is
+  constructed, and `unresolved` if it is not.
+- Otherwise the row is `implemented` only with passing, independent
+  acceptance.
+- Otherwise it is `partiallyImplemented`.
+
+### Claims and tags
+
+`LedgerTags.Claims` may request another disposition. A claim is checked,
+never believed. `FixedByRequirement` and `ApprovedDecisionIds` come from the
+same external authority as `validateCohort`'s authorized decisions. A claim
+can cite as a closing decision only a program-level approval in
+`ApprovedDecisionIds`. A decision that a supplied plan binds was already
+applied by the generator, so it cannot close what the generator left open
+(`NonClosingDecision`).
+
+### Violations
+
+The rules hold for every row (`rowViolations`) and for a whole ledger
+(`accountabilityViolations`). `validateLedger` re-derives a ledger document
+and compares it row by row (`RowMismatch`, `LedgerHeaderMismatch`).
+
+- **Accountability:**
+  - `UnaccountedRequirement`, `DuplicateRow`, `InventedRequirement`. An
+    invented key is one that a row, evidence entry, tag or claim names
+    outside the manifest.
+  - `AmbiguousCohort`: two supplied plans assign one requirement.
+  - `PlanBindingMismatch`.
+- **Implemented:**
+  - `ImplementedWithoutIndependentAcceptance`: the evidence is missing,
+    failed or empty, or it cites the requirement's own verification node.
+  - `ImplementedWithOpenObligation`: an open obligation that no closing
+    decision closes.
+  - `ImplementedWithoutCohort`.
+- **Authority:**
+  - `AgentResolvedDomainDecision`: one of the following without a closing
+    approved decision: a genuine domain decision marked `implemented`, or
+    any requirement marked `rejected` or `superseded`.
+  - `UnapprovedDecision`, `NonClosingDecision`, `DuplicateClaim`.
+- **Form:** `MissingRationale`, `UnclassifiedRow`, `InvalidBlueprint`.
+
+`ConstructionLedgerWire.encodeLedger` is the canonical form. Lists are
+sorted, rows are in key order, and object members are sorted.
+`ConstructionLedgerWire.digest` is the SHA-256 of exactly those bytes.
+`readLedger` is strict. A ledger read back is a claim: validate it against
+its inputs. A ledger is a report, not authority to apply or ship anything.
+There is no CLI surface yet.
+
 ## Evidence
 
 - `tests/Ordo.Tests/ConstructionDefaultPlanTests.fs` covers:
@@ -167,3 +273,12 @@ grant and controls every write.
   - the layout equals the engine's artifact paths and write plan;
   - the generated F# equals the compiled goldens, and pilot 01's B1 output,
     apart from the header line.
+- `tests/Ordo.Tests/ConstructionLedgerTests.fs` covers the requirements
+  ledger:
+  - the timer golden (seven keys, their classes and dispositions, and the five
+    obligations);
+  - a dropped plan;
+  - an exhaustive evidence-subset property;
+  - every violation;
+  - closing decisions;
+  - the wire round trip and digest determinism.

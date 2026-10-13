@@ -112,6 +112,12 @@ belongs to whichever ROS work item executes the validation.
   `ordo.construction-obligations/1` obligation, and a missing essential
   decision is a refusal. Asserted in
   `tests/Ordo.Tests/ConstructionDefaultPlanTests.fs`.
+- The requirements ledger (`ConstructionLedger.buildLedger`,
+  `ordo.requirements-ledger/1`) gives every manifest requirement exactly one
+  derived row with resolution classes and a final disposition. Nothing is
+  implemented outside a supplied plan or without independent acceptance, and
+  no open domain decision is closed without a program-level approved
+  decision. Asserted in `tests/Ordo.Tests/ConstructionLedgerTests.fs`.
 - Executable Ordo must not depend on ROS, and `Ordo.Core` must not depend on
   any model-provider SDK. Both are asserted against the loaded assemblies in
   `tests/Ordo.Tests/ArchitectureTests.fs` rather than by review.
