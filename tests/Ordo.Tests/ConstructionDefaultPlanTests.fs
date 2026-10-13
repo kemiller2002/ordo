@@ -63,7 +63,7 @@ let private keyRejection = "kemiller2002/time-entry-state-machine/effort-experim
 /// values; that requires a generator version change, not an updated constant.
 let private pinnedDecisionsDigest = "sha256:3b9d190488bc80f045578f91dbd059beb393340f34dc1ba2802f5d88a198d0d3"
 let private pinnedPlanDigest = "sha256:9747faade3fbea4bb9ded5e1ed83ef457d93df4b4980183df581db9e2b964d63"
-let private pinnedDefaultPlanDigest = "sha256:cc6b789d528604b17c3fe2f6cec9d6dd7bf72fd9d7df6df14346bb462933134d"
+let private pinnedDefaultPlanDigest = "sha256:920088e63fcd97a5219749b90dd4fe42d1c7747d56e7db568a17c9354342d14d"
 let private pinnedObligationIds =
     [ "OBL-COH-TIMER-conflict-f569e9ac9d77"
       "OBL-COH-TIMER-extensionBehavior-03835228233e"
@@ -374,6 +374,8 @@ let ``a conflict inside the cohort is always an obligation and is never resolved
     let inside = conflicts |> List.filter (fun o -> o.NodeIds = [ "CONFLICT-INSIDE" ]) |> List.exactlyOne
     Assert.Equal<string list>([ keyStop ], inside.RequirementKeys)
     Assert.Contains("inside cohort COH-TIMER", inside.Question)
+    // The conflict's own justification is what tells the agent what is undecided.
+    Assert.Contains("The blueprint records: test input.", inside.Question)
     Assert.Equal(None, inside.PlanSubject)
     // The out-of-cohort short-stop conflict is still reported, once.
     Assert.Equal(1, conflicts |> List.filter (fun o -> o.NodeIds = [ "CONFLICT-TIMER-SHORT-STOP" ]) |> List.length)
@@ -499,7 +501,7 @@ let ``provenance names the generator and the digest of every input, recomputed i
     let p = generate ()
     let pv = p.Provenance
     Assert.Equal("ordo.default-plan", pv.GeneratorId)
-    Assert.Equal("ordo.default-plan/2", pv.GeneratorVersion)
+    Assert.Equal("ordo.default-plan/3", pv.GeneratorVersion)
     Assert.Equal(VocabularyVersion2, pv.VocabularyVersion)
     Assert.Equal(cohort, pv.CohortId)
     Assert.Equal((manifest ()).Digest, pv.SourceManifestDigest)

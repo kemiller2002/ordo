@@ -31,7 +31,7 @@ let GeneratorId = "ordo.default-plan"
 /// The generator's own semantic version. Same inputs and same generator
 /// version give a byte-identical default plan.
 [<Literal>]
-let GeneratorVersion = "ordo.default-plan/2"
+let GeneratorVersion = "ordo.default-plan/3"
 
 [<Literal>]
 let ObligationsSchemaVersion = "ordo.construction-obligations/1"
@@ -503,7 +503,11 @@ let private conflictObligations (view: PreparedCohortView) =
     /// open question; one outside it only when the blueprint relates it.
     let placement (conflict: ConstructionNode) =
         if Set.contains conflict.Id view.RequiredNodeIds then
-            Some(sprintf "Conflict %s is inside cohort %s and no approved decision resolves it." conflict.Id view.CohortId)
+            let recorded =
+                match conflict.Justification with
+                | Some text when not (String.IsNullOrWhiteSpace text) -> sprintf " The blueprint records: %s." (text.Trim().TrimEnd('.'))
+                | _ -> ""
+            Some(sprintf "Conflict %s is inside cohort %s and no approved decision resolves it.%s" conflict.Id view.CohortId recorded)
         else
             match conflictRelation view conflict with
             | [] -> None
