@@ -229,6 +229,20 @@ let private question (scope: Map<string, ConstructionNode>) gap =
         sprintf "Patterns %s would each construct this requirement differently. Which one applies?"
             (patterns |> List.map PatternRef.label |> String.concat ", ")
 
+/// The Phase 4 decision class of an outcome (`ConstructionClassification`,
+/// ordo#78): whether the requirement's choices may be generated. Recognition
+/// only constructs from an authorized decision record, so `Constructible` is
+/// `approved`; any missing or unauthorized decision is `unresolved`; work no
+/// pattern constructs is `unsupported`. `Blocked` has no class. `required`
+/// and `implied` are never produced here: recognition reads no requirement
+/// text and applies no documented rule.
+let decisionClass outcome =
+    match outcome with
+    | Constructible _ -> Some "approved"
+    | DecisionRequired _ -> Some "unresolved"
+    | Delegate _ -> Some "unsupported"
+    | Blocked _ -> None
+
 let private isProblem outcome =
     match outcome with
     | Blocked _

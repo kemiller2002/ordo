@@ -68,6 +68,17 @@ are listed as **excluded**, so every key still appears exactly once.
 | `Delegate(interfaces, generatedBy)` | no pattern constructs the behavior | bounded packet to an agent, immediately |
 | `Blocked(blockers)` | invalid source, blueprint `unresolved`, unusable matched content, a blocked or undecided prerequisite, or a generator refusal | stop that requirement; report the blocker |
 
+Each requirement also carries `decisionClass`, the Phase 4 class from
+`ConstructionClassification` (ordo#78):
+- `Constructible` → `approved`;
+- `DecisionRequired` → `unresolved`;
+- `Delegate` → `unsupported`;
+- `Blocked` → none.
+
+Recognition never emits `required` or `implied`, because it reads no
+requirement text and applies no documented rule. The ledger keeps its own
+classes; recognition does not restate them.
+
 Precedence when several apply: `Blocked`, then `DecisionRequired`, then
 `Delegate`, then `Constructible`. A doubt never resolves toward
 `Constructible`. A false positive generates wrong behavior; a false negative

@@ -450,3 +450,13 @@ let ``the completion reader is strict`` () =
 [<InlineData("generated/Timer/**", "generated/TimerX/a.fs", false)>]
 let ``path globs match whole segments`` (pattern: string, path: string, expected: bool) =
     Assert.Equal(expected, globMatch pattern path)
+
+[<Fact>]
+let ``every outcome carries the Phase 4 decision class, and blocked carries none`` () =
+    let report = run (timerInput ())
+    let cls suffix = decisionClass (outcomeOf suffix report)
+    Assert.Equal(Some "approved", cls "L116-L129")
+    Assert.Equal(Some "unresolved", cls "L131-L144")
+    Assert.Equal(Some "unsupported", cls "L145-L148")
+    Assert.Equal(None, decisionClass (Blocked [ AwaitingPrerequisites [] ]))
+    Assert.Contains("\"decisionClass\": \"approved\"", encodeReport report)

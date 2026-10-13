@@ -116,6 +116,7 @@ let reportJson (r: RecognitionReport) =
               "requirements",
               JArray(r.Requirements |> List.map (fun x ->
                   JObject [ "key", JString x.Key; "originalId", JString x.OriginalId; "outcome", jOutcome x.Outcome
+                            "decisionClass", jOption JString (decisionClass x.Outcome)
                             "claims", JArray(List.map jClaim x.Claims) ]))
               "excluded",
               JArray(r.Excluded |> List.map (fun e -> JObject [ "key", JString e.Key; "disposition", JString e.Disposition; "reason", JString e.Reason ]))
