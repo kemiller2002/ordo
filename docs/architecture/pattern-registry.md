@@ -43,7 +43,7 @@ The contract's canonical JSON digest is what a pin binds. The claim function
 is code, so its digest cannot see changes to it. The rule is: **any change to
 what a pattern claims or generates is a new version.**
 
-Initial library. All three wrap `ordo.default-plan/3`; no new generator was added.
+Initial library. All three wrap `ordo.default-plan/4`; no new generator was added.
 
 | Pattern | Claims | Kind |
 |---|---|---|

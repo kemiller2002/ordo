@@ -241,13 +241,13 @@ module Registry =
 
 // ---------------------------------------------------------------------------
 // The initial pattern library. Each wraps the existing deterministic
-// generator `ordo.default-plan/3`; nothing here generates code itself.
+// generator `ordo.default-plan/4`; nothing here generates code itself.
 // ---------------------------------------------------------------------------
 
 [<RequireQualifiedAccess>]
 module BuiltIn =
 
-    let DefaultPlanGenerator = { GeneratorRef.Id = "ordo.default-plan"; Version = "ordo.default-plan/3" }
+    let DefaultPlanGenerator = { GeneratorRef.Id = "ordo.default-plan"; Version = "ordo.default-plan/4" }
 
     let private nameDefect (raw: string) =
         match SemanticName.create raw with

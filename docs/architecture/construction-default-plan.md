@@ -184,7 +184,7 @@ A refusal means no plan is generated, not even a partial one.
 - `GeneratedLayout`: the paths `Ordo.Construction` will emit,
   from `ConstructionLayout`, the one naming scheme the engine itself uses.
 - `Provenance`:
-  - generator `ordo.default-plan` at version `ordo.default-plan/3` (`/3`: an in-cohort conflict question carries the node justification; `/2`: in-cohort conflicts became obligations; `/1`: only out-of-cohort ones);
+  - generator `ordo.default-plan` at version `ordo.default-plan/4` (`/4`: undecided-pair and decision-point obligations carry a typed `planSubject` (`pair:S/C`, `extension:…/point:P`); `/3`: an in-cohort conflict question carries the node justification; `/2`: in-cohort conflicts became obligations; `/1`: only out-of-cohort ones);
   - the vocabulary version and cohort;
   - the manifest, canonical blueprint, decision records, plan and
     obligations digests;

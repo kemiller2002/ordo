@@ -31,7 +31,7 @@ let GeneratorId = "ordo.default-plan"
 /// The generator's own semantic version. Same inputs and same generator
 /// version give a byte-identical default plan.
 [<Literal>]
-let GeneratorVersion = "ordo.default-plan/3"
+let GeneratorVersion = "ordo.default-plan/4"
 
 [<Literal>]
 let ObligationsSchemaVersion = "ordo.construction-obligations/1"
@@ -91,8 +91,11 @@ type TypedObligation =
       /// Generated extension contracts or ports this obligation touches, as
       /// named by `ConstructionLayout`.
       ExtensionSurface: string list
-      /// The `declareUnresolved` subject in the plan that carries this
-      /// obligation, when the plan carries it.
+      /// The plan subject this obligation is about: the `declareUnresolved`
+      /// subject that carries it, or, for an undecided pair or decision point
+      /// (generator `ordo.default-plan/4` and later), its classification subject
+      /// (`pair:S/C`, `extension:effect/C/point:P`,
+      /// `extension:selection/F/C/point:P`).
       PlanSubject: string option }
 
 /// `ordo.construction-obligations/1`.
@@ -829,7 +832,9 @@ let private generate
             let pairObligations =
                 explicitPairs @ rulePairs
                 |> List.map (fun ((from, command), question, keys) ->
-                    None, obligation view.CohortId TypedObligationKind.UndecidedTransition keys [ modelNode ] question [] None)
+                    None,
+                    obligation view.CohortId TypedObligationKind.UndecidedTransition keys [ modelNode ] question []
+                        (Some(sprintf "pair:%s/%s" from command)))
             let pointObligations =
                 ports
                 |> List.collect (fun (nodeId, port) ->
@@ -839,7 +844,10 @@ let private generate
                             sprintf "Decision record %s leaves decision point %s of the %s effect undecided: %s The effect's extension cannot be implemented until this is decided."
                                 nodeId p.Point (match port with RecordedTransitionEffect(c, _, _, _) -> key c | RecordedCurrentTime _ -> "") (Option.defaultValue "" p.Question)
                         None,
-                        obligation view.CohortId TypedObligationKind.UndecidedExtensionDecision (p.RequirementKeys @ pointKeys port) [ nodeId ] question [ surfaceOf port ] None))
+                        obligation view.CohortId TypedObligationKind.UndecidedExtensionDecision (p.RequirementKeys @ pointKeys port) [ nodeId ] question [ surfaceOf port ]
+                            (match port with
+                             | RecordedTransitionEffect(c, _, _, _) -> Some(sprintf "extension:effect/%s/point:%s" (key c) (key p.Point))
+                             | RecordedCurrentTime _ -> None)))
             // Vocabulary 4: typed codes, and each branching transition's selector
             // with its decision inventory. A selector with an undecided point
             // gets a decide obligation per point, never an implement one.
@@ -888,7 +896,8 @@ let private generate
                                 sprintf "Decision record %s leaves decision point %s of the selector for command %s from state %s undecided: %s The selector cannot be implemented until this is decided."
                                     modelNode p.Point (key b.Command) (key b.From) (Option.defaultValue "" p.Question)
                             None,
-                            obligation view.CohortId TypedObligationKind.UndecidedExtensionDecision (p.RequirementKeys @ b.RequirementKeys) [ modelNode ] question [ selectorSurface b ] None))
+                            obligation view.CohortId TypedObligationKind.UndecidedExtensionDecision (p.RequirementKeys @ b.RequirementKeys) [ modelNode ] question [ selectorSurface b ]
+                                (Some(sprintf "extension:selection/%s/%s/point:%s" (key b.From) (key b.Command) (key p.Point)))))
             match vocabulary with
             | ConstructionVocabulary.Version4 ->
                 (rule :: refusals @ undecided @ inventories @ codes @ selectors), pairObligations @ pointObligations @ selectorObligations
