@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-13T23:12:52.000Z",
+  "updatedAt": "2026-10-13T23:15:29.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2243,13 +2243,47 @@
     {
       "id": "CONSTRUCT-010-DECISIONS-V4",
       "type": "task",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-10-13T23:12:52.000Z",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ConstructionDefaultPlan.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ConstructionDecisionsV4Tests.fs"
+        },
+        {
+          "type": "documentation",
+          "path": "docs/architecture/persisted-instances.md"
+        }
+      ],
+      "updatedAt": "2026-10-13T23:15:29.000Z",
       "telemetryExecutionIds": [
         "EXE-20261013T231252409Z-6e7aa000"
-      ]
+      ],
+      "latestCheckpoint": {
+        "id": "668a7dfb7032d26e882002e5",
+        "recordedAt": "2026-10-13T23:15:29.000Z",
+        "executionId": "EXE-20261013T231252409Z-6e7aa000",
+        "repository": "ordo",
+        "branch": "construct-010/decisions-v4",
+        "commit": "d9895d48db1cf1d69443c69ec88e3a3e550fbbdb",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "construct-010/decisions-v4",
+        "remoteCommit": "d9895d48db1cf1d69443c69ec88e3a3e550fbbdb",
+        "summary": "Decision records /4 generate vocabulary 6 default plans (d9895d4)",
+        "nextAction": "Open stacked PR; report to lead",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-13T23:15:29.000Z"
     }
   ]
 }
