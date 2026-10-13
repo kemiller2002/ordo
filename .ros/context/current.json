@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-13T22:37:36.000Z",
+  "updatedAt": "2026-10-13T22:52:42.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2149,6 +2149,51 @@
         }
       },
       "completedAt": "2026-10-13T22:37:36.000Z"
+    },
+    {
+      "id": "CONSTRUCT-010-PERSISTENCE",
+      "type": "task",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Construction/Emit.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Construction.Tests/PersistenceTests.fs"
+        },
+        {
+          "type": "documentation",
+          "path": "docs/architecture/persisted-instances.md"
+        }
+      ],
+      "updatedAt": "2026-10-13T22:52:42.000Z",
+      "telemetryExecutionIds": [
+        "EXE-20261013T224925726Z-c1b416b1"
+      ],
+      "latestCheckpoint": {
+        "id": "7a3d3c0cf8662d957b979f26",
+        "recordedAt": "2026-10-13T22:52:42.000Z",
+        "executionId": "EXE-20261013T224925726Z-c1b416b1",
+        "repository": "ordo",
+        "branch": "construct-010/persistence",
+        "commit": "d033ed8b204a2518bb8d12ed27d8cf01ae890496",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "construct-010/persistence",
+        "remoteCommit": "d033ed8b204a2518bb8d12ed27d8cf01ae890496",
+        "summary": "Vocabulary 6 persisted instances and generator /6 (d033ed8)",
+        "nextAction": "Open stacked PR",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-13T22:52:42.000Z"
     }
   ]
 }

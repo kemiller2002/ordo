@@ -149,6 +149,11 @@ remains, proceeds, is compensated by host code or escalated; an unknown
 outcome is reconciled by host code or escalated, never performed again. See
 [effect outcome policies](effect-outcome-policies.md).
 
+**Generator `ordo.construction/6`** adds `<W>.Persistence.g.fs` for a persisted
+instance: load, deduplicate by operation id, decide, compare-and-swap save; an
+unknown save is settled by reading back, never written again. See
+[persisted instances](persisted-instances.md).
+
 ## No permissive defaults
 
 Every guard, invariant and port is a handwritten extension contract.

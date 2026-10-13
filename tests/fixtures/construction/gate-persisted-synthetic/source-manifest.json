@@ -1,0 +1,45 @@
+{
+  "digest": "sha256:08ab2de381bcd68850640d0d4ac20917bdab934e2fff19d8215dea1b347d42ce",
+  "requirements": [
+    {
+      "key": "synthetic/gate.md#GATE-1",
+      "originalId": "GATE-1",
+      "document": "synthetic/gate.md",
+      "location": "GATE-1",
+      "revision": "synthetic-1",
+      "contentDigest": "sha256:ec513189ba1f03530af93a5c0237fbf7dc13a760ce63da340a385111cc991af6"
+    },
+    {
+      "key": "synthetic/gate.md#GATE-2",
+      "originalId": "GATE-2",
+      "document": "synthetic/gate.md",
+      "location": "GATE-2",
+      "revision": "synthetic-1",
+      "contentDigest": "sha256:379b01c0bde157c6f8867fdcca89d031bc8e79e2ec05cf49e6d3cefe599e9487"
+    },
+    {
+      "key": "synthetic/gate.md#GATE-3",
+      "originalId": "GATE-3",
+      "document": "synthetic/gate.md",
+      "location": "GATE-3",
+      "revision": "synthetic-1",
+      "contentDigest": "sha256:648e1c24a1e3c2a76da24a38b282f28d4f40cb6f38053d4110048c9882077c75"
+    },
+    {
+      "key": "synthetic/gate.md#GATE-4",
+      "originalId": "GATE-4",
+      "document": "synthetic/gate.md",
+      "location": "GATE-4",
+      "revision": "synthetic-1",
+      "contentDigest": "sha256:e6cce2cac2763a99636d787f16286046702ddb4e1e477f466066983ffcf91582"
+    },
+    {
+      "key": "synthetic/gate.md#GATE-5",
+      "originalId": "GATE-5",
+      "document": "synthetic/gate.md",
+      "location": "GATE-5",
+      "revision": "synthetic-1",
+      "contentDigest": "sha256:a851bee123b4e6bbac02218f6bf8e83db734e1bc7249436c0a7eb20c68594931"
+    }
+  ]
+}

@@ -638,10 +638,13 @@ let private mapNames (f: string -> string) (draft: PlanDraft) =
                 | CodeTarget.Pair p -> CodeTarget.Pair { InState = f p.InState; OnCommand = f p.OnCommand }
                 | CodeTarget.Unlisted -> CodeTarget.Unlisted
                 | CodeTarget.Guard g -> CodeTarget.Guard(f g)
+                | CodeTarget.NotFound -> CodeTarget.NotFound
+                | CodeTarget.StaleRevision -> CodeTarget.StaleRevision
             AssignRefusalCode { a with Target = target; Code = f a.Code }
         | DefineBranchingTransition b ->
             DefineBranchingTransition { b with Pair = { InState = f b.Pair.InState; OnCommand = f b.Pair.OnCommand }; Targets = List.map f b.Targets }
         | DeclareEffectPolicy p -> DeclareEffectPolicy { p with Effect = f p.Effect }
+        | DeclarePersistence p -> DeclarePersistence p
     { draft with Operations = List.map mapOp draft.Operations }
 
 let private mapTraces (f: TraceDraft -> TraceDraft) (draft: PlanDraft) =
@@ -663,6 +666,7 @@ let private mapTraces (f: TraceDraft -> TraceDraft) (draft: PlanDraft) =
         | AssignRefusalCode a -> AssignRefusalCode { a with Trace = f a.Trace }
         | DefineBranchingTransition b -> DefineBranchingTransition { b with Trace = f b.Trace }
         | DeclareEffectPolicy p -> DeclareEffectPolicy { p with Trace = f p.Trace }
+        | DeclarePersistence p -> DeclarePersistence { p with Trace = f p.Trace }
     { draft with Operations = List.map mapOp draft.Operations }
 
 let private assertSameIdentity variant =
@@ -942,7 +946,7 @@ let ``an effect link is a checked name`` () =
 
 [<Fact>]
 let ``unknown vocabulary versions are refused, never upgraded`` () =
-    for version in [ "ordo.construction-vocabulary/6"; "ordo.construction-vocabulary/2.0"; "ordo.construction-vocabulary"; "" ] do
+    for version in [ "ordo.construction-vocabulary/7"; "ordo.construction-vocabulary/2.0"; "ordo.construction-vocabulary"; "" ] do
         refusedWith (UnsupportedVocabulary version) { remainV2 with VocabularyVersion = version }
 
 [<Fact>]
@@ -1030,4 +1034,4 @@ let ``vocabulary 2 adds no escape hatch: extra members are still refused`` () =
 
 [<Fact>]
 let ``the wire refuses unknown vocabulary versions`` () =
-    refusedOnWire "unsupported ordo.construction-vocabulary/6" (mapMember "vocabularyVersion" (fun _ -> JString "ordo.construction-vocabulary/6") planV2Json)
+    refusedOnWire "unsupported ordo.construction-vocabulary/7" (mapMember "vocabularyVersion" (fun _ -> JString "ordo.construction-vocabulary/7") planV2Json)
