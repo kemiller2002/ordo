@@ -277,6 +277,10 @@ escalate; never retried) separately. See
 idempotency scope (durable, session or unresolved) and stale-write action
 (refuse, escalate or unresolved). See [persisted instances](persisted-instances.md).
 
+`ordo.construction-vocabulary/7` adds document persistence: many instances in
+one document, with a stated idempotency scope for save operation ids and a
+stated save-conflict action. See [document persistence](document-persistence.md).
+
 ## Versioning
 
 An unknown `schemaVersion` or `vocabularyVersion` is refused, never upgraded

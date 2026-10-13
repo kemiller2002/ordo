@@ -64,6 +64,7 @@ let private extensionName kind =
     | ReconcilePort -> "reconcile-port"
     | CompensatePort -> "compensate-port"
     | StorePort -> "store-port"
+    | DocumentStorePort -> "document-store-port"
 
 let private strings values = JArray(values |> List.map JString)
 
@@ -71,7 +72,7 @@ let private manifestJson (plan: ValidatedPlanView) generator root (artifacts: Ar
     let effectFailure =
         if generator = GeneratorVersion then []
         // Vocabulary 5 states outcome handling in effect policies only.
-        elif generator = GeneratorVersion5 || generator = GeneratorVersion6 then
+        elif generator = GeneratorVersion5 || generator = GeneratorVersion6 || generator = GeneratorVersion7 then
             [ "effectPolicies",
               JArray [ for p in plan.Workflow.EffectPolicies ->
                          JObject [ "effect", JString p.Effect.Key
@@ -82,6 +83,11 @@ let private manifestJson (plan: ValidatedPlanView) generator root (artifacts: Ar
                | Some p ->
                    [ "persistence",
                      JObject [ "idempotency", JString(idempotencyName p.Idempotency); "onStale", JString(staleActionName p.OnStale) ] ]
+               | None -> [])
+            @ (match plan.Workflow.Document with
+               | Some d ->
+                   [ "document",
+                     JObject [ "idempotency", JString(idempotencyName d.Idempotency); "onSaveConflict", JString(staleActionName d.OnSaveConflict) ] ]
                | None -> [])
         else
             [ "effectFailure",
@@ -191,6 +197,15 @@ let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefu
                          (pick (function DefineWorkflow _ | DeclarePersistence _ | AssignRefusalCode { Target = CodeTarget.NotFound | CodeTarget.StaleRevision } -> true | _ -> false))
                          (Emit.persistence digest shape p) ]
                | None -> [])
+            @ (match w.Document with
+               | Some d ->
+                   [ artifact (Layout.documentPath w.Name) (Some Orchestration)
+                         (pick (function
+                             | DefineWorkflow _ | DeclareDocument _
+                             | AssignRefusalCode { Target = CodeTarget.NotFound | CodeTarget.StaleRevision | CodeTarget.SaveConflict } -> true
+                             | _ -> false))
+                         (Emit.document digest shape d) ]
+               | None -> [])
 
         let guardOps (guard: SemanticName) =
             pick (function DefineTransition t -> t.Guards |> List.exists (fun g -> g.Name = guard.Key) | _ -> false)
@@ -216,6 +231,12 @@ let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefu
                | Some _ ->
                    let ops = pick (function DeclarePersistence _ -> true | _ -> false)
                    [ contract (Layout.loadContract w.Name) StorePort ops; contract (Layout.saveContract w.Name) StorePort ops ]
+               | None -> [])
+            // Vocabulary 7: the host's document store, read and compare-and-swap written.
+            @ (match w.Document with
+               | Some _ ->
+                   let ops = pick (function DeclareDocument _ -> true | _ -> false)
+                   [ contract (Layout.readContract w.Name) DocumentStorePort ops; contract (Layout.writeContract w.Name) DocumentStorePort ops ]
                | None -> [])
             @ (shape.Branching |> List.map (fun (from, command, _) ->
                 contract (Layout.selectionContract w.Name from command) SelectionFunction
@@ -274,6 +295,18 @@ let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefu
                      if p.OnStale = StaleAction.Unresolved then
                          { Id = "RESOLVE-PERSISTENCE:onStale"
                            Kind = ResolveUnresolved("PersistenceOnStale", sprintf "What a write against a stale revision of workflow %s means is not decided." w.Name.Key)
+                           RequirementKeys = keys } ]
+               | None -> [])
+            @ (match w.Document with
+               | Some d ->
+                   let keys = d.Trace.RequirementKeys
+                   [ if d.Idempotency = IdempotencyScope.Unresolved then
+                         { Id = "RESOLVE-DOCUMENT:idempotency"
+                           Kind = ResolveUnresolved("DocumentIdempotency", sprintf "Whether save operation ids of the %s document are deduplicated durably or for one session only is not decided." w.Name.Key)
+                           RequirementKeys = keys }
+                     if d.OnSaveConflict = StaleAction.Unresolved then
+                         { Id = "RESOLVE-DOCUMENT:onSaveConflict"
+                           Kind = ResolveUnresolved("DocumentOnSaveConflict", sprintf "What a save of the %s document against a moved version means is not decided." w.Name.Key)
                            RequirementKeys = keys } ]
                | None -> [])
             @ (w.Unresolved |> List.map (fun u ->

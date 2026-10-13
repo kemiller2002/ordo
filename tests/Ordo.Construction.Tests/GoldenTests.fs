@@ -9,7 +9,7 @@ open Ordo.Construction.Artifacts
 open Ordo.Construction.Construction
 open Ordo.Construction.Tests.Fixtures
 
-let private fixtures = [ timer; door ] @ timerV2Fixtures @ [ timerOpen; gate; timerPolicy; timerEscalate; storedGate; sessionGate ]
+let private fixtures = [ timer; door ] @ timerV2Fixtures @ [ timerOpen; gate; timerPolicy; timerEscalate; storedGate; sessionGate; gateYard; sessionYard; openYard ]
 
 [<Fact>]
 let ``regeneration reproduces every golden file byte for byte`` () =

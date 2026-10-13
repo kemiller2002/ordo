@@ -154,6 +154,12 @@ instance: load, deduplicate by operation id, decide, compare-and-swap save; an
 unknown save is settled by reading back, never written again. See
 [persisted instances](persisted-instances.md).
 
+**Generator `ordo.construction/7`** adds `<W>.Document.g.fs` for many instances
+in one document: commands change it in memory; an explicit save writes it
+under one operation id with a version compare-and-swap; an unknown save is
+reported as unknown and blocks further changes until an explicit reconcile.
+See [document persistence](document-persistence.md).
+
 ## No permissive defaults
 
 Every guard, invariant and port is a handwritten extension contract.

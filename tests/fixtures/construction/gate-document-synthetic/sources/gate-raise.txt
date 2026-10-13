@@ -1,0 +1,1 @@
+Raising a closed gate leaves it open, or jammed when the motor stalls. The motor controller reports which.

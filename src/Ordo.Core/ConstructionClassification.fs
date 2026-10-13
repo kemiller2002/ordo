@@ -229,6 +229,7 @@ let classify (plan: ValidatedPlan) : Classification =
                 | CodeSubject.Guard g -> "guard/" + g.Key
                 | CodeSubject.NotFound -> "notFound"
                 | CodeSubject.StaleRevision -> "staleRevision"
+                | CodeSubject.SaveConflict -> "saveConflict"
             choice ("refusalCode:" + target) ChoiceKind.RefusalCode a.Trace.RequirementKeys (basisOf a.Trace))
 
     // Vocabulary 6: the idempotency scope and the stale-write action are
@@ -247,9 +248,24 @@ let classify (plan: ValidatedPlan) : Classification =
                        ChoiceClass.Unresolved(sprintf "What a write against a stale revision of workflow %s means is not decided." w.Name.Key)
                    else basisOf p.Trace) ]
 
+    // Vocabulary 7: the document's idempotency scope and save-conflict action.
+    let document =
+        match w.Document with
+        | None -> []
+        | Some d ->
+            let keys = d.Trace.RequirementKeys
+            [ choice "document:idempotency" ChoiceKind.Persistence keys
+                  (if d.Idempotency = IdempotencyScope.Unresolved then
+                       ChoiceClass.Unresolved(sprintf "Whether save operation ids of workflow %s's document are deduplicated durably or for one session only is not decided." w.Name.Key)
+                   else basisOf d.Trace)
+              choice "document:onSaveConflict" ChoiceKind.Persistence keys
+                  (if d.OnSaveConflict = StaleAction.Unresolved then
+                       ChoiceClass.Unresolved(sprintf "What a save against a moved version of workflow %s's document means is not decided." w.Name.Key)
+                   else basisOf d.Trace) ]
+
     { PlanDigest = view.Digest
       VocabularyVersion = version
-      Choices = states @ pairs @ invariants @ ports @ capabilities @ extensionChoices @ questions @ codes @ persistence |> List.sortBy _.Subject }
+      Choices = states @ pairs @ invariants @ ports @ capabilities @ extensionChoices @ questions @ codes @ persistence @ document |> List.sortBy _.Subject }
 
 /// A plan with no unresolved or unsupported choice. Only `complete` makes one,
 /// so open decisions cannot be represented as completed construction. It is

@@ -20,12 +20,16 @@ let transitionPath (workflow: SemanticName) = ownershipRoot workflow + workflow.
 let orchestrationPath (workflow: SemanticName) = ownershipRoot workflow + workflow.Key + ".Orchestration.g.fs"
 /// Vocabulary 6: the persisted instance's load, deduplicate, decide and save path.
 let persistencePath (workflow: SemanticName) = ownershipRoot workflow + workflow.Key + ".Persistence.g.fs"
+/// Vocabulary 7: many instances in one document; explicit save and reconcile.
+let documentPath (workflow: SemanticName) = ownershipRoot workflow + workflow.Key + ".Document.g.fs"
 let manifestPath (workflow: SemanticName) = ownershipRoot workflow + "construction-manifest.json"
 
 let rulesType (workflow: SemanticName) = workflow.Key + "Rules"
 let portsType (workflow: SemanticName) = "I" + workflow.Key + "Ports"
 /// Vocabulary 6: the store a persisted instance is loaded from and saved to.
 let storeType (workflow: SemanticName) = "I" + workflow.Key + "Store"
+/// Vocabulary 7: the store a document of many instances lives in.
+let documentStoreType (workflow: SemanticName) = "I" + workflow.Key + "DocumentStore"
 
 /// Extension contract names. A handwritten implementation is identified by
 /// these names in the construction manifest and in obligations.
@@ -36,6 +40,8 @@ let effectContract (workflow: SemanticName) (effect: SemanticName) = sprintf "%s
 /// Vocabulary 6: loading and compare-and-swap saving of a persisted instance.
 let loadContract (workflow: SemanticName) = storeType workflow + ".Load"
 let saveContract (workflow: SemanticName) = storeType workflow + ".Save"
+let readContract (workflow: SemanticName) = documentStoreType workflow + ".Read"
+let writeContract (workflow: SemanticName) = documentStoreType workflow + ".Write"
 /// Vocabulary 5: the host's reconciliation of an effect whose outcome is unknown.
 let reconcileContract (workflow: SemanticName) (effect: SemanticName) = sprintf "%s.Reconcile/%s" (portsType workflow) effect.Key
 /// Vocabulary 5: the host's compensation of a definitely failed effect.
@@ -52,4 +58,5 @@ let generatedLayout (workflow: Workflow) : string list =
       transitionPath workflow.Name
       if not (List.isEmpty workflow.Ports) then orchestrationPath workflow.Name
       if workflow.Persistence.IsSome then persistencePath workflow.Name
+      if workflow.Document.IsSome then documentPath workflow.Name
       manifestPath workflow.Name ]

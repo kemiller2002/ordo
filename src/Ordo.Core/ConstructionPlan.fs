@@ -73,6 +73,16 @@ let VocabularyVersion5 = "ordo.construction-vocabulary/5"
 [<Literal>]
 let VocabularyVersion6 = "ordo.construction-vocabulary/6"
 
+/// Vocabulary 7 is vocabulary 6 plus document persistence: many workflow
+/// instances (entries) live in one persisted document. Commands change the
+/// document in memory; an explicit save under one operation id writes it with
+/// a document-version compare-and-swap; an unknown save is reported to the
+/// caller and settled only by an explicit reconcile. One `declareDocument`
+/// states the idempotency scope and what a save conflict means.
+/// CONSTRUCT-010 phase 2.
+[<Literal>]
+let VocabularyVersion7 = "ordo.construction-vocabulary/7"
+
 /// The first vocabulary, under its original name. Code that authors plans
 /// with this constant keeps producing vocabulary 1 plans with unchanged
 /// meaning; a vocabulary is never upgraded in place.
@@ -82,21 +92,25 @@ let VocabularyVersion = VocabularyVersion1
 /// Every vocabulary this reader and validator accept. Anything else is
 /// refused, never upgraded.
 let SupportedVocabularyVersions =
-    [ VocabularyVersion1; VocabularyVersion2; VocabularyVersion3; VocabularyVersion4; VocabularyVersion5; VocabularyVersion6 ]
+    [ VocabularyVersion1; VocabularyVersion2; VocabularyVersion3; VocabularyVersion4; VocabularyVersion5; VocabularyVersion6; VocabularyVersion7 ]
 
 /// Vocabularies 3 and later classify every choice (pair rule, inventories).
 let classifiesChoices (vocabulary: string) =
     vocabulary = VocabularyVersion3 || vocabulary = VocabularyVersion4 || vocabulary = VocabularyVersion5 || vocabulary = VocabularyVersion6
+    || vocabulary = VocabularyVersion7
 
 /// Vocabularies 4 and later have typed refusal codes and branching transitions.
 let hasCodesAndBranching (vocabulary: string) =
-    vocabulary = VocabularyVersion4 || vocabulary = VocabularyVersion5 || vocabulary = VocabularyVersion6
+    vocabulary = VocabularyVersion4 || vocabulary = VocabularyVersion5 || vocabulary = VocabularyVersion6 || vocabulary = VocabularyVersion7
 
 /// Vocabulary 5 replaces an effect port's `onFailure` with an effect policy.
-let hasEffectPolicies (vocabulary: string) = vocabulary = VocabularyVersion5 || vocabulary = VocabularyVersion6
+let hasEffectPolicies (vocabulary: string) = vocabulary = VocabularyVersion5 || vocabulary = VocabularyVersion6 || vocabulary = VocabularyVersion7
 
 /// Vocabulary 6 adds a persisted workflow instance.
-let hasPersistence (vocabulary: string) = vocabulary = VocabularyVersion6
+let hasPersistence (vocabulary: string) = vocabulary = VocabularyVersion6 || vocabulary = VocabularyVersion7
+
+/// Vocabulary 7 adds document persistence.
+let hasDocument (vocabulary: string) = vocabulary = VocabularyVersion7
 
 // ---------------------------------------------------------------------------
 // The untrusted draft: everything an agent is able to say.
@@ -261,7 +275,10 @@ type CodeTarget =
     /// Vocabulary 6: no stored instance has the requested id.
     | NotFound
     /// Vocabulary 6: the stored revision moved, and the plan refuses a stale write.
+    /// Vocabulary 7 (document): the entry's revision is not the one the caller expected.
     | StaleRevision
+    /// Vocabulary 7: the document version moved, and the plan refuses the save.
+    | SaveConflict
 
 type CodeAssignmentDraft =
     { Target: CodeTarget
@@ -328,6 +345,13 @@ type PersistenceDraft =
       OnStale: StaleAction
       Trace: TraceDraft }
 
+/// Vocabulary 7: many instances in one persisted document. A save conflict is
+/// a moved document version; rebase and silent no-op are not expressible.
+type DocumentDraft =
+    { Idempotency: IdempotencyScope
+      OnSaveConflict: StaleAction
+      Trace: TraceDraft }
+
 /// The largest retry count a plan may state.
 [<Literal>]
 let MaxEffectRetries = 5
@@ -358,6 +382,7 @@ type OperationDraft =
     | DefineBranchingTransition of BranchingTransitionDraft
     | DeclareEffectPolicy of EffectPolicyDraft
     | DeclarePersistence of PersistenceDraft
+    | DeclareDocument of DocumentDraft
 
 /// What the plan claims to have been formed against. Every field is checked
 /// against the prepared cohort rather than believed.
@@ -502,6 +527,7 @@ type CodeSubject =
     | Guard of SemanticName
     | NotFound
     | StaleRevision
+    | SaveConflict
 
 type CodeAssignment =
     { Target: CodeSubject
@@ -519,6 +545,12 @@ type BranchingTransition =
 type Persistence =
     { Idempotency: IdempotencyScope
       OnStale: StaleAction
+      Trace: Trace }
+
+/// Vocabulary 7: the document's idempotency scope and save-conflict action.
+type DocumentPersistence =
+    { Idempotency: IdempotencyScope
+      OnSaveConflict: StaleAction
       Trace: Trace }
 
 /// Vocabulary 5: what a failed or unknown outcome of one effect means.
@@ -564,7 +596,9 @@ type Workflow =
       /// Vocabulary 5: one per transition effect, sorted by effect.
       EffectPolicies: EffectPolicy list
       /// Vocabulary 6: at most one.
-      Persistence: Persistence option }
+      Persistence: Persistence option
+      /// Vocabulary 7: at most one, and never together with `Persistence`.
+      Document: DocumentPersistence option }
 
 type PlanBinding =
     { SchemaVersion: string
@@ -690,6 +724,8 @@ type PlanViolation =
     /// Vocabulary 6: persistence together with transition effects would make
     /// a dual write; not supported.
     | PersistenceWithEffects of operation: string
+    /// Vocabulary 7: a workflow is persisted as an instance or in a document, not both.
+    | PersistenceAndDocument of operation: string
 
 // ---------------------------------------------------------------------------
 // Encoding. The draft is the wire shape; the canonical plan is the draft of
@@ -822,6 +858,7 @@ let private jOperation operation =
             | CodeTarget.Guard name -> JObject [ "kind", JString "guard"; "name", JString name ]
             | CodeTarget.NotFound -> JObject [ "kind", JString "notFound" ]
             | CodeTarget.StaleRevision -> JObject [ "kind", JString "staleRevision" ]
+            | CodeTarget.SaveConflict -> JObject [ "kind", JString "saveConflict" ]
         JObject [ "op", JString "assignRefusalCode"; "target", target; "code", JString a.Code; "trace", jTrace a.Trace ]
     | DefineBranchingTransition b ->
         JObject [ "op", JString "defineBranchingTransition"
@@ -841,6 +878,11 @@ let private jOperation operation =
                   "idempotency", JString(idempotencyName p.Idempotency)
                   "onStale", JString(staleActionName p.OnStale)
                   "trace", jTrace p.Trace ]
+    | DeclareDocument d ->
+        JObject [ "op", JString "declareDocument"
+                  "idempotency", JString(idempotencyName d.Idempotency)
+                  "onSaveConflict", JString(staleActionName d.OnSaveConflict)
+                  "trace", jTrace d.Trace ]
 
 let toJson (plan: PlanDraft) =
     JObject [ "schemaVersion", JString plan.SchemaVersion
@@ -915,7 +957,8 @@ let private canonicalDraft (binding: PlanBinding) (w: Workflow) : PlanDraft =
                        | CodeSubject.Unlisted -> CodeTarget.Unlisted
                        | CodeSubject.Guard g -> CodeTarget.Guard(key g)
                        | CodeSubject.NotFound -> CodeTarget.NotFound
-                       | CodeSubject.StaleRevision -> CodeTarget.StaleRevision)
+                       | CodeSubject.StaleRevision -> CodeTarget.StaleRevision
+                       | CodeSubject.SaveConflict -> CodeTarget.SaveConflict)
                     Code = key a.Code
                     Trace = traceDraft a.Trace }
           for b in w.BranchingTransitions ->
@@ -929,6 +972,10 @@ let private canonicalDraft (binding: PlanBinding) (w: Workflow) : PlanDraft =
           yield!
               w.Persistence
               |> Option.map (fun p -> DeclarePersistence { Idempotency = p.Idempotency; OnStale = p.OnStale; Trace = traceDraft p.Trace })
+              |> Option.toList
+          yield!
+              w.Document
+              |> Option.map (fun d -> DeclareDocument { Idempotency = d.Idempotency; OnSaveConflict = d.OnSaveConflict; Trace = traceDraft d.Trace })
               |> Option.toList ] }
 
 // ---------------------------------------------------------------------------
@@ -965,9 +1012,11 @@ let operationLabel (operation: OperationDraft) =
         | CodeTarget.Guard g -> "codeFor:guard/" + norm g
         | CodeTarget.NotFound -> "codeFor:notFound"
         | CodeTarget.StaleRevision -> "codeFor:staleRevision"
+        | CodeTarget.SaveConflict -> "codeFor:saveConflict"
     | DefineBranchingTransition b -> sprintf "branching:%s/%s" (norm b.Pair.InState) (norm b.Pair.OnCommand)
     | DeclareEffectPolicy p -> "effectPolicy:" + norm p.Effect
     | DeclarePersistence _ -> "persistence"
+    | DeclareDocument _ -> "document"
 
 let private traceOf operation : TraceDraft =
     match operation with
@@ -987,6 +1036,7 @@ let private traceOf operation : TraceDraft =
     | DefineBranchingTransition b -> b.Trace
     | DeclareEffectPolicy p -> p.Trace
     | DeclarePersistence p -> p.Trace
+    | DeclareDocument d -> d.Trace
 
 /// Every trace an operation carries, labelled: its own and, for an
 /// inventory, one per decision point. Each is checked like an operation's.
@@ -1028,10 +1078,10 @@ let private namesOf operation =
             | CodeTarget.Pair pair -> [ pair.InState; pair.OnCommand ]
             | CodeTarget.Unlisted -> []
             | CodeTarget.Guard g -> [ g ]
-            | CodeTarget.NotFound | CodeTarget.StaleRevision -> [])
+            | CodeTarget.NotFound | CodeTarget.StaleRevision | CodeTarget.SaveConflict -> [])
     | DefineBranchingTransition b -> b.Pair.InState :: b.Pair.OnCommand :: b.Targets
     | DeclareEffectPolicy p -> [ p.Effect ]
-    | DeclarePersistence _ -> []
+    | DeclarePersistence _ | DeclareDocument _ -> []
 
 let private bindingViolations (view: PreparedCohortView) (preparedBlueprintDigest: string) (plan: PlanDraft) =
     let binding = plan.Binding
@@ -1269,6 +1319,8 @@ let private vocabularyViolations (plan: PlanDraft) =
         | DeclarePersistence _ when not (hasPersistence version) -> [ notIn operation "declarePersistence" ]
         | AssignRefusalCode { Target = CodeTarget.NotFound | CodeTarget.StaleRevision } when not (hasPersistence version) ->
             [ notIn operation "persistence code target" ]
+        | DeclareDocument _ when not (hasDocument version) -> [ notIn operation "declareDocument" ]
+        | AssignRefusalCode { Target = CodeTarget.SaveConflict } when not (hasDocument version) -> [ notIn operation "saveConflict" ]
         | DeclarePort { Kind = TransitionEffect(_, Some _) } when hasEffectPolicies version -> [ notIn operation "onFailure" ]
         | _ -> [])
 
@@ -1359,6 +1411,7 @@ let private codeViolations (vocabulary: string) (operations: OperationDraft list
         let guards =
             operations |> List.collect (function DefineTransition t -> t.Guards |> List.map (fun g -> key g.Name) | _ -> []) |> Set.ofList
         let persistence = operations |> List.tryPick (function DeclarePersistence p -> Some p | _ -> None)
+        let document = operations |> List.tryPick (function DeclareDocument d -> Some d | _ -> None)
         let assignments =
             operations
             |> List.choose (function
@@ -1373,8 +1426,11 @@ let private codeViolations (vocabulary: string) (operations: OperationDraft list
                                 && (Map.tryFind from states = Some Terminal || rule = Some UnlistedPairs.Refused))
                         | CodeTarget.Unlisted -> rule = Some UnlistedPairs.Refused
                         | CodeTarget.Guard g -> Set.contains (key g) guards
-                        | CodeTarget.NotFound -> persistence.IsSome
-                        | CodeTarget.StaleRevision -> persistence |> Option.exists (fun p -> p.OnStale = StaleAction.Refuse)
+                        // A document refuses a missing entry and a stale entry revision itself.
+                        | CodeTarget.NotFound -> persistence.IsSome || document.IsSome
+                        | CodeTarget.StaleRevision ->
+                            document.IsSome || persistence |> Option.exists (fun p -> p.OnStale = StaleAction.Refuse)
+                        | CodeTarget.SaveConflict -> document |> Option.exists (fun d -> d.OnSaveConflict = StaleAction.Refuse)
                     Some [ if not (Set.contains (key a.Code) codes) then UnknownRefusalCode(label, key a.Code)
                            if not refuses then CodeOnNonRefusal label ]
                 | DefineBranchingTransition b as op ->
@@ -1390,10 +1446,15 @@ let private persistenceViolations (vocabulary: string) (operations: OperationDra
     if not (hasPersistence vocabulary) then []
     else
         let effects = operations |> List.exists (function DeclarePort { Kind = TransitionEffect _ } -> true | _ -> false)
+        let both =
+            operations |> List.exists (function DeclarePersistence _ -> true | _ -> false)
+            && operations |> List.exists (function DeclareDocument _ -> true | _ -> false)
         operations
-        |> List.choose (function
-            | DeclarePersistence _ as op when effects -> Some(PersistenceWithEffects(operationLabel op))
-            | _ -> None)
+        |> List.collect (function
+            | DeclarePersistence _ | DeclareDocument _ as op ->
+                [ if effects then PersistenceWithEffects(operationLabel op)
+                  if both then PersistenceAndDocument(operationLabel op) ]
+            | _ -> [])
 
 /// Vocabulary 2: every transition effect declares its failure disposition,
 /// and an `unresolved` disposition is linked, by effect, to exactly one
@@ -1583,7 +1644,8 @@ let private buildWorkflow (operations: OperationDraft list) : Workflow =
                           | CodeTarget.Unlisted -> CodeSubject.Unlisted
                           | CodeTarget.Guard g -> CodeSubject.Guard(name g)
                           | CodeTarget.NotFound -> CodeSubject.NotFound
-                          | CodeTarget.StaleRevision -> CodeSubject.StaleRevision)
+                          | CodeTarget.StaleRevision -> CodeSubject.StaleRevision
+                          | CodeTarget.SaveConflict -> CodeSubject.SaveConflict)
                        Code = name a.Code
                        Trace = normalizeTrace a.Trace }
             | _ -> None)
@@ -1593,7 +1655,8 @@ let private buildWorkflow (operations: OperationDraft list) : Workflow =
             | CodeSubject.Unlisted -> 1, ""
             | CodeSubject.Guard g -> 2, g.Key
             | CodeSubject.NotFound -> 3, ""
-            | CodeSubject.StaleRevision -> 4, "")
+            | CodeSubject.StaleRevision -> 4, ""
+            | CodeSubject.SaveConflict -> 5, "")
       BranchingTransitions =
         operations
         |> List.choose (function
@@ -1615,6 +1678,11 @@ let private buildWorkflow (operations: OperationDraft list) : Workflow =
         operations
         |> List.tryPick (function
             | DeclarePersistence p -> Some { Persistence.Idempotency = p.Idempotency; OnStale = p.OnStale; Trace = normalizeTrace p.Trace }
+            | _ -> None)
+      Document =
+        operations
+        |> List.tryPick (function
+            | DeclareDocument d -> Some { DocumentPersistence.Idempotency = d.Idempotency; OnSaveConflict = d.OnSaveConflict; Trace = normalizeTrace d.Trace }
             | _ -> None) }
 
 let private coverage (assigned: Set<string>) (operations: OperationDraft list) =
@@ -1637,6 +1705,7 @@ let private coverage (assigned: Set<string>) (operations: OperationDraft list) =
             | DefineWorkflow _ | DeclarePairRule _ | DeclareExtensionInventory _ | DefineRefusalCode _ | AssignRefusalCode _
             | DeclareEffectPolicy _ -> true
             | DeclarePersistence p -> p.Idempotency = IdempotencyScope.Unresolved || p.OnStale = StaleAction.Unresolved
+            | DeclareDocument d -> d.Idempotency = IdempotencyScope.Unresolved || d.OnSaveConflict = StaleAction.Unresolved
             | _ -> undecided operation
         let constructs = ops |> List.filter (nonConstructing >> not)
         let unresolved = ops |> List.filter undecided

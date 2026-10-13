@@ -95,6 +95,7 @@ let private withoutTrace operation =
     | DefineBranchingTransition b -> DefineBranchingTransition { b with Trace = noTrace }
     | DeclareEffectPolicy p -> DeclareEffectPolicy { p with Trace = noTrace }
     | DeclarePersistence p -> DeclarePersistence { p with Trace = noTrace }
+    | DeclareDocument d -> DeclareDocument { d with Trace = noTrace }
 
 let private structuralIdentities (operations: OperationDraft list) =
     operations

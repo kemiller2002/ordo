@@ -142,6 +142,7 @@ let private withTrace (trace: TraceDraft) operation =
     | DefineBranchingTransition b -> DefineBranchingTransition { b with Trace = trace }
     | DeclareEffectPolicy p -> DeclareEffectPolicy { p with Trace = trace }
     | DeclarePersistence p -> DeclarePersistence { p with Trace = trace }
+    | DeclareDocument d -> DeclareDocument { d with Trace = trace }
 
 /// Identity ignores trace. Operations are already canonical (normalized
 /// names, guards and scopes sorted and distinct), so equality compares
@@ -204,11 +205,13 @@ let private describe operation =
             | CodeTarget.Guard g -> "guard " + g
             | CodeTarget.NotFound -> "not found"
             | CodeTarget.StaleRevision -> "stale revision"
+            | CodeTarget.SaveConflict -> "save conflict"
         sprintf "assignRefusalCode %s to %s" a.Code target
     | DefineBranchingTransition b -> sprintf "defineBranchingTransition %s from %s to one of %s" b.Pair.OnCommand b.Pair.InState (commaList b.Targets)
     | DeclareEffectPolicy p ->
         sprintf "declareEffectPolicy %s retries %d onFailed %s onUnknown %s" p.Effect p.Retries (failedActionName p.OnFailed) (unknownActionName p.OnUnknown)
     | DeclarePersistence p -> sprintf "declarePersistence idempotency %s onStale %s" (idempotencyName p.Idempotency) (staleActionName p.OnStale)
+    | DeclareDocument d -> sprintf "declareDocument idempotency %s onSaveConflict %s" (idempotencyName d.Idempotency) (staleActionName d.OnSaveConflict)
 
 let private dispositionText operation =
     match operation with
