@@ -138,3 +138,21 @@ let ``a selector cannot pick a state its transition does not allow, and cannot b
               "selector omitted",
               gateTiers + "\nopen Generated.Gate\nlet r : GateRules = { Guard = (fun _ _ _ -> true) }", Some "FS0764" ]
     Assert.True(List.isEmpty failures, String.concat "\n\n" failures)
+
+/// Increment 1b: the same gate, generated from decision records version 3
+/// instead of a hand-authored plan, constructs vocabulary 4 code.
+[<Fact>]
+let ``a default plan from version 3 records constructs codes and a selector`` () =
+    let records =
+        System.IO.File.ReadAllText(System.IO.Path.Combine(repositoryRoot, "tests", "fixtures", "construction", "gate-synthetic", "construction-decisions-v3.json"))
+        |> Ordo.Core.ConstructionDecisions.readDecisionRecords |> ok "decisions"
+    let plan =
+        Ordo.Core.ConstructionDefaultPlan.generateDefaultPlan (prepared gate) records Ordo.Core.ConstructionDefaultPlan.ConstructionVocabulary.Version4
+        |> ok "default plan"
+    let c = construct plan.ValidatedPlan |> ok "construct"
+    Assert.Equal(GeneratorVersion4, c.GeneratorVersion)
+    let transition = (c.Artifacts |> List.find (fun a -> a.Tier = Some Transition)).Content
+    Assert.Contains("| GateState.Open, GateCommand.Raise -> Some GateRefusalCode.AlreadyOpen", transition)
+    Assert.Contains("| GateState.Jammed, GateCommand.Lower -> Some GateRefusalCode.NotAccepted", transition)
+    Assert.Contains("Select_Closed_Raise: unit -> GateBranch_Closed_Raise", transition)
+    Assert.Contains("IMPLEMENT:GateRules.Select/Closed/Raise", c.Obligations |> List.map _.Id)

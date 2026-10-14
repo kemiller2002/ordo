@@ -119,10 +119,69 @@ Mutation checks: six mutants each failed the suite.
 - **MV5:** classification ignores branching.
 - **MV6:** the reader admits vocabulary 4 operations in vocabulary 3.
 
-## Not in this increment
+## Default plans (decision records `ordo.construction-decisions/3`)
 
-- **Default plans (decision records `/3`).** `generateDefaultPlan` still
-  produces vocabularies 1 to 3. Generating codes and branching from approved
-  decision records is the next increment (1b).
-- **Data-carrying refusals.** A code names a reason; it carries no payload,
+Version 3 records generate vocabulary 4 default plans, and only those. Every
+other pairing is refused with `DecisionSchemaVocabularyMismatch`. A version 3
+`stateModel` is version 2 plus three optional lists:
+
+```text
+refusalCodes:    [ { code, requirementKeys[] } ]
+codeAssignments: [ { target: { kind: "pair", from, command } | { kind: "unlisted" },
+                     code, requirementKeys[] } ]
+branching:       [ { command, from, targets[], requirementKeys[],
+                     decisionPoints: [ { point, decided, question?, requirementKeys[] } ] } ]
+```
+
+Version 2 records cannot carry these lists; the strict reader refuses them.
+
+Every cited key must be owned by the record's node and assigned to the
+cohort. The citations are `code:X`, `codeFor:…`, `branching:F/C` and
+`branching:F/C/point:P`.
+
+The state model refuses each of the following:
+
+- a branching transition that names an unknown state (`TransitionUnknownState`);
+- a branching pair that is also a single-target transition
+  (`ConflictingRecordedTransitions`);
+- a code given to something that does not refuse (`CodeOnNonRefusal`, via
+  plan validation).
+
+Code targets are limited to refused pairs and the unlisted pairs, because
+default plans have no guards.
+
+Generation emits:
+
+- the codes and their assignments;
+- each branching transition;
+- the selector's decision inventory;
+- one obligation per selector:
+  - **no undecided point:** an `extensionBehavior` (*implement*) obligation on
+    `<W>Rules.Select/<From>/<Command>`;
+  - **an undecided point:** one `undecidedExtensionDecision` per open point,
+    and no implement obligation.
+
+Anything the records do not construct is still an `uncoveredRequirement`
+obligation. In the gate fixture, that is the guard-only requirement.
+
+Example:
+[`tests/fixtures/construction/gate-synthetic/construction-decisions-v3.json`](../../tests/fixtures/construction/gate-synthetic/construction-decisions-v3.json).
+
+**No real cohort has version 3 records yet.** Approved records are authored
+by the approver, so Ordo cannot write them. The real slices therefore still
+generate in the vocabulary of their approved records. Mutation checks: six
+mutants each failed the suite.
+
+- **MD2:** a selector with an open point is still handed off as *implement*.
+- **MD3:** the branching/transition conflict check is removed.
+- **MD4:** version 2 records accept version 3 members.
+- **MD5:** coverage ignores selectors.
+- **MD6:** code assignments are dropped.
+- **MD7:** unknown branching targets are accepted.
+
+## Not yet supported
+
+- **Data-carrying refusals.** A code names a reason. It carries no payload,
   because states and commands carry no data in any vocabulary.
+- **Guards in default plans.** Decision records cannot state a guard, so
+  guard codes are reachable only from a hand-authored plan.
