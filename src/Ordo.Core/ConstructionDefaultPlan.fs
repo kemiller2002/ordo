@@ -969,7 +969,7 @@ let private generate
             // with its decision inventory. A selector with an undecided point
             // gets a decide obligation per point, never an implement one.
             let codes =
-                (model.RefusalCodes |> List.map (fun c -> DefineRefusalCode { Code = c.Code; Trace = trace c.RequirementKeys [ modelNode ] }))
+                (model.RefusalCodes |> List.map (fun c -> DefineRefusalCode { Code = c.Code; WireText = None; Trace = trace c.RequirementKeys [ modelNode ] }))
                 @ (model.CodeAssignments
                    |> List.map (fun a ->
                        AssignRefusalCode

@@ -155,3 +155,31 @@ let ``the save-conflict and reconcile-moved choices are separate`` () =
         Assert.Contains(ReconcileMovedWithoutDurableScope "document", violations claimed)
     let open' = readPlan (read yard "plan.v7-open.json") |> ok "plan"
     Assert.Contains("document:onReconcileMoved", classified open' |> List.map _.Subject)
+
+/// Wire text: a code's stable external text, kept verbatim because a
+/// semantic name drops separators.
+[<Fact>]
+let ``wire text is kept verbatim, round-trips, and is vocabulary 7 only`` () =
+    let w = (view (validate (prepared ()) (draft ()) |> ok "v")).Workflow
+    Assert.Equal(6, List.length w.WireTexts)
+    Assert.Contains(("NoSuchGate", "NO_SUCH_GATE"), w.WireTexts |> List.map (fun (c, t) -> c.Key, t))
+    Assert.Contains("\"wireText\": \"NO_SUCH_GATE\"", encodePlan (draft ()))
+    // Older vocabularies keep their exact bytes: no wireText member is written.
+    let session = readPlan (read yard "plan.v7-session.json") |> ok "plan"
+    Assert.DoesNotContain("wireText", encodePlan session)
+    let v6 = { draft () with VocabularyVersion = VocabularyVersion6 }
+    Assert.Contains(violations v6, function NotInVocabulary(_, "wireText", VocabularyVersion6) -> true | _ -> false)
+
+[<Fact>]
+let ``wire text is stated for every code or none, unique, and of a safe grammar`` () =
+    let mapCodes f (d: PlanDraft) =
+        { d with Operations = d.Operations |> List.map (function DefineRefusalCode c -> DefineRefusalCode(f c) | other -> other) }
+    let partial = draft () |> mapCodes (fun c -> if c.Code = "YardMoved" then { c with WireText = None } else c)
+    Assert.Contains(PartialWireText [ "YardMoved" ], violations partial)
+    let shared = draft () |> mapCodes (fun c -> if c.Code = "YardMoved" then { c with WireText = Some "STALE_ENTRY" } else c)
+    Assert.Contains(DuplicateWireText "STALE_ENTRY", violations shared)
+    for bad in [ ""; "has space"; "quote\""; String.replicate 65 "A"; "semi;colon" ] do
+        let invalid = draft () |> mapCodes (fun c -> if c.Code = "YardMoved" then { c with WireText = Some bad } else c)
+        Assert.Contains(InvalidWireText("code:YardMoved", bad), violations invalid)
+    let none = draft () |> mapCodes (fun c -> { c with WireText = None })
+    Assert.Empty(violations none)

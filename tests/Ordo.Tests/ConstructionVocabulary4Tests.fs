@@ -73,7 +73,7 @@ let ``every vocabulary 4 member is refused in vocabulary 3, by validation and by
     // The reader refuses each one on its own, before validation runs.
     let alone operation = encodePlan { draft () with VocabularyVersion = VocabularyVersion3; Operations = [ operation ] }
     for operation, expected in
-        [ DefineRefusalCode { Code = "Stalled"; Trace = trace }, "operation defineRefusalCode is not in"
+        [ DefineRefusalCode { Code = "Stalled"; WireText = None; Trace = trace }, "operation defineRefusalCode is not in"
           assign CodeTarget.Unlisted "Stalled", "operation assignRefusalCode is not in"
           DefineBranchingTransition { Pair = pair "Closed" "Raise"; Targets = [ "Open"; "Jammed" ]; Trace = trace }, "operation defineBranchingTransition is not in"
           DeclareExtensionInventory { Extension = ExtensionRef.Selection("Closed", "Raise"); DecisionPoints = []; Trace = trace }, "extension kind selection is not in" ] do

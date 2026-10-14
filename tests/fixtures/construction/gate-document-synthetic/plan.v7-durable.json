@@ -145,6 +145,7 @@
     {
       "op": "defineRefusalCode",
       "code": "AlreadyOpen",
+      "wireText": "ALREADY_OPEN",
       "trace": {
         "requirementKeys": [
           "synthetic/gate.md#GATE-4"
@@ -157,6 +158,7 @@
     {
       "op": "defineRefusalCode",
       "code": "Obstructed",
+      "wireText": "OBSTRUCTED",
       "trace": {
         "requirementKeys": [
           "synthetic/gate.md#GATE-4"
@@ -169,6 +171,7 @@
     {
       "op": "defineRefusalCode",
       "code": "NotAccepted",
+      "wireText": "NOT_ACCEPTED",
       "trace": {
         "requirementKeys": [
           "synthetic/gate.md#GATE-4"
@@ -290,6 +293,7 @@
     {
       "op": "defineRefusalCode",
       "code": "NoSuchGate",
+      "wireText": "NO_SUCH_GATE",
       "trace": {
         "requirementKeys": [
           "synthetic/gate.md#GATE-6"
@@ -317,6 +321,7 @@
     {
       "op": "defineRefusalCode",
       "code": "StaleEntry",
+      "wireText": "STALE_ENTRY",
       "trace": {
         "requirementKeys": [
           "synthetic/gate.md#GATE-6"
@@ -344,6 +349,7 @@
     {
       "op": "defineRefusalCode",
       "code": "YardMoved",
+      "wireText": "YARD_MOVED",
       "trace": {
         "requirementKeys": [
           "synthetic/gate.md#GATE-6"

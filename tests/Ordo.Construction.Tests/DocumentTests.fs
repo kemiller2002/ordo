@@ -298,6 +298,13 @@ let ``a decided save conflict and an open reconcile-moved case generate separate
     Assert.Contains("RESOLVE-DOCUMENT:onReconcileMoved", ids)
     Assert.DoesNotContain("RESOLVE-DOCUMENT:onSaveConflict", ids)
 
+[<Fact>]
+let ``each code reports its stated wire text verbatim`` () =
+    Assert.Equal("NO_SUCH_GATE", GateYardTransition.wireText GateYardRefusalCode.NoSuchGate)
+    Assert.Equal("STALE_ENTRY", GateYardTransition.wireText GateYardRefusalCode.StaleEntry)
+    Assert.Equal("YARD_MOVED", GateYardTransition.wireText GateYardRefusalCode.YardMoved)
+    Assert.Equal("NOT_ACCEPTED", GateYardTransition.wireText GateYardRefusalCode.NotAccepted)
+
 let private references =
     [ typeof<ValidatedPlan>.Assembly.Location
       typeof<PlannedWrite>.Assembly.Location ]
@@ -322,5 +329,6 @@ let ``merging or overwriting a moved document cannot be expressed, and scopes ke
               "session documents carry no applied ids",
               session + "let d = { SessionYardDocument.Version = None; Entries = Map.empty; Applied = Map.empty }", Some "FS0039"
               "an unresolved scope has no already-saved outcome", open' + "let x = OpenYardSaveOutcome.AlreadySaved", Some "FS0039"
-              "an unresolved scope cannot report a save applied", open' + "let x = OpenYardReconciled.Applied 1L", Some "FS0039" ]
+              "an unresolved scope cannot report a save applied", open' + "let x = OpenYardReconciled.Applied 1L", Some "FS0039"
+              "codes without stated wire text get none", session + "let x = SessionYardTransition.wireText", Some "FS0039" ]
     Assert.True(List.isEmpty failures, String.concat "\n\n" failures)
