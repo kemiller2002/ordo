@@ -82,7 +82,11 @@ type DecisionObligation =
 type SourceReference =
     { Key: string; OriginalId: string; Document: string; Location: string; Revision: string; ContentDigest: string }
 
-type NodeReference = { NodeId: string; Justification: string option }
+type NodeReference =
+    { NodeId: string
+      Justification: string option
+      /// Conflicts this approved decision settles (`conflictResolution`).
+      Resolves: string list }
 
 /// The bounded handoff for one coherent group of delegated requirements:
 /// only what the agent needs to implement and prove them.
@@ -282,7 +286,10 @@ let private recordsErrors (input: RecognitionInput) =
 
 /// Base outcome of one requirement from its claims alone.
 let private baseOutcome (facts: RequirementFacts) (claims: PatternClaim list) (cohort: CohortFacts) : Outcome =
-    let conflicts = facts.Owners |> List.filter (fun n -> n.Kind = Conflict) |> List.map (fun n -> ConflictUnresolved n.Id)
+    let conflicts =
+        facts.Owners
+        |> List.filter (fun n -> n.Kind = Conflict && not (Map.containsKey n.Id cohort.ResolvedConflicts))
+        |> List.map (fun n -> ConflictUnresolved n.Id)
     let unauthorized =
         facts.Owners
         |> List.filter (fun n -> n.Kind = Decision && not (Set.contains n.Id cohort.AuthorizedDecisionIds))
@@ -345,7 +352,29 @@ let private finalOutcome (policy: DelegationPolicy) (baseOutcomes: Map<string, O
 let private sourceRef (s: SourceRequirement) : SourceReference =
     { Key = s.Key; OriginalId = s.OriginalId; Document = s.Document; Location = s.Location; Revision = s.Revision; ContentDigest = s.ContentDigest }
 
-let private nodeRef (n: ConstructionNode) = { NodeId = n.Id; Justification = n.Justification }
+let private nodeRef (n: ConstructionNode) = { NodeId = n.Id; Justification = n.Justification; Resolves = [] }
+
+/// Conflicts settled by an authorized decision in scope. A link counts only
+/// when its node is an authorized Decision in scope, the conflict is a
+/// Conflict node in scope, and they share a requirement key. Anything else
+/// leaves the conflict open: the safe direction.
+let private resolvedConflicts (scope: Map<string, ConstructionNode>) (authorized: Set<string>) (records: DecisionRecord list) =
+    records
+    |> List.collect (fun r ->
+        match r.Content, Map.tryFind r.NodeId scope with
+        | ConflictResolution c, Some node when node.Kind = Decision && Set.contains r.NodeId authorized ->
+            c.Conflicts
+            |> List.distinct
+            |> List.filter (fun id ->
+                match Map.tryFind id scope with
+                | Some conflict when conflict.Kind = Conflict ->
+                    not (Set.isEmpty (Set.intersect (Set.ofList conflict.RequirementKeys) (Set.ofList c.RequirementKeys)))
+                | _ -> false)
+            |> List.map (fun id -> id, r.NodeId)
+        | _ -> [])
+    |> List.groupBy fst
+    |> List.map (fun (id, pairs) -> id, pairs |> List.map snd |> List.distinct |> List.sort)
+    |> Map.ofList
 
 let private forbiddenPaths (cohort: CohortFacts) =
     cohort.StateModels
@@ -371,6 +400,11 @@ let private packet
                 let next = cohort.ScopeNodes |> Map.tryFind id |> Option.map _.DependsOn |> Option.defaultValue []
                 reach (Set.add id seen) (next @ rest)
         reach Set.empty (owners |> List.map _.Id)
+    // Conflicts owning a packet requirement that an authorized decision settles.
+    let settled =
+        owners
+        |> List.filter (fun n -> n.Kind = Conflict)
+        |> List.collect (fun n -> Map.tryFind n.Id cohort.ResolvedConflicts |> Option.defaultValue [] |> List.map (fun d -> d, n.Id))
     let approved =
         cohort.ScopeNodes
         |> Map.toList
@@ -378,8 +412,12 @@ let private packet
         |> List.filter (fun n ->
             (n.Kind = Decision || n.Kind = EngineeringRationale)
             && Set.contains n.Id cohort.AuthorizedDecisionIds
-            && (Set.contains n.Id reachable || n.RequirementKeys |> List.exists (fun k -> List.contains k keys)))
-        |> List.map nodeRef
+            && (Set.contains n.Id reachable
+                || n.RequirementKeys |> List.exists (fun k -> List.contains k keys)
+                || settled |> List.exists (fst >> (=) n.Id)))
+        |> List.map (fun n ->
+            { nodeRef n with
+                Resolves = settled |> List.filter (fst >> (=) n.Id) |> List.map snd |> List.distinct |> List.sort })
     let ofKind kinds = owners |> List.filter (fun n -> List.contains n.Kind kinds) |> List.map nodeRef
     let interfaces, generatedBy =
         members
@@ -510,7 +548,8 @@ let recognizeWith
                 { CohortId = input.CohortId
                   ScopeNodes = scope
                   AuthorizedDecisionIds = input.AuthorizedDecisionIds
-                  StateModels = records |> List.choose (fun r -> match r.Content with StateModel m -> Some(r.NodeId, m) | PortContract _ | ConflictResolution _ -> None) }
+                  StateModels = records |> List.choose (fun r -> match r.Content with StateModel m -> Some(r.NodeId, m) | PortContract _ | ConflictResolution _ -> None)
+                  ResolvedConflicts = resolvedConflicts scope input.AuthorizedDecisionIds records }
             let dispositions = input.Blueprint.Requirements |> List.map (fun r -> r.Source.Key, r.Disposition) |> Map.ofList
             let factsOf k =
                 { Key = k
