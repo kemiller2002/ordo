@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-14T08:40:00Z",
+  "updatedAt": "2026-10-14T08:59:00Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2333,13 +2333,47 @@
     {
       "id": "CONSTRUCT-010-DECISIONS-V5",
       "type": "task",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-10-14T08:40:00Z",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ConstructionDefaultPlan.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ConstructionDecisionsV5Tests.fs"
+        },
+        {
+          "type": "documentation",
+          "path": "docs/architecture/document-persistence.md"
+        }
+      ],
+      "updatedAt": "2026-10-14T08:59:00Z",
       "telemetryExecutionIds": [
         "EXE-20261014T082757970Z-ac7e704c"
-      ]
+      ],
+      "latestCheckpoint": {
+        "id": "6c1766fd51373d75faa2a2df",
+        "recordedAt": "2026-10-14T08:58:00Z",
+        "executionId": "EXE-20261014T082757970Z-ac7e704c",
+        "repository": "ordo",
+        "branch": "construct-010/decisions-v5",
+        "commit": "e1bd5f2a8c916008bbaad7014712624578c80359",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "construct-010/decisions-v5",
+        "remoteCommit": "e1bd5f2a8c916008bbaad7014712624578c80359",
+        "summary": "Wire text and decision records /5 implemented, all suites green, 18 mutants killed; pushed",
+        "nextAction": "Open PR stacked on #87 and report to the lead",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-14T08:59:00Z"
     }
   ]
 }
