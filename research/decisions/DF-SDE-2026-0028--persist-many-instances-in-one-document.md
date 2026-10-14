@@ -17,8 +17,9 @@ related_documents:
 provenance:
   contributions:
     EXE-20261013T235024451Z-a617154b:
-      operations: [created]
+      operations: [created, modified]
       at: 2026-10-13T23:52:00Z
+      last: 2026-10-14T00:20:00Z
       actor:
         kind: agent
         id: anthropic/claude-code
@@ -68,10 +69,12 @@ not its names, and is tested on its own synthetic fixture.
 4. **Durable scope reads the store's record of landed operations,** which
    maps each operation to the version it produced. A retry of a landed save
    reports `AlreadySaved` with that version and writes nothing.
-5. **One choice governs a save conflict and a moved version found by
-   reconcile,** because both mean another writer won. Session scope cannot
-   attribute a moved version, so it escalates. An unresolved scope leaves it
-   unresolved.
+5. **A save conflict and a moved version found by reconcile are separate
+   choices.** They are `onSaveConflict` and `onReconcileMoved` (conflict,
+   escalate or unresolved). A product can decide that conflicts are never
+   merged while leaving open what a moved version means at reconcile.
+   Session scope cannot attribute a moved version, so it must state
+   `escalate`. An unresolved scope leaves the case unresolved.
 6. **Merging and overwriting are not expressible.** A document cannot be
    combined with persistence or with transition effects.
 
@@ -86,6 +89,9 @@ not its names, and is tested on its own synthetic fixture.
 - **Make the reconcile-conflict rule fixed.** Rejected. Whether a moved
   version without the operation is a conflict is an open question in the
   slice, so it stays the plan's typed choice.
+- **One field for both conflicts.** Rejected after the lead's review. The
+  slice decides save conflicts but leaves the reconcile case open, and one
+  field would force both to be decided together or left open together.
 
 # Limits
 

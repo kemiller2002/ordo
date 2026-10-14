@@ -87,7 +87,9 @@ let private manifestJson (plan: ValidatedPlanView) generator root (artifacts: Ar
             @ (match plan.Workflow.Document with
                | Some d ->
                    [ "document",
-                     JObject [ "idempotency", JString(idempotencyName d.Idempotency); "onSaveConflict", JString(staleActionName d.OnSaveConflict) ] ]
+                     JObject [ "idempotency", JString(idempotencyName d.Idempotency)
+                               "onSaveConflict", JString(staleActionName d.OnSaveConflict)
+                               "onReconcileMoved", JString(reconcileMovedName d.OnReconcileMoved) ] ]
                | None -> [])
         else
             [ "effectFailure",
@@ -307,6 +309,10 @@ let construct (validated: ValidatedPlan) : Result<Construction, ConstructionRefu
                      if d.OnSaveConflict = StaleAction.Unresolved then
                          { Id = "RESOLVE-DOCUMENT:onSaveConflict"
                            Kind = ResolveUnresolved("DocumentOnSaveConflict", sprintf "What a save of the %s document against a moved version means is not decided." w.Name.Key)
+                           RequirementKeys = keys }
+                     if d.Idempotency <> IdempotencyScope.Session && d.OnReconcileMoved = ReconcileMovedAction.Unresolved then
+                         { Id = "RESOLVE-DOCUMENT:onReconcileMoved"
+                           Kind = ResolveUnresolved("DocumentOnReconcileMoved", sprintf "What reconcile reports when the %s document moved without the unknown save's operation is not decided." w.Name.Key)
                            RequirementKeys = keys } ]
                | None -> [])
             @ (w.Unresolved |> List.map (fun u ->

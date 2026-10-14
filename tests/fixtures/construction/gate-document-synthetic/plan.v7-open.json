@@ -277,6 +277,7 @@
       "op": "declareDocument",
       "idempotency": "unresolved",
       "onSaveConflict": "unresolved",
+      "onReconcileMoved": "unresolved",
       "trace": {
         "requirementKeys": [
           "synthetic/gate.md#GATE-6"

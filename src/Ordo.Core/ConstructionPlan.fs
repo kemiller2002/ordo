@@ -345,11 +345,23 @@ type PersistenceDraft =
       OnStale: StaleAction
       Trace: TraceDraft }
 
+/// Vocabulary 7: what reconcile reports when the stored document's version
+/// moved without the unknown save's operation. Another writer may have won,
+/// or the save may have landed and been overwritten; durable scope only.
+[<RequireQualifiedAccess>]
+type ReconcileMovedAction =
+    /// Report a reconcile conflict: the save did not land.
+    | Conflict
+    | Escalate
+    | Unresolved
+
 /// Vocabulary 7: many instances in one persisted document. A save conflict is
-/// a moved document version; rebase and silent no-op are not expressible.
+/// a moved document version; rebase and silent no-op are not expressible. A
+/// save conflict and a moved version found by reconcile are separate choices.
 type DocumentDraft =
     { Idempotency: IdempotencyScope
       OnSaveConflict: StaleAction
+      OnReconcileMoved: ReconcileMovedAction
       Trace: TraceDraft }
 
 /// The largest retry count a plan may state.
@@ -547,10 +559,12 @@ type Persistence =
       OnStale: StaleAction
       Trace: Trace }
 
-/// Vocabulary 7: the document's idempotency scope and save-conflict action.
+/// Vocabulary 7: the document's idempotency scope, save-conflict action and
+/// reconcile-moved action.
 type DocumentPersistence =
     { Idempotency: IdempotencyScope
       OnSaveConflict: StaleAction
+      OnReconcileMoved: ReconcileMovedAction
       Trace: Trace }
 
 /// Vocabulary 5: what a failed or unknown outcome of one effect means.
@@ -726,6 +740,9 @@ type PlanViolation =
     | PersistenceWithEffects of operation: string
     /// Vocabulary 7: a workflow is persisted as an instance or in a document, not both.
     | PersistenceAndDocument of operation: string
+    /// Vocabulary 7: session scope cannot attribute a moved version, so its
+    /// reconcile escalates; any other stated `onReconcileMoved` is refused.
+    | ReconcileMovedWithoutDurableScope of operation: string
 
 // ---------------------------------------------------------------------------
 // Encoding. The draft is the wire shape; the canonical plan is the draft of
@@ -775,6 +792,12 @@ let staleActionName action =
     | StaleAction.Refuse -> "refuse"
     | StaleAction.Escalate -> "escalate"
     | StaleAction.Unresolved -> "unresolved"
+
+let reconcileMovedName action =
+    match action with
+    | ReconcileMovedAction.Conflict -> "conflict"
+    | ReconcileMovedAction.Escalate -> "escalate"
+    | ReconcileMovedAction.Unresolved -> "unresolved"
 
 let private roleName role =
     match role with
@@ -882,6 +905,7 @@ let private jOperation operation =
         JObject [ "op", JString "declareDocument"
                   "idempotency", JString(idempotencyName d.Idempotency)
                   "onSaveConflict", JString(staleActionName d.OnSaveConflict)
+                  "onReconcileMoved", JString(reconcileMovedName d.OnReconcileMoved)
                   "trace", jTrace d.Trace ]
 
 let toJson (plan: PlanDraft) =
@@ -975,7 +999,7 @@ let private canonicalDraft (binding: PlanBinding) (w: Workflow) : PlanDraft =
               |> Option.toList
           yield!
               w.Document
-              |> Option.map (fun d -> DeclareDocument { Idempotency = d.Idempotency; OnSaveConflict = d.OnSaveConflict; Trace = traceDraft d.Trace })
+              |> Option.map (fun d -> DeclareDocument { Idempotency = d.Idempotency; OnSaveConflict = d.OnSaveConflict; OnReconcileMoved = d.OnReconcileMoved; Trace = traceDraft d.Trace })
               |> Option.toList ] }
 
 // ---------------------------------------------------------------------------
@@ -1453,7 +1477,11 @@ let private persistenceViolations (vocabulary: string) (operations: OperationDra
         |> List.collect (function
             | DeclarePersistence _ | DeclareDocument _ as op ->
                 [ if effects then PersistenceWithEffects(operationLabel op)
-                  if both then PersistenceAndDocument(operationLabel op) ]
+                  if both then PersistenceAndDocument(operationLabel op)
+                  match op with
+                  | DeclareDocument d when d.Idempotency = IdempotencyScope.Session && d.OnReconcileMoved <> ReconcileMovedAction.Escalate ->
+                      ReconcileMovedWithoutDurableScope(operationLabel op)
+                  | _ -> () ]
             | _ -> [])
 
 /// Vocabulary 2: every transition effect declares its failure disposition,
@@ -1682,7 +1710,7 @@ let private buildWorkflow (operations: OperationDraft list) : Workflow =
       Document =
         operations
         |> List.tryPick (function
-            | DeclareDocument d -> Some { DocumentPersistence.Idempotency = d.Idempotency; OnSaveConflict = d.OnSaveConflict; Trace = normalizeTrace d.Trace }
+            | DeclareDocument d -> Some { DocumentPersistence.Idempotency = d.Idempotency; OnSaveConflict = d.OnSaveConflict; OnReconcileMoved = d.OnReconcileMoved; Trace = normalizeTrace d.Trace }
             | _ -> None) }
 
 let private coverage (assigned: Set<string>) (operations: OperationDraft list) =
@@ -1705,7 +1733,9 @@ let private coverage (assigned: Set<string>) (operations: OperationDraft list) =
             | DefineWorkflow _ | DeclarePairRule _ | DeclareExtensionInventory _ | DefineRefusalCode _ | AssignRefusalCode _
             | DeclareEffectPolicy _ -> true
             | DeclarePersistence p -> p.Idempotency = IdempotencyScope.Unresolved || p.OnStale = StaleAction.Unresolved
-            | DeclareDocument d -> d.Idempotency = IdempotencyScope.Unresolved || d.OnSaveConflict = StaleAction.Unresolved
+            | DeclareDocument d ->
+                d.Idempotency = IdempotencyScope.Unresolved || d.OnSaveConflict = StaleAction.Unresolved
+                || (d.Idempotency = IdempotencyScope.Durable && d.OnReconcileMoved = ReconcileMovedAction.Unresolved)
             | _ -> undecided operation
         let constructs = ops |> List.filter (nonConstructing >> not)
         let unresolved = ops |> List.filter undecided

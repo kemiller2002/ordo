@@ -927,8 +927,10 @@
             "runtime": "claude-code"
           },
           "at": "2026-10-13T23:52:00Z",
+          "last": "2026-10-14T00:20:00Z",
           "operations": [
-            "created"
+            "created",
+            "modified"
           ],
           "reason": "Record CONSTRUCT-010 phase 2 vocabulary 7 document persistence"
         }

@@ -52,7 +52,7 @@ let ``every yard plan validates and round-trips`` () =
         Assert.Equal(ConstructionPlan.digest v, ConstructionPlan.digest (validate (prepared ()) (readPlan (encodePlan d) |> ok "reread") |> ok "again"))
     let w = (view (validate (prepared ()) (draft ()) |> ok "v")).Workflow
     let d = w.Document |> Option.get
-    Assert.Equal((IdempotencyScope.Durable, StaleAction.Refuse), (d.Idempotency, d.OnSaveConflict))
+    Assert.Equal((IdempotencyScope.Durable, StaleAction.Refuse, ReconcileMovedAction.Conflict), (d.Idempotency, d.OnSaveConflict, d.OnReconcileMoved))
     Assert.Equal(None, w.Persistence)
 
 [<Fact>]
@@ -68,7 +68,9 @@ let ``a document is not in earlier vocabularies`` () =
 [<Fact>]
 let ``the reader refuses an unknown document choice`` () =
     for bad in [ "\"idempotency\": \"durable\"", "\"idempotency\": \"forever\""
-                 "\"onSaveConflict\": \"refuse\"", "\"onSaveConflict\": \"merge\"" ] do
+                 "\"onSaveConflict\": \"refuse\"", "\"onSaveConflict\": \"merge\""
+                 "\"onReconcileMoved\": \"conflict\"", "\"onReconcileMoved\": \"refuse\""
+                 "\"onReconcileMoved\": \"conflict\",", "" ] do
         let text = (read yard "plan.v7-durable.json").Replace(fst bad, snd bad)
         Assert.NotEqual<string>(read yard "plan.v7-durable.json", text)
         Assert.True(Result.isError (readPlan text), snd bad)
@@ -76,7 +78,7 @@ let ``the reader refuses an unknown document choice`` () =
 [<Fact>]
 let ``one document per workflow, and never together with a persisted instance`` () =
     let trace = documentTrace ()
-    let twice = { draft () with Operations = (draft ()).Operations @ [ DeclareDocument { Idempotency = IdempotencyScope.Session; OnSaveConflict = StaleAction.Escalate; Trace = trace } ] }
+    let twice = { draft () with Operations = (draft ()).Operations @ [ DeclareDocument { Idempotency = IdempotencyScope.Session; OnSaveConflict = StaleAction.Escalate; OnReconcileMoved = ReconcileMovedAction.Escalate; Trace = trace } ] }
     Assert.Contains(DuplicateDefinition "document", violations twice)
     let both = { draft () with Operations = (draft ()).Operations @ [ DeclarePersistence { Idempotency = IdempotencyScope.Durable; OnStale = StaleAction.Refuse; Trace = trace } ] }
     let vs = violations both
@@ -94,7 +96,7 @@ let ``a document with transition effects is a dual write and is refused`` () =
     let documented =
         { escalate with
             VocabularyVersion = VocabularyVersion7
-            Operations = escalate.Operations @ [ DeclareDocument { Idempotency = IdempotencyScope.Durable; OnSaveConflict = StaleAction.Refuse; Trace = trace } ] }
+            Operations = escalate.Operations @ [ DeclareDocument { Idempotency = IdempotencyScope.Durable; OnSaveConflict = StaleAction.Refuse; OnReconcileMoved = ReconcileMovedAction.Conflict; Trace = trace } ] }
     match validate cohort documented with
     | Error vs ->
         Assert.Contains(PersistenceWithEffects "document", vs)
@@ -129,3 +131,27 @@ let ``each document choice is classified, and an open one keeps the plan incompl
         Assert.Equal(WorkflowLevel, coverage["synthetic/gate.md#GATE-6"])
     let decided = (view (validate (prepared ()) (readPlan (read yard "plan.v7-session.json") |> ok "plan") |> ok "v")).Coverage
     Assert.Equal(Constructed [ "document" ], decided["synthetic/gate.md#GATE-6"])
+
+/// A save conflict and a moved version found by reconcile are separate
+/// choices: a slice may decide one and leave the other open.
+[<Fact>]
+let ``the save-conflict and reconcile-moved choices are separate`` () =
+    let classified d = (classify (validate (prepared ()) d |> ok "v")).Choices
+    let classOf d subject = (classified d |> List.find (fun c -> c.Subject = subject)).Class
+    Assert.Equal(ChoiceClass.Required [ "synthetic/gate.md#GATE-6" ], classOf (draft ()) "document:onReconcileMoved")
+    // Save conflicts decided and refused with a code; the reconcile case left open.
+    let openMoved = draft () |> mapDocument (fun d -> { d with OnReconcileMoved = ReconcileMovedAction.Unresolved })
+    Assert.Equal(ChoiceClass.Required [ "synthetic/gate.md#GATE-6" ], classOf openMoved "document:onSaveConflict")
+    match classOf openMoved "document:onReconcileMoved" with
+    | ChoiceClass.Unresolved _ -> ()
+    | other -> failwithf "%A" other
+    Assert.True(Result.isError (complete (validate (prepared ()) openMoved |> ok "v")))
+    // Session scope cannot attribute a moved version, so the choice does not
+    // arise there; an unresolved scope keeps it, since the scope may become durable.
+    let session = readPlan (read yard "plan.v7-session.json") |> ok "plan"
+    Assert.DoesNotContain("document:onReconcileMoved", classified session |> List.map _.Subject)
+    for stated in [ ReconcileMovedAction.Conflict; ReconcileMovedAction.Unresolved ] do
+        let claimed = session |> mapDocument (fun d -> { d with OnReconcileMoved = stated })
+        Assert.Contains(ReconcileMovedWithoutDurableScope "document", violations claimed)
+    let open' = readPlan (read yard "plan.v7-open.json") |> ok "plan"
+    Assert.Contains("document:onReconcileMoved", classified open' |> List.map _.Subject)

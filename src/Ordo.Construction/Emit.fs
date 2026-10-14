@@ -1025,8 +1025,8 @@ let document (digest: string) (s: Shape) (d: DocumentPersistence) =
         | StaleAction.Unresolved -> sprintf "%s.Unresolved(%s)" typeName reason
     let escalatedOnSave = d.OnSaveConflict = StaleAction.Escalate
     let unresolvedOnSave = d.OnSaveConflict = StaleAction.Unresolved
-    let escalatedOnReconcile = (durable && escalatedOnSave) || session
-    let unresolvedOnReconcile = (durable && unresolvedOnSave) || unresolvedScope
+    let escalatedOnReconcile = (durable && d.OnReconcileMoved = ReconcileMovedAction.Escalate) || session
+    let unresolvedOnReconcile = (durable && d.OnReconcileMoved = ReconcileMovedAction.Unresolved) || unresolvedScope
     let initial = s.States |> List.head
     let types =
         [ "/// The identity of one entry in the document. Its text is the host's; generated code only compares it."
@@ -1090,7 +1090,7 @@ let document (digest: string) (s: Shape) (d: DocumentPersistence) =
         @ union "What inspecting the stored document reports about one save." recT
             ((if deduplicates then [ "Applied of version: int64" ] else [])
              @ [ "NotApplied" ]
-             @ (if durable && d.OnSaveConflict = StaleAction.Refuse then [ "ReconcileConflict of current: int64 option" ] else [])
+             @ (if durable && d.OnReconcileMoved = ReconcileMovedAction.Conflict then [ "ReconcileConflict of current: int64 option" ] else [])
              @ (if escalatedOnReconcile then [ "Escalated of reason: string" ] else [])
              @ (if unresolvedOnReconcile then [ "Unresolved of reason: string" ] else [])
              @ [ "StillUnknown of reason: string" ])
@@ -1178,10 +1178,15 @@ let document (digest: string) (s: Shape) (d: DocumentPersistence) =
         @ [ "" ]
     let reconcile =
         let moved =
-            if durable then conflictCase recT "ReconcileConflict" "current.Version"
+            if durable then
+                let reason = "sprintf \"the document moved to version %A without the operation\" current.Version"
+                match d.OnReconcileMoved with
+                | ReconcileMovedAction.Conflict -> sprintf "%s.ReconcileConflict current.Version" recT
+                | ReconcileMovedAction.Escalate -> sprintf "%s.Escalated(%s)" recT reason
+                | ReconcileMovedAction.Unresolved -> sprintf "%s.Unresolved(%s)" recT reason
             elif session then sprintf "%s.Escalated \"the document moved and this session cannot tell whether the operation landed\"" recT
             else sprintf "%s.Unresolved \"the document moved and the plan leaves the idempotency scope unresolved\"" recT
-        let movedSession = if durable && d.OnSaveConflict = StaleAction.Refuse then "settled" else "session"
+        let movedSession = if durable && d.OnReconcileMoved = ReconcileMovedAction.Conflict then "settled" else "session"
         let inspect =
             [ "let private inspect (store: " + storeT + ") (session: " + sessT + ") (operation: " + opT + ") ="
               "    let settled = { session with Pending = if session.Pending = Some operation then None else session.Pending }"

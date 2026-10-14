@@ -1,6 +1,6 @@
 {
   "generatorVersion": "ordo.construction/7",
-  "planDigest": "sha256:e4b49429b38a4bdb55990a2a7542051f3960259da93de4e2936d778eea77dcea",
+  "planDigest": "sha256:9292cc678efb55b266955032da654cb5587984958f97d95fc77a88110438eb6b",
   "binding": {
     "sourceManifestDigest": "sha256:3a9e79d3842ba6e16ab27fa79b6e3eed4f005ab85f1e63189937a804dd293c12",
     "blueprintDigest": "sha256:836929e599a560db67c3f530a0118c154363967de1d459b9576282b962dabb3b",
@@ -16,7 +16,7 @@
       "path": "generated/SessionYard/SessionYard.Model.g.fs",
       "tier": "semantic-model",
       "ownership": "generated",
-      "sha256": "sha256:9f61e708b95a7b8c5f2ceefe476b278b0a5448acbfa3905fb2f25f65f333e53c",
+      "sha256": "sha256:ee2dd091dd76a98652af6ec06fbeec803455abe738de5cd87079cf019526cd66",
       "operations": [
         "branching:Closed/Raise",
         "code:AlreadyOpen",
@@ -40,7 +40,7 @@
       "path": "generated/SessionYard/SessionYard.Transition.g.fs",
       "tier": "transition",
       "ownership": "generated",
-      "sha256": "sha256:aa9b84987a4ae68fe2f6bafd53c5a4928a2053ee8dc573a93b4e3e2a6638f972",
+      "sha256": "sha256:1aa13ec09774417bd3250c19fcdf331f53bb72b63f9e8b68da9ecbe0b45d1d75",
       "operations": [
         "branching:Closed/Raise",
         "code:AlreadyOpen",
@@ -66,7 +66,7 @@
       "path": "generated/SessionYard/SessionYard.Document.g.fs",
       "tier": "orchestration",
       "ownership": "generated",
-      "sha256": "sha256:10aaabd76fe91b91b038fafab90a390b881757fbf5f297496cf995842679b69a",
+      "sha256": "sha256:a30eea99b839a9f066323c7dc3c23a362418e22233cb5085108fc05cd7ed1600",
       "operations": [
         "document",
         "workflow:SessionYard"
@@ -237,6 +237,7 @@
   "effectPolicies": [],
   "document": {
     "idempotency": "session",
-    "onSaveConflict": "escalate"
+    "onSaveConflict": "escalate",
+    "onReconcileMoved": "escalate"
   }
 }

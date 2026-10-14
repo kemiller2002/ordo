@@ -1,6 +1,6 @@
 {
   "generatorVersion": "ordo.construction/7",
-  "planDigest": "sha256:8609f8a5f4435f869e151f7fd2f2359cda20aa0debf68d5206f861373cd663ae",
+  "planDigest": "sha256:43cee15dfb0f4b379d0eac00c3e1c923de2083bcfd1879f498492cbbd12e9f37",
   "binding": {
     "sourceManifestDigest": "sha256:3a9e79d3842ba6e16ab27fa79b6e3eed4f005ab85f1e63189937a804dd293c12",
     "blueprintDigest": "sha256:836929e599a560db67c3f530a0118c154363967de1d459b9576282b962dabb3b",
@@ -16,7 +16,7 @@
       "path": "generated/GateYard/GateYard.Model.g.fs",
       "tier": "semantic-model",
       "ownership": "generated",
-      "sha256": "sha256:e6a1dcaa701ace94a73b3fda424f88d3816ec7f4ddc038dc92093b2fa048abf5",
+      "sha256": "sha256:2b01ae9ffa6a2a78ea0c6b6a1a3a6b85dea405d0d61615691e7ab3d11ba3c22e",
       "operations": [
         "branching:Closed/Raise",
         "code:AlreadyOpen",
@@ -44,7 +44,7 @@
       "path": "generated/GateYard/GateYard.Transition.g.fs",
       "tier": "transition",
       "ownership": "generated",
-      "sha256": "sha256:e1029e500745a919b61ea08d033f0a2729102388978cc113c48af8ca95edd2ef",
+      "sha256": "sha256:8f69d83779cececf069fa5f3a90044d9095c8de24f7793e84d782b35fb359408",
       "operations": [
         "branching:Closed/Raise",
         "code:AlreadyOpen",
@@ -77,7 +77,7 @@
       "path": "generated/GateYard/GateYard.Document.g.fs",
       "tier": "orchestration",
       "ownership": "generated",
-      "sha256": "sha256:7c47ef24c858deae41ed23f1d813266bfca72550888cc2eb1efc92f3a27bbdce",
+      "sha256": "sha256:14f80971d2046017a4858c64b55febbc68440cd1cb0136f78459362ed6a082db",
       "operations": [
         "codeFor:notFound",
         "codeFor:saveConflict",
@@ -251,6 +251,7 @@
   "effectPolicies": [],
   "document": {
     "idempotency": "durable",
-    "onSaveConflict": "refuse"
+    "onSaveConflict": "refuse",
+    "onReconcileMoved": "conflict"
   }
 }

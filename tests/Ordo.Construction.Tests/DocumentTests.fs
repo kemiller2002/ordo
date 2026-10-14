@@ -273,6 +273,7 @@ let ``an unresolved scope deduplicates nothing, leaves a moved document unresolv
     let ids = (construction openYard).Obligations |> List.map _.Id
     Assert.Contains("RESOLVE-DOCUMENT:idempotency", ids)
     Assert.Contains("RESOLVE-DOCUMENT:onSaveConflict", ids)
+    Assert.Contains("RESOLVE-DOCUMENT:onReconcileMoved", ids)
 
 [<Fact>]
 let ``the document store is handed off as implement obligations`` () =
@@ -280,6 +281,22 @@ let ``the document store is handed off as implement obligations`` () =
     Assert.Contains("IMPLEMENT:IGateYardDocumentStore.Read", ids)
     Assert.Contains("IMPLEMENT:IGateYardDocumentStore.Write", ids)
     Assert.DoesNotContain("RESOLVE-DOCUMENT:idempotency", ids)
+
+[<Fact>]
+let ``a decided save conflict and an open reconcile-moved case generate separately`` () =
+    let d = draft gateYard
+    let openMoved =
+        { d with
+            Operations =
+                d.Operations |> List.map (function DeclareDocument p -> DeclareDocument { p with OnReconcileMoved = ReconcileMovedAction.Unresolved } | other -> other) }
+    let c = validate (prepared gateYard) openMoved |> ok "validate" |> construct |> ok "construct"
+    let document = (c.Artifacts |> List.find (fun a -> a.Path.EndsWith ".Document.g.fs")).Content
+    Assert.Contains("| GateYardDocumentWrite.VersionMismatch current -> GateYardSaveOutcome.SaveConflict current, session", document)
+    Assert.Contains("| None -> GateYardReconciled.Unresolved(", document)
+    Assert.DoesNotContain("ReconcileConflict", document)
+    let ids = c.Obligations |> List.map _.Id
+    Assert.Contains("RESOLVE-DOCUMENT:onReconcileMoved", ids)
+    Assert.DoesNotContain("RESOLVE-DOCUMENT:onSaveConflict", ids)
 
 let private references =
     [ typeof<ValidatedPlan>.Assembly.Location

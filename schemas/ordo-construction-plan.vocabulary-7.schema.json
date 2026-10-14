@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://echelonfoundry.dev/schemas/ordo-construction-plan.vocabulary-7.schema.json",
   "title": "Ordo construction plan v1 (vocabulary ordo.construction-vocabulary/7)",
-  "description": "Structural validity only. Vocabulary 7 is vocabulary 6 with document persistence (CONSTRUCT-010 phase 2): at most one declareDocument stating idempotency (durable | session | unresolved) of save operation ids and onSaveConflict (refuse | escalate | unresolved); assignRefusalCode may also target saveConflict. A document together with transition effects or with declarePersistence, a code on saveConflict without onSaveConflict refuse, a code on staleRevision without a document or a refusing persistence, and duplicates are refused by Ordo Construction validation, not by this schema.",
+  "description": "Structural validity only. Vocabulary 7 is vocabulary 6 with document persistence (CONSTRUCT-010 phase 2): at most one declareDocument stating idempotency (durable | session | unresolved) of save operation ids onSaveConflict (refuse | escalate | unresolved) and onReconcileMoved (conflict | escalate | unresolved), what reconcile reports when the document moved without the unknown save's operation; assignRefusalCode may also target saveConflict. A document together with transition effects or with declarePersistence, a code on saveConflict without onSaveConflict refuse, session scope with onReconcileMoved other than escalate, a code on staleRevision without a document or a refusing persistence, and duplicates are refused by Ordo Construction validation, not by this schema.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -764,6 +764,7 @@
             "op",
             "idempotency",
             "onSaveConflict",
+            "onReconcileMoved",
             "trace"
           ],
           "properties": {
@@ -783,6 +784,13 @@
             "onSaveConflict": {
               "enum": [
                 "refuse",
+                "escalate",
+                "unresolved"
+              ]
+            },
+            "onReconcileMoved": {
+              "enum": [
+                "conflict",
                 "escalate",
                 "unresolved"
               ]

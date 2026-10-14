@@ -262,6 +262,14 @@ let classify (plan: ValidatedPlan) : Classification =
                   (if d.OnSaveConflict = StaleAction.Unresolved then
                        ChoiceClass.Unresolved(sprintf "What a save against a moved version of workflow %s's document means is not decided." w.Name.Key)
                    else basisOf d.Trace) ]
+            // Only a durable record can attribute a moved version, so the
+            // choice arises in durable scope, or while the scope is open.
+            @ (if d.Idempotency = IdempotencyScope.Session then []
+               else
+                   [ choice "document:onReconcileMoved" ChoiceKind.Persistence keys
+                         (if d.OnReconcileMoved = ReconcileMovedAction.Unresolved then
+                              ChoiceClass.Unresolved(sprintf "What reconcile reports when workflow %s's document moved without the unknown save's operation is not decided." w.Name.Key)
+                          else basisOf d.Trace) ])
 
     { PlanDigest = view.Digest
       VocabularyVersion = version

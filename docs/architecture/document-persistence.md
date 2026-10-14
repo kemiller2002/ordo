@@ -25,9 +25,20 @@ a vocabulary of its own. It is not a variant of vocabulary 6.
 Vocabulary 7 is vocabulary 6 plus at most one:
 
 ```text
-declareDocument { idempotency:    durable | session | unresolved,
-                  onSaveConflict: refuse  | escalate | unresolved, trace }
+declareDocument { idempotency:      durable  | session  | unresolved,
+                  onSaveConflict:   refuse   | escalate | unresolved,
+                  onReconcileMoved: conflict | escalate | unresolved, trace }
 ```
+
+`onSaveConflict` says what a save against a moved document means.
+`onReconcileMoved` says what reconcile reports when the stored document moved
+without the unknown save's operation. These are separate choices because a
+product can decide the first and leave the second open: whether a moved
+version means another writer won, or that the save landed and was then
+overwritten, is a question of its own.
+
+Only a durable record can attribute a moved version, so `onReconcileMoved`
+takes effect in durable scope. Session scope must state `escalate`.
 
 It also adds the `assignRefusalCode` target `saveConflict`: a save refused
 because another writer moved the document. With a document, `notFound` is a
@@ -45,17 +56,19 @@ Validation refuses:
 | `PersistenceAndDocument` | a document together with `declarePersistence` |
 | `PersistenceWithEffects` | a document together with transition effects (a dual write) |
 | `CodeOnNonRefusal` | a `saveConflict` code unless `onSaveConflict` is `refuse` |
+| `ReconcileMovedWithoutDurableScope` | session scope with `onReconcileMoved` other than `escalate` |
 | `NotInVocabulary` | `declareDocument` or a `saveConflict` target in vocabularies 1 to 6 |
 
 **Choices that cannot be expressed.** Merging with another writer's document
 and overwriting it have no vocabulary. Retrying an unknown save without
 reconciling is not a generated path.
 
-**Classification.** `document:idempotency` and `document:onSaveConflict` are
-separate choices. Each is `unresolved` when open, and is otherwise classified
+**Classification.** `document:idempotency`, `document:onSaveConflict` and
+`document:onReconcileMoved` are separate choices. The last one does not arise
+in session scope. Each is `unresolved` when open, and is otherwise classified
 by its trace. An open choice keeps the plan from being `complete`, and
-construction adds `RESOLVE-DOCUMENT:idempotency` or
-`RESOLVE-DOCUMENT:onSaveConflict`.
+construction adds `RESOLVE-DOCUMENT:idempotency`,
+`RESOLVE-DOCUMENT:onSaveConflict` or `RESOLVE-DOCUMENT:onReconcileMoved`.
 
 ## Generated code: `<W>.Document.g.fs` (Tier 3)
 
@@ -109,11 +122,9 @@ The file is generated only when the plan declares a document. It contains:
 | the read fails | `StillUnknown`; stays pending | `StillUnknown` | `StillUnknown` |
 | it records the operation | `Applied version`; the session adopts the stored document | `Applied version`, when the session confirmed it | (not expressible) |
 | its version is unchanged | `NotApplied`; the caller may save again | `NotApplied` | `NotApplied` |
-| its version moved without the operation | per `onSaveConflict`: `ReconcileConflict current`, `Escalated` or `Unresolved` | `Escalated`: the session cannot tell | `Unresolved` |
+| its version moved without the operation | per `onReconcileMoved`: `ReconcileConflict current`, `Escalated` or `Unresolved` | `Escalated`: the session cannot tell | `Unresolved` |
 
-A save conflict and a moved version found by reconcile are the same
-condition: another writer won. So the plan's `onSaveConflict` choice governs
-both. It is a typed choice, not a fixed rule.
+The moved-version case is the plan's typed choice, not a fixed rule.
 
 `commandCode` maps a command outcome to the plan's codes: the Tier 2 refusal
 code, `notFound` and `staleRevision`. `saveCode` maps `SaveConflict` to the
@@ -154,8 +165,11 @@ the versions they produced, and scripts write and read faults. It asserts:
   `NotSaved`;
 - session scope deduplicates within one session only and escalates what it
   cannot settle;
-- an unresolved scope leaves a moved document unresolved and raises both
-  `RESOLVE-DOCUMENT` obligations.
+- an unresolved scope leaves a moved document unresolved and raises all three
+  `RESOLVE-DOCUMENT` obligations;
+- a decided save conflict (refused, with its code) generates alongside an open
+  reconcile-moved case: reconcile reports `Unresolved`, and only
+  `RESOLVE-DOCUMENT:onReconcileMoved` is raised.
 
 The compile probes fail as expected:
 - there is no `Merged` or `Overwritten` save outcome (FS0039);
@@ -194,6 +208,14 @@ Each of these plan mutants also failed `ConstructionVocabulary7Tests`:
 - **P4:** a `staleRevision` code is refused with a document.
 - **P5:** a requirement traced only by a document whose save-conflict choice
   is open counts as constructed.
+
+These mutants of the split between the two choices each failed:
+
+- **Q1:** the `onReconcileMoved` obligation is dropped.
+- **Q2:** an open reconcile-moved case generates a conflict.
+- **Q3:** session scope classifies the choice.
+- **Q4:** session scope accepts any `onReconcileMoved`.
+- **Q5:** the reader maps `conflict` to `escalate`.
 
 ## Not in this increment
 

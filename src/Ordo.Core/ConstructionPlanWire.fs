@@ -319,7 +319,7 @@ let private operation (vocabulary: string) path value =
             return DeclarePersistence { Idempotency = scope; OnStale = onStale; Trace = t }
         | "declareDocument" ->
             let! () = if hasDocument vocabulary then Ok() else notIn kind
-            let! p = fields path [ "op"; "idempotency"; "onSaveConflict"; "trace" ] [] value
+            let! p = fields path [ "op"; "idempotency"; "onSaveConflict"; "onReconcileMoved"; "trace" ] [] value
             let! scopeText = textField path "idempotency" p
             let! scope =
                 match scopeText with
@@ -334,8 +334,15 @@ let private operation (vocabulary: string) path value =
                 | "escalate" -> Ok StaleAction.Escalate
                 | "unresolved" -> Ok StaleAction.Unresolved
                 | other -> fail (path + ".onSaveConflict") ("unsupported onSaveConflict: " + other)
+            let! movedText = textField path "onReconcileMoved" p
+            let! onMoved =
+                match movedText with
+                | "conflict" -> Ok ReconcileMovedAction.Conflict
+                | "escalate" -> Ok ReconcileMovedAction.Escalate
+                | "unresolved" -> Ok ReconcileMovedAction.Unresolved
+                | other -> fail (path + ".onReconcileMoved") ("unsupported onReconcileMoved: " + other)
             let! t = traceField path p
-            return DeclareDocument { Idempotency = scope; OnSaveConflict = onConflict; Trace = t }
+            return DeclareDocument { Idempotency = scope; OnSaveConflict = onConflict; OnReconcileMoved = onMoved; Trace = t }
         | other -> return! fail (path + ".op") ("unsupported operation: " + other)
     }
 

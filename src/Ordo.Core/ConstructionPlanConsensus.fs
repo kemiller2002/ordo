@@ -211,7 +211,9 @@ let private describe operation =
     | DeclareEffectPolicy p ->
         sprintf "declareEffectPolicy %s retries %d onFailed %s onUnknown %s" p.Effect p.Retries (failedActionName p.OnFailed) (unknownActionName p.OnUnknown)
     | DeclarePersistence p -> sprintf "declarePersistence idempotency %s onStale %s" (idempotencyName p.Idempotency) (staleActionName p.OnStale)
-    | DeclareDocument d -> sprintf "declareDocument idempotency %s onSaveConflict %s" (idempotencyName d.Idempotency) (staleActionName d.OnSaveConflict)
+    | DeclareDocument d ->
+        sprintf "declareDocument idempotency %s onSaveConflict %s onReconcileMoved %s"
+            (idempotencyName d.Idempotency) (staleActionName d.OnSaveConflict) (reconcileMovedName d.OnReconcileMoved)
 
 let private dispositionText operation =
     match operation with
