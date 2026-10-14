@@ -1,0 +1,122 @@
+{
+  "schemaVersion": "ordo.construction-decisions/3",
+  "blueprintDigest": "sha256:2c856b0de8e4664040e8a9387185ddb090e7f309aef020763c7cdac289b7798b",
+  "cohortId": "COH-GATE",
+  "records": [
+    {
+      "nodeId": "DEC-GATE",
+      "content": {
+        "kind": "stateModel",
+        "workflow": "Gate",
+        "states": [
+          {
+            "name": "Closed",
+            "role": "initial"
+          },
+          {
+            "name": "Open",
+            "role": "ordinary"
+          },
+          {
+            "name": "Jammed",
+            "role": "ordinary"
+          }
+        ],
+        "transitions": [
+          {
+            "command": "Lower",
+            "from": "Open",
+            "to": "Closed",
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-1"
+            ]
+          },
+          {
+            "command": "Reset",
+            "from": "Jammed",
+            "to": "Closed",
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-1"
+            ]
+          }
+        ],
+        "unlisted": {
+          "disposition": "refused",
+          "requirementKeys": [
+            "synthetic/gate.md#GATE-1"
+          ]
+        },
+        "refusals": [
+          {
+            "command": "Raise",
+            "from": "Open",
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-1",
+              "synthetic/gate.md#GATE-4"
+            ]
+          }
+        ],
+        "undecided": [],
+        "refusalCodes": [
+          {
+            "code": "AlreadyOpen",
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-4"
+            ]
+          },
+          {
+            "code": "NotAccepted",
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-4"
+            ]
+          }
+        ],
+        "codeAssignments": [
+          {
+            "target": {
+              "kind": "pair",
+              "from": "Open",
+              "command": "Raise"
+            },
+            "code": "AlreadyOpen",
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-4"
+            ]
+          },
+          {
+            "target": {
+              "kind": "unlisted"
+            },
+            "code": "NotAccepted",
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-4"
+            ]
+          }
+        ],
+        "branching": [
+          {
+            "command": "Raise",
+            "from": "Closed",
+            "targets": [
+              "Open",
+              "Jammed"
+            ],
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-1",
+              "synthetic/gate.md#GATE-2"
+            ],
+            "decisionPoints": [
+              {
+                "point": "motor report",
+                "decided": true,
+                "requirementKeys": [
+                  "synthetic/gate.md#GATE-2"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

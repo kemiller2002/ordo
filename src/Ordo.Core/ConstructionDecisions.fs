@@ -30,6 +30,12 @@ let DecisionsSchemaVersion = "ordo.construction-decisions/1"
 [<Literal>]
 let DecisionsSchemaVersion2 = "ordo.construction-decisions/2"
 
+/// Version 3 (CONSTRUCT-010 phase 2) is version 2 plus typed refusal codes
+/// and branching transitions in a `stateModel`. Version 3 records generate
+/// vocabulary 4 plans only.
+[<Literal>]
+let DecisionsSchemaVersion3 = "ordo.construction-decisions/3"
+
 type RecordedState = { Name: string; Role: StateRole }
 
 type RecordedTransition =
@@ -77,6 +83,32 @@ type RecordedUndecidedPair =
       Question: string
       RequirementKeys: string list }
 
+/// A typed refusal code a decision defines (version 3).
+type RecordedRefusalCode =
+    { Code: string
+      RequirementKeys: string list }
+
+/// What a code is assigned to (version 3). Default plans have no guards, so
+/// a code goes to a refused pair or to the unlisted pairs.
+[<RequireQualifiedAccess>]
+type RecordedCodeTarget =
+    | Pair of from: string * command: string
+    | Unlisted
+
+type RecordedCodeAssignment =
+    { Target: RecordedCodeTarget
+      Code: string
+      RequirementKeys: string list }
+
+/// A command whose target the host observes (version 3). The handwritten
+/// selector's choices are listed like an effect's decision points.
+type RecordedBranching =
+    { Command: string
+      From: string
+      Targets: string list
+      RequirementKeys: string list
+      DecisionPoints: RecordedDecisionPoint list }
+
 type StateModelContent =
     { Workflow: string
       States: RecordedState list
@@ -84,7 +116,11 @@ type StateModelContent =
       /// `None` in version 1 records; required in version 2.
       Unlisted: RecordedUnlisted option
       Refusals: RecordedPair list
-      Undecided: RecordedUndecidedPair list }
+      Undecided: RecordedUndecidedPair list
+      /// Version 3 only; empty otherwise.
+      RefusalCodes: RecordedRefusalCode list
+      CodeAssignments: RecordedCodeAssignment list
+      Branching: RecordedBranching list }
 
 /// An approved decision that settles blueprint conflicts. The link is the
 /// record author's claim, bound by the record set's digest; generation checks
@@ -243,7 +279,55 @@ let private unlisted path value =
         | other -> return! fail (path + ".disposition") ("unsupported unlisted disposition: " + other)
     }
 
-let private content (second: bool) path value =
+let private refusalCode path value =
+    result {
+        let! p = fields path [ "code"; "requirementKeys" ] [] value
+        let! code = textField path "code" p
+        let! keys = keysField path p
+        return { RecordedRefusalCode.Code = code; RequirementKeys = keys }
+    }
+
+let private codeAssignment path value =
+    result {
+        let! p = fields path [ "target"; "code"; "requirementKeys" ] [] value
+        let! rawTarget = field path "target" p
+        let targetPath = path + ".target"
+        let! kind =
+            match rawTarget with
+            | JObject properties ->
+                match properties |> List.filter (fun (n, _) -> n = "kind") with
+                | [ _, JString k ] -> Ok k
+                | _ -> fail targetPath "expected exactly one string member kind"
+            | _ -> fail targetPath "expected object"
+        let! target =
+            match kind with
+            | "pair" ->
+                fields targetPath [ "kind"; "from"; "command" ] [] rawTarget
+                |> Result.bind (fun q ->
+                    result {
+                        let! from = textField targetPath "from" q
+                        let! command = textField targetPath "command" q
+                        return RecordedCodeTarget.Pair(from, command)
+                    })
+            | "unlisted" -> fields targetPath [ "kind" ] [] rawTarget |> Result.map (fun _ -> RecordedCodeTarget.Unlisted)
+            | other -> fail (targetPath + ".kind") ("unsupported refusal-code target: " + other)
+        let! code = textField path "code" p
+        let! keys = keysField path p
+        return { Target = target; Code = code; RequirementKeys = keys }
+    }
+
+let private branching path value =
+    result {
+        let! p = fields path [ "command"; "from"; "targets"; "requirementKeys"; "decisionPoints" ] [] value
+        let! command = textField path "command" p
+        let! from = textField path "from" p
+        let! targets = field path "targets" p |> Result.bind (strings (path + ".targets"))
+        let! keys = keysField path p
+        let! points = field path "decisionPoints" p |> Result.bind (items (path + ".decisionPoints") decisionPoint)
+        return { RecordedBranching.Command = command; From = from; Targets = targets; RequirementKeys = keys; DecisionPoints = points }
+    }
+
+let private content (second: bool) (third: bool) path value =
     result {
         let! kind =
             match value with
@@ -255,7 +339,9 @@ let private content (second: bool) path value =
         match kind with
         | "stateModel" ->
             let required = [ "kind"; "workflow"; "states"; "transitions" ] @ (if second then [ "unlisted" ] else [])
-            let! p = fields path required (if second then [ "refusals"; "undecided" ] else []) value
+            let optionalMembers =
+                (if second then [ "refusals"; "undecided" ] else []) @ (if third then [ "refusalCodes"; "codeAssignments"; "branching" ] else [])
+            let! p = fields path required optionalMembers value
             let! workflow = textField path "workflow" p
             let! rawStates = field path "states" p
             let! states = items (path + ".states") state rawStates
@@ -268,7 +354,13 @@ let private content (second: bool) path value =
                 | None -> Ok []
             let! refusals = optionalList "refusals" pair
             let! undecided = optionalList "undecided" undecidedPair
-            return StateModel { Workflow = workflow; States = states; Transitions = transitions; Unlisted = rule; Refusals = refusals; Undecided = undecided }
+            let! codes = optionalList "refusalCodes" refusalCode
+            let! assignments = optionalList "codeAssignments" codeAssignment
+            let! branches = optionalList "branching" branching
+            return
+                StateModel
+                    { Workflow = workflow; States = states; Transitions = transitions; Unlisted = rule; Refusals = refusals; Undecided = undecided
+                      RefusalCodes = codes; CodeAssignments = assignments; Branching = branches }
         | "portContract" ->
             let! p = fields path [ "kind"; "ports" ] [] value
             let! rawPorts = field path "ports" p
@@ -284,12 +376,12 @@ let private content (second: bool) path value =
         | other -> return! fail (path + ".kind") ("unsupported content kind: " + other)
     }
 
-let private record (second: bool) path value =
+let private record (second: bool) (third: bool) path value =
     result {
         let! p = fields path [ "nodeId"; "content" ] [] value
         let! nodeId = textField path "nodeId" p
         let! raw = field path "content" p
-        let! decided = content second (path + ".content") raw
+        let! decided = content second third (path + ".content") raw
         return { NodeId = nodeId; Content = decided }
     }
 
@@ -301,13 +393,15 @@ let readDecisionRecords (input: string) : Result<ApprovedDecisionRecords, string
         let! p = fields "$" [ "schemaVersion"; "blueprintDigest"; "cohortId"; "records" ] [] json
         let! schema = textField "$" "schemaVersion" p
         let! () =
-            if schema = DecisionsSchemaVersion || schema = DecisionsSchemaVersion2 then Ok()
+            if schema = DecisionsSchemaVersion || schema = DecisionsSchemaVersion2 || schema = DecisionsSchemaVersion3 then Ok()
             else fail "$.schemaVersion" ("unsupported " + schema)
-        let second = schema = DecisionsSchemaVersion2
+        // Version 3 keeps every version 2 requirement.
+        let second = schema <> DecisionsSchemaVersion
+        let third = schema = DecisionsSchemaVersion3
         let! blueprint = textField "$" "blueprintDigest" p
         let! cohort = textField "$" "cohortId" p
         let! rawRecords = field "$" "records" p
-        let! records = items "$.records" (record second) rawRecords
+        let! records = items "$.records" (record second third) rawRecords
         return { ApprovedDecisionRecords.SchemaVersion = schema; BlueprintDigest = blueprint; CohortId = cohort; Records = records }
     }
 
@@ -327,6 +421,13 @@ let private jKeys keys = JArray(keys |> List.distinct |> List.sort |> List.map J
 let private sortedBy (render: 'a -> JsonValue) (values: 'a list) =
     values |> List.map render |> List.sortWith (fun a b -> String.CompareOrdinal(renderCanonical a, renderCanonical b))
 
+let private jDecisionPoint (p: RecordedDecisionPoint) =
+    JObject(
+        [ "point", JString p.Point
+          "decided", JBool p.Question.IsNone
+          "requirementKeys", jKeys p.RequirementKeys ]
+        @ (p.Question |> Option.map (fun q -> "question", JString q) |> Option.toList))
+
 let private jPort port =
     match port with
     | RecordedCurrentTime keys -> JObject [ "port", JString "currentTime"; "requirementKeys", jKeys keys ]
@@ -339,12 +440,7 @@ let private jPort port =
             @ (points
                |> Option.map (fun ps ->
                    "decisionPoints",
-                   JArray(ps |> sortedBy (fun p ->
-                       JObject(
-                           [ "point", JString p.Point
-                             "decided", JBool p.Question.IsNone
-                             "requirementKeys", jKeys p.RequirementKeys ]
-                           @ (p.Question |> Option.map (fun q -> "question", JString q) |> Option.toList)))))
+                   JArray(ps |> sortedBy jDecisionPoint))
                |> Option.toList))
 
 let private jContent content =
@@ -366,7 +462,29 @@ let private jContent content =
                | Some RecordedUnlisted.Undecided ->
                    [ "unlisted", JObject [ "disposition", JString "undecided" ]
                      "refusals", JArray(m.Refusals |> sortedBy (fun r -> JObject [ "command", JString r.Command; "from", JString r.From; "requirementKeys", jKeys r.RequirementKeys ]))
-                     "undecided", JArray(m.Undecided |> sortedBy (fun u -> JObject [ "command", JString u.Command; "from", JString u.From; "question", JString u.Question; "requirementKeys", jKeys u.RequirementKeys ])) ]))
+                     "undecided", JArray(m.Undecided |> sortedBy (fun u -> JObject [ "command", JString u.Command; "from", JString u.From; "question", JString u.Question; "requirementKeys", jKeys u.RequirementKeys ])) ])
+            // Version 3 members, only when present, so earlier versions keep their bytes.
+            @ (if List.isEmpty m.RefusalCodes then []
+               else [ "refusalCodes", JArray(m.RefusalCodes |> sortedBy (fun c -> JObject [ "code", JString c.Code; "requirementKeys", jKeys c.RequirementKeys ])) ])
+            @ (if List.isEmpty m.CodeAssignments then []
+               else
+                   [ "codeAssignments",
+                     JArray(m.CodeAssignments |> sortedBy (fun a ->
+                         JObject [ "target",
+                                   (match a.Target with
+                                    | RecordedCodeTarget.Pair(from, command) -> JObject [ "kind", JString "pair"; "from", JString from; "command", JString command ]
+                                    | RecordedCodeTarget.Unlisted -> JObject [ "kind", JString "unlisted" ])
+                                   "code", JString a.Code
+                                   "requirementKeys", jKeys a.RequirementKeys ])) ])
+            @ (if List.isEmpty m.Branching then []
+               else
+                   [ "branching",
+                     JArray(m.Branching |> sortedBy (fun b ->
+                         JObject [ "command", JString b.Command
+                                   "from", JString b.From
+                                   "targets", JArray(b.Targets |> List.distinct |> List.sort |> List.map JString)
+                                   "requirementKeys", jKeys b.RequirementKeys
+                                   "decisionPoints", JArray(b.DecisionPoints |> sortedBy jDecisionPoint) ])) ]))
     | PortContract ports -> JObject [ "kind", JString "portContract"; "ports", JArray(sortedBy jPort ports) ]
     | ConflictResolution c ->
         JObject [ "kind", JString "conflictResolution"
