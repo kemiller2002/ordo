@@ -156,12 +156,22 @@ type DefaultPlanRefusal =
     | DecidedDispositionWithoutDecision of nodeId: string * command: string
     /// Defense in depth: the generated draft did not validate.
     | GeneratedPlanInvalid of violations: PlanViolation list
+    /// A conflict resolution names a node that is not in the blueprint.
+    | ResolvesUnknownNode of nodeId: string * conflictId: string
+    /// A conflict resolution names a node that is not a conflict.
+    | ResolvesNonConflict of nodeId: string * targetId: string * targetKind: string
+    /// A conflict resolution shares no requirement key with a conflict it
+    /// names, so nothing ties the decision to that conflict.
+    | UnrelatedConflictResolution of nodeId: string * conflictId: string
 
 type private DefaultPlanView =
     { Draft: PlanDraft
       Plan: ValidatedPlan
       Obligations: ObligationSet
       GeneratedLayout: string list
+      /// Conflicts settled by an authorized decision's `conflictResolution`
+      /// record, with the deciding nodes. They get no conflict obligation.
+      ResolvedConflicts: (string * string list) list
       Provenance: DefaultPlanProvenance
       Encoded: string }
 
@@ -181,6 +191,8 @@ type DefaultPlan =
     member this.ObligationSet = this.View.Obligations
     /// The generated file paths construction will emit (`ConstructionLayout`).
     member this.GeneratedLayout = this.View.GeneratedLayout
+    /// Conflicts an authorized decision settles, with the deciding nodes.
+    member this.ResolvedConflicts = this.View.ResolvedConflicts
     member this.Provenance = this.View.Provenance
     member this.Digest = this.View.Provenance.DefaultPlanDigest
 
@@ -300,12 +312,21 @@ let private provenanceJson (p: DefaultPlanProvenance) =
               "planDigest", JString p.PlanDigest
               "obligationsDigest", JString p.ObligationsDigest ]
 
-let private defaultPlanJson draft obligations layout provenance =
-    JObject [ "schemaVersion", JString DefaultPlanSchemaVersion
-              "provenance", provenanceJson provenance
-              "plan", ConstructionPlan.toJson draft
-              "obligations", obligationsJson obligations
-              "generatedLayout", jStrings layout ]
+let private defaultPlanJson draft obligations layout (resolved: (string * string list) list) provenance =
+    JObject(
+        [ "schemaVersion", JString DefaultPlanSchemaVersion
+          "provenance", provenanceJson provenance
+          "plan", ConstructionPlan.toJson draft
+          "obligations", obligationsJson obligations
+          "generatedLayout", jStrings layout ]
+        // Present only when a record resolves a conflict, so plans without
+        // one keep their exact bytes and digests.
+        @ (match resolved with
+           | [] -> []
+           | _ ->
+               [ "resolvedConflicts",
+                 JArray [ for conflict, decisions in resolved ->
+                            JObject [ "conflict", JString conflict; "decisionIds", jStrings decisions ] ] ]))
 
 /// Canonical serialization of a default plan (`ordo.default-plan/1`):
 /// provenance (without its own digest), plan, obligations and generated
@@ -332,6 +353,7 @@ let private contentKind content =
     match content with
     | StateModel _ -> "stateModel"
     | PortContract _ -> "portContract"
+    | ConflictResolution _ -> "conflictResolution"
 
 let private nameKey raw = SemanticName.create raw |> Result.map SemanticName.key
 
@@ -349,11 +371,15 @@ let private envelopeRefusals (view: PreparedCohortView) (blueprintDigest: string
 
 let private nodeRefusals (view: PreparedCohortView) (records: ApprovedDecisionRecords) =
     let nodes = view.Blueprint.Nodes |> List.map (fun n -> n.Id, n) |> Map.ofList
+    // A node holds at most one structural record and at most one conflict
+    // resolution, so a decision can both fix structure and settle conflicts.
+    let isResolution r = match r.Content with ConflictResolution _ -> true | StateModel _ | PortContract _ -> false
     let duplicates =
-        records.Records |> List.countBy _.NodeId |> List.filter (fun (_, n) -> n > 1) |> List.map (fst >> DuplicateRecord)
+        records.Records |> List.countBy (fun r -> r.NodeId, isResolution r) |> List.filter (fun (_, n) -> n > 1)
+        |> List.map (fst >> fst >> DuplicateRecord)
     let perRecord =
         records.Records
-        |> List.distinctBy _.NodeId
+        |> List.distinctBy (fun r -> r.NodeId, isResolution r)
         |> List.choose (fun r ->
             match Map.tryFind r.NodeId nodes with
             | None -> Some(UnknownRecordNode r.NodeId)
@@ -361,12 +387,13 @@ let private nodeRefusals (view: PreparedCohortView) (records: ApprovedDecisionRe
                 let approvedDecision = node.Kind = Decision && Set.contains node.Id view.RequiredDecisionIds
                 match r.Content, node.Kind with
                 | StateModel _, Decision
-                | PortContract _, Decision -> if approvedDecision then None else Some(RecordForUnapprovedNode r.NodeId)
+                | PortContract _, Decision
+                | ConflictResolution _, Decision -> if approvedDecision then None else Some(RecordForUnapprovedNode r.NodeId)
                 | PortContract _, Interface -> if Set.contains node.Id view.RequiredNodeIds then None else Some(RecordForUnapprovedNode r.NodeId)
                 | content, kind -> Some(RecordKindNotAllowed(r.NodeId, kindText kind, contentKind content)))
     let recorded = records.Records |> List.map _.NodeId |> Set.ofList
     let missing = Set.difference view.RequiredDecisionIds recorded |> Seq.map MissingDecisionContent |> Seq.toList
-    let models = records.Records |> List.filter (fun r -> match r.Content with StateModel _ -> true | PortContract _ -> false) |> List.map _.NodeId |> List.distinct |> List.sort
+    let models = records.Records |> List.filter (fun r -> match r.Content with StateModel _ -> true | PortContract _ | ConflictResolution _ -> false) |> List.map _.NodeId |> List.distinct |> List.sort
     let modelCount =
         match models with
         | [] -> [ MissingStateModel ]
@@ -386,6 +413,7 @@ let private recordNames (record: DecisionRecord) =
             | RecordedTransitionEffect(command, _, _, points) ->
                 command :: (points |> Option.defaultValue [] |> List.map _.Point)
             | RecordedCurrentTime _ -> [])
+    | ConflictResolution _ -> []
 
 let private nameRefusals (records: ApprovedDecisionRecords) =
     records.Records
@@ -426,6 +454,7 @@ let private citations (record: DecisionRecord) =
                | RecordedTransitionEffect(_, _, _, Some points) as p ->
                    points |> List.map (fun point -> sprintf "%s/point:%s" (portLabel p) point.Point, point.RequirementKeys)
                | _ -> []))
+    | ConflictResolution c -> [ "resolves:" + String.concat "," (c.Conflicts |> List.distinct |> List.sort), c.RequirementKeys ]
 
 let private citationRefusals (view: PreparedCohortView) (records: ApprovedDecisionRecords) =
     let nodes = view.Blueprint.Nodes |> List.map (fun n -> n.Id, n) |> Map.ofList
@@ -471,7 +500,7 @@ let private stateModelRefusals (nodeId: string) (m: StateModelContent) =
 let private portRefusals (view: PreparedCohortView) (commands: Set<string>) (records: ApprovedDecisionRecords) =
     let ports =
         records.Records
-        |> List.collect (fun r -> match r.Content with PortContract ports -> ports |> List.map (fun p -> r.NodeId, p) | StateModel _ -> [])
+        |> List.collect (fun r -> match r.Content with PortContract ports -> ports |> List.map (fun p -> r.NodeId, p) | StateModel _ | ConflictResolution _ -> [])
     let duplicates =
         ports |> List.countBy (snd >> portLabel) |> List.filter (fun (_, n) -> n > 1) |> List.map (fst >> DuplicateRecordedPort)
     let perPort =
@@ -538,7 +567,38 @@ let private conflictRelation (view: PreparedCohortView) (conflict: ConstructionN
           if Set.contains document cohortDocuments then sprintf "shared source document %s" document ]
     |> List.distinct
 
-let private conflictObligations (view: PreparedCohortView) =
+/// Each conflict a resolution names must be a blueprint conflict that shares
+/// a requirement key with the resolution.
+let private resolutionRefusals (view: PreparedCohortView) (records: ApprovedDecisionRecords) =
+    let nodes = view.Blueprint.Nodes |> List.map (fun n -> n.Id, n) |> Map.ofList
+    records.Records
+    |> List.collect (fun r ->
+        match r.Content with
+        | ConflictResolution c ->
+            c.Conflicts
+            |> List.distinct
+            |> List.choose (fun id ->
+                match Map.tryFind id nodes with
+                | None -> Some(ResolvesUnknownNode(r.NodeId, id))
+                | Some node when node.Kind <> NodeKind.Conflict -> Some(ResolvesNonConflict(r.NodeId, id, kindText node.Kind))
+                | Some node when Set.isEmpty (Set.intersect (Set.ofList node.RequirementKeys) (Set.ofList c.RequirementKeys)) ->
+                    Some(UnrelatedConflictResolution(r.NodeId, id))
+                | Some _ -> None)
+        | StateModel _ | PortContract _ -> [])
+
+/// Conflicts settled by checked resolution records. Every record that reaches
+/// this point is on an authorized decision of the cohort.
+let private resolvedConflicts (records: ApprovedDecisionRecords) =
+    records.Records
+    |> List.collect (fun r ->
+        match r.Content with
+        | ConflictResolution c -> c.Conflicts |> List.map (fun id -> id, r.NodeId)
+        | StateModel _ | PortContract _ -> [])
+    |> List.groupBy fst
+    |> List.map (fun (id, pairs) -> id, pairs |> List.map snd |> List.distinct |> List.sort)
+    |> List.sortBy fst
+
+let private conflictObligations (view: PreparedCohortView) (resolved: Set<string>) =
     let reasons =
         view.Blueprint.Requirements
         |> List.choose (fun r ->
@@ -562,7 +622,7 @@ let private conflictObligations (view: PreparedCohortView) =
                 Some(sprintf "Conflict %s is outside cohort %s and this plan does not resolve it. The blueprint relates it to the cohort by %s."
                         conflict.Id view.CohortId (String.concat "; " basis))
     view.Blueprint.Nodes
-    |> List.filter (fun n -> n.Kind = NodeKind.Conflict)
+    |> List.filter (fun n -> n.Kind = NodeKind.Conflict && not (Set.contains n.Id resolved))
     |> List.sortBy _.Id
     |> List.choose (fun conflict ->
         placement conflict
@@ -588,6 +648,7 @@ let private generate
     (model: StateModelContent)
     : Result<DefaultPlan, DefaultPlanRefusal list> =
     let vocabularyVersion = ConstructionVocabulary.version vocabulary
+    let resolved = resolvedConflicts records
     let workflowKey = key model.Workflow
     let workflowName = match SemanticName.create model.Workflow with Ok n -> n | Error e -> invalidOp (sprintf "%A" e)
     let touching stateKey =
@@ -604,7 +665,7 @@ let private generate
     let ports =
         records.Records
         |> List.sortBy _.NodeId
-        |> List.collect (fun r -> match r.Content with PortContract ports -> ports |> List.map (fun p -> r.NodeId, p) | StateModel _ -> [])
+        |> List.collect (fun r -> match r.Content with PortContract ports -> ports |> List.map (fun p -> r.NodeId, p) | StateModel _ | ConflictResolution _ -> [])
     let surfaceOf port =
         match port with
         | RecordedCurrentTime _ -> ConstructionLayout.currentTimeContract workflowName
@@ -792,7 +853,7 @@ let private generate
             { SchemaVersion = ObligationsSchemaVersion
               CohortId = view.CohortId
               PlanDigest = planView.Digest
-              Obligations = (items |> List.map snd) @ conflictObligations view |> List.sortBy _.Id }
+              Obligations = (items |> List.map snd) @ conflictObligations view (resolved |> List.map fst |> Set.ofList) |> List.sortBy _.Id }
         let layout = ConstructionLayout.generatedLayout planView.Workflow
         let provenance: DefaultPlanProvenance =
             { GeneratorId = GeneratorId
@@ -805,12 +866,13 @@ let private generate
               PlanDigest = planView.Digest
               ObligationsDigest = sha256 (encodeObligations obligations)
               DefaultPlanDigest = "" }
-        let encoded = defaultPlanJson canonical obligations layout provenance |> renderCanonical
+        let encoded = defaultPlanJson canonical obligations layout resolved provenance |> renderCanonical
         Ok(DefaultPlan
             { Draft = canonical
               Plan = validated
               Obligations = obligations
               GeneratedLayout = layout
+              ResolvedConflicts = resolved
               Provenance = { provenance with DefaultPlanDigest = sha256 encoded }
               Encoded = encoded })
 
@@ -831,9 +893,9 @@ let generateDefaultPlan
         | _ -> Error(refusals |> List.distinct |> List.sortBy (sprintf "%A"))
     result {
         let! () = check (envelopeRefusals view blueprintDigest vocabulary records @ nodeRefusals view records)
-        let! () = check (nameRefusals records @ citationRefusals view records)
+        let! () = check (nameRefusals records @ citationRefusals view records @ resolutionRefusals view records)
         let modelNode, model =
-            records.Records |> List.pick (fun r -> match r.Content with StateModel m -> Some(r.NodeId, m) | PortContract _ -> None)
+            records.Records |> List.pick (fun r -> match r.Content with StateModel m -> Some(r.NodeId, m) | PortContract _ | ConflictResolution _ -> None)
         let commands = model.Transitions |> List.map (fun t -> key t.Command) |> Set.ofList
         let! () = check (stateModelRefusals modelNode model @ portRefusals view commands records)
         return! generate prepared view blueprintDigest records vocabulary modelNode model

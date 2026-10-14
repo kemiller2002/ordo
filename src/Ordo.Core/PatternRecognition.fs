@@ -510,7 +510,7 @@ let recognizeWith
                 { CohortId = input.CohortId
                   ScopeNodes = scope
                   AuthorizedDecisionIds = input.AuthorizedDecisionIds
-                  StateModels = records |> List.choose (fun r -> match r.Content with StateModel m -> Some(r.NodeId, m) | PortContract _ -> None) }
+                  StateModels = records |> List.choose (fun r -> match r.Content with StateModel m -> Some(r.NodeId, m) | PortContract _ | ConflictResolution _ -> None) }
             let dispositions = input.Blueprint.Requirements |> List.map (fun r -> r.Source.Key, r.Disposition) |> Map.ofList
             let factsOf k =
                 { Key = k
@@ -523,13 +523,13 @@ let recognizeWith
                     |> List.collect (fun r ->
                         match r.Content with
                         | StateModel m -> m.Transitions |> List.filter (fun t -> List.contains k t.RequirementKeys) |> List.map (fun t -> r.NodeId, t)
-                        | PortContract _ -> [])
+                        | PortContract _ | ConflictResolution _ -> [])
                   Ports =
                     records
                     |> List.collect (fun r ->
                         match r.Content with
                         | PortContract ports -> ports |> List.filter (portKeys >> List.contains k) |> List.map (fun p -> r.NodeId, p)
-                        | StateModel _ -> []) }
+                        | StateModel _ | ConflictResolution _ -> []) }
             let inScope = Set.union (Set.ofList assigned) (scope |> Map.toList |> List.collect (snd >> _.RequirementKeys) |> Set.ofList)
             let evaluate k =
                 let facts = factsOf k

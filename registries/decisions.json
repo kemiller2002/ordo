@@ -739,5 +739,48 @@
     "title": "Type refusal codes and branching transitions in plan vocabulary 4",
     "type": "decision-record",
     "updated": "2026-10-13"
+  },
+  {
+    "created": "2026-10-13",
+    "id": "DF-SDE-2026-0025",
+    "path": "research/decisions/DF-SDE-2026-0025--link-decisions-to-the-conflicts-they-settle.md",
+    "provenance": {
+      "contributions": {
+        "EXE-20261013T215345974Z-e4c4e8f2": {
+          "actor": {
+            "id": "anthropic/claude-code",
+            "kind": "agent",
+            "model": "unknown",
+            "provider": "anthropic",
+            "runtime": "claude-code"
+          },
+          "at": "2026-10-13T21:54:13.000Z",
+          "operations": [
+            "created"
+          ],
+          "reason": "Record the typed decision-to-conflict link for CONSTRUCT-010"
+        }
+      }
+    },
+    "related_documents": [
+      "docs/architecture/construction-default-plan.md",
+      "src/Ordo.Core/ConstructionDecisions.fs",
+      "src/Ordo.Core/ConstructionDefaultPlan.fs",
+      "src/Ordo.Core/ConstructionLedger.fs",
+      "tests/Ordo.Tests/ConstructionConflictResolutionTests.fs"
+    ],
+    "status": "draft",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "construction",
+      "decisions",
+      "conflicts",
+      "ledger",
+      "construct-010"
+    ],
+    "title": "Link approved decisions to the blueprint conflicts they settle",
+    "type": "decision-record",
+    "updated": "2026-10-13"
   }
 ]
