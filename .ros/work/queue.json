@@ -967,10 +967,10 @@
       "description": "Bump distribution/package.json and the self-hosting .echelon/toolchain.json ordo pin from 1.14.0 to 1.15.0 so native-release.yml releases it.",
       "tags": [],
       "priority": "medium",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-10-14T01:03:22.703Z",
-      "updatedAt": "2026-10-14T01:03:22.883Z",
+      "updatedAt": "2026-10-14T01:03:25.295Z",
       "createdBy": "unknown",
       "createdByActor": {
         "kind": "automation",
