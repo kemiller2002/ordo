@@ -5,6 +5,11 @@
 | CONSTRUCT-008-ORDO | CONSTRUCT-008-ORDO | complete |  |  |
 | CONSTRUCT-009-LEDGER | CONSTRUCT-009-LEDGER | complete |  |  |
 | CONSTRUCT-009-LEDGER-FIX | CONSTRUCT-009-LEDGER-FIX | complete |  |  |
+| CONSTRUCT-010-CLASSIFY | CONSTRUCT-010-CLASSIFY | complete |  |  |
+| CONSTRUCT-010-CONFLICT-RESOLUTION | CONSTRUCT-010-CONFLICT-RESOLUTION | complete |  |  |
+| CONSTRUCT-010-COVERAGE | CONSTRUCT-010-COVERAGE | complete |  |  |
+| CONSTRUCT-010-COVERAGE-ROUTES | CONSTRUCT-010-COVERAGE-ROUTES | complete |  |  |
+| CONSTRUCT-010-VOCAB-4 | CONSTRUCT-010-VOCAB-4 | complete |  |  |
 | CONSTRUCT-VOCAB-2 | Construction vocabulary 2: mandatory effect-failure disposition | complete |  | medium |
 | CONSTRUCT-VOCAB-2-DECISION | Vocabulary 2: a decided effect-failure disposition must cite a required decision | complete |  | medium |
 | GH-18 | GH-18 | complete |  |  |
@@ -23,6 +28,7 @@
 | GH-65 | GH-65 | complete |  |  |
 | GH-69 | GH-69 | complete |  |  |
 | RELEASE-1-10-0 | Release Ordo 1.10.0 | complete |  | medium |
+| RELEASE-1-15-0 | Release Ordo 1.15.0 | ready |  | medium |
 | RELEASE-1-4-1 | Release Ordo 1.4.1 | complete |  | medium |
 | RELEASE-1-4-2 | Release Ordo 1.4.2 | complete |  | medium |
 | RELEASE-1-5-0 | Release Ordo 1.5.0 | complete |  | medium |

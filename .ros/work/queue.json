@@ -960,6 +960,27 @@
       },
       "source": "manual",
       "sourceReference": null
+    },
+    {
+      "id": "RELEASE-1-15-0",
+      "title": "Release Ordo 1.15.0",
+      "description": "Bump distribution/package.json and the self-hosting .echelon/toolchain.json ordo pin from 1.14.0 to 1.15.0 so native-release.yml releases it.",
+      "tags": [],
+      "priority": "medium",
+      "status": "ready",
+      "attachments": [],
+      "createdAt": "2026-10-14T01:03:22.703Z",
+      "updatedAt": "2026-10-14T01:03:22.883Z",
+      "createdBy": "unknown",
+      "createdByActor": {
+        "kind": "automation",
+        "id": "github/github-actions",
+        "provider": "github",
+        "model": "unknown",
+        "runtime": "github-actions"
+      },
+      "source": "manual",
+      "sourceReference": null
     }
   ]
 }
