@@ -255,6 +255,9 @@ let private operation (vocabulary: string) path value =
                     else
                         fields targetPath [ "kind" ] [] rawTarget
                         |> Result.map (fun _ -> if persisted = "notFound" then CodeTarget.NotFound else CodeTarget.StaleRevision)
+                | "saveConflict" ->
+                    if not (hasDocument vocabulary) then fail (targetPath + ".kind") (sprintf "refusal-code target saveConflict is not in %s" vocabulary)
+                    else fields targetPath [ "kind" ] [] rawTarget |> Result.map (fun _ -> CodeTarget.SaveConflict)
                 | other -> fail (targetPath + ".kind") ("unsupported refusal-code target: " + other)
             let! code = textField path "code" p
             let! t = traceField path p
@@ -314,6 +317,32 @@ let private operation (vocabulary: string) path value =
                 | other -> fail (path + ".onStale") ("unsupported onStale: " + other)
             let! t = traceField path p
             return DeclarePersistence { Idempotency = scope; OnStale = onStale; Trace = t }
+        | "declareDocument" ->
+            let! () = if hasDocument vocabulary then Ok() else notIn kind
+            let! p = fields path [ "op"; "idempotency"; "onSaveConflict"; "onReconcileMoved"; "trace" ] [] value
+            let! scopeText = textField path "idempotency" p
+            let! scope =
+                match scopeText with
+                | "durable" -> Ok IdempotencyScope.Durable
+                | "session" -> Ok IdempotencyScope.Session
+                | "unresolved" -> Ok IdempotencyScope.Unresolved
+                | other -> fail (path + ".idempotency") ("unsupported idempotency scope: " + other)
+            let! conflictText = textField path "onSaveConflict" p
+            let! onConflict =
+                match conflictText with
+                | "refuse" -> Ok StaleAction.Refuse
+                | "escalate" -> Ok StaleAction.Escalate
+                | "unresolved" -> Ok StaleAction.Unresolved
+                | other -> fail (path + ".onSaveConflict") ("unsupported onSaveConflict: " + other)
+            let! movedText = textField path "onReconcileMoved" p
+            let! onMoved =
+                match movedText with
+                | "conflict" -> Ok ReconcileMovedAction.Conflict
+                | "escalate" -> Ok ReconcileMovedAction.Escalate
+                | "unresolved" -> Ok ReconcileMovedAction.Unresolved
+                | other -> fail (path + ".onReconcileMoved") ("unsupported onReconcileMoved: " + other)
+            let! t = traceField path p
+            return DeclareDocument { Idempotency = scope; OnSaveConflict = onConflict; OnReconcileMoved = onMoved; Trace = t }
         | other -> return! fail (path + ".op") ("unsupported operation: " + other)
     }
 

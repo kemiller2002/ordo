@@ -799,7 +799,8 @@ let private orchestrationV5 (digest: string) (s: Shape) =
 
 let orchestration (digest: string) (s: Shape) =
     if s.Generator = Ordo.Construction.Artifacts.GeneratorVersion then orchestrationV1 digest s
-    elif s.Generator = Ordo.Construction.Artifacts.GeneratorVersion5 || s.Generator = Ordo.Construction.Artifacts.GeneratorVersion6 then
+    elif s.Generator = Ordo.Construction.Artifacts.GeneratorVersion5 || s.Generator = Ordo.Construction.Artifacts.GeneratorVersion6
+         || s.Generator = Ordo.Construction.Artifacts.GeneratorVersion7 then
         orchestrationV5 digest s
     else orchestrationV2 digest s
 
@@ -996,3 +997,247 @@ let persistence (digest: string) (s: Shape) (p: Persistence) =
             "[<RequireQualifiedAccess>]"
             "module " + persistenceModule w + " =" ]
         @ indent 4 ([ "" ] @ stale @ settle @ save @ execute @ codes))
+
+// ---- Tier 3: Document (vocabulary 7) ----
+
+/// Many instances of the workflow in one stored document. Commands change a
+/// working copy in memory; `save` writes the whole document under one
+/// caller-chosen operation id with a compare-and-swap on the document
+/// version. A save whose outcome is unknown is returned as unknown and
+/// blocks further changes until `reconcile` inspects the stored document; it
+/// is never settled implicitly and never written again by generated code.
+/// Depends on Tiers 1 and 2 only.
+let document (digest: string) (s: Shape) (d: DocumentPersistence) =
+    let w = s.Workflow.Name
+    let st, cmd, dt, rf = stateType w, commandType w, decisionType w, refusalType w
+    let idT, opT = idType w, operationIdType w
+    let entryT, docT, readT, writeT, errT, storeT = entryType w, documentType w, documentReadType w, documentWriteType w, writeErrorType w, documentStoreType w
+    let sessT, loadedT, createdT, outT, saveT, recT = documentSessionType w, documentLoadedType w, createdType w, commandOutcomeType w, saveOutcomeType w, reconciledType w
+    let durable = d.Idempotency = IdempotencyScope.Durable
+    let session = d.Idempotency = IdempotencyScope.Session
+    let unresolvedScope = d.Idempotency = IdempotencyScope.Unresolved
+    let deduplicates = not unresolvedScope
+    let conflictCase (typeName: string) (refused: string) (current: string) =
+        let reason = sprintf "sprintf \"another write moved the document to version %%A\" %s" current
+        match d.OnSaveConflict with
+        | StaleAction.Refuse -> sprintf "%s.%s %s" typeName refused current
+        | StaleAction.Escalate -> sprintf "%s.Escalated(%s)" typeName reason
+        | StaleAction.Unresolved -> sprintf "%s.Unresolved(%s)" typeName reason
+    let escalatedOnSave = d.OnSaveConflict = StaleAction.Escalate
+    let unresolvedOnSave = d.OnSaveConflict = StaleAction.Unresolved
+    let escalatedOnReconcile = (durable && d.OnReconcileMoved = ReconcileMovedAction.Escalate) || session
+    let unresolvedOnReconcile = (durable && d.OnReconcileMoved = ReconcileMovedAction.Unresolved) || unresolvedScope
+    let initial = s.States |> List.head
+    let types =
+        [ "/// The identity of one entry in the document. Its text is the host's; generated code only compares it."
+          sprintf "type %s = %s of string" idT idT
+          ""
+          "/// The identity of one save, chosen by the caller and stable across retries of that save."
+          sprintf "type %s = %s of string" opT opT
+          ""
+          "/// One instance of the workflow inside the document. `Revision` counts its decided changes."
+          "type " + entryT + " ="
+          sprintf "    { Id: %s" idT
+          "      Revision: int64"
+          sprintf "      State: %s }" st
+          "" ]
+        @ [ "/// The stored document. `Version` is None until the first write lands."
+            + (if durable then " `Applied` is kept by the store: every operation that landed, with the version it produced." else "")
+            "type " + docT + " ="
+            "    { Version: int64 option"
+            (if durable then sprintf "      Entries: Map<%s, %s>" idT entryT else sprintf "      Entries: Map<%s, %s> }" idT entryT) ]
+        @ (if durable then [ sprintf "      Applied: Map<%s, int64> }" opT ] else [])
+        @ [ "" ]
+        @ union "What the store reports for a read. A failed read is distinct from a missing document." readT
+            [ "Found of document: " + docT; "Missing"; "ReadFailed of reason: string" ]
+        @ [ "/// Why a write failed. Only a failure proven not to have applied is a definite failure."
+            "type " + errT + " ="
+            "    { Reason: string"
+            "      ProvenNotApplied: bool }"
+            "" ]
+        @ union "What the store reports for a compare-and-swap write. Nothing is written on a mismatch." writeT
+            [ "Written of version: int64"; "VersionMismatch of current: int64 option"; "WriteFailed of error: " + errT ]
+        @ [ "/// The store the document lives in. Implemented by a host (Tier 4)."
+            "type " + storeT + " ="
+            "    abstract Read: unit -> " + readT
+            sprintf "    abstract Write: operation: %s * expected: int64 option * document: %s -> %s" opT docT writeT
+            "" ]
+        @ [ "/// One caller's view of the document: what was last read or confirmed written, the working"
+            "/// copy with changes applied in memory, and a save whose outcome is not yet known."
+            "type " + sessT + " ="
+            sprintf "    { Stored: %s" docT
+            sprintf "      Working: %s" docT ]
+        @ (if session then [ sprintf "      Confirmed: Map<%s, int64>" opT ] else [])
+        @ [ sprintf "      Pending: %s option }" opT; "" ]
+        @ union "What loading the document reports. A missing document starts empty and is created by the first save." loadedT
+            [ "Loaded of session: " + sessT; "DocumentMissing of session: " + sessT; "LoadFailed of reason: string" ]
+        @ union "What adding an entry at the initial state reports." createdT
+            [ "Created of session: " + sessT; "AlreadyExists of id: " + idT; "Unreconciled of pending: " + opT ]
+        @ union "What applying one command to one entry in memory reports. Nothing is written." outT
+            [ sprintf "Applied of session: %s * decision: %s" sessT dt
+              sprintf "Refused of refusal: %s * entry: %s" rf entryT
+              "EntryNotFound of id: " + idT
+              sprintf "EntryStale of id: %s * expected: int64 * current: int64" idT
+              "Unreconciled of pending: " + opT ]
+        @ union "What a save reports. An unknown outcome is never collapsed into success or failure." saveT
+            ([ sprintf "Saved of operation: %s * version: int64" opT ]
+             @ (if deduplicates then [ sprintf "AlreadySaved of operation: %s * version: int64" opT ] else [])
+             @ [ "NotSaved of reason: string" ]
+             @ (if d.OnSaveConflict = StaleAction.Refuse then [ "SaveConflict of current: int64 option" ] else [])
+             @ (if escalatedOnSave then [ "Escalated of reason: string" ] else [])
+             @ (if unresolvedOnSave then [ "Unresolved of reason: string" ] else [])
+             @ [ "OutcomeUnknown of operation: " + opT; "Unreconciled of pending: " + opT ])
+        @ union "What inspecting the stored document reports about one save." recT
+            ((if deduplicates then [ "Applied of version: int64" ] else [])
+             @ [ "NotApplied" ]
+             @ (if durable && d.OnReconcileMoved = ReconcileMovedAction.Conflict then [ "ReconcileConflict of current: int64 option" ] else [])
+             @ (if escalatedOnReconcile then [ "Escalated of reason: string" ] else [])
+             @ (if unresolvedOnReconcile then [ "Unresolved of reason: string" ] else [])
+             @ [ "StillUnknown of reason: string" ])
+    let empty =
+        [ "/// The document before its first write."
+          sprintf "let empty : %s =" docT
+          "    { Version = None"
+          (if durable then "      Entries = Map.empty" else "      Entries = Map.empty }") ]
+        @ (if durable then [ "      Applied = Map.empty }" ] else [])
+        @ [ "" ]
+        @ [ "/// A session over a document just read."
+            sprintf "let start (document: %s) : %s =" docT sessT
+            (if session then "    { Stored = document; Working = document; Confirmed = Map.empty; Pending = None }"
+             else "    { Stored = document; Working = document; Pending = None }")
+            "" ]
+    let load =
+        [ "/// Reads the document and starts a session over it."
+          sprintf "let load (store: %s) : %s =" storeT loadedT
+          "    match store.Read() with"
+          sprintf "    | %s.Found document -> %s.Loaded(start document)" readT loadedT
+          sprintf "    | %s.Missing -> %s.DocumentMissing(start empty)" readT loadedT
+          sprintf "    | %s.ReadFailed reason -> %s.LoadFailed reason" readT loadedT
+          "" ]
+    let withEntry =
+        [ "let private withEntry (session: " + sessT + ") (entry: " + entryT + ") ="
+          "    { session with Working = { session.Working with Entries = Map.add entry.Id entry session.Working.Entries } }"
+          "" ]
+    let create =
+        [ "/// Adds an entry at the workflow's initial state, in memory. Refused while a save is unknown."
+          sprintf "let create (session: %s) (id: %s) : %s =" sessT idT createdT
+          "    match session.Pending with"
+          sprintf "    | Some pending -> %s.Unreconciled pending" createdT
+          sprintf "    | None when Map.containsKey id session.Working.Entries -> %s.AlreadyExists id" createdT
+          sprintf "    | None -> %s.Created(withEntry session { Id = id; Revision = 0L; State = %s })" createdT (qualify st initial)
+          "" ]
+    let ruleParams =
+        (if s.HasRules then [ sprintf "(rules: %s)" (rulesType w) ] else []) @ (if s.HasCapabilities then [ "(held: Set<string>)" ] else [])
+    let decideArgs =
+        (if s.HasRules then [ "rules" ] else []) @ (if s.HasCapabilities then [ "held" ] else []) @ [ "entry.State"; "command" ]
+    let apply =
+        [ "/// Decides one command against one entry and applies it to the working copy. `expected`, when"
+          "/// given, is the entry revision the caller acted on. Refused while a save is unknown."
+          sprintf "let apply %s(session: %s) (id: %s) (expected: int64 option) (command: %s) : %s ="
+              (ruleParams |> List.map (fun p -> p + " ") |> String.concat "") sessT idT cmd outT
+          "    match session.Pending, Map.tryFind id session.Working.Entries, expected with"
+          sprintf "    | Some pending, _, _ -> %s.Unreconciled pending" outT
+          sprintf "    | None, None, _ -> %s.EntryNotFound id" outT
+          sprintf "    | None, Some entry, Some revision when revision <> entry.Revision -> %s.EntryStale(id, revision, entry.Revision)" outT
+          "    | None, Some entry, _ ->"
+          sprintf "        match %s.decide %s with" (transitionModule w) (String.concat " " decideArgs)
+          sprintf "        | Error refusal -> %s.Refused(refusal, entry)" outT
+          "        | Ok decision ->"
+          sprintf "            %s.Applied(withEntry session { entry with Revision = entry.Revision + 1L; State = decision.Next }, decision)" outT
+          "" ]
+    let write =
+        let stored =
+            if durable then "{ session.Working with Version = Some version; Applied = Map.add operation version session.Working.Applied }"
+            else "{ session.Working with Version = Some version }"
+        let confirmed = if session then "; Confirmed = Map.add operation version session.Confirmed" else ""
+        [ "let private write (store: " + storeT + ") (session: " + sessT + ") (operation: " + opT + ") ="
+          "    match store.Write(operation, session.Stored.Version, session.Working) with"
+          sprintf "    | %s.Written version ->" writeT
+          "        let stored = " + stored
+          sprintf "        %s.Saved(operation, version), { session with Stored = stored; Working = stored%s }" saveT confirmed
+          sprintf "    | %s.VersionMismatch current -> %s, session" writeT (conflictCase saveT "SaveConflict" "current")
+          sprintf "    | %s.WriteFailed error when error.ProvenNotApplied -> %s.NotSaved error.Reason, session" writeT saveT
+          sprintf "    | %s.WriteFailed _ -> %s.OutcomeUnknown operation, { session with Pending = Some operation }" writeT saveT
+          "" ]
+    let save =
+        let applied = if durable then Some "session.Stored.Applied" elif session then Some "session.Confirmed" else None
+        [ "/// Writes the working copy under `operation`, expecting the version last read or written. A"
+          "/// failure not proven to be without effect is unknown: it is returned as unknown and blocks"
+          "/// further changes until `reconcile` inspects the stored document."
+          sprintf "let save (store: %s) (session: %s) (operation: %s) : %s * %s =" storeT sessT opT saveT sessT ]
+        @ (match applied with
+           | Some applied ->
+               [ sprintf "    match session.Pending, Map.tryFind operation %s with" applied
+                 sprintf "    | Some pending, _ -> %s.Unreconciled pending, session" saveT
+                 sprintf "    | None, Some version -> %s.AlreadySaved(operation, version), session" saveT
+                 "    | None, None -> write store session operation" ]
+           | None ->
+               [ "    match session.Pending with"
+                 sprintf "    | Some pending -> %s.Unreconciled pending, session" saveT
+                 "    | None -> write store session operation" ])
+        @ [ "" ]
+    let reconcile =
+        let moved =
+            if durable then
+                let reason = "sprintf \"the document moved to version %A without the operation\" current.Version"
+                match d.OnReconcileMoved with
+                | ReconcileMovedAction.Conflict -> sprintf "%s.ReconcileConflict current.Version" recT
+                | ReconcileMovedAction.Escalate -> sprintf "%s.Escalated(%s)" recT reason
+                | ReconcileMovedAction.Unresolved -> sprintf "%s.Unresolved(%s)" recT reason
+            elif session then sprintf "%s.Escalated \"the document moved and this session cannot tell whether the operation landed\"" recT
+            else sprintf "%s.Unresolved \"the document moved and the plan leaves the idempotency scope unresolved\"" recT
+        let movedSession = if durable && d.OnReconcileMoved = ReconcileMovedAction.Conflict then "settled" else "session"
+        let inspect =
+            [ "let private inspect (store: " + storeT + ") (session: " + sessT + ") (operation: " + opT + ") ="
+              "    let settled = { session with Pending = if session.Pending = Some operation then None else session.Pending }"
+              "    match store.Read() with"
+              sprintf "    | %s.ReadFailed reason -> %s.StillUnknown reason, session" readT recT
+              "    | read ->"
+              sprintf "        let current = match read with | %s.Found document -> document | _ -> empty" readT ]
+            @ (if durable then
+                   [ "        match Map.tryFind operation current.Applied with"
+                     sprintf "        | Some version -> %s.Applied version, { settled with Stored = current; Working = current }" recT
+                     sprintf "        | None when current.Version = session.Stored.Version -> %s.NotApplied, settled" recT
+                     sprintf "        | None -> %s, %s" moved movedSession ]
+               else
+                   [ sprintf "        if current.Version = session.Stored.Version then %s.NotApplied, settled" recT
+                     sprintf "        else %s, %s" moved movedSession ])
+            @ [ "" ]
+        inspect
+        @ [ "/// Inspects the stored document to settle one save whose outcome was unknown. Nothing is written."
+            sprintf "let reconcile (store: %s) (session: %s) (operation: %s) : %s * %s =" storeT sessT opT recT sessT ]
+        @ (if session then
+               [ "    match Map.tryFind operation session.Confirmed with"
+                 sprintf "    | Some version -> %s.Applied version, { session with Pending = None }" recT
+                 "    | None -> inspect store session operation" ]
+           else [ "    inspect store session operation" ])
+        @ [ "" ]
+    let codes =
+        let assigned subject = s.Workflow.CodeAssignments |> List.tryFind (fun a -> a.Target = subject) |> Option.map _.Code
+        if List.isEmpty s.Codes then []
+        else
+            let rc = refusalCodeType w
+            let some code = code |> Option.map (fun c -> sprintf "Some %s" (qualify rc c)) |> Option.defaultValue "None"
+            [ "/// The typed code of a command outcome, as the plan assigns it; None where it assigns none."
+              sprintf "let commandCode (outcome: %s) : %s option =" outT rc
+              "    match outcome with"
+              sprintf "    | %s.Refused(refusal, _) -> %s.refusalCode refusal" outT (transitionModule w)
+              sprintf "    | %s.EntryNotFound _ -> %s" outT (some (assigned CodeSubject.NotFound))
+              sprintf "    | %s.EntryStale _ -> %s" outT (some (assigned CodeSubject.StaleRevision))
+              sprintf "    | %s.Applied _ | %s.Unreconciled _ -> None" outT outT ]
+            @ (if d.OnSaveConflict = StaleAction.Refuse then
+                   [ ""
+                     "/// The typed code of a save outcome, as the plan assigns it; None where it assigns none."
+                     sprintf "let saveCode (outcome: %s) : %s option =" saveT rc
+                     "    match outcome with"
+                     sprintf "    | %s.SaveConflict _ -> %s" saveT (some (assigned CodeSubject.SaveConflict))
+                     "    | _ -> None" ]
+               else [])
+    render (
+        header s.Generator digest "Tier 3 (Document): applies commands in memory, saves and reconciles the document"
+        @ [ "namespace " + rootNamespace w; "" ]
+        @ types
+        @ [ "/// Works on the document. Depends on Tiers 1 and 2 only."
+            "[<RequireQualifiedAccess>]"
+            "module " + documentModule w + " =" ]
+        @ indent 4 ([ "" ] @ empty @ load @ withEntry @ create @ apply @ write @ save @ reconcile @ codes))

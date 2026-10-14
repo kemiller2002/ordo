@@ -1,0 +1,1 @@
+A gate is closed, open or jammed. A closed gate may be raised; an open gate may be lowered; a jammed gate may be reset to closed. The gate accepts no other command.

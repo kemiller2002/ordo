@@ -1,0 +1,291 @@
+{
+  "schemaVersion": "ordo.construction-plan/1",
+  "vocabularyVersion": "ordo.construction-vocabulary/7",
+  "binding": {
+    "sourceManifestDigest": "sha256:3a9e79d3842ba6e16ab27fa79b6e3eed4f005ab85f1e63189937a804dd293c12",
+    "blueprintDigest": "sha256:836929e599a560db67c3f530a0118c154363967de1d459b9576282b962dabb3b",
+    "cohortId": "COH-GATE",
+    "decisionIds": [
+      "DEC-GATE"
+    ]
+  },
+  "operations": [
+    {
+      "op": "defineWorkflow",
+      "name": "Session Yard",
+      "trace": {
+        "requirementKeys": [
+          "synthetic/gate.md#GATE-1"
+        ],
+        "nodeIds": [
+          "CON-GATE"
+        ]
+      }
+    },
+    {
+      "op": "defineState",
+      "name": "Closed",
+      "role": "initial",
+      "trace": {
+        "requirementKeys": [
+          "synthetic/gate.md#GATE-1"
+        ],
+        "nodeIds": [
+          "CON-GATE"
+        ]
+      }
+    },
+    {
+      "op": "defineState",
+      "name": "Open",
+      "role": "ordinary",
+      "trace": {
+        "requirementKeys": [
+          "synthetic/gate.md#GATE-1"
+        ],
+        "nodeIds": [
+          "CON-GATE"
+        ]
+      }
+    },
+    {
+      "op": "defineState",
+      "name": "Jammed",
+      "role": "ordinary",
+      "trace": {
+        "requirementKeys": [
+          "synthetic/gate.md#GATE-1",
+          "synthetic/gate.md#GATE-2"
+        ],
+        "nodeIds": [
+          "CON-GATE"
+        ]
+      }
+    },
+    {
+      "op": "defineBranchingTransition",
+      "command": "Raise",
+      "from": "Closed",
+      "targets": [
+        "Open",
+        "Jammed"
+      ],
+      "trace": {
+        "requirementKeys": [
+          "synthetic/gate.md#GATE-1",
+          "synthetic/gate.md#GATE-2"
+        ],
+        "nodeIds": [
+          "CON-GATE"
+        ]
+      }
+    },
+    {
+      "op": "defineTransition",
+      "command": "Lower",
+      "from": "Open",
+      "to": "Closed",
+      "guards": [
+        {
+          "name": "path clear",
+          "predicate": "extension"
+        }
+      ],
+      "trace": {
+        "requirementKeys": [
+          "synthetic/gate.md#GATE-1",
+          "synthetic/gate.md#GATE-3"
+        ],
+        "nodeIds": [
+          "CON-GATE"
+        ]
+      }
+    },
+    {
+      "op": "defineTransition",
+      "command": "Reset",
+      "from": "Jammed",
+      "to": "Closed",
+      "guards": [],
+      "trace": {
+        "requirementKeys": [
+          "synthetic/gate.md#GATE-1"
+        ],
+        "nodeIds": [
+          "CON-GATE"
+        ]
+      }
+    },
+    {
+      "op": "declarePairRule",
+      "unlisted": "refused",
+      "trace": {
+        "requirementKeys": [
+          "synthetic/gate.md#GATE-1"
+        ],
+        "nodeIds": [
+          "CON-GATE"
+        ]
+      }
+    },
+    {
+      "op": "defineRefusal",
+      "command": "Raise",
+      "from": "Open",
+      "trace": {
+        "requirementKeys": [
+          "synthetic/gate.md#GATE-1",
+          "synthetic/gate.md#GATE-4"
+        ],
+        "nodeIds": [
+          "CON-GATE"
+        ]
+      }
+    },
+    {
+      "op": "defineRefusalCode",
+      "code": "AlreadyOpen",
+      "trace": {
+        "requirementKeys": [
+          "synthetic/gate.md#GATE-4"
+        ],
+        "nodeIds": [
+          "CON-GATE"
+        ]
+      }
+    },
+    {
+      "op": "defineRefusalCode",
+      "code": "Obstructed",
+      "trace": {
+        "requirementKeys": [
+          "synthetic/gate.md#GATE-4"
+        ],
+        "nodeIds": [
+          "CON-GATE"
+        ]
+      }
+    },
+    {
+      "op": "defineRefusalCode",
+      "code": "NotAccepted",
+      "trace": {
+        "requirementKeys": [
+          "synthetic/gate.md#GATE-4"
+        ],
+        "nodeIds": [
+          "CON-GATE"
+        ]
+      }
+    },
+    {
+      "op": "assignRefusalCode",
+      "target": {
+        "kind": "pair",
+        "from": "Open",
+        "command": "Raise"
+      },
+      "code": "AlreadyOpen",
+      "trace": {
+        "requirementKeys": [
+          "synthetic/gate.md#GATE-4"
+        ],
+        "nodeIds": [
+          "CON-GATE"
+        ]
+      }
+    },
+    {
+      "op": "assignRefusalCode",
+      "target": {
+        "kind": "guard",
+        "name": "path clear"
+      },
+      "code": "Obstructed",
+      "trace": {
+        "requirementKeys": [
+          "synthetic/gate.md#GATE-3",
+          "synthetic/gate.md#GATE-4"
+        ],
+        "nodeIds": [
+          "CON-GATE"
+        ]
+      }
+    },
+    {
+      "op": "assignRefusalCode",
+      "target": {
+        "kind": "unlisted"
+      },
+      "code": "NotAccepted",
+      "trace": {
+        "requirementKeys": [
+          "synthetic/gate.md#GATE-4"
+        ],
+        "nodeIds": [
+          "CON-GATE"
+        ]
+      }
+    },
+    {
+      "op": "declareExtensionInventory",
+      "extension": {
+        "kind": "guard",
+        "name": "path clear"
+      },
+      "decisionPoints": [],
+      "trace": {
+        "requirementKeys": [
+          "synthetic/gate.md#GATE-3"
+        ],
+        "nodeIds": [
+          "CON-GATE"
+        ]
+      }
+    },
+    {
+      "op": "declareExtensionInventory",
+      "extension": {
+        "kind": "selection",
+        "from": "Closed",
+        "command": "Raise"
+      },
+      "decisionPoints": [
+        {
+          "point": "motor report",
+          "decided": true,
+          "trace": {
+            "requirementKeys": [
+              "synthetic/gate.md#GATE-2"
+            ],
+            "nodeIds": [
+              "CON-GATE"
+            ]
+          }
+        }
+      ],
+      "trace": {
+        "requirementKeys": [
+          "synthetic/gate.md#GATE-2"
+        ],
+        "nodeIds": [
+          "CON-GATE"
+        ]
+      }
+    },
+    {
+      "op": "declareDocument",
+      "idempotency": "session",
+      "onSaveConflict": "escalate",
+      "onReconcileMoved": "escalate",
+      "trace": {
+        "requirementKeys": [
+          "synthetic/gate.md#GATE-6"
+        ],
+        "nodeIds": [
+          "CON-GATE"
+        ]
+      }
+    }
+  ]
+}

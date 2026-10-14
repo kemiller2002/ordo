@@ -94,6 +94,18 @@ let private persisted name plan =
 let storedGate = persisted "gate-persisted-durable" "plan.v6-durable.json"
 let sessionGate = persisted "gate-persisted-session" "plan.v6-session.json"
 
+/// Vocabulary 7 (CONSTRUCT-010 phase 2): many synthetic gates in one yard
+/// document. `gateYard` deduplicates saves durably and refuses a save against
+/// a moved yard; `sessionYard` deduplicates for one session and escalates;
+/// `openYard` leaves both choices unresolved.
+let private yard name plan =
+    { Name = name; Source = "gate-document-synthetic"; Plan = plan; Blueprint = "blueprint.json"
+      Cohort = "COH-GATE"; Approved = Set.singleton "DEC-GATE" }
+
+let gateYard = yard "gate-document-durable" "plan.v7-durable.json"
+let sessionYard = yard "gate-document-session" "plan.v7-session.json"
+let openYard = yard "gate-document-open" "plan.v7-open.json"
+
 let private read (fixture: Fixture) name =
     File.ReadAllText(Path.Combine(repositoryRoot, "tests", "fixtures", "construction", fixture.Source, name))
 

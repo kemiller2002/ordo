@@ -59,6 +59,19 @@ let savedType (workflow: SemanticName) = workflow.Key + "Saved"
 let executionType (workflow: SemanticName) = workflow.Key + "Execution"
 let storeType (workflow: SemanticName) = Ordo.Core.ConstructionLayout.storeType workflow
 let persistenceModule (workflow: SemanticName) = workflow.Key + "Persistence"
+let entryType (workflow: SemanticName) = workflow.Key + "Entry"
+let documentType (workflow: SemanticName) = workflow.Key + "Document"
+let documentReadType (workflow: SemanticName) = workflow.Key + "DocumentRead"
+let documentWriteType (workflow: SemanticName) = workflow.Key + "DocumentWrite"
+let documentStoreType (workflow: SemanticName) = Ordo.Core.ConstructionLayout.documentStoreType workflow
+let commandOutcomeType (workflow: SemanticName) = workflow.Key + "CommandOutcome"
+let createdType (workflow: SemanticName) = workflow.Key + "Created"
+let saveOutcomeType (workflow: SemanticName) = workflow.Key + "SaveOutcome"
+let reconciledType (workflow: SemanticName) = workflow.Key + "Reconciled"
+let documentModule (workflow: SemanticName) = workflow.Key + "Documents"
+let documentSessionType (workflow: SemanticName) = workflow.Key + "DocumentSession"
+let writeErrorType (workflow: SemanticName) = workflow.Key + "WriteError"
+let documentLoadedType (workflow: SemanticName) = workflow.Key + "DocumentLoaded"
 
 /// Vocabulary 4: per branching transition, the closed union of its targets and
 /// the rules field that selects one. Semantic-name keys are ASCII letters and

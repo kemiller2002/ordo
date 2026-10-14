@@ -911,5 +911,51 @@
     "title": "Persist workflow instances with stated idempotency scope and stale-write action",
     "type": "decision-record",
     "updated": "2026-10-13"
+  },
+  {
+    "created": "2026-10-13",
+    "id": "DF-SDE-2026-0028",
+    "path": "research/decisions/DF-SDE-2026-0028--persist-many-instances-in-one-document.md",
+    "provenance": {
+      "contributions": {
+        "EXE-20261013T235024451Z-a617154b": {
+          "actor": {
+            "id": "anthropic/claude-code",
+            "kind": "agent",
+            "model": "unknown",
+            "provider": "anthropic",
+            "runtime": "claude-code"
+          },
+          "at": "2026-10-13T23:52:00Z",
+          "last": "2026-10-14T00:20:00Z",
+          "operations": [
+            "created",
+            "modified"
+          ],
+          "reason": "Record CONSTRUCT-010 phase 2 vocabulary 7 document persistence"
+        }
+      }
+    },
+    "related_documents": [
+      "docs/architecture/document-persistence.md",
+      "schemas/ordo-construction-plan.vocabulary-7.schema.json",
+      "src/Ordo.Construction/Emit.fs",
+      "tests/Ordo.Construction.Tests/DocumentTests.fs",
+      "tests/Ordo.Tests/ConstructionVocabulary7Tests.fs"
+    ],
+    "status": "draft",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "construction",
+      "vocabulary",
+      "persistence",
+      "idempotency",
+      "document",
+      "construct-010"
+    ],
+    "title": "Persist many workflow instances in one document with explicit save and reconcile",
+    "type": "decision-record",
+    "updated": "2026-10-13"
   }
 ]

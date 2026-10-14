@@ -49,6 +49,15 @@
     <Compile Include="Golden/gate-persisted-session/generated/SessionGate/SessionGate.Model.g.fs" />
     <Compile Include="Golden/gate-persisted-session/generated/SessionGate/SessionGate.Transition.g.fs" />
     <Compile Include="Golden/gate-persisted-session/generated/SessionGate/SessionGate.Persistence.g.fs" />
+    <Compile Include="Golden/gate-document-durable/generated/GateYard/GateYard.Model.g.fs" />
+    <Compile Include="Golden/gate-document-durable/generated/GateYard/GateYard.Transition.g.fs" />
+    <Compile Include="Golden/gate-document-durable/generated/GateYard/GateYard.Document.g.fs" />
+    <Compile Include="Golden/gate-document-session/generated/SessionYard/SessionYard.Model.g.fs" />
+    <Compile Include="Golden/gate-document-session/generated/SessionYard/SessionYard.Transition.g.fs" />
+    <Compile Include="Golden/gate-document-session/generated/SessionYard/SessionYard.Document.g.fs" />
+    <Compile Include="Golden/gate-document-open/generated/OpenYard/OpenYard.Model.g.fs" />
+    <Compile Include="Golden/gate-document-open/generated/OpenYard/OpenYard.Transition.g.fs" />
+    <Compile Include="Golden/gate-document-open/generated/OpenYard/OpenYard.Document.g.fs" />
     <Compile Include="../Ordo.Tests/FsiProbe.fs" Link="FsiProbe.fs" />
     <Compile Include="Fixtures.fs" />
     <Compile Include="GoldenTests.fs" />
@@ -62,6 +71,7 @@
     <Compile Include="CodedBranchingConstructionTests.fs" />
     <Compile Include="EffectPolicyTests.fs" />
     <Compile Include="PersistenceTests.fs" />
+    <Compile Include="DocumentTests.fs" />
     <Compile Include="PatternRecognitionTests.fs" />
   </ItemGroup>
 

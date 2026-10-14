@@ -39,10 +39,19 @@ let GeneratorVersion5 = "ordo.construction/5"
 [<Literal>]
 let GeneratorVersion6 = "ordo.construction/6"
 
+/// The generator for vocabulary 7 plans: version 6 plus document persistence
+/// (`<W>.Document.g.fs`): many instances in one document, changed in memory,
+/// saved explicitly under one operation id with a document-version
+/// compare-and-swap; an unknown save is returned to the caller and settled
+/// only by an explicit reconcile.
+[<Literal>]
+let GeneratorVersion7 = "ordo.construction/7"
+
 /// The generator version a plan's vocabulary selects. The plan cannot choose
 /// it any other way.
 let generatorVersionFor (vocabularyVersion: string) =
-    if vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion6 then GeneratorVersion6
+    if vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion7 then GeneratorVersion7
+    elif vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion6 then GeneratorVersion6
     elif vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion5 then GeneratorVersion5
     elif vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion4 then GeneratorVersion4
     elif vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion3 then GeneratorVersion3
@@ -92,6 +101,8 @@ type ExtensionKind =
     | CompensatePort
     /// Vocabulary 6: loads and compare-and-swap saves the persisted instance.
     | StorePort
+    /// Vocabulary 7: reads and compare-and-swap writes the whole document.
+    | DocumentStorePort
 
 /// A handwritten implementation the generated code requires and cannot
 /// supply. Missing ones fail compilation; there is no permissive default.

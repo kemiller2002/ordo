@@ -1,0 +1,270 @@
+{
+  "generatorVersion": "ordo.construction/7",
+  "planDigest": "sha256:4702595cd617ec5f8974b0307e93a555dc17d6bccb068e38abdca11287c294a0",
+  "binding": {
+    "sourceManifestDigest": "sha256:3a9e79d3842ba6e16ab27fa79b6e3eed4f005ab85f1e63189937a804dd293c12",
+    "blueprintDigest": "sha256:836929e599a560db67c3f530a0118c154363967de1d459b9576282b962dabb3b",
+    "cohortId": "COH-GATE",
+    "decisionIds": [
+      "DEC-GATE"
+    ]
+  },
+  "notice": "Generated structure only. Not authorization to apply, not evidence of behavioral verification.",
+  "ownershipRoot": "generated/OpenYard/",
+  "artifacts": [
+    {
+      "path": "generated/OpenYard/OpenYard.Model.g.fs",
+      "tier": "semantic-model",
+      "ownership": "generated",
+      "sha256": "sha256:79db090bf34e444094150e3e3f7a91b9b9c09ead32d7b7baee10ecb2b312f0ac",
+      "operations": [
+        "branching:Closed/Raise",
+        "code:AlreadyOpen",
+        "code:NotAccepted",
+        "code:Obstructed",
+        "state:Closed",
+        "state:Jammed",
+        "state:Open",
+        "transition:Jammed/Reset",
+        "transition:Open/Lower",
+        "workflow:OpenYard"
+      ],
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-1",
+        "synthetic/gate.md#GATE-2",
+        "synthetic/gate.md#GATE-3",
+        "synthetic/gate.md#GATE-4"
+      ]
+    },
+    {
+      "path": "generated/OpenYard/OpenYard.Transition.g.fs",
+      "tier": "transition",
+      "ownership": "generated",
+      "sha256": "sha256:24c2770c9862e7e84aec466f49b52460f939566eff0197ed1d27c4cdd2b5d285",
+      "operations": [
+        "branching:Closed/Raise",
+        "code:AlreadyOpen",
+        "code:NotAccepted",
+        "code:Obstructed",
+        "codeFor:guard/PathClear",
+        "codeFor:pair/Open/Raise",
+        "codeFor:unlisted",
+        "pairRule",
+        "refusal:Open/Raise",
+        "transition:Jammed/Reset",
+        "transition:Open/Lower",
+        "workflow:OpenYard"
+      ],
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-1",
+        "synthetic/gate.md#GATE-2",
+        "synthetic/gate.md#GATE-3",
+        "synthetic/gate.md#GATE-4"
+      ]
+    },
+    {
+      "path": "generated/OpenYard/OpenYard.Document.g.fs",
+      "tier": "orchestration",
+      "ownership": "generated",
+      "sha256": "sha256:8b5eac1b0b9c6db456f21da914e93fcaab49b7ff11d2d890169b78b06fc2320f",
+      "operations": [
+        "document",
+        "workflow:OpenYard"
+      ],
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-1",
+        "synthetic/gate.md#GATE-6"
+      ]
+    }
+  ],
+  "extensionContracts": [
+    {
+      "name": "OpenYardRules.Guard/PathClear",
+      "kind": "guard-predicate",
+      "ownership": "handwritten",
+      "operations": [
+        "transition:Open/Lower"
+      ],
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-1",
+        "synthetic/gate.md#GATE-3"
+      ]
+    },
+    {
+      "name": "IOpenYardDocumentStore.Read",
+      "kind": "document-store-port",
+      "ownership": "handwritten",
+      "operations": [
+        "document"
+      ],
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-6"
+      ]
+    },
+    {
+      "name": "IOpenYardDocumentStore.Write",
+      "kind": "document-store-port",
+      "ownership": "handwritten",
+      "operations": [
+        "document"
+      ],
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-6"
+      ]
+    },
+    {
+      "name": "OpenYardRules.Select/Closed/Raise",
+      "kind": "selection-function",
+      "ownership": "handwritten",
+      "operations": [
+        "branching:Closed/Raise"
+      ],
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-1",
+        "synthetic/gate.md#GATE-2"
+      ]
+    }
+  ],
+  "obligations": [
+    {
+      "id": "IMPLEMENT:OpenYardRules.Guard/PathClear",
+      "kind": "implement",
+      "contract": "OpenYardRules.Guard/PathClear",
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-1",
+        "synthetic/gate.md#GATE-3"
+      ]
+    },
+    {
+      "id": "IMPLEMENT:IOpenYardDocumentStore.Read",
+      "kind": "implement",
+      "contract": "IOpenYardDocumentStore.Read",
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-6"
+      ]
+    },
+    {
+      "id": "IMPLEMENT:IOpenYardDocumentStore.Write",
+      "kind": "implement",
+      "contract": "IOpenYardDocumentStore.Write",
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-6"
+      ]
+    },
+    {
+      "id": "IMPLEMENT:OpenYardRules.Select/Closed/Raise",
+      "kind": "implement",
+      "contract": "OpenYardRules.Select/Closed/Raise",
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-1",
+        "synthetic/gate.md#GATE-2"
+      ]
+    },
+    {
+      "id": "RESOLVE-DOCUMENT:idempotency",
+      "kind": "resolve",
+      "subject": "DocumentIdempotency",
+      "question": "Whether save operation ids of the OpenYard document are deduplicated durably or for one session only is not decided.",
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-6"
+      ]
+    },
+    {
+      "id": "RESOLVE-DOCUMENT:onSaveConflict",
+      "kind": "resolve",
+      "subject": "DocumentOnSaveConflict",
+      "question": "What a save of the OpenYard document against a moved version means is not decided.",
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-6"
+      ]
+    },
+    {
+      "id": "RESOLVE-DOCUMENT:onReconcileMoved",
+      "kind": "resolve",
+      "subject": "DocumentOnReconcileMoved",
+      "question": "What reconcile reports when the OpenYard document moved without the unknown save's operation is not decided.",
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-6"
+      ]
+    },
+    {
+      "id": "VERIFY:OpenYard",
+      "kind": "verify-independently",
+      "what": "Behavior against the original requirements. Generated structure and its derived checks are not independent acceptance evidence.",
+      "requirementKeys": [
+        "synthetic/gate.md#GATE-1",
+        "synthetic/gate.md#GATE-2",
+        "synthetic/gate.md#GATE-3",
+        "synthetic/gate.md#GATE-4",
+        "synthetic/gate.md#GATE-6"
+      ]
+    }
+  ],
+  "structuralChecks": {
+    "independence": "derived-from-plan",
+    "pairs": [
+      {
+        "state": "Closed",
+        "command": "Lower",
+        "expected": "invalid-transition"
+      },
+      {
+        "state": "Closed",
+        "command": "Raise",
+        "expected": "branching",
+        "targets": [
+          "Jammed",
+          "Open"
+        ]
+      },
+      {
+        "state": "Closed",
+        "command": "Reset",
+        "expected": "invalid-transition"
+      },
+      {
+        "state": "Jammed",
+        "command": "Lower",
+        "expected": "invalid-transition"
+      },
+      {
+        "state": "Jammed",
+        "command": "Raise",
+        "expected": "invalid-transition"
+      },
+      {
+        "state": "Jammed",
+        "command": "Reset",
+        "expected": "Closed"
+      },
+      {
+        "state": "Open",
+        "command": "Lower",
+        "expected": "Closed"
+      },
+      {
+        "state": "Open",
+        "command": "Raise",
+        "expected": "invalid-transition"
+      },
+      {
+        "state": "Open",
+        "command": "Reset",
+        "expected": "invalid-transition"
+      }
+    ]
+  },
+  "coverage": {
+    "synthetic/gate.md#GATE-1": "constructed",
+    "synthetic/gate.md#GATE-2": "constructed",
+    "synthetic/gate.md#GATE-3": "constructed",
+    "synthetic/gate.md#GATE-4": "constructed",
+    "synthetic/gate.md#GATE-6": "workflow-level"
+  },
+  "effectPolicies": [],
+  "document": {
+    "idempotency": "unresolved",
+    "onSaveConflict": "unresolved",
+    "onReconcileMoved": "unresolved"
+  }
+}

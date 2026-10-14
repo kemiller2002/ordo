@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-13T23:15:29.000Z",
+  "updatedAt": "2026-10-14T00:02:00Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2284,6 +2284,51 @@
         }
       },
       "completedAt": "2026-10-13T23:15:29.000Z"
+    },
+    {
+      "id": "CONSTRUCT-010-DOCUMENT",
+      "type": "task",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Construction/Emit.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Construction.Tests/DocumentTests.fs"
+        },
+        {
+          "type": "documentation",
+          "path": "docs/architecture/document-persistence.md"
+        }
+      ],
+      "updatedAt": "2026-10-14T00:02:00Z",
+      "telemetryExecutionIds": [
+        "EXE-20261013T235024451Z-a617154b"
+      ],
+      "latestCheckpoint": {
+        "id": "dbc5b5b67395b6b2cb1e5538",
+        "recordedAt": "2026-10-13T23:55:00Z",
+        "executionId": "EXE-20261013T235024451Z-a617154b",
+        "repository": "ordo",
+        "branch": "construct-010/document-persistence",
+        "commit": "600a936a268412e72126d821a58110c222a2bb77",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "construct-010/document-persistence",
+        "remoteCommit": "600a936a268412e72126d821a58110c222a2bb77",
+        "summary": "Vocabulary 7 document persistence implemented, tested (all suites green), mutation-checked, documented; pushed 600a936",
+        "nextAction": "Open PR stacked on #86 and report to the lead",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-14T00:02:00Z"
     }
   ]
 }
