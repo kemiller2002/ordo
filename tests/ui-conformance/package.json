@@ -1,0 +1,14 @@
+{
+  "name": "ordo-site-ui-conformance",
+  "private": true,
+  "type": "module",
+  "description": "visual-engineering/UI-LAYOUT-INTERACTION@1.0.0 conformance suite for the Ordo website (site/). Test-only; nothing here ships in the site or in distribution/.",
+  "scripts": {
+    "build:site": "dotnet run --project ../../src/Ordo.Site -- build --site ../../site --out ../../dist",
+    "ui:conformance": "npm run build:site && playwright test && node validate-evidence.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1",
+    "ajv": "8.17.1"
+  }
+}

@@ -46,6 +46,8 @@
   --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
   --measure: 72ch;
+  /* Space an in-page destination keeps below the sticky header. */
+  --header-clearance: 6rem;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -59,6 +61,8 @@ body {
   font-size: 1rem;
   line-height: 1.65;
   -webkit-text-size-adjust: 100%;
+  /* Long tokens (identifiers, hashes, URLs) wrap instead of widening the page. */
+  overflow-wrap: break-word;
 }
 
 /* The faint engineering grid the parent site uses as its only ambient motif. */
@@ -89,7 +93,7 @@ h4 { font-size: .95rem; margin: 1.5rem 0 .4rem; }
 ul, ol { padding-left: 1.25rem; max-width: var(--measure); }
 li + li { margin-top: .45rem; }
 code { font-family: var(--mono); font-size: .85em; }
-:not(pre) > code { padding: .1em .3em; background: var(--ef-surface-secondary); }
+:not(pre) > code { padding: .1em .3em; background: var(--ef-surface-secondary); overflow-wrap: anywhere; }
 
 pre {
   max-width: 100%;
@@ -236,7 +240,7 @@ main > section:first-child { margin-top: 0; }
 
 .metric-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(19rem, 100%), 1fr));
   border-top: 1px solid var(--ef-border-decorative);
   border-left: 1px solid var(--ef-border-decorative);
   margin: 2rem 0;
@@ -247,7 +251,7 @@ main > section:first-child { margin-top: 0; }
   border-right: 1px solid var(--ef-border-decorative);
   border-bottom: 1px solid var(--ef-border-decorative);
   background: var(--ef-surface-secondary);
-  scroll-margin-top: 6rem;
+  scroll-margin-top: var(--header-clearance);
 }
 .metric-card:target { background: var(--ef-surface-primary); outline: 2px solid var(--ef-accent-primary); }
 .metric-value {
@@ -266,7 +270,8 @@ main > section:first-child { margin-top: 0; }
 
 /* An inline number in prose always links back to where it is defined. */
 .metric-ref {
-  display: inline-flex; align-items: baseline; gap: .35rem;
+  display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: .35rem;
+  max-width: 100%;
   padding: .05em .3em;
   border-bottom: 2px solid var(--ef-accent-primary);
   color: var(--ef-text-primary);
@@ -284,7 +289,8 @@ main > section:first-child { margin-top: 0; }
   border-bottom: 2px solid var(--ef-accent-primary);
   color: var(--ef-text-primary);
   text-decoration: none;
-  white-space: nowrap;
+  display: inline-block;
+  max-width: 100%;
 }
 .metric-value-ref:hover { background: var(--ef-surface-secondary); }
 
@@ -322,7 +328,10 @@ main > section:first-child { margin-top: 0; }
    points into our own repositories — a reader should be able to tell at a
    glance whether a claim rests on third-party research or on our own. */
 .ref {
-  white-space: nowrap;
+  /* Kept together as one box, and wrapped inside only when the citation is
+     longer than the line (narrow screens, enlarged text: ULI-L05). */
+  display: inline-block;
+  max-width: 100%;
   padding: 0 .15em;
   border-bottom: 1px dotted var(--ef-accent-secondary);
   color: var(--ef-text-primary);
@@ -341,6 +350,7 @@ table.matrix caption { padding: 1rem 1.1rem; text-align: left; font-family: var(
 table.matrix th, table.matrix td { padding: .85rem 1.1rem; text-align: left; vertical-align: top; border-bottom: 1px solid var(--ef-border-decorative); }
 table.matrix thead th { font-family: var(--mono); font-size: .64rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ef-text-secondary); background: var(--ef-surface-secondary); }
 table.matrix tbody th { font-weight: 600; max-width: 26rem; }
+table.matrix tbody tr { scroll-margin-top: var(--header-clearance); }
 table.matrix tbody tr:target { background: var(--ef-surface-secondary); }
 table.matrix td.misses { color: var(--ef-text-secondary); }
 table.matrix td.records code { background: none; padding: 0; }
@@ -353,7 +363,7 @@ table.matrix td.cell-src { min-width: 14rem; }
 .diagram figcaption { margin-top: 1rem; max-width: var(--measure); font-size: .82rem; color: var(--ef-text-secondary); }
 
 ol.flow { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--ef-border-decorative); max-width: none; }
-ol.flow li { display: grid; grid-template-columns: 3rem 1fr; gap: 1rem; margin: 0; padding: 1rem 0; border-bottom: 1px solid var(--ef-border-decorative); position: relative; }
+ol.flow li { display: grid; grid-template-columns: 3rem minmax(0, 1fr); gap: 1rem; margin: 0; padding: 1rem 0; border-bottom: 1px solid var(--ef-border-decorative); position: relative; }
 .flow-index { font-family: var(--mono); font-size: .7rem; color: var(--ef-accent-secondary); padding-top: .2rem; }
 .flow-body { display: block; }
 .flow-label { display: block; font-size: 1rem; }
@@ -374,14 +384,14 @@ ol.flow li:last-child::before { display: none; }
 /* --- Glossary ----------------------------------------------------------- */
 
 .glossary { border-top: 1px solid var(--ef-border-functional); margin-top: 2rem; }
-.glossary-entry { padding: 1.75rem 0; border-bottom: 1px solid var(--ef-border-decorative); scroll-margin-top: 6rem; }
+.glossary-entry { padding: 1.75rem 0; border-bottom: 1px solid var(--ef-border-decorative); scroll-margin-top: var(--header-clearance); }
 .glossary-entry:target { background: var(--ef-surface-secondary); padding-left: 1rem; padding-right: 1rem; }
 .glossary-entry h3 { margin: 0 0 .25rem; font-size: 1.1rem; }
 .glossary-origin { font-family: var(--mono); font-size: .64rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ef-accent-secondary); margin-bottom: .5rem; }
 
 /* --- Evidence pages ----------------------------------------------------- */
 
-.experiment-identity { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 0; margin: 2rem 0; border-top: 1px solid var(--ef-border-decorative); border-left: 1px solid var(--ef-border-decorative); }
+.experiment-identity { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr)); gap: 0; margin: 2rem 0; border-top: 1px solid var(--ef-border-decorative); border-left: 1px solid var(--ef-border-decorative); }
 .experiment-identity dt { padding: .9rem 1rem .2rem; font-family: var(--mono); font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ef-text-secondary); border-right: 1px solid var(--ef-border-decorative); }
 .experiment-identity dd { margin: 0; padding: 0 1rem .9rem; font-size: .88rem; overflow-wrap: anywhere; border-right: 1px solid var(--ef-border-decorative); border-bottom: 1px solid var(--ef-border-decorative); }
 
@@ -391,18 +401,22 @@ ol.flow li:last-child::before { display: none; }
 
 /* --- Responsive --------------------------------------------------------- */
 
-@media (max-width: 900px) {
+@media (max-width: 56.25em) {
   .brand-subtitle { display: none; }
-  .grid, .grid-three { grid-template-columns: 1fr; }
+  .grid, .grid-three { grid-template-columns: minmax(0, 1fr); }
   .footer-grid { display: block; }
   .footer-actions { margin-top: 2rem; }
 }
 
-@media (max-width: 680px) {
+@media (max-width: 42.5em) {
+  /* Stacked, the header is too tall to stay pinned over the content
+     (it would cover most of a small or text-enlarged viewport): it scrolls
+     away with the page instead (ULI-L05, ULI-L09). */
+  .site-header { position: static; }
   .nav-shell { flex-direction: column; align-items: flex-start; gap: .5rem; }
   nav { justify-content: flex-start; margin-left: -.6rem; }
   h2 { margin-top: 2.5rem; }
-  .experiment-identity { grid-template-columns: 1fr; }
+  .experiment-identity { grid-template-columns: minmax(0, 1fr); }
   .contradictions, .limitations, .interpretation { padding-left: 1rem; }
 }
 
@@ -450,7 +464,7 @@ main > section {
 
 .hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(18rem, .8fr);
+  grid-template-columns: minmax(0, 1.6fr) minmax(min(18rem, 100%), .8fr);
   gap: clamp(2rem, 7vw, 8rem);
   align-items: end;
 }
@@ -503,7 +517,7 @@ main > section {
 
 .section-heading {
   display: grid;
-  grid-template-columns: 1fr minmax(14rem, .32fr);
+  grid-template-columns: 1fr minmax(min(14rem, 100%), .32fr);
   gap: 2rem;
   align-items: end;
   margin-bottom: 2.5rem;
@@ -515,7 +529,7 @@ main > section {
 
 .columns {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(17rem, 100%), 1fr));
   border-top: 1px solid var(--ef-border-decorative);
   border-left: 1px solid var(--ef-border-decorative);
 }
@@ -560,18 +574,18 @@ main > section {
 .closing-cta { max-width: 60rem; }
 .closing-cta h2 { margin: .7rem 0 1.5rem; }
 
-@media (max-width: 900px) {
-  .hero-grid { grid-template-columns: 1fr; }
+@media (max-width: 56.25em) {
+  .hero-grid { grid-template-columns: minmax(0, 1fr); }
   .decision-flow,
   .tier-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 680px) {
+@media (max-width: 42.5em) {
   .stat-blocks,
   .decision-flow,
-  .tier-grid { grid-template-columns: 1fr; }
+  .tier-grid { grid-template-columns: minmax(0, 1fr); }
 
-  .section-heading { grid-template-columns: 1fr; }
+  .section-heading { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* A semantic h2 inside the hero side-card must not inherit display-heading scale. */
@@ -681,7 +695,7 @@ main > section {
 
 .coffee-order {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
   gap: 1px;
   margin: 1.5rem 0;
   border: 1px solid var(--ef-border-functional);
@@ -707,13 +721,13 @@ main > section {
   margin-top: 4rem;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 56.25em) {
   .real-world-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .coffee-flow {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .coffee-flow .state-arrow {
