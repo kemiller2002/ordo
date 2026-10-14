@@ -92,7 +92,7 @@ let ``recognition accepts all versioned decision records the reader supports wit
             { baseline with
                 Records = baseline.Records |> Option.map (fun records -> { records with SchemaVersion = schema }) }
         let observed = recognize BuiltIn.registry None input |> ok ("recognize " + schema)
-        Assert.Equal(expected.Requirements |> List.map _.Outcome, observed.Requirements |> List.map _.Outcome)
+        Assert.Equal<Outcome list>(expected.Requirements |> List.map _.Outcome, observed.Requirements |> List.map _.Outcome)
 
 [<Fact>]
 let ``recognition still refuses decision-record schemas beyond its supported versions`` () =
