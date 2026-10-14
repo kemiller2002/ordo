@@ -460,3 +460,52 @@ let ``every outcome carries the Phase 4 decision class, and blocked carries none
     Assert.Equal(Some "unsupported", cls "L145-L148")
     Assert.Equal(None, decisionClass (Blocked [ AwaitingPrerequisites [] ]))
     Assert.Contains("\"decisionClass\": \"approved\"", encodeReport report)
+
+// ---------------------------------------------------------------------------
+// Conflicts settled by an approved decision (`conflictResolution`, ordo#81).
+// ---------------------------------------------------------------------------
+
+/// The timer cohort with an open conflict on the session-scope requirement,
+/// and a separate decision node that may settle it.
+let private settledSessionScope (resolverKind: NodeKind) =
+    let b = blueprint ()
+    let key = keyOf "L145-L148" b
+    let conflict =
+        { Id = "CONFLICT-SESSION-SCOPE"; Kind = Conflict; RequirementKeys = [ key ]; DependsOn = []
+          Justification = Some "Is the session scope per device or per person?" }
+    let resolver =
+        { Id = "DEC-SESSION-SCOPE"; Kind = resolverKind; RequirementKeys = [ key ]; DependsOn = []
+          Justification = Some "Session scope is per person." }
+    let b2 = b |> withNode conflict |> withNode resolver
+    let r = records ()
+    let resolution = { NodeId = "DEC-SESSION-SCOPE"; Content = ConflictResolution { Conflicts = [ "CONFLICT-SESSION-SCOPE" ]; RequirementKeys = [ key ] } }
+    b2, { r with Records = r.Records @ [ resolution ] }
+
+[<Fact>]
+let ``a conflict settled by an authorized decision is no longer open, and the packet names the decision that settles it`` () =
+    let b, r = settledSessionScope Decision
+    let input = { inputOf b (Some r) with AuthorizedDecisionIds = Set.ofList [ "DEC-TIMER-STATES"; "DEC-SESSION-SCOPE" ] }
+    let report = run input
+    Assert.Equal(Delegate([], []), outcomeOf "L145-L148" report)
+    let p = report.Packets |> List.find (fun p -> p.RequirementKeys |> List.exists (fun k -> k.EndsWith "L145-L148"))
+    let resolver = p.ApprovedDecisions |> List.find (fun d -> d.NodeId = "DEC-SESSION-SCOPE")
+    Assert.Equal<string list>([ "CONFLICT-SESSION-SCOPE" ], resolver.Resolves)
+    Assert.Empty p.EscalationRequired
+    Assert.DoesNotContain(report.Decisions, fun d -> d.Gap = ConflictUnresolved "CONFLICT-SESSION-SCOPE")
+    Assert.Contains("\"resolves\"", encodePacket p)
+
+[<Fact>]
+let ``a resolution on an unapproved decision settles nothing`` () =
+    let b, r = settledSessionScope Decision
+    let report = run (inputOf b (Some r))
+    match outcomeOf "L145-L148" report with
+    | DecisionRequired(gaps, _) ->
+        Assert.Contains(ConflictUnresolved "CONFLICT-SESSION-SCOPE", gaps)
+        Assert.Contains(DecisionNotAuthorized "DEC-SESSION-SCOPE", gaps)
+    | other -> failwithf "expected DecisionRequired, got %A" other
+
+[<Fact>]
+let ``a resolution recorded on a non-decision node settles nothing`` () =
+    let b, r = settledSessionScope Contract
+    let input = { inputOf b (Some r) with AuthorizedDecisionIds = Set.ofList [ "DEC-TIMER-STATES"; "DEC-SESSION-SCOPE" ] }
+    Assert.Equal(DecisionRequired([ ConflictUnresolved "CONFLICT-SESSION-SCOPE" ], []), outcomeOf "L145-L148" (run input))

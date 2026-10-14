@@ -65,7 +65,8 @@ let private jClaim (c: PatternClaim) =
               "gaps", JArray(List.map jGap c.Gaps)
               "defects", jStrings c.Defects ]
 
-let private jNode (n: NodeReference) = JObject [ "nodeId", JString n.NodeId; "justification", jOption JString n.Justification ]
+let private jNode (n: NodeReference) =
+    JObject [ "nodeId", JString n.NodeId; "justification", jOption JString n.Justification; "resolves", jStrings n.Resolves ]
 
 let private jSource (s: SourceReference) =
     JObject [ "key", JString s.Key; "originalId", JString s.OriginalId; "document", JString s.Document
