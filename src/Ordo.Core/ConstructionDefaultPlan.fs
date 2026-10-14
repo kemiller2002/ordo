@@ -60,6 +60,9 @@ type ConstructionVocabulary =
     /// Vocabulary 4 plus effect outcome policies and a persisted instance.
     /// Generated only from `ordo.construction-decisions/4` records.
     | Version6
+    /// Vocabulary 6 plus document persistence and wire text on codes.
+    /// Generated only from `ordo.construction-decisions/5` records.
+    | Version7
 
 [<RequireQualifiedAccess>]
 type TypedObligationKind =
@@ -83,7 +86,9 @@ type TypedObligationKind =
     /// `extensionBehavior` (implement) obligation is issued for it.
     | UndecidedExtensionDecision
     /// Vocabulary 6: the records leave the persisted instance's idempotency
-    /// scope or stale-write action open.
+    /// scope or stale-write action open. Vocabulary 7: also a document's
+    /// idempotency scope, save-conflict or reconcile-moved action; the
+    /// `planSubject` (`persistence:…` or `document:…`) says which.
     | UndecidedPersistence
 
 type TypedObligation =
@@ -176,6 +181,8 @@ type DefaultPlanRefusal =
     | DuplicateEffectPolicyRecord of command: string
     /// Version 4: more than one persistence record.
     | MultiplePersistenceRecords of nodeIds: string list
+    /// Version 5: more than one document record.
+    | MultipleDocumentRecords of nodeIds: string list
     /// A conflict resolution names a node that is not in the blueprint.
     | ResolvesUnknownNode of nodeId: string * conflictId: string
     /// A conflict resolution names a node that is not a conflict.
@@ -226,6 +233,7 @@ module ConstructionVocabulary =
         | ConstructionVocabulary.Version3 -> VocabularyVersion3
         | ConstructionVocabulary.Version4 -> VocabularyVersion4
         | ConstructionVocabulary.Version6 -> VocabularyVersion6
+        | ConstructionVocabulary.Version7 -> VocabularyVersion7
 
     /// Anything but a supported vocabulary version is refused, never upgraded.
     let ofVersion (raw: string) : Result<ConstructionVocabulary, DefaultPlanRefusal> =
@@ -235,6 +243,7 @@ module ConstructionVocabulary =
         | VocabularyVersion3 -> Ok ConstructionVocabulary.Version3
         | VocabularyVersion4 -> Ok ConstructionVocabulary.Version4
         | VocabularyVersion6 -> Ok ConstructionVocabulary.Version6
+        | VocabularyVersion7 -> Ok ConstructionVocabulary.Version7
         | other -> Error(UnsupportedVocabularyVersion other)
 
 // ---------------------------------------------------------------------------
@@ -382,17 +391,19 @@ let private contentKind content =
     | ConflictResolution _ -> "conflictResolution"
     | EffectPolicies _ -> "effectPolicies"
     | Persistence _ -> "persistence"
+    | Document _ -> "document"
 
 let private nameKey raw = SemanticName.create raw |> Result.map SemanticName.key
 
 let private envelopeRefusals (view: PreparedCohortView) (blueprintDigest: string) (vocabulary: ConstructionVocabulary) (records: ApprovedDecisionRecords) =
     let expected =
         match vocabulary with
+        | ConstructionVocabulary.Version7 -> DecisionsSchemaVersion5
         | ConstructionVocabulary.Version6 -> DecisionsSchemaVersion4
         | ConstructionVocabulary.Version4 -> DecisionsSchemaVersion3
         | ConstructionVocabulary.Version3 -> DecisionsSchemaVersion2
         | ConstructionVocabulary.Version1 | ConstructionVocabulary.Version2 -> DecisionsSchemaVersion
-    [ if not (List.contains records.SchemaVersion [ DecisionsSchemaVersion; DecisionsSchemaVersion2; DecisionsSchemaVersion3; DecisionsSchemaVersion4 ]) then
+    [ if not (List.contains records.SchemaVersion [ DecisionsSchemaVersion; DecisionsSchemaVersion2; DecisionsSchemaVersion3; DecisionsSchemaVersion4; DecisionsSchemaVersion5 ]) then
           UnsupportedDecisionSchema records.SchemaVersion
       elif records.SchemaVersion <> expected then
           DecisionSchemaVocabularyMismatch(records.SchemaVersion, ConstructionVocabulary.version vocabulary)
@@ -425,12 +436,13 @@ let private nodeRefusals (view: PreparedCohortView) (records: ApprovedDecisionRe
                 | PortContract _, Decision
                 | ConflictResolution _, Decision
                 | EffectPolicies _, Decision
-                | Persistence _, Decision -> if approvedDecision then None else Some(RecordForUnapprovedNode r.NodeId)
+                | Persistence _, Decision
+                | Document _, Decision -> if approvedDecision then None else Some(RecordForUnapprovedNode r.NodeId)
                 | PortContract _, Interface -> if Set.contains node.Id view.RequiredNodeIds then None else Some(RecordForUnapprovedNode r.NodeId)
                 | content, kind -> Some(RecordKindNotAllowed(r.NodeId, kindText kind, contentKind content)))
     let recorded = records.Records |> List.map _.NodeId |> Set.ofList
     let missing = Set.difference view.RequiredDecisionIds recorded |> Seq.map MissingDecisionContent |> Seq.toList
-    let models = records.Records |> List.filter (fun r -> match r.Content with StateModel _ -> true | PortContract _ | ConflictResolution _ | EffectPolicies _ | Persistence _ -> false) |> List.map _.NodeId |> List.distinct |> List.sort
+    let models = records.Records |> List.filter (fun r -> match r.Content with StateModel _ -> true | PortContract _ | ConflictResolution _ | EffectPolicies _ | Persistence _ | Document _ -> false) |> List.map _.NodeId |> List.distinct |> List.sort
     let modelCount =
         match models with
         | [] -> [ MissingStateModel ]
@@ -450,7 +462,8 @@ let private recordNames (record: DecisionRecord) =
                a.Code
                :: (match a.Target with
                    | RecordedCodeTarget.Pair(f, c) -> [ f; c ]
-                   | RecordedCodeTarget.Unlisted | RecordedCodeTarget.NotFound | RecordedCodeTarget.StaleRevision -> [])))
+                   | RecordedCodeTarget.Unlisted | RecordedCodeTarget.NotFound | RecordedCodeTarget.StaleRevision
+                   | RecordedCodeTarget.SaveConflict -> [])))
         @ (m.Branching |> List.collect (fun b -> b.Command :: b.From :: b.Targets @ (b.DecisionPoints |> List.map _.Point)))
     | PortContract ports ->
         ports
@@ -459,7 +472,7 @@ let private recordNames (record: DecisionRecord) =
                 command :: (points |> Option.defaultValue [] |> List.map _.Point)
             | RecordedCurrentTime _ -> [])
     | EffectPolicies policies -> policies |> List.map _.Command
-    | ConflictResolution _ | Persistence _ -> []
+    | ConflictResolution _ | Persistence _ | Document _ -> []
 
 let private nameRefusals (records: ApprovedDecisionRecords) =
     records.Records
@@ -499,7 +512,8 @@ let private citations (record: DecisionRecord) =
                 | RecordedCodeTarget.Pair(f, c) -> sprintf "codeFor:pair/%s/%s" (key f) (key c)
                 | RecordedCodeTarget.Unlisted -> "codeFor:unlisted"
                 | RecordedCodeTarget.NotFound -> "codeFor:notFound"
-                | RecordedCodeTarget.StaleRevision -> "codeFor:staleRevision"),
+                | RecordedCodeTarget.StaleRevision -> "codeFor:staleRevision"
+                | RecordedCodeTarget.SaveConflict -> "codeFor:saveConflict"),
                a.RequirementKeys))
         @ (m.Branching
            |> List.collect (fun b ->
@@ -517,6 +531,7 @@ let private citations (record: DecisionRecord) =
     | ConflictResolution c -> [ "resolves:" + String.concat "," (c.Conflicts |> List.distinct |> List.sort), c.RequirementKeys ]
     | EffectPolicies policies -> policies |> List.map (fun p -> "effectPolicy:" + key p.Command, p.RequirementKeys)
     | Persistence p -> [ "persistence", p.RequirementKeys ]
+    | Document d -> [ "document", d.RequirementKeys ]
 
 let private citationRefusals (view: PreparedCohortView) (records: ApprovedDecisionRecords) =
     let nodes = view.Blueprint.Nodes |> List.map (fun n -> n.Id, n) |> Map.ofList
@@ -578,7 +593,7 @@ let private stateModelRefusals (nodeId: string) (m: StateModelContent) =
 let private portRefusals (view: PreparedCohortView) (commands: Set<string>) (records: ApprovedDecisionRecords) =
     let ports =
         records.Records
-        |> List.collect (fun r -> match r.Content with PortContract ports -> ports |> List.map (fun p -> r.NodeId, p) | StateModel _ | ConflictResolution _ | EffectPolicies _ | Persistence _ -> [])
+        |> List.collect (fun r -> match r.Content with PortContract ports -> ports |> List.map (fun p -> r.NodeId, p) | StateModel _ | ConflictResolution _ | EffectPolicies _ | Persistence _ | Document _ -> [])
     let duplicates =
         ports |> List.countBy (snd >> portLabel) |> List.filter (fun (_, n) -> n > 1) |> List.map (fst >> DuplicateRecordedPort)
     let perPort =
@@ -595,10 +610,11 @@ let private portRefusals (view: PreparedCohortView) (commands: Set<string>) (rec
                   | _ -> () ])
     duplicates @ perPort
 
-/// Version 4 records: exactly one policy record per transition effect, none
-/// for anything else, and at most one persisted instance.
+/// Version 4 and 5 records: exactly one policy record per transition effect,
+/// none for anything else, at most one persisted instance and (version 5) at
+/// most one document.
 let private policyRefusals (records: ApprovedDecisionRecords) =
-    if records.SchemaVersion <> DecisionsSchemaVersion4 then []
+    if records.SchemaVersion <> DecisionsSchemaVersion4 && records.SchemaVersion <> DecisionsSchemaVersion5 then []
     else
         let effects =
             records.Records
@@ -612,13 +628,16 @@ let private policyRefusals (records: ApprovedDecisionRecords) =
             |> List.collect (fun r -> match r.Content with EffectPolicies ps -> ps |> List.map (fun p -> r.NodeId, key p.Command) | _ -> [])
         let persisted =
             records.Records |> List.choose (fun r -> match r.Content with Persistence _ -> Some r.NodeId | _ -> None) |> List.sort
+        let documents =
+            records.Records |> List.choose (fun r -> match r.Content with Document _ -> Some r.NodeId | _ -> None) |> List.sort
         [ for command in effects do
               if not (policies |> List.exists (fun (_, c) -> c = command)) then MissingEffectPolicyRecord command
           for nodeId, command in policies do
               if not (Set.contains command effects) then PolicyForUnknownEffect(nodeId, command)
           for command, count in policies |> List.countBy snd do
               if count > 1 then DuplicateEffectPolicyRecord command
-          if List.length persisted > 1 then MultiplePersistenceRecords persisted ]
+          if List.length persisted > 1 then MultiplePersistenceRecords persisted
+          if List.length documents > 1 then MultipleDocumentRecords documents ]
 
 // ---------------------------------------------------------------------------
 // Generation.
@@ -688,7 +707,7 @@ let private resolutionRefusals (view: PreparedCohortView) (records: ApprovedDeci
                 | Some node when Set.isEmpty (Set.intersect (Set.ofList node.RequirementKeys) (Set.ofList c.RequirementKeys)) ->
                     Some(UnrelatedConflictResolution(r.NodeId, id))
                 | Some _ -> None)
-        | StateModel _ | PortContract _ | EffectPolicies _ | Persistence _ -> [])
+        | StateModel _ | PortContract _ | EffectPolicies _ | Persistence _ | Document _ -> [])
 
 /// Conflicts settled by checked resolution records. Every record that reaches
 /// this point is on an authorized decision of the cohort.
@@ -697,7 +716,7 @@ let private resolvedConflicts (records: ApprovedDecisionRecords) =
     |> List.collect (fun r ->
         match r.Content with
         | ConflictResolution c -> c.Conflicts |> List.map (fun id -> id, r.NodeId)
-        | StateModel _ | PortContract _ | EffectPolicies _ | Persistence _ -> [])
+        | StateModel _ | PortContract _ | EffectPolicies _ | Persistence _ | Document _ -> [])
     |> List.groupBy fst
     |> List.map (fun (id, pairs) -> id, pairs |> List.map snd |> List.distinct |> List.sort)
     |> List.sortBy fst
@@ -774,7 +793,7 @@ let private generate
     let ports =
         records.Records
         |> List.sortBy _.NodeId
-        |> List.collect (fun r -> match r.Content with PortContract ports -> ports |> List.map (fun p -> r.NodeId, p) | StateModel _ | ConflictResolution _ | EffectPolicies _ | Persistence _ -> [])
+        |> List.collect (fun r -> match r.Content with PortContract ports -> ports |> List.map (fun p -> r.NodeId, p) | StateModel _ | ConflictResolution _ | EffectPolicies _ | Persistence _ | Document _ -> [])
     let surfaceOf port =
         match port with
         | RecordedCurrentTime _ -> ConstructionLayout.currentTimeContract workflowName
@@ -788,7 +807,7 @@ let private generate
             | RecordedTransitionEffect(command, disposition, keys, _) ->
                 let onFailure =
                     match vocabulary with
-                    | ConstructionVocabulary.Version1 | ConstructionVocabulary.Version6 -> None
+                    | ConstructionVocabulary.Version1 | ConstructionVocabulary.Version6 | ConstructionVocabulary.Version7 -> None
                     | ConstructionVocabulary.Version2 | ConstructionVocabulary.Version3 | ConstructionVocabulary.Version4 ->
                         Some(disposition |> Option.defaultValue EffectFailureDisposition.Unresolved)
                 DeclarePort { Kind = TransitionEffect(command, onFailure); Trace = trace keys [ nodeId ] })
@@ -833,6 +852,43 @@ let private generate
                       (sprintf "Decision record %s does not decide what a write against a stale revision of workflow %s means: refused, or escalated to a person." nodeId workflowKey)
                       [ ConstructionLayout.storeType workflowName ] (Some "persistence:onStale") ])
         |> Option.defaultValue []
+    // Version 5 records: at most one document, from an approved decision node.
+    // An absent choice is never defaulted. The one exception is reconcile in
+    // session scope: a session cannot attribute a moved version, so the
+    // generated reconcile escalates whatever is recorded, and vocabulary 7
+    // requires the plan to say so. Recording it is not required.
+    let document =
+        records.Records |> List.tryPick (fun r -> match r.Content with Document d -> Some(r.NodeId, d) | _ -> None)
+    let documentOperations =
+        document
+        |> Option.map (fun (nodeId, d) ->
+            DeclareDocument
+                { Idempotency = d.Idempotency |> Option.defaultValue IdempotencyScope.Unresolved
+                  OnSaveConflict = d.OnSaveConflict |> Option.defaultValue StaleAction.Unresolved
+                  OnReconcileMoved =
+                    match d.OnReconcileMoved, d.Idempotency with
+                    | Some action, _ -> action
+                    | None, Some IdempotencyScope.Session -> ReconcileMovedAction.Escalate
+                    | None, _ -> ReconcileMovedAction.Unresolved
+                  Trace = trace d.RequirementKeys [ nodeId ] })
+        |> Option.toList
+    let documentItems =
+        document
+        |> Option.map (fun (nodeId, d) ->
+            let undecided subject question =
+                None,
+                obligation view.CohortId TypedObligationKind.UndecidedPersistence d.RequirementKeys [ nodeId ] question
+                    [ ConstructionLayout.documentStoreType workflowName ] (Some subject)
+            [ if d.Idempotency.IsNone then
+                  undecided "document:idempotency"
+                      (sprintf "Decision record %s does not decide whether save operation ids of the %s document are deduplicated durably (surviving reload) or for one session only." nodeId workflowKey)
+              if d.OnSaveConflict.IsNone then
+                  undecided "document:onSaveConflict"
+                      (sprintf "Decision record %s does not decide what a save of the %s document against a version another writer moved means: refused, or escalated to a person." nodeId workflowKey)
+              if d.OnReconcileMoved.IsNone && d.Idempotency <> Some IdempotencyScope.Session then
+                  undecided "document:onReconcileMoved"
+                      (sprintf "Decision record %s does not decide what reconciling an unknown save of the %s document reports when the stored version moved without the save's operation: a conflict (the save did not land), or escalated to a person." nodeId workflowKey) ])
+        |> Option.defaultValue []
 
     // Effect failure: never decided by the generator.
     let effectItems =
@@ -840,8 +896,9 @@ let private generate
         |> List.choose (fun (nodeId, port) ->
             match port with
             | RecordedCurrentTime _ -> None
-            | RecordedTransitionEffect(command, _, keys, _) when vocabulary = ConstructionVocabulary.Version6 ->
-                // Version 4 records: the policy record decides, or leaves open.
+            | RecordedTransitionEffect(command, _, keys, _)
+                when vocabulary = ConstructionVocabulary.Version6 || vocabulary = ConstructionVocabulary.Version7 ->
+                // Version 4 and 5 records: the policy record decides, or leaves open.
                 let commandKey = key command
                 let policy = policyOf commandKey
                 let openParts =
@@ -866,7 +923,8 @@ let private generate
                             nodeId commandKey commandKey workflowKey
                     let effect =
                         match vocabulary with
-                        | ConstructionVocabulary.Version2 | ConstructionVocabulary.Version3 | ConstructionVocabulary.Version4 | ConstructionVocabulary.Version6 -> Some command
+                        | ConstructionVocabulary.Version2 | ConstructionVocabulary.Version3 | ConstructionVocabulary.Version4
+                        | ConstructionVocabulary.Version6 | ConstructionVocabulary.Version7 -> Some command
                         | ConstructionVocabulary.Version1 -> None
                     Some(Some(DeclareUnresolved { Subject = subject; Effect = effect; Question = question; Trace = trace keys [ nodeId ] }),
                          obligation view.CohortId TypedObligationKind.UndecidedEffectFailure keys [ nodeId ] question [ surfaceOf port ] (Some subject))
@@ -875,7 +933,8 @@ let private generate
                         sprintf "Decision record %s decides that a failed %s effect means '%s', but %s cannot express an effect-failure disposition, so generated code does not apply it. Generate with %s, or implement the approved disposition in host code."
                             nodeId commandKey (effectFailureDispositionName decided) VocabularyVersion1 VocabularyVersion2
                     Some(None, obligation view.CohortId TypedObligationKind.UnsupportedVocabulary keys [ nodeId ] question [ surfaceOf port ] None)
-                | Some _, (ConstructionVocabulary.Version2 | ConstructionVocabulary.Version3 | ConstructionVocabulary.Version4 | ConstructionVocabulary.Version6) -> None)
+                | Some _, (ConstructionVocabulary.Version2 | ConstructionVocabulary.Version3 | ConstructionVocabulary.Version4
+                          | ConstructionVocabulary.Version6 | ConstructionVocabulary.Version7) -> None)
 
     // Vocabulary 3: every choice the records make or leave open is stated.
     let pointKeys (port: RecordedPort) =
@@ -889,7 +948,8 @@ let private generate
     let classificationOperations, classificationItems =
         match vocabulary with
         | ConstructionVocabulary.Version1 | ConstructionVocabulary.Version2 -> [], []
-        | ConstructionVocabulary.Version3 | ConstructionVocabulary.Version4 | ConstructionVocabulary.Version6 ->
+        | ConstructionVocabulary.Version3 | ConstructionVocabulary.Version4 | ConstructionVocabulary.Version6
+        | ConstructionVocabulary.Version7 ->
             let modelKeys = model.Transitions |> List.collect _.RequirementKeys
             let rule =
                 match model.Unlisted with
@@ -969,7 +1029,7 @@ let private generate
             // with its decision inventory. A selector with an undecided point
             // gets a decide obligation per point, never an implement one.
             let codes =
-                (model.RefusalCodes |> List.map (fun c -> DefineRefusalCode { Code = c.Code; Trace = trace c.RequirementKeys [ modelNode ] }))
+                (model.RefusalCodes |> List.map (fun c -> DefineRefusalCode { Code = c.Code; WireText = c.WireText; Trace = trace c.RequirementKeys [ modelNode ] }))
                 @ (model.CodeAssignments
                    |> List.map (fun a ->
                        AssignRefusalCode
@@ -978,7 +1038,8 @@ let private generate
                                 | RecordedCodeTarget.Pair(f, c) -> CodeTarget.Pair { InState = f; OnCommand = c }
                                 | RecordedCodeTarget.Unlisted -> CodeTarget.Unlisted
                                 | RecordedCodeTarget.NotFound -> CodeTarget.NotFound
-                                | RecordedCodeTarget.StaleRevision -> CodeTarget.StaleRevision)
+                                | RecordedCodeTarget.StaleRevision -> CodeTarget.StaleRevision
+                                | RecordedCodeTarget.SaveConflict -> CodeTarget.SaveConflict)
                              Code = a.Code
                              Trace = trace a.RequirementKeys [ modelNode ] }))
             let semantic raw = match SemanticName.create raw with Ok n -> n | Error e -> invalidOp (sprintf "%A" e)
@@ -1018,13 +1079,13 @@ let private generate
                             obligation view.CohortId TypedObligationKind.UndecidedExtensionDecision (p.RequirementKeys @ b.RequirementKeys) [ modelNode ] question [ selectorSurface b ]
                                 (Some(sprintf "extension:selection/%s/%s/point:%s" (key b.From) (key b.Command) (key p.Point)))))
             match vocabulary with
-            | ConstructionVocabulary.Version4 | ConstructionVocabulary.Version6 ->
+            | ConstructionVocabulary.Version4 | ConstructionVocabulary.Version6 | ConstructionVocabulary.Version7 ->
                 (rule :: refusals @ undecided @ inventories @ codes @ selectors), pairObligations @ pointObligations @ selectorObligations
             | ConstructionVocabulary.Version1 | ConstructionVocabulary.Version2 | ConstructionVocabulary.Version3 ->
                 (rule :: refusals @ undecided @ inventories), pairObligations @ pointObligations
 
     // Requirement coverage over what the records construct.
-    let constructed = structure @ classificationOperations @ portOperations @ policyOperations @ persistenceOperations
+    let constructed = structure @ classificationOperations @ portOperations @ policyOperations @ persistenceOperations @ documentOperations
     let tracing k = constructed |> List.filter (fun o -> List.contains k (operationTrace o).RequirementKeys)
     let ownersInScope k =
         view.Blueprint.Nodes
@@ -1059,7 +1120,7 @@ let private generate
                 Some(Some(DeclareUnresolved { Subject = subject; Effect = None; Question = question; Trace = trace [ k ] owners }),
                      obligation view.CohortId TypedObligationKind.UncoveredRequirement [ k ] owners question [] (Some subject)))
 
-    let items = effectItems @ classificationItems @ persistenceItems @ coverageItems
+    let items = effectItems @ classificationItems @ persistenceItems @ documentItems @ coverageItems
     let draft: PlanDraft =
         { SchemaVersion = PlanSchemaVersion
           VocabularyVersion = vocabularyVersion
@@ -1124,7 +1185,7 @@ let generateDefaultPlan
         let! () = check (envelopeRefusals view blueprintDigest vocabulary records @ nodeRefusals view records)
         let! () = check (nameRefusals records @ citationRefusals view records @ resolutionRefusals view records @ policyRefusals records)
         let modelNode, model =
-            records.Records |> List.pick (fun r -> match r.Content with StateModel m -> Some(r.NodeId, m) | PortContract _ | ConflictResolution _ | EffectPolicies _ | Persistence _ -> None)
+            records.Records |> List.pick (fun r -> match r.Content with StateModel m -> Some(r.NodeId, m) | PortContract _ | ConflictResolution _ | EffectPolicies _ | Persistence _ | Document _ -> None)
         let commands = (model.Transitions |> List.map (fun t -> key t.Command)) @ (model.Branching |> List.map (fun b -> key b.Command)) |> Set.ofList
         let! () = check (stateModelRefusals modelNode model @ portRefusals view commands records)
         return! generate prepared view blueprintDigest records vocabulary modelNode model

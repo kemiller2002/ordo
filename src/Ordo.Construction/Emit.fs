@@ -341,6 +341,14 @@ let transition (digest: string) (s: Shape) =
             @ (if s.HasCapabilities then [ sprintf "    | %s.MissingCapabilities _ -> None" rf ] else [])
             @ (if List.isEmpty s.Guards then [] else [ sprintf "    | %s.GuardRejected guard -> guardCode guard" rf ])
             @ (if List.isEmpty s.Invariants then [] else [ sprintf "    | %s.InvariantViolated _ -> None" rf ])
+            // Vocabulary 7: the stable external text of each code, verbatim.
+            @ (if List.isEmpty s.Workflow.WireTexts then []
+               else
+                   [ ""
+                     "/// The stable external text of each code, exactly as the plan states it."
+                     sprintf "let wireText (code: %s) : string =" rc
+                     "    match code with" ]
+                   @ (s.Workflow.WireTexts |> List.map (fun (code, text) -> sprintf "    | %s -> %s" (qualify rc code) (literal text))))
 
     let rf = refusalType w
     let parameters =

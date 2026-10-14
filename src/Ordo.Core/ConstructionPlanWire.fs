@@ -219,10 +219,15 @@ let private operation (vocabulary: string) path value =
             return DeclareExtensionInventory { Extension = extension; DecisionPoints = points; Trace = t }
         | "defineRefusalCode" ->
             let! () = onlyInFourth kind
-            let! p = fields path [ "op"; "code"; "trace" ] [] value
+            let! p = fields path [ "op"; "code"; "trace" ] [ "wireText" ] value
             let! code = textField path "code" p
+            let! wireText =
+                match Map.containsKey "wireText" p, hasDocument vocabulary with
+                | true, true -> textField path "wireText" p |> Result.map Some
+                | true, false -> fail (path + ".wireText") (sprintf "member wireText is not in %s" vocabulary)
+                | false, _ -> Ok None
             let! t = traceField path p
-            return DefineRefusalCode { Code = code; Trace = t }
+            return DefineRefusalCode { Code = code; WireText = wireText; Trace = t }
         | "assignRefusalCode" ->
             let! () = onlyInFourth kind
             let! p = fields path [ "op"; "target"; "code"; "trace" ] [] value

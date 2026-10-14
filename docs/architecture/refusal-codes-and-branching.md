@@ -179,6 +179,42 @@ mutants each failed the suite.
 - **MD6:** code assignments are dropped.
 - **MD7:** unknown branching targets are accepted.
 
+## Wire text (vocabulary 7)
+
+A code's plan name is a semantic name, which drops separators:
+`ENTRY_NOT_RECORDED` becomes the key `ENTRYNOTRECORDED`. A product whose
+diagnostics promise a stable external text can therefore not recover it from
+the name. In vocabulary 7, `defineRefusalCode` may carry that text verbatim:
+
+```text
+defineRefusalCode { code, wireText?: [A-Za-z0-9_.:-]{1,64}, trace }
+```
+
+Validation refuses:
+
+| Violation | Cause |
+|---|---|
+| `InvalidWireText` | text outside the grammar |
+| `PartialWireText` | some codes state wire text and others do not; it is all or none |
+| `DuplicateWireText` | two codes share one text |
+| `NotInVocabulary` | `wireText` in vocabularies 4 to 6 (the reader refuses the member too) |
+
+When the plan states wire text, the transition tier emits
+`wireText : <W>RefusalCode -> string`, one literal per code. When it states
+none, no function is emitted, and a plan without wire text encodes exactly
+as before.
+
+Evidence: the `GateYard` golden states wire text for all six codes, and a
+behaviour test reads it back. A compile probe shows `SessionYard`, which
+states none, has no `wireText`. Six mutants each failed the suite:
+
+- **W1:** partial wire text is accepted.
+- **W2:** duplicate wire text is accepted.
+- **W3:** the grammar check is removed.
+- **W4:** the reader drops wire text.
+- **W5:** vocabulary 6 accepts wire text.
+- **W6:** the emitter writes the code name instead of its text.
+
 ## Not yet supported
 
 - **Data-carrying refusals.** A code names a reason. It carries no payload,

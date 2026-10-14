@@ -261,7 +261,9 @@ type ExtensionInventoryDraft =
       Trace: TraceDraft }
 
 /// Vocabulary 4: a typed refusal code, named in domain words.
-type RefusalCodeDraft = { Code: string; Trace: TraceDraft }
+/// `WireText` (vocabulary 7 only) is the code's stable external text, kept
+/// verbatim because a semantic name drops separators.
+type RefusalCodeDraft = { Code: string; WireText: string option; Trace: TraceDraft }
 
 /// What a refusal code is assigned to.
 [<RequireQualifiedAccess>]
@@ -605,6 +607,9 @@ type Workflow =
       Inventories: ExtensionInventory list
       /// Vocabulary 4 only; empty otherwise.
       RefusalCodes: (SemanticName * Trace) list
+      /// Vocabulary 7: each code's stable wire text, sorted by code; empty
+      /// when the plan states none.
+      WireTexts: (SemanticName * string) list
       CodeAssignments: CodeAssignment list
       BranchingTransitions: BranchingTransition list
       /// Vocabulary 5: one per transition effect, sorted by effect.
@@ -740,6 +745,12 @@ type PlanViolation =
     | PersistenceWithEffects of operation: string
     /// Vocabulary 7: a workflow is persisted as an instance or in a document, not both.
     | PersistenceAndDocument of operation: string
+    /// Vocabulary 7: wire text outside `[A-Za-z0-9_.:-]{1,64}`.
+    | InvalidWireText of operation: string * text: string
+    /// Vocabulary 7: some codes state wire text and these do not; it is all or none.
+    | PartialWireText of codes: string list
+    /// Vocabulary 7: two codes share one wire text.
+    | DuplicateWireText of text: string
     /// Vocabulary 7: session scope cannot attribute a moved version, so its
     /// reconcile escalates; any other stated `onReconcileMoved` is refused.
     | ReconcileMovedWithoutDurableScope of operation: string
@@ -872,7 +883,11 @@ let private jOperation operation =
                   "extension", jExtension i.Extension
                   "decisionPoints", JArray(i.DecisionPoints |> List.map jPoint)
                   "trace", jTrace i.Trace ]
-    | DefineRefusalCode c -> JObject [ "op", JString "defineRefusalCode"; "code", JString c.Code; "trace", jTrace c.Trace ]
+    | DefineRefusalCode c ->
+        JObject(
+            [ "op", JString "defineRefusalCode"; "code", JString c.Code ]
+            @ (c.WireText |> Option.map (fun t -> [ "wireText", JString t ]) |> Option.defaultValue [])
+            @ [ "trace", jTrace c.Trace ])
     | AssignRefusalCode a ->
         let target =
             match a.Target with
@@ -972,7 +987,11 @@ let private canonicalDraft (binding: PlanBinding) (w: Workflow) : PlanDraft =
                     DecisionPoints =
                       i.DecisionPoints |> List.map (fun p -> { DecisionPointDraft.Point = key p.Point; Resolution = p.Resolution; Trace = traceDraft p.Trace })
                     Trace = traceDraft i.Trace }
-          for code, trace in w.RefusalCodes -> DefineRefusalCode { Code = key code; Trace = traceDraft trace }
+          for code, trace in w.RefusalCodes ->
+              DefineRefusalCode
+                  { Code = key code
+                    WireText = w.WireTexts |> List.tryFind (fun (c, _) -> c.Key = code.Key) |> Option.map snd
+                    Trace = traceDraft trace }
           for a in w.CodeAssignments ->
               AssignRefusalCode
                   { Target =
@@ -1337,6 +1356,7 @@ let private vocabularyViolations (plan: PlanDraft) =
         | DeclareExtensionInventory _ when not (classifiesChoices version) -> [ notIn operation "declareExtensionInventory" ]
         | DeclareExtensionInventory { Extension = ExtensionRef.Selection _ } when not (hasCodesAndBranching version) -> [ notIn operation "selection" ]
         | DefineRefusalCode _ when not (hasCodesAndBranching version) -> [ notIn operation "defineRefusalCode" ]
+        | DefineRefusalCode { WireText = Some _ } when not (hasDocument version) -> [ notIn operation "wireText" ]
         | AssignRefusalCode _ when not (hasCodesAndBranching version) -> [ notIn operation "assignRefusalCode" ]
         | DefineBranchingTransition _ when not (hasCodesAndBranching version) -> [ notIn operation "defineBranchingTransition" ]
         | DeclareEffectPolicy _ when not (hasEffectPolicies version) -> [ notIn operation "declareEffectPolicy" ]
@@ -1463,6 +1483,28 @@ let private codeViolations (vocabulary: string) (operations: OperationDraft list
                 | _ -> None)
             |> List.concat
         assignments
+
+/// Vocabulary 7: wire text is a literal of a restricted grammar, stated for
+/// every code or for none, and unique.
+let private wireTextViolations (vocabulary: string) (operations: OperationDraft list) =
+    if not (hasDocument vocabulary) then []
+    else
+        let codes = operations |> List.choose (function DefineRefusalCode c -> Some c | _ -> None)
+        let isWireText (text: string) =
+            text.Length >= 1 && text.Length <= 64
+            && text |> Seq.forall (fun ch -> System.Char.IsAsciiLetterOrDigit ch || ch = '_' || ch = '.' || ch = ':' || ch = '-')
+        let invalid =
+            codes |> List.choose (fun c ->
+                c.WireText |> Option.filter (isWireText >> not) |> Option.map (fun t -> InvalidWireText(operationLabel (DefineRefusalCode c), t)))
+        let stated, missing = codes |> List.partition (fun c -> c.WireText.IsSome)
+        let partial =
+            if List.isEmpty stated || List.isEmpty missing then []
+            else [ PartialWireText(missing |> List.map (fun c -> c.Code) |> List.sort) ]
+        let duplicates =
+            stated
+            |> List.countBy (fun c -> c.WireText)
+            |> List.choose (function Some t, n when n > 1 -> Some(DuplicateWireText t) | _ -> None)
+        invalid @ partial @ duplicates
 
 /// Vocabulary 6: a persisted instance with transition effects would write
 /// the instance and perform effects as two unrelated writes; refused.
@@ -1662,6 +1704,10 @@ let private buildWorkflow (operations: OperationDraft list) : Workflow =
         operations
         |> List.choose (function DefineRefusalCode c -> Some(name c.Code, normalizeTrace c.Trace) | _ -> None)
         |> List.sortBy (fun (n, _) -> n.Key)
+      WireTexts =
+        operations
+        |> List.choose (function DefineRefusalCode { Code = c; WireText = Some t } -> Some(name c, t) | _ -> None)
+        |> List.sortBy (fun (n, _) -> n.Key)
       CodeAssignments =
         operations
         |> List.choose (function
@@ -1777,6 +1823,7 @@ let validate (prepared: PreparedCohort) (plan: PlanDraft) : Result<ValidatedPlan
             @ classificationViolations plan.VocabularyVersion plan.Operations
             @ codeViolations plan.VocabularyVersion plan.Operations
             @ persistenceViolations plan.VocabularyVersion plan.Operations
+            @ wireTextViolations plan.VocabularyVersion plan.Operations
         with
         | _ :: _ as structural -> Error(finish structural)
         | [] ->
