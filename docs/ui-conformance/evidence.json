@@ -1,0 +1,2158 @@
+{
+  "standardVersion": "1.0.0",
+  "repository": "kemiller2002/ordo",
+  "revision": "64882d51478cf70da2f0d08f10559e9a558abe09",
+  "classification": "site-ui",
+  "surfaces": [
+    {
+      "id": "chrome",
+      "path": "/* (shared header and footer on every route)",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [
+        {
+          "id": "primary-nav",
+          "relation": "centerline",
+          "toleranceCssPx": 1,
+          "targets": [
+            {
+              "role": "link",
+              "name": "Why Ordo"
+            },
+            {
+              "role": "link",
+              "name": "How It Works"
+            },
+            {
+              "role": "link",
+              "name": "Evidence"
+            },
+            {
+              "role": "link",
+              "name": "Examples"
+            },
+            {
+              "role": "link",
+              "name": "Adoption"
+            },
+            {
+              "role": "link",
+              "name": "About"
+            }
+          ],
+          "rationale": "ULI-L10: Primary navigation destinations share one row and centerline above the 680px recomposition (declared at 768, 1280px)",
+          "evidence": [
+            "status: pass",
+            "passed: chromium > site.spec.mjs > chrome: primary-nav aligns at 768px (site.spec.mjs:258)",
+            "passed: chromium > site.spec.mjs > chrome: primary-nav aligns at 1280px (site.spec.mjs:258)"
+          ]
+        },
+        {
+          "id": "footer-actions",
+          "relation": "centerline",
+          "toleranceCssPx": 1,
+          "targets": [
+            {
+              "role": "link",
+              "name": "Read the source repository"
+            },
+            {
+              "role": "link",
+              "name": "llms.txt"
+            }
+          ],
+          "rationale": "ULI-L10: Footer actions share one centerline in the footer action row (declared at 390, 768, 1280px)",
+          "evidence": [
+            "status: pass",
+            "passed: chromium > site.spec.mjs > chrome: footer-actions aligns at 390px (site.spec.mjs:258)",
+            "passed: chromium > site.spec.mjs > chrome: footer-actions aligns at 768px (site.spec.mjs:258)",
+            "passed: chromium > site.spec.mjs > chrome: footer-actions aligns at 1280px (site.spec.mjs:258)"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "id": "skip-link",
+          "control": {
+            "role": "link",
+            "name": "Skip to main content"
+          },
+          "intent": "Move keyboard focus past the header to the page content",
+          "expectedOutcome": "The link appears on keyboard focus; activating it changes the hash to #main-content and the main region is in view below the sticky header",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > skip link moves to the main content (site.spec.mjs:185)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > skip link moves to the main content (site.spec.mjs:185)",
+            "passed: chromium > site.spec.mjs > chrome/skip-link destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "brand-home",
+          "control": {
+            "role": "link",
+            "name": "Ordo"
+          },
+          "intent": "Navigate to /",
+          "expectedOutcome": "URL becomes / and the destination's heading \"Make the legal next move explicit.\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > chrome: brand-home reaches / (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > chrome: brand-home reaches / (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > chrome/brand-home destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "nav-why",
+          "control": {
+            "role": "link",
+            "name": "Why Ordo"
+          },
+          "intent": "Navigate to /why/",
+          "expectedOutcome": "URL becomes /why/ and the destination's heading \"The hard part was never writing the code\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > chrome: nav-why reaches /why/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > chrome: nav-why reaches /why/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > chrome/nav-why destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "nav-how-it-works",
+          "control": {
+            "role": "link",
+            "name": "How It Works"
+          },
+          "intent": "Navigate to /how-it-works/",
+          "expectedOutcome": "URL becomes /how-it-works/ and the destination's heading \"How Ordo works\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > chrome: nav-how-it-works reaches /how-it-works/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > chrome: nav-how-it-works reaches /how-it-works/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > chrome/nav-how-it-works destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "nav-results",
+          "control": {
+            "role": "link",
+            "name": "Evidence"
+          },
+          "intent": "Navigate to /results/",
+          "expectedOutcome": "URL becomes /results/ and the destination's heading \"What happened when we measured it\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > chrome: nav-results reaches /results/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > chrome: nav-results reaches /results/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > chrome/nav-results destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "nav-examples",
+          "control": {
+            "role": "link",
+            "name": "Examples"
+          },
+          "intent": "Navigate to /examples/",
+          "expectedOutcome": "URL becomes /examples/ and the destination's heading \"What this looks like in code\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > chrome: nav-examples reaches /examples/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > chrome: nav-examples reaches /examples/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > chrome/nav-examples destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "nav-adoption",
+          "control": {
+            "role": "link",
+            "name": "Adoption"
+          },
+          "intent": "Navigate to /adoption/",
+          "expectedOutcome": "URL becomes /adoption/ and the destination's heading \"Adoption\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > chrome: nav-adoption reaches /adoption/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > chrome: nav-adoption reaches /adoption/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > chrome/nav-adoption destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "nav-about",
+          "control": {
+            "role": "link",
+            "name": "About"
+          },
+          "intent": "Navigate to /about/",
+          "expectedOutcome": "URL becomes /about/ and the destination's heading \"Ordo, SDE, ROS and what is not here\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > chrome: nav-about reaches /about/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > chrome: nav-about reaches /about/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > chrome/nav-about destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "footer-source",
+          "control": {
+            "role": "link",
+            "name": "Read the source repository"
+          },
+          "intent": "Open the source repository https://github.com/kemiller2002/state-directed-engineering",
+          "expectedOutcome": "href is https://github.com/kemiller2002/state-directed-engineering (an https destination; the external host's availability is not claimed)",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > chrome: footer-source points at https://github.com/kemiller2002/state-directed-engineering (site.spec.mjs:206)",
+            "passed: chromium > site.spec.mjs > chrome/footer-source destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "footer-llms",
+          "control": {
+            "role": "link",
+            "name": "llms.txt"
+          },
+          "intent": "Open the machine-readable site summary",
+          "expectedOutcome": "/llms.txt is served as text/plain and names the site",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > chrome: footer-llms points at /llms.txt (site.spec.mjs:206)",
+            "passed: chromium > site.spec.mjs > chrome/footer-llms destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        }
+      ],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /concepts/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /concepts/boundaries/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /adoption/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /comparison/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /about/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > / renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /concepts/capabilities/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /concepts/evidence/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /concepts/locality/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /concepts/state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /concepts/obligations/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /concepts/transitions/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /concepts/navigation/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /concepts/verification/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /csharp/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/greenfield-2a/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/greenfield-1/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/greenfield-2b/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/helixnote-3/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/helixnote-2/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/helixnote-1/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/te-controlled-baseline/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/te-csharp-state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/te-fsharp-state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /examples/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /glossary/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/te-conventional-js/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /how-it-works/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/te-conventional-csharp/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /research/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /results/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px > /why/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > / renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /adoption/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /concepts/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /concepts/boundaries/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /comparison/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /about/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /concepts/capabilities/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /concepts/locality/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /concepts/obligations/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /concepts/navigation/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /concepts/evidence/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /concepts/state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /concepts/transitions/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /concepts/verification/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/greenfield-1/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/greenfield-2a/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/greenfield-2b/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /csharp/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/helixnote-2/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/helixnote-1/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/te-conventional-js/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/helixnote-3/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/te-controlled-baseline/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/te-conventional-csharp/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/te-csharp-state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/te-fsharp-state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /examples/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /research/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /glossary/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /how-it-works/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > / renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /results/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /why/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /adoption/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /comparison/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /about/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /concepts/boundaries/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /concepts/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /concepts/locality/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /concepts/capabilities/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /concepts/evidence/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /concepts/obligations/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /concepts/navigation/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /concepts/verification/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /concepts/transitions/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /concepts/state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/greenfield-1/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /csharp/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/helixnote-1/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/helixnote-2/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/greenfield-2a/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/helixnote-3/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/greenfield-2b/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/te-controlled-baseline/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/te-conventional-csharp/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/te-conventional-js/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /examples/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/te-fsharp-state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /glossary/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /research/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/te-csharp-state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /how-it-works/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /why/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /results/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > / renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /about/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /adoption/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /comparison/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /concepts/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /concepts/capabilities/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /concepts/boundaries/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /concepts/navigation/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /concepts/locality/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /concepts/evidence/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /concepts/state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /concepts/obligations/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /concepts/transitions/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /concepts/verification/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /csharp/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/greenfield-2a/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/greenfield-1/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/helixnote-1/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/greenfield-2b/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/helixnote-3/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/te-controlled-baseline/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/helixnote-2/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/te-conventional-csharp/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/te-conventional-js/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/te-csharp-state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/te-fsharp-state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /research/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /how-it-works/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /glossary/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /results/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /examples/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /why/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > an unknown route is reported as not found (site.spec.mjs:248)",
+        "passed: chromium > site.spec.mjs > every chrome action is reachable by keyboard (site.spec.mjs:276)"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "home",
+      "path": "/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [
+        {
+          "id": "cta-row-1",
+          "relation": "centerline",
+          "toleranceCssPx": 1,
+          "targets": [
+            {
+              "role": "link",
+              "name": "See how Ordo works"
+            },
+            {
+              "role": "link",
+              "name": "See it in C#"
+            },
+            {
+              "role": "link",
+              "name": "Adopt it incrementally"
+            }
+          ],
+          "rationale": "ULI-L10: Calls to action in one .actions row share a centerline where they fit on one line (declared at 1280px)",
+          "evidence": [
+            "status: pass",
+            "passed: chromium > site.spec.mjs > home: cta-row-1 aligns at 1280px (site.spec.mjs:258)"
+          ]
+        },
+        {
+          "id": "cta-row-1-height",
+          "relation": "bottom-edge",
+          "toleranceCssPx": 1,
+          "targets": [
+            {
+              "role": "link",
+              "name": "See how Ordo works"
+            },
+            {
+              "role": "link",
+              "name": "See it in C#"
+            },
+            {
+              "role": "link",
+              "name": "Adopt it incrementally"
+            }
+          ],
+          "rationale": "ULI-L02: Peer calls to action in one row have one intrinsic height (min-height 3rem token) (declared at 1280px)",
+          "evidence": [
+            "status: pass",
+            "passed: chromium > site.spec.mjs > home: cta-row-1-height aligns at 1280px (site.spec.mjs:258)"
+          ]
+        },
+        {
+          "id": "cta-row-2",
+          "relation": "centerline",
+          "toleranceCssPx": 1,
+          "targets": [
+            {
+              "role": "link",
+              "name": "Review the measurements"
+            },
+            {
+              "role": "link",
+              "name": "Compare with conventional development"
+            }
+          ],
+          "rationale": "ULI-L10: Calls to action in one .actions row share a centerline where they fit on one line (declared at 1280px)",
+          "evidence": [
+            "status: pass",
+            "passed: chromium > site.spec.mjs > home: cta-row-2 aligns at 1280px (site.spec.mjs:258)"
+          ]
+        },
+        {
+          "id": "cta-row-2-height",
+          "relation": "bottom-edge",
+          "toleranceCssPx": 1,
+          "targets": [
+            {
+              "role": "link",
+              "name": "Review the measurements"
+            },
+            {
+              "role": "link",
+              "name": "Compare with conventional development"
+            }
+          ],
+          "rationale": "ULI-L02: Peer calls to action in one row have one intrinsic height (min-height 3rem token) (declared at 1280px)",
+          "evidence": [
+            "status: pass",
+            "passed: chromium > site.spec.mjs > home: cta-row-2-height aligns at 1280px (site.spec.mjs:258)"
+          ]
+        },
+        {
+          "id": "cta-row-3",
+          "relation": "centerline",
+          "toleranceCssPx": 1,
+          "targets": [
+            {
+              "role": "link",
+              "name": "Walk through the method"
+            },
+            {
+              "role": "link",
+              "name": "Read the C# implementation examples"
+            },
+            {
+              "role": "link",
+              "name": "See the adoption path"
+            }
+          ],
+          "rationale": "ULI-L10: Calls to action in one .actions row share a centerline where they fit on one line (declared at 1280px)",
+          "evidence": [
+            "status: pass",
+            "passed: chromium > site.spec.mjs > home: cta-row-3 aligns at 1280px (site.spec.mjs:258)"
+          ]
+        },
+        {
+          "id": "cta-row-3-height",
+          "relation": "bottom-edge",
+          "toleranceCssPx": 1,
+          "targets": [
+            {
+              "role": "link",
+              "name": "Walk through the method"
+            },
+            {
+              "role": "link",
+              "name": "Read the C# implementation examples"
+            },
+            {
+              "role": "link",
+              "name": "See the adoption path"
+            }
+          ],
+          "rationale": "ULI-L02: Peer calls to action in one row have one intrinsic height (min-height 3rem token) (declared at 1280px)",
+          "evidence": [
+            "status: pass",
+            "passed: chromium > site.spec.mjs > home: cta-row-3-height aligns at 1280px (site.spec.mjs:258)"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "id": "cta-see-how-ordo-works",
+          "control": {
+            "role": "link",
+            "name": "See how Ordo works"
+          },
+          "intent": "Navigate to /how-it-works/",
+          "expectedOutcome": "URL becomes /how-it-works/ and the destination's heading \"How Ordo works\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > home: cta-see-how-ordo-works reaches /how-it-works/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > home: cta-see-how-ordo-works reaches /how-it-works/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > home/cta-see-how-ordo-works destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "cta-see-it-in-c",
+          "control": {
+            "role": "link",
+            "name": "See it in C#"
+          },
+          "intent": "Navigate to /csharp/",
+          "expectedOutcome": "URL becomes /csharp/ and the destination's heading \"Ordo in C#\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > home: cta-see-it-in-c reaches /csharp/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > home: cta-see-it-in-c reaches /csharp/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > home/cta-see-it-in-c destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "cta-adopt-it-incrementally",
+          "control": {
+            "role": "link",
+            "name": "Adopt it incrementally"
+          },
+          "intent": "Navigate to /adoption/",
+          "expectedOutcome": "URL becomes /adoption/ and the destination's heading \"Adoption\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > home: cta-adopt-it-incrementally reaches /adoption/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > home: cta-adopt-it-incrementally reaches /adoption/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > home/cta-adopt-it-incrementally destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "cta-see-the-full-c-example",
+          "control": {
+            "role": "link",
+            "name": "See the full C# example"
+          },
+          "intent": "Navigate to /csharp/",
+          "expectedOutcome": "URL becomes /csharp/ and the destination's heading \"Ordo in C#\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > home: cta-see-the-full-c-example reaches /csharp/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > home: cta-see-the-full-c-example reaches /csharp/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > home/cta-see-the-full-c-example destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "cta-see-the-full-evidence",
+          "control": {
+            "role": "link",
+            "name": "See the full evidence"
+          },
+          "intent": "Navigate to /results/",
+          "expectedOutcome": "URL becomes /results/ and the destination's heading \"What happened when we measured it\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > home: cta-see-the-full-evidence reaches /results/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > home: cta-see-the-full-evidence reaches /results/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > home/cta-see-the-full-evidence destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "cta-review-the-measurements",
+          "control": {
+            "role": "link",
+            "name": "Review the measurements"
+          },
+          "intent": "Navigate to /results/",
+          "expectedOutcome": "URL becomes /results/ and the destination's heading \"What happened when we measured it\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > home: cta-review-the-measurements reaches /results/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > home: cta-review-the-measurements reaches /results/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > home/cta-review-the-measurements destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "cta-compare-with-conventional-development",
+          "control": {
+            "role": "link",
+            "name": "Compare with conventional development"
+          },
+          "intent": "Navigate to /comparison/",
+          "expectedOutcome": "URL becomes /comparison/ and the destination's heading \"Ordo and conventional development\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > home: cta-compare-with-conventional-development reaches /comparison/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > home: cta-compare-with-conventional-development reaches /comparison/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > home/cta-compare-with-conventional-development destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "cta-walk-through-the-method",
+          "control": {
+            "role": "link",
+            "name": "Walk through the method"
+          },
+          "intent": "Navigate to /how-it-works/",
+          "expectedOutcome": "URL becomes /how-it-works/ and the destination's heading \"How Ordo works\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > home: cta-walk-through-the-method reaches /how-it-works/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > home: cta-walk-through-the-method reaches /how-it-works/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > home/cta-walk-through-the-method destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "cta-read-the-c-implementation-examples",
+          "control": {
+            "role": "link",
+            "name": "Read the C# implementation examples"
+          },
+          "intent": "Navigate to /csharp/",
+          "expectedOutcome": "URL becomes /csharp/ and the destination's heading \"Ordo in C#\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > home: cta-read-the-c-implementation-examples reaches /csharp/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > home: cta-read-the-c-implementation-examples reaches /csharp/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > home/cta-read-the-c-implementation-examples destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "cta-see-the-adoption-path",
+          "control": {
+            "role": "link",
+            "name": "See the adoption path"
+          },
+          "intent": "Navigate to /adoption/",
+          "expectedOutcome": "URL becomes /adoption/ and the destination's heading \"Adoption\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > home: cta-see-the-adoption-path reaches /adoption/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > home: cta-see-the-adoption-path reaches /adoption/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > home/cta-see-the-adoption-path destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        }
+      ],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > / renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > / renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > / renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > / renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > / reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > / reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > / reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > / reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > / renders only declared actions (site.spec.mjs:79)",
+        "passed: chromium > site.spec.mjs > reduced motion removes smooth scrolling and transitions (site.spec.mjs:286)",
+        "passed: chromium > site.spec.mjs > forced colors keep filled controls bounded and navigation visible (site.spec.mjs:294)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > / content links resolve (site.spec.mjs:110)"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "about",
+      "path": "/about/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /about/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /about/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /about/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /about/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /about/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /about/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /about/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /about/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /about/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /about/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "adoption",
+      "path": "/adoption/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /adoption/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /adoption/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /adoption/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /adoption/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /adoption/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /adoption/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /adoption/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /adoption/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /adoption/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /adoption/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "comparison",
+      "path": "/comparison/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [
+        {
+          "id": "cta-row-1",
+          "relation": "centerline",
+          "toleranceCssPx": 1,
+          "targets": [
+            {
+              "role": "link",
+              "name": "The measurements"
+            },
+            {
+              "role": "link",
+              "name": "How to start"
+            }
+          ],
+          "rationale": "ULI-L10: Calls to action in one .actions row share a centerline where they fit on one line (declared at 1280px)",
+          "evidence": [
+            "status: pass",
+            "passed: chromium > site.spec.mjs > comparison: cta-row-1 aligns at 1280px (site.spec.mjs:258)"
+          ]
+        },
+        {
+          "id": "cta-row-1-height",
+          "relation": "bottom-edge",
+          "toleranceCssPx": 1,
+          "targets": [
+            {
+              "role": "link",
+              "name": "The measurements"
+            },
+            {
+              "role": "link",
+              "name": "How to start"
+            }
+          ],
+          "rationale": "ULI-L02: Peer calls to action in one row have one intrinsic height (min-height 3rem token) (declared at 1280px)",
+          "evidence": [
+            "status: pass",
+            "passed: chromium > site.spec.mjs > comparison: cta-row-1-height aligns at 1280px (site.spec.mjs:258)"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "id": "cta-the-measurements",
+          "control": {
+            "role": "link",
+            "name": "The measurements"
+          },
+          "intent": "Navigate to /results/",
+          "expectedOutcome": "URL becomes /results/ and the destination's heading \"What happened when we measured it\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > comparison: cta-the-measurements reaches /results/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > comparison: cta-the-measurements reaches /results/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > comparison/cta-the-measurements destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "cta-how-to-start",
+          "control": {
+            "role": "link",
+            "name": "How to start"
+          },
+          "intent": "Navigate to /adoption/",
+          "expectedOutcome": "URL becomes /adoption/ and the destination's heading \"Adoption\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > comparison: cta-how-to-start reaches /adoption/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > comparison: cta-how-to-start reaches /adoption/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > comparison/cta-how-to-start destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        }
+      ],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /comparison/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /comparison/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /comparison/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /comparison/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /comparison/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /comparison/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /comparison/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /comparison/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /comparison/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /comparison/ content links resolve (site.spec.mjs:110)"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "concepts",
+      "path": "/concepts/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /concepts/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /concepts/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /concepts/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /concepts/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /concepts/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /concepts/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /concepts/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /concepts/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /concepts/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /concepts/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "concepts-boundaries",
+      "path": "/concepts/boundaries/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /concepts/boundaries/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /concepts/boundaries/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /concepts/boundaries/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /concepts/boundaries/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /concepts/boundaries/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /concepts/boundaries/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /concepts/boundaries/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /concepts/boundaries/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /concepts/boundaries/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /concepts/boundaries/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "concepts-capabilities",
+      "path": "/concepts/capabilities/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /concepts/capabilities/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /concepts/capabilities/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /concepts/capabilities/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /concepts/capabilities/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /concepts/capabilities/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /concepts/capabilities/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /concepts/capabilities/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /concepts/capabilities/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /concepts/capabilities/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /concepts/capabilities/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "concepts-evidence",
+      "path": "/concepts/evidence/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /concepts/evidence/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /concepts/evidence/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /concepts/evidence/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /concepts/evidence/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /concepts/evidence/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /concepts/evidence/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /concepts/evidence/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /concepts/evidence/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /concepts/evidence/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /concepts/evidence/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "concepts-locality",
+      "path": "/concepts/locality/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /concepts/locality/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /concepts/locality/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /concepts/locality/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /concepts/locality/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /concepts/locality/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /concepts/locality/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /concepts/locality/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /concepts/locality/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /concepts/locality/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /concepts/locality/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "concepts-navigation",
+      "path": "/concepts/navigation/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /concepts/navigation/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /concepts/navigation/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /concepts/navigation/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /concepts/navigation/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /concepts/navigation/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /concepts/navigation/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /concepts/navigation/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /concepts/navigation/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /concepts/navigation/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /concepts/navigation/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "concepts-obligations",
+      "path": "/concepts/obligations/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /concepts/obligations/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /concepts/obligations/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /concepts/obligations/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /concepts/obligations/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /concepts/obligations/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /concepts/obligations/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /concepts/obligations/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /concepts/obligations/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /concepts/obligations/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /concepts/obligations/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "concepts-state",
+      "path": "/concepts/state/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /concepts/state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /concepts/state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /concepts/state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /concepts/state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /concepts/state/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /concepts/state/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /concepts/state/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /concepts/state/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /concepts/state/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /concepts/state/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "concepts-transitions",
+      "path": "/concepts/transitions/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /concepts/transitions/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /concepts/transitions/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /concepts/transitions/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /concepts/transitions/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /concepts/transitions/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /concepts/transitions/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /concepts/transitions/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /concepts/transitions/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /concepts/transitions/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /concepts/transitions/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "concepts-verification",
+      "path": "/concepts/verification/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /concepts/verification/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /concepts/verification/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /concepts/verification/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /concepts/verification/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /concepts/verification/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /concepts/verification/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /concepts/verification/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /concepts/verification/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /concepts/verification/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /concepts/verification/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "csharp",
+      "path": "/csharp/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [
+        {
+          "id": "cta-row-1",
+          "relation": "centerline",
+          "toleranceCssPx": 1,
+          "targets": [
+            {
+              "role": "link",
+              "name": "Return to the method"
+            },
+            {
+              "role": "link",
+              "name": "See the measured examples"
+            }
+          ],
+          "rationale": "ULI-L10: Calls to action in one .actions row share a centerline where they fit on one line (declared at 1280px)",
+          "evidence": [
+            "status: pass",
+            "passed: chromium > site.spec.mjs > csharp: cta-row-1 aligns at 1280px (site.spec.mjs:258)"
+          ]
+        },
+        {
+          "id": "cta-row-1-height",
+          "relation": "bottom-edge",
+          "toleranceCssPx": 1,
+          "targets": [
+            {
+              "role": "link",
+              "name": "Return to the method"
+            },
+            {
+              "role": "link",
+              "name": "See the measured examples"
+            }
+          ],
+          "rationale": "ULI-L02: Peer calls to action in one row have one intrinsic height (min-height 3rem token) (declared at 1280px)",
+          "evidence": [
+            "status: pass",
+            "passed: chromium > site.spec.mjs > csharp: cta-row-1-height aligns at 1280px (site.spec.mjs:258)"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "id": "cta-return-to-the-method",
+          "control": {
+            "role": "link",
+            "name": "Return to the method"
+          },
+          "intent": "Navigate to /how-it-works/",
+          "expectedOutcome": "URL becomes /how-it-works/ and the destination's heading \"How Ordo works\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > csharp: cta-return-to-the-method reaches /how-it-works/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > csharp: cta-return-to-the-method reaches /how-it-works/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > csharp/cta-return-to-the-method destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "cta-see-the-measured-examples",
+          "control": {
+            "role": "link",
+            "name": "See the measured examples"
+          },
+          "intent": "Navigate to /examples/",
+          "expectedOutcome": "URL becomes /examples/ and the destination's heading \"What this looks like in code\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > csharp: cta-see-the-measured-examples reaches /examples/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > csharp: cta-see-the-measured-examples reaches /examples/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > csharp/cta-see-the-measured-examples destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        }
+      ],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /csharp/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /csharp/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /csharp/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /csharp/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /csharp/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /csharp/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /csharp/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /csharp/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /csharp/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /csharp/ content links resolve (site.spec.mjs:110)"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "evidence",
+      "path": "/evidence/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /evidence/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /evidence/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /evidence/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /evidence/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /evidence/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /evidence/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "evidence-greenfield-1",
+      "path": "/evidence/greenfield-1/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/greenfield-1/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/greenfield-1/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/greenfield-1/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/greenfield-1/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /evidence/greenfield-1/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /evidence/greenfield-1/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /evidence/greenfield-1/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /evidence/greenfield-1/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /evidence/greenfield-1/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /evidence/greenfield-1/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "evidence-greenfield-2a",
+      "path": "/evidence/greenfield-2a/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/greenfield-2a/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/greenfield-2a/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/greenfield-2a/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/greenfield-2a/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /evidence/greenfield-2a/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /evidence/greenfield-2a/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /evidence/greenfield-2a/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /evidence/greenfield-2a/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /evidence/greenfield-2a/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /evidence/greenfield-2a/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "evidence-greenfield-2b",
+      "path": "/evidence/greenfield-2b/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/greenfield-2b/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/greenfield-2b/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/greenfield-2b/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/greenfield-2b/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /evidence/greenfield-2b/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /evidence/greenfield-2b/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /evidence/greenfield-2b/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /evidence/greenfield-2b/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /evidence/greenfield-2b/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /evidence/greenfield-2b/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "evidence-helixnote-1",
+      "path": "/evidence/helixnote-1/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/helixnote-1/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/helixnote-1/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/helixnote-1/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/helixnote-1/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /evidence/helixnote-1/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /evidence/helixnote-1/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /evidence/helixnote-1/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /evidence/helixnote-1/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /evidence/helixnote-1/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /evidence/helixnote-1/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "evidence-helixnote-2",
+      "path": "/evidence/helixnote-2/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/helixnote-2/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/helixnote-2/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/helixnote-2/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/helixnote-2/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /evidence/helixnote-2/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /evidence/helixnote-2/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /evidence/helixnote-2/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /evidence/helixnote-2/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /evidence/helixnote-2/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /evidence/helixnote-2/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "evidence-helixnote-3",
+      "path": "/evidence/helixnote-3/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/helixnote-3/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/helixnote-3/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/helixnote-3/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/helixnote-3/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /evidence/helixnote-3/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /evidence/helixnote-3/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /evidence/helixnote-3/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /evidence/helixnote-3/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /evidence/helixnote-3/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /evidence/helixnote-3/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "evidence-te-controlled-baseline",
+      "path": "/evidence/te-controlled-baseline/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/te-controlled-baseline/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/te-controlled-baseline/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/te-controlled-baseline/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/te-controlled-baseline/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /evidence/te-controlled-baseline/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /evidence/te-controlled-baseline/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /evidence/te-controlled-baseline/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /evidence/te-controlled-baseline/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /evidence/te-controlled-baseline/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /evidence/te-controlled-baseline/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "evidence-te-conventional-csharp",
+      "path": "/evidence/te-conventional-csharp/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/te-conventional-csharp/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/te-conventional-csharp/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/te-conventional-csharp/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/te-conventional-csharp/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /evidence/te-conventional-csharp/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /evidence/te-conventional-csharp/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /evidence/te-conventional-csharp/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /evidence/te-conventional-csharp/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /evidence/te-conventional-csharp/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /evidence/te-conventional-csharp/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "evidence-te-conventional-js",
+      "path": "/evidence/te-conventional-js/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/te-conventional-js/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/te-conventional-js/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/te-conventional-js/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/te-conventional-js/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /evidence/te-conventional-js/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /evidence/te-conventional-js/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /evidence/te-conventional-js/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /evidence/te-conventional-js/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /evidence/te-conventional-js/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /evidence/te-conventional-js/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "evidence-te-csharp-state",
+      "path": "/evidence/te-csharp-state/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/te-csharp-state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/te-csharp-state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/te-csharp-state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/te-csharp-state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /evidence/te-csharp-state/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /evidence/te-csharp-state/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /evidence/te-csharp-state/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /evidence/te-csharp-state/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /evidence/te-csharp-state/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /evidence/te-csharp-state/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "evidence-te-fsharp-state",
+      "path": "/evidence/te-fsharp-state/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /evidence/te-fsharp-state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /evidence/te-fsharp-state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /evidence/te-fsharp-state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /evidence/te-fsharp-state/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /evidence/te-fsharp-state/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /evidence/te-fsharp-state/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /evidence/te-fsharp-state/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /evidence/te-fsharp-state/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /evidence/te-fsharp-state/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /evidence/te-fsharp-state/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "examples",
+      "path": "/examples/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [
+        {
+          "id": "cta-open-ordo-in-c",
+          "control": {
+            "role": "link",
+            "name": "Open Ordo in C#"
+          },
+          "intent": "Navigate to /csharp/",
+          "expectedOutcome": "URL becomes /csharp/ and the destination's heading \"Ordo in C#\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > examples: cta-open-ordo-in-c reaches /csharp/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > examples: cta-open-ordo-in-c reaches /csharp/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > examples/cta-open-ordo-in-c destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        }
+      ],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /examples/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /examples/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /examples/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /examples/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /examples/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /examples/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /examples/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /examples/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /examples/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /examples/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "glossary",
+      "path": "/glossary/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /glossary/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /glossary/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /glossary/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /glossary/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /glossary/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /glossary/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /glossary/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /glossary/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /glossary/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /glossary/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "how-it-works",
+      "path": "/how-it-works/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [
+        {
+          "id": "cta-row-1",
+          "relation": "centerline",
+          "toleranceCssPx": 1,
+          "targets": [
+            {
+              "role": "link",
+              "name": "See the method in C#"
+            },
+            {
+              "role": "link",
+              "name": "Adopt Ordo incrementally"
+            },
+            {
+              "role": "link",
+              "name": "See what has been measured"
+            }
+          ],
+          "rationale": "ULI-L10: Calls to action in one .actions row share a centerline where they fit on one line (declared at 1280px)",
+          "evidence": [
+            "status: pass",
+            "passed: chromium > site.spec.mjs > how-it-works: cta-row-1 aligns at 1280px (site.spec.mjs:258)"
+          ]
+        },
+        {
+          "id": "cta-row-1-height",
+          "relation": "bottom-edge",
+          "toleranceCssPx": 1,
+          "targets": [
+            {
+              "role": "link",
+              "name": "See the method in C#"
+            },
+            {
+              "role": "link",
+              "name": "Adopt Ordo incrementally"
+            },
+            {
+              "role": "link",
+              "name": "See what has been measured"
+            }
+          ],
+          "rationale": "ULI-L02: Peer calls to action in one row have one intrinsic height (min-height 3rem token) (declared at 1280px)",
+          "evidence": [
+            "status: pass",
+            "passed: chromium > site.spec.mjs > how-it-works: cta-row-1-height aligns at 1280px (site.spec.mjs:258)"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "id": "cta-open-the-c-examples",
+          "control": {
+            "role": "link",
+            "name": "Open the C# examples"
+          },
+          "intent": "Navigate to /csharp/",
+          "expectedOutcome": "URL becomes /csharp/ and the destination's heading \"Ordo in C#\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > how-it-works: cta-open-the-c-examples reaches /csharp/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > how-it-works: cta-open-the-c-examples reaches /csharp/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > how-it-works/cta-open-the-c-examples destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "cta-see-the-method-in-c",
+          "control": {
+            "role": "link",
+            "name": "See the method in C#"
+          },
+          "intent": "Navigate to /csharp/",
+          "expectedOutcome": "URL becomes /csharp/ and the destination's heading \"Ordo in C#\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > how-it-works: cta-see-the-method-in-c reaches /csharp/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > how-it-works: cta-see-the-method-in-c reaches /csharp/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > how-it-works/cta-see-the-method-in-c destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "cta-adopt-ordo-incrementally",
+          "control": {
+            "role": "link",
+            "name": "Adopt Ordo incrementally"
+          },
+          "intent": "Navigate to /adoption/",
+          "expectedOutcome": "URL becomes /adoption/ and the destination's heading \"Adoption\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > how-it-works: cta-adopt-ordo-incrementally reaches /adoption/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > how-it-works: cta-adopt-ordo-incrementally reaches /adoption/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > how-it-works/cta-adopt-ordo-incrementally destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "cta-see-what-has-been-measured",
+          "control": {
+            "role": "link",
+            "name": "See what has been measured"
+          },
+          "intent": "Navigate to /results/",
+          "expectedOutcome": "URL becomes /results/ and the destination's heading \"What happened when we measured it\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > how-it-works: cta-see-what-has-been-measured reaches /results/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > how-it-works: cta-see-what-has-been-measured reaches /results/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > how-it-works/cta-see-what-has-been-measured destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        }
+      ],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /how-it-works/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /how-it-works/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /how-it-works/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /how-it-works/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /how-it-works/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /how-it-works/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /how-it-works/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /how-it-works/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /how-it-works/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /how-it-works/ content links resolve (site.spec.mjs:110)"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "research",
+      "path": "/research/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /research/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /research/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /research/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /research/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /research/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /research/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /research/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /research/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /research/ renders only declared actions (site.spec.mjs:79)",
+        "passed: chromium > site.spec.mjs > /research/ in-page links land below the sticky header at 320px (site.spec.mjs:226)",
+        "passed: chromium > site.spec.mjs > /research/ in-page links land below the sticky header at 1280px (site.spec.mjs:226)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /research/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "results",
+      "path": "/results/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [],
+      "actions": [],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /results/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /results/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /results/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /results/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /results/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /results/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /results/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /results/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /results/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /results/ content links resolve (site.spec.mjs:110)",
+        "alignment: not-applicable beyond the shared chrome; the page declares no side-by-side peer controls"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    },
+    {
+      "id": "why",
+      "path": "/why/",
+      "kind": "marketing",
+      "status": "pass",
+      "viewportWidths": [
+        320,
+        390,
+        768,
+        1280
+      ],
+      "alignmentGroups": [
+        {
+          "id": "cta-row-1",
+          "relation": "centerline",
+          "toleranceCssPx": 1,
+          "targets": [
+            {
+              "role": "link",
+              "name": "How it works"
+            },
+            {
+              "role": "link",
+              "name": "Compared with conventional"
+            }
+          ],
+          "rationale": "ULI-L10: Calls to action in one .actions row share a centerline where they fit on one line (declared at 1280px)",
+          "evidence": [
+            "status: pass",
+            "passed: chromium > site.spec.mjs > why: cta-row-1 aligns at 1280px (site.spec.mjs:258)"
+          ]
+        },
+        {
+          "id": "cta-row-1-height",
+          "relation": "bottom-edge",
+          "toleranceCssPx": 1,
+          "targets": [
+            {
+              "role": "link",
+              "name": "How it works"
+            },
+            {
+              "role": "link",
+              "name": "Compared with conventional"
+            }
+          ],
+          "rationale": "ULI-L02: Peer calls to action in one row have one intrinsic height (min-height 3rem token) (declared at 1280px)",
+          "evidence": [
+            "status: pass",
+            "passed: chromium > site.spec.mjs > why: cta-row-1-height aligns at 1280px (site.spec.mjs:258)"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "id": "cta-how-it-works",
+          "control": {
+            "role": "link",
+            "name": "How it works"
+          },
+          "intent": "Navigate to /how-it-works/",
+          "expectedOutcome": "URL becomes /how-it-works/ and the destination's heading \"How Ordo works\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > why: cta-how-it-works reaches /how-it-works/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > why: cta-how-it-works reaches /how-it-works/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > why/cta-how-it-works destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        },
+        {
+          "id": "cta-compared-with-conventional",
+          "control": {
+            "role": "link",
+            "name": "Compared with conventional"
+          },
+          "intent": "Navigate to /comparison/",
+          "expectedOutcome": "URL becomes /comparison/ and the destination's heading \"Ordo and conventional development\" is shown",
+          "status": "pass",
+          "evidence": [
+            "passed: chromium > site.spec.mjs > navigation outcomes at 390px > why: cta-compared-with-conventional reaches /comparison/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > navigation outcomes at 1280px > why: cta-compared-with-conventional reaches /comparison/ (site.spec.mjs:173)",
+            "passed: chromium > site.spec.mjs > why/cta-compared-with-conventional destination is valid (site.spec.mjs:138)"
+          ],
+          "resetStrategy": "Stateless static page: reload the source route"
+        }
+      ],
+      "evidence": [
+        "passed: chromium > site.spec.mjs > at 320px > /why/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 390px > /why/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 768px > /why/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 1280px > /why/ renders without overflow, with intact navigation labels (site.spec.mjs:43)",
+        "passed: chromium > site.spec.mjs > at 320px with 200% text > /why/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 390px with 200% text > /why/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 768px with 200% text > /why/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > at 1280px with 200% text > /why/ reflows without overflow (site.spec.mjs:65)",
+        "passed: chromium > site.spec.mjs > /why/ renders only declared actions (site.spec.mjs:79)",
+        "content links (every rendered link in <main>, destination verified): passed: chromium > site.spec.mjs > /why/ content links resolve (site.spec.mjs:110)"
+      ],
+      "unknownScope": [
+        "Translated and right-to-left text are not exercised (the site ships English only).",
+        "Long labels beyond the shipped content are not injected.",
+        "Browser page zoom is approximated by the contract widths plus a 200% default text size; WebKit and Firefox are not exercised.",
+        "Availability of external destinations (GitHub, publishers, research hosts) is not verified; only that each is an https URL.",
+        "Google Fonts are loaded from the network when reachable; with fonts blocked the fallback stack is measured instead."
+      ]
+    }
+  ],
+  "exceptions": [],
+  "notes": "Contract visual-engineering/UI-LAYOUT-INTERACTION@1.0.0 (kemiller2002/visual-engineering@8da8fbc). Surface: the Ordo website generated by src/Ordo.Site from site/ and deployed to GitHub Pages (ordo.echelonfoundry.com) by .github/workflows/pages.yml. Helpers: @echelon-foundry/forma-conformance 0.1.0 vendored from kemiller2002/forma@769fa13 (Forma PR #158). Generated by npm run ui:conformance in tests/ui-conformance; statuses derive only from executed Playwright tests."
+}

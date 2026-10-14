@@ -158,13 +158,19 @@ let verification () : string =
         "figure"
         [ "class", "diagram diagram-table" ]
         (concat
-            [ element
-                  "table"
-                  [ "class", "matrix" ]
-                  (concat
-                      [ text "caption" [] "Verification mechanisms and their blind spots"
-                        element "thead" [] head
-                        element "tbody" [] (rows |> List.map renderRow |> concat) ])
+            [ // The matrix keeps its columns at narrow widths; the contained
+              // scroller (the same .table-scroll every other matrix uses) keeps
+              // the page itself from scrolling horizontally (ULI-L05).
+              element
+                  "div"
+                  [ "class", "table-scroll" ]
+                  (element
+                      "table"
+                      [ "class", "matrix" ]
+                      (concat
+                          [ text "caption" [] "Verification mechanisms and their blind spots"
+                            element "thead" [] head
+                            element "tbody" [] (rows |> List.map renderRow |> concat) ]))
               text
                   "figcaption"
                   []

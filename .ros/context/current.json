@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-14T01:03:25.295Z",
+  "updatedAt": "2026-10-14T08:25:25.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2136,6 +2136,55 @@
         }
       },
       "completedAt": "2026-10-14T01:03:25.295Z"
+    },
+    {
+      "id": "GH-76",
+      "type": "task",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "site/assets/css/ordo.css"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Site/Diagrams.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/ui-conformance/site.spec.mjs"
+        },
+        {
+          "type": "tests",
+          "path": "docs/ui-conformance/evidence.json"
+        }
+      ],
+      "updatedAt": "2026-10-14T08:25:25.000Z",
+      "telemetryExecutionIds": [
+        "EXE-20261014T002833753Z-d0df46a2"
+      ],
+      "latestCheckpoint": {
+        "id": "077678f1141ebe07628f4332",
+        "recordedAt": "2026-10-14T08:25:20.000Z",
+        "executionId": "EXE-20261014T002833753Z-d0df46a2",
+        "repository": "ordo",
+        "branch": "feat/ui-conformance-2026-10",
+        "commit": "f886c91d671587b0dcad7740c2d55d9a85283688",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "feat/ui-conformance-2026-10",
+        "remoteCommit": "f886c91d671587b0dcad7740c2d55d9a85283688",
+        "summary": "Ordo site fixes (CSS, Diagrams.fs), tests/ui-conformance suite (446/446 passing), blocking pages.yml job, baseline and final evidence in docs/ui-conformance; merged with main",
+        "nextAction": "Complete GH-76, commit Praxis state, mark PR #89 ready",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-14T08:25:25.000Z"
     }
   ]
 }

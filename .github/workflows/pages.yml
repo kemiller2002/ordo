@@ -13,6 +13,7 @@ on:
     branches:
       - main
     paths:
+      - "tests/ui-conformance/**"
       - "site/**"
       - "src/Ordo.Site/**"
       - "src/Sde.Core/**"
@@ -21,6 +22,7 @@ on:
       - ".github/workflows/pages.yml"
   pull_request:
     paths:
+      - "tests/ui-conformance/**"
       - "site/**"
       - "src/Ordo.Site/**"
       - "src/Sde.Core/**"
@@ -107,12 +109,57 @@ jobs:
           path: dist
           retention-days: 7
 
+  # visual-engineering/UI-LAYOUT-INTERACTION@1.0.0 conformance (issue #76).
+  # Blocking: deploy needs it. Any failing test, schema-invalid evidence or
+  # failing surface/action fails the job. Evidence, results and traces are
+  # uploaded whatever the outcome.
+  ui-conformance:
+    name: UI conformance
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tests/ui-conformance/package-lock.json
+
+      - name: Install the conformance suite
+        working-directory: tests/ui-conformance
+        run: npm ci
+
+      - name: Install Chromium for Playwright
+        working-directory: tests/ui-conformance
+        run: npx playwright install --with-deps chromium
+
+      - name: Run UI conformance
+        working-directory: tests/ui-conformance
+        run: npm run ui:conformance
+        env:
+          UI_CONFORMANCE_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+          UI_CONFORMANCE_WORKERS: "4"
+
+      - name: Upload evidence, results and traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-conformance
+          path: tests/ui-conformance/test-results/
+          if-no-files-found: warn
+          retention-days: 30
+
   deploy:
     name: Deploy to GitHub Pages
     # Pull requests build and validate but never deploy: a proposed change is
     # checked, not published.
     if: github.event_name != 'pull_request'
-    needs: build
+    needs: [build, ui-conformance]
     runs-on: ubuntu-latest
     permissions:
       contents: read

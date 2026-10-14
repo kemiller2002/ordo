@@ -62,6 +62,26 @@ the previous `dist/` is left untouched. `dist/` is not tracked.
 To preview, serve `dist/` under the path prefix in `site/data/site.json`, or
 set `pathPrefix` to `""` locally and serve `dist/` at a root.
 
+## UI conformance
+
+`tests/ui-conformance/` checks the generated site against
+`visual-engineering/UI-LAYOUT-INTERACTION@1.0.0` in Chromium: every route at
+320, 390, 768 and 1280 px and at 200% text, every navigation and call-to-action
+outcome, every content link's destination, in-page anchors clearing the sticky
+header, declared alignment groups, keyboard reach and reduced motion. It writes
+schema-valid evidence to `tests/ui-conformance/test-results/evidence.json` and
+runs as the blocking `UI conformance` job in `.github/workflows/pages.yml`.
+
+```sh
+cd tests/ui-conformance
+npm ci
+npm run ui:conformance   # builds dist/, runs Playwright, validates the evidence
+```
+
+A new `.button` call to action in `site/content` is declared automatically
+from its markup; a new kind of control (a button, disclosure or form) fails the
+suite until `tests/ui-conformance/surfaces.mjs` declares its contract.
+
 ## Adding a page
 
 Create `site/content/<name>.html` beginning with a front-matter block:
