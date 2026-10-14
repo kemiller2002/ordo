@@ -378,6 +378,25 @@ let ``records bound to another blueprint are refused outright`` () =
     | Error [ RecordsBoundToOtherBlueprint _ ] -> ()
     | other -> failwithf "expected RecordsBoundToOtherBlueprint, got %A" other
 
+[<Fact>]
+let ``records bound to another cohort are refused outright`` () =
+    let input = timerInput ()
+    let records = input.Records |> Option.get
+    let input = { input with Records = Some { records with CohortId = "COH-OTHER" } }
+    match recognize BuiltIn.registry None input with
+    | Error [ RecordsBoundToOtherCohort("COH-OTHER", "COH-TIMER") ] -> ()
+    | other -> failwithf "expected RecordsBoundToOtherCohort, got %A" other
+
+[<Fact>]
+let ``duplicate decision records are refused outright`` () =
+    let input = timerInput ()
+    let records = input.Records |> Option.get
+    let duplicate = records.Records |> List.head
+    let input = { input with Records = Some { records with Records = duplicate :: records.Records } }
+    match recognize BuiltIn.registry None input with
+    | Error [ DuplicateRecordNode nodeId ] -> Assert.Equal(duplicate.NodeId, nodeId)
+    | other -> failwithf "expected DuplicateRecordNode, got %A" other
+
 // ---------------------------------------------------------------------------
 // Recognition and the generator agree; one run, no retry.
 // ---------------------------------------------------------------------------
