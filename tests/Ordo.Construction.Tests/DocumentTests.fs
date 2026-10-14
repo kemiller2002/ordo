@@ -332,3 +332,23 @@ let ``merging or overwriting a moved document cannot be expressed, and scopes ke
               "an unresolved scope cannot report a save applied", open' + "let x = OpenYardReconciled.Applied 1L", Some "FS0039"
               "codes without stated wire text get none", session + "let x = SessionYardTransition.wireText", Some "FS0039" ]
     Assert.True(List.isEmpty failures, String.concat "\n\n" failures)
+
+/// Decision records version 5: the same yard, generated from approved records
+/// instead of a hand-authored plan, constructs the same document tier as the
+/// GateYard golden (only the plan digest in the header differs), and the
+/// same wire text.
+[<Fact>]
+let ``a default plan from version 5 records constructs the golden document tier`` () =
+    let records =
+        System.IO.File.ReadAllText(System.IO.Path.Combine(repositoryRoot, "tests", "fixtures", "construction", "gate-document-synthetic", "construction-decisions-v5.json"))
+        |> Ordo.Core.ConstructionDecisions.readDecisionRecords |> ok "decisions"
+    let plan =
+        Ordo.Core.ConstructionDefaultPlan.generateDefaultPlan (prepared gateYard) records Ordo.Core.ConstructionDefaultPlan.ConstructionVocabulary.Version7
+        |> ok "default plan"
+    let c = construct plan.ValidatedPlan |> ok "construct"
+    let fromRecords = (c.Artifacts |> List.find (fun a -> a.Path.EndsWith ".Document.g.fs")).Content
+    let golden = System.IO.File.ReadAllText(goldenPath gateYard "generated/GateYard/GateYard.Document.g.fs")
+    let body (text: string) = text.Substring(text.IndexOf '\n')
+    Assert.Equal(body golden, body fromRecords)
+    let transition = (c.Artifacts |> List.find (fun a -> a.Path.EndsWith ".Transition.g.fs")).Content
+    Assert.Contains("| GateYardRefusalCode.YardMoved -> \"YARD_MOVED\"", transition)

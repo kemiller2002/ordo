@@ -217,11 +217,63 @@ These mutants of the split between the two choices each failed:
 - **Q4:** session scope accepts any `onReconcileMoved`.
 - **Q5:** the reader maps `conflict` to `escalate`.
 
-## Not in this increment
+## Default plans (decision records `ordo.construction-decisions/5`)
 
-- **Decision records** that state a document. Default plans cannot generate
-  vocabulary 7 yet; that needs records version 5 with a `document` content
-  kind.
+Version 5 records generate vocabulary 7 default plans, and only those. Every
+other pairing is refused with `DecisionSchemaVocabularyMismatch`. Version 5 is
+version 4 plus:
+
+```text
+{ kind: "document", idempotency?: durable | session, onSaveConflict?: refuse | escalate,
+  onReconcileMoved?: conflict | escalate, requirementKeys[] }
+codeAssignments target: { kind: "saveConflict" }
+refusalCodes[]: { code, wireText?, requirementKeys[] }
+```
+
+**An absent choice is never defaulted.** It generates `unresolved` and an
+`undecidedPersistence` obligation whose `planSubject` names the choice:
+`document:idempotency`, `document:onSaveConflict` or
+`document:onReconcileMoved`. The obligation's extension surface is
+`I<W>DocumentStore`.
+
+There is one case where nothing needs to be recorded. In session scope, the
+generated reconcile cannot attribute a moved version and always escalates,
+so an absent `onReconcileMoved` becomes `escalate` with no obligation. That
+value is the only one vocabulary 7 accepts in session scope. Recording any
+other value is refused by plan validation (`ReconcileMovedWithoutDurableScope`).
+
+A document record must sit on an approved Decision node and cite keys that
+the node owns. A record set holds at most one document
+(`MultipleDocumentRecords`). A document together with a persistence record is
+refused by plan validation (`PersistenceAndDocument`).
+
+Evidence:
+- **The yard's records.** The version 5 records
+  (`tests/fixtures/construction/gate-document-synthetic/construction-decisions-v5.json`)
+  construct a document tier byte-identical to the hand-authored `GateYard`
+  golden, apart from the plan digest. They also construct the same
+  `wireText` literals.
+- **Save conflict decided, reconcile case open.** With `onReconcileMoved`
+  omitted, the plan refuses save conflicts with their code and raises only
+  `document:onReconcileMoved`.
+
+Mutation checks: twelve mutants each failed the suite.
+
+- **R1:** an absent scope defaults to durable.
+- **R2:** an absent `onReconcileMoved` defaults to `conflict`.
+- **R3:** session scope does not fix reconcile to escalate.
+- **R4:** version 4 accepts `document`.
+- **R5:** version 4 accepts `wireText`.
+- **R6:** the writer drops `wireText`.
+- **R7:** version 4 accepts a `saveConflict` target.
+- **R8:** an absent `onSaveConflict` raises no obligation.
+- **R9:** vocabulary 7 pairs with version 4 records.
+- **R10:** two document records are accepted. This mutant survived at first;
+  a test now adds a second approved decision node in memory.
+- **R11:** the generator drops wire text.
+- **R12:** session scope still raises `document:onReconcileMoved`.
+
+## Not in this increment
 - **Validating the stored document.** An invalid stored document is a
   host-side load failure for now (`LoadFailed`). Field data and document
   validation stay extension contracts.

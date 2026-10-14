@@ -957,5 +957,50 @@
     "title": "Persist many workflow instances in one document with explicit save and reconcile",
     "type": "decision-record",
     "updated": "2026-10-13"
+  },
+  {
+    "created": "2026-10-14",
+    "id": "DF-SDE-2026-0029",
+    "path": "research/decisions/DF-SDE-2026-0029--state-documents-and-wire-text-in-decision-records.md",
+    "provenance": {
+      "contributions": {
+        "EXE-20261014T082757970Z-ac7e704c": {
+          "actor": {
+            "id": "anthropic/claude-code",
+            "kind": "agent",
+            "model": "unknown",
+            "provider": "anthropic",
+            "runtime": "claude-code"
+          },
+          "at": "2026-10-14T08:50:00Z",
+          "operations": [
+            "created"
+          ],
+          "reason": "Record decision records version 5 and code wire text"
+        }
+      }
+    },
+    "related_documents": [
+      "docs/architecture/document-persistence.md",
+      "docs/architecture/refusal-codes-and-branching.md",
+      "docs/architecture/construction-default-plan.md",
+      "schemas/ordo-construction-plan.vocabulary-7.schema.json",
+      "src/Ordo.Core/ConstructionDecisions.fs",
+      "src/Ordo.Core/ConstructionDefaultPlan.fs",
+      "tests/Ordo.Tests/ConstructionDecisionsV5Tests.fs"
+    ],
+    "status": "draft",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "construction",
+      "decision-records",
+      "document",
+      "wire-text",
+      "construct-010"
+    ],
+    "title": "State documents and code wire text in decision records version 5",
+    "type": "decision-record",
+    "updated": "2026-10-14"
   }
 ]

@@ -210,7 +210,7 @@ let ``a decided disposition recorded on a non-decision node is blocked, never ap
                                     | RecordedTransitionEffect(c, None, k, p) ->
                                         RecordedTransitionEffect(c, Some Ordo.Core.ConstructionPlan.EffectFailureDisposition.Remain, k, p)
                                     | p -> p)) }
-                    | StateModel _ | ConflictResolution _ | EffectPolicies _ | Persistence _ -> x) }
+                    | StateModel _ | ConflictResolution _ | EffectPolicies _ | Persistence _ | Document _ -> x) }
     let report = run (inputOf (blueprint ()) (Some decided))
     match outcomeOf "L131-L144" report with
     | Blocked [ UnusableContent(p, defects) ] ->
