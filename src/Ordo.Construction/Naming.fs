@@ -48,6 +48,9 @@ let failureDispositionType (workflow: SemanticName) = workflow.Key + "FailureDis
 let resultType (workflow: SemanticName) = workflow.Key + "Result"
 let orchestrationModule (workflow: SemanticName) = workflow.Key + "Orchestration"
 let refusalCodeType (workflow: SemanticName) = workflow.Key + "RefusalCode"
+let reconciliationType (workflow: SemanticName) = workflow.Key + "Reconciliation"
+let onFailedType (workflow: SemanticName) = workflow.Key + "OnFailed"
+let onUnknownType (workflow: SemanticName) = workflow.Key + "OnUnknown"
 
 /// Vocabulary 4: per branching transition, the closed union of its targets and
 /// the rules field that selects one. Semantic-name keys are ASCII letters and

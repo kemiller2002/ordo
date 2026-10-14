@@ -143,6 +143,12 @@ transition a closed target union and a required `Rules.Select_<From>_<Command>`
 selector. Without codes or branching, its F# tiers equal generator 3's. See
 [refusal codes and branching](refusal-codes-and-branching.md).
 
+**Generator `ordo.construction/5`** handles vocabulary 5 plans. Tier 3 settles
+each effect outcome by its policy: a definite failure is retried, then
+remains, proceeds, is compensated by host code or escalated; an unknown
+outcome is reconciled by host code or escalated, never performed again. See
+[effect outcome policies](effect-outcome-policies.md).
+
 ## No permissive defaults
 
 Every guard, invariant and port is a handwritten extension contract.

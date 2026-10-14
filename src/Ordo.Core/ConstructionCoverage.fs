@@ -192,7 +192,8 @@ let private isStructural operation =
     | DefineState _ | DefineTransition _ | DefineRefusal _ | DefineInvariant _ | BindCapability _
     | DefineBranchingTransition _ -> true
     | DefineWorkflow _ | DeclarePort _ | DeclareUnresolved _ | DeclarePairRule _
-    | DeclareUndecidedTransition _ | DeclareExtensionInventory _ | DefineRefusalCode _ | AssignRefusalCode _ -> false
+    | DeclareUndecidedTransition _ | DeclareExtensionInventory _ | DefineRefusalCode _ | AssignRefusalCode _
+    | DeclareEffectPolicy _ -> false
 
 let private distinctSorted values = values |> List.distinct |> List.sort
 

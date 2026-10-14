@@ -267,6 +267,12 @@ generate. See [decision classification](decision-classification.md).
 transitions, whose target a handwritten selector picks from a generated
 closed union. See [refusal codes and branching](refusal-codes-and-branching.md).
 
+`ordo.construction-vocabulary/5` replaces an effect port's `onFailure` with a
+mandatory effect policy that treats definite failures (bounded retry, remain,
+proceed, approved compensation, escalate) and unknown outcomes (reconcile,
+escalate; never retried) separately. See
+[effect outcome policies](effect-outcome-policies.md).
+
 ## Versioning
 
 An unknown `schemaVersion` or `vocabularyVersion` is refused, never upgraded

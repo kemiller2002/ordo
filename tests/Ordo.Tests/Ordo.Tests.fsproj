@@ -40,6 +40,7 @@
     <Compile Include="ConstructionVocabulary4Tests.fs" />
     <Compile Include="ConstructionConflictResolutionTests.fs" />
     <Compile Include="ConstructionDecisionsV3Tests.fs" />
+    <Compile Include="ConstructionVocabulary5Tests.fs" />
     <Compile Include="ConstructionPlanConsensusTests.fs" />
     <Compile Include="ConstructionDefaultPlanTests.fs" />
     <Compile Include="ConstructionLedgerTests.fs" />

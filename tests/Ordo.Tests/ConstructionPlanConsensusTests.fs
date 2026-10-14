@@ -93,6 +93,7 @@ let private withoutTrace operation =
     | DefineRefusalCode c -> DefineRefusalCode { c with Trace = noTrace }
     | AssignRefusalCode a -> AssignRefusalCode { a with Trace = noTrace }
     | DefineBranchingTransition b -> DefineBranchingTransition { b with Trace = noTrace }
+    | DeclareEffectPolicy p -> DeclareEffectPolicy { p with Trace = noTrace }
 
 let private structuralIdentities (operations: OperationDraft list) =
     operations
