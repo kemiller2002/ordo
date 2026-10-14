@@ -93,6 +93,17 @@ Two rules go beyond the default-plan coverage rule:
 - **An open conflict node is `DecisionRequired(ConflictUnresolved)`.** The
   benchmark blueprints use conflict nodes for open questions ("O-4 (open)… not
   stated"), not for contradictions.
+- **A conflict settled by an authorized decision is not open.** A
+  `conflictResolution` record (ordo#81) settles a conflict for recognition
+  only when all of these hold:
+  - its node is an authorized Decision in the cohort's scope;
+  - the conflict is a Conflict node in scope;
+  - the two share a requirement key.
+
+  Any other link leaves the conflict open. Every packet that hands over a
+  requirement owned by a settled conflict lists the deciding node in
+  `approvedDecisions`, with `resolves: [conflictIds]`. Praxis suppresses the
+  question only on that field.
 
 ### Dependencies
 
