@@ -86,11 +86,21 @@ type StateModelContent =
       Refusals: RecordedPair list
       Undecided: RecordedUndecidedPair list }
 
+/// An approved decision that settles blueprint conflicts. The link is the
+/// record author's claim, bound by the record set's digest; generation checks
+/// only that it names real conflicts it shares a requirement with.
+type ConflictResolutionContent =
+    { Conflicts: string list
+      RequirementKeys: string list }
+
 type DecisionContent =
     /// Wire kind `stateModel`: the states and transitions a decision fixes.
     | StateModel of StateModelContent
     /// Wire kind `portContract`: the orchestration ports an interface fixes.
     | PortContract of RecordedPort list
+    /// Wire kind `conflictResolution`: the conflicts a decision settles.
+    /// Accepted in every record schema version; additive.
+    | ConflictResolution of ConflictResolutionContent
 
 type DecisionRecord = { NodeId: string; Content: DecisionContent }
 
@@ -264,6 +274,13 @@ let private content (second: bool) path value =
             let! rawPorts = field path "ports" p
             let! ports = items (path + ".ports") (port second) rawPorts
             return PortContract ports
+        | "conflictResolution" ->
+            let! p = fields path [ "kind"; "conflicts"; "requirementKeys" ] [] value
+            let! rawConflicts = field path "conflicts" p
+            let! conflicts = strings (path + ".conflicts") rawConflicts
+            let! () = if List.isEmpty conflicts then fail (path + ".conflicts") "expected at least one conflict id" else Ok()
+            let! keys = keysField path p
+            return ConflictResolution { Conflicts = conflicts; RequirementKeys = keys }
         | other -> return! fail (path + ".kind") ("unsupported content kind: " + other)
     }
 
@@ -351,6 +368,10 @@ let private jContent content =
                      "refusals", JArray(m.Refusals |> sortedBy (fun r -> JObject [ "command", JString r.Command; "from", JString r.From; "requirementKeys", jKeys r.RequirementKeys ]))
                      "undecided", JArray(m.Undecided |> sortedBy (fun u -> JObject [ "command", JString u.Command; "from", JString u.From; "question", JString u.Question; "requirementKeys", jKeys u.RequirementKeys ])) ]))
     | PortContract ports -> JObject [ "kind", JString "portContract"; "ports", JArray(sortedBy jPort ports) ]
+    | ConflictResolution c ->
+        JObject [ "kind", JString "conflictResolution"
+                  "conflicts", JArray(c.Conflicts |> List.distinct |> List.sort |> List.map JString)
+                  "requirementKeys", jKeys c.RequirementKeys ]
 
 let toJson (records: ApprovedDecisionRecords) =
     JObject [ "schemaVersion", JString records.SchemaVersion

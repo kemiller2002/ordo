@@ -38,6 +38,7 @@
     <Compile Include="ConstructionClassificationTests.fs" />
     <Compile Include="ConstructionCoverageTests.fs" />
     <Compile Include="ConstructionVocabulary4Tests.fs" />
+    <Compile Include="ConstructionConflictResolutionTests.fs" />
     <Compile Include="ConstructionPlanConsensusTests.fs" />
     <Compile Include="ConstructionDefaultPlanTests.fs" />
     <Compile Include="ConstructionLedgerTests.fs" />

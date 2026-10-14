@@ -325,6 +325,20 @@ let private deriveRow
         |> ids
     let acceptance = Map.tryFind key evidence
     let blueprintConflicts = ofKind NodeKind.Conflict |> ids
+    // A conflict an authorized decision's `conflictResolution` record settles
+    // is no longer an open domain question; the deciding node approves it.
+    let resolvers =
+        plans
+        |> List.collect _.ResolvedConflicts
+        |> List.filter (fun (conflict, _) -> List.contains conflict blueprintConflicts)
+        |> List.collect snd
+        |> List.filter (fun id -> Set.contains id approvedSet)
+        |> sorted
+    let resolvedConflicts =
+        plans |> List.collect _.ResolvedConflicts
+        |> List.filter (fun (_, deciders) -> deciders |> List.exists (fun id -> Set.contains id approvedSet))
+        |> List.map fst |> Set.ofList
+    let openConflicts = blueprintConflicts |> List.filter (fun id -> not (Set.contains id resolvedConflicts))
     let verificationIds = ofKind VerificationObligation |> ids
 
     let disposition, closedBy =
@@ -375,11 +389,11 @@ let private deriveRow
                             sprintf "%s in cohort %s; no passing independent acceptance evidence." how cohort),
                         []
 
-    let approvedIds = anchoringApproved
+    let approvedIds = anchoringApproved @ resolvers |> sorted
     let genuine =
         obligations |> List.exists (fun o -> isDomainQuestion o.Kind && not (fixedButInexpressible o))
         || (match record.Disposition with Unresolved _ -> true | _ -> false)
-        || not (List.isEmpty blueprintConflicts)
+        || not (List.isEmpty openConflicts)
         || (not constructed && List.isEmpty approvedIds && not fixedByRequirement)
 
     { Requirement = source
