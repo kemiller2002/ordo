@@ -28,7 +28,7 @@
 | GH-64 | GH-64 | complete |  |  |
 | GH-65 | GH-65 | complete |  |  |
 | GH-69 | GH-69 | complete |  |  |
-| GH-93 | Make recognition compatible with all supported decision-record versions | ready | construction, recognition | high |
+| GH-93 | Make recognition compatible with all supported decision-record versions | complete | construction, recognition | high |
 | RELEASE-1-10-0 | Release Ordo 1.10.0 | complete |  | medium |
 | RELEASE-1-15-0 | Release Ordo 1.15.0 | complete |  | medium |
 | RELEASE-1-4-1 | Release Ordo 1.4.1 | complete |  | medium |

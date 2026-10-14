@@ -991,10 +991,10 @@
         "recognition"
       ],
       "priority": "high",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-10-14T15:12:51.000Z",
-      "updatedAt": "2026-10-14T15:12:57.000Z",
+      "updatedAt": "2026-10-14T21:02:35.000Z",
       "createdBy": "unknown",
       "createdByActor": {
         "kind": "agent",

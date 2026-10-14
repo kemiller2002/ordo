@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-14T15:12:57.000Z",
+  "updatedAt": "2026-10-14T21:02:35.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2140,14 +2140,45 @@
     {
       "id": "GH-93",
       "type": "task",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-10-14T15:12:57.000Z",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/PatternRecognition.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Construction.Tests/PatternRecognitionTests.fs"
+        }
+      ],
+      "updatedAt": "2026-10-14T21:02:35.000Z",
       "telemetryExecutionIds": [
         "EXE-20261014T151300721Z-e975c017",
         "EXE-20261014T210158168Z-93aedbb0"
-      ]
+      ],
+      "latestCheckpoint": {
+        "id": "4bc1c7c14a8bf00ba8246c4d",
+        "recordedAt": "2026-10-14T21:02:30.000Z",
+        "executionId": "EXE-20261014T210158168Z-93aedbb0",
+        "repository": "ordo",
+        "branch": "fix/recognition-versioned-records-20261014",
+        "commit": "7400fd49df2c498bdf6cdd0aceabe52d266e3b1b",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo.git"
+        },
+        "remoteBranch": "fix/recognition-versioned-records-20261014",
+        "remoteCommit": "7400fd49df2c498bdf6cdd0aceabe52d266e3b1b",
+        "summary": "Added direct wrong-cohort and duplicate-record refusal coverage; supported /1, /2 and /3 recognition remains exact and unsupported versions fail closed; construction suite passed 116/116.",
+        "nextAction": "Complete GH-93, rebuild registry, validate, and confirm every GitHub Actions check on the final SHA.",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-14T21:02:35.000Z",
+      "conclusion": "Recognition accepts only the /1, /2 and /3 decision-record schemas supported by the reader while preserving exact blueprint/cohort binding, duplicate, authorization and unknown-version refusal. Local Ordo.Construction.Tests: 116 passed, 0 failed, 0 skipped. Final cross-platform and distribution validation remains the PR check gate."
     }
   ]
 }
