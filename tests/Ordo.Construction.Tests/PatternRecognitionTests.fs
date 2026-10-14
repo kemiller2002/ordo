@@ -84,6 +84,27 @@ let ``the timer cohort gets one outcome per requirement from structured facts on
     Assert.False report.CompleteConstruction
 
 [<Fact>]
+let ``recognition accepts all versioned decision records the reader supports without changing outcomes`` () =
+    let baseline = timerInput ()
+    let expected = run baseline
+    for schema in [ DecisionsSchemaVersion; DecisionsSchemaVersion2; DecisionsSchemaVersion3 ] do
+        let input =
+            { baseline with
+                Records = baseline.Records |> Option.map (fun records -> { records with SchemaVersion = schema }) }
+        let observed = recognize BuiltIn.registry None input |> ok ("recognize " + schema)
+        Assert.Equal(expected.Requirements |> List.map _.Outcome, observed.Requirements |> List.map _.Outcome)
+
+[<Fact>]
+let ``recognition still refuses decision-record schemas beyond its supported versions`` () =
+    let baseline = timerInput ()
+    let input =
+        { baseline with
+            Records = baseline.Records |> Option.map (fun records -> { records with SchemaVersion = "ordo.construction-decisions/4" }) }
+    match recognize BuiltIn.registry None input with
+    | Error problems -> Assert.Contains(UnsupportedRecordsSchema "ordo.construction-decisions/4", problems)
+    | Ok _ -> failwith "unsupported decision-record schema was accepted"
+
+[<Fact>]
 let ``recognition costs one claim evaluation per requirement and selected pattern`` () =
     let report = run (timerInput ())
     Assert.Equal(3, report.Measurements.PatternsSelected)
