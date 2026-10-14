@@ -64,7 +64,11 @@ type CohortFacts =
       ScopeNodes: Map<string, ConstructionNode>
       AuthorizedDecisionIds: Set<string>
       /// State models in approved records, with the record's node id.
-      StateModels: (string * StateModelContent) list }
+      StateModels: (string * StateModelContent) list
+      /// Conflicts settled by a `conflictResolution` record on an authorized
+      /// decision in scope, with the deciding node ids. Only links that name a
+      /// real conflict in scope sharing a requirement key are kept.
+      ResolvedConflicts: Map<string, string list> }
 
 // ---------------------------------------------------------------------------
 // Claims.
