@@ -981,6 +981,30 @@
       },
       "source": "manual",
       "sourceReference": null
+    },
+    {
+      "id": "GH-93",
+      "title": "Make recognition compatible with all supported decision-record versions",
+      "description": "Complete and verify Ordo PR #93, including explicit regression coverage for strict cohort and duplicate-record refusal.",
+      "tags": [
+        "construction",
+        "recognition"
+      ],
+      "priority": "high",
+      "status": "complete",
+      "attachments": [],
+      "createdAt": "2026-10-14T15:12:51.000Z",
+      "updatedAt": "2026-10-14T21:02:35.000Z",
+      "createdBy": "unknown",
+      "createdByActor": {
+        "kind": "agent",
+        "id": "openai/codex",
+        "provider": "openai",
+        "model": "unknown",
+        "runtime": "codex"
+      },
+      "source": "github",
+      "sourceReference": "https://github.com/kemiller2002/ordo/pull/93"
     }
   ]
 }

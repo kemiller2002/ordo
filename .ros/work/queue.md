@@ -9,6 +9,7 @@
 | CONSTRUCT-010-CONFLICT-RESOLUTION | CONSTRUCT-010-CONFLICT-RESOLUTION | complete |  |  |
 | CONSTRUCT-010-COVERAGE | CONSTRUCT-010-COVERAGE | complete |  |  |
 | CONSTRUCT-010-COVERAGE-ROUTES | CONSTRUCT-010-COVERAGE-ROUTES | complete |  |  |
+| CONSTRUCT-010-DECISIONS-V3 | CONSTRUCT-010-DECISIONS-V3 | complete |  |  |
 | CONSTRUCT-010-VOCAB-4 | CONSTRUCT-010-VOCAB-4 | complete |  |  |
 | CONSTRUCT-VOCAB-2 | Construction vocabulary 2: mandatory effect-failure disposition | complete |  | medium |
 | CONSTRUCT-VOCAB-2-DECISION | Vocabulary 2: a decided effect-failure disposition must cite a required decision | complete |  | medium |
@@ -27,6 +28,7 @@
 | GH-64 | GH-64 | complete |  |  |
 | GH-65 | GH-65 | complete |  |  |
 | GH-69 | GH-69 | complete |  |  |
+| GH-93 | Make recognition compatible with all supported decision-record versions | complete | construction, recognition | high |
 | RELEASE-1-10-0 | Release Ordo 1.10.0 | complete |  | medium |
 | RELEASE-1-15-0 | Release Ordo 1.15.0 | complete |  | medium |
 | RELEASE-1-4-1 | Release Ordo 1.4.1 | complete |  | medium |

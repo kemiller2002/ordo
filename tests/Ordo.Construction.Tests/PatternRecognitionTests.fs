@@ -84,6 +84,27 @@ let ``the timer cohort gets one outcome per requirement from structured facts on
     Assert.False report.CompleteConstruction
 
 [<Fact>]
+let ``recognition accepts all versioned decision records the reader supports without changing outcomes`` () =
+    let baseline = timerInput ()
+    let expected = run baseline
+    for schema in [ DecisionsSchemaVersion; DecisionsSchemaVersion2; DecisionsSchemaVersion3 ] do
+        let input =
+            { baseline with
+                Records = baseline.Records |> Option.map (fun records -> { records with SchemaVersion = schema }) }
+        let observed = recognize BuiltIn.registry None input |> ok ("recognize " + schema)
+        Assert.Equal<Outcome list>(expected.Requirements |> List.map _.Outcome, observed.Requirements |> List.map _.Outcome)
+
+[<Fact>]
+let ``recognition still refuses decision-record schemas beyond its supported versions`` () =
+    let baseline = timerInput ()
+    let input =
+        { baseline with
+            Records = baseline.Records |> Option.map (fun records -> { records with SchemaVersion = "ordo.construction-decisions/4" }) }
+    match recognize BuiltIn.registry None input with
+    | Error problems -> Assert.Contains(UnsupportedRecordsSchema "ordo.construction-decisions/4", problems)
+    | Ok _ -> failwith "unsupported decision-record schema was accepted"
+
+[<Fact>]
 let ``recognition costs one claim evaluation per requirement and selected pattern`` () =
     let report = run (timerInput ())
     Assert.Equal(3, report.Measurements.PatternsSelected)
@@ -356,6 +377,25 @@ let ``records bound to another blueprint are refused outright`` () =
     match recognize BuiltIn.registry None input with
     | Error [ RecordsBoundToOtherBlueprint _ ] -> ()
     | other -> failwithf "expected RecordsBoundToOtherBlueprint, got %A" other
+
+[<Fact>]
+let ``records bound to another cohort are refused outright`` () =
+    let input = timerInput ()
+    let records = input.Records |> Option.get
+    let input = { input with Records = Some { records with CohortId = "COH-OTHER" } }
+    match recognize BuiltIn.registry None input with
+    | Error [ RecordsBoundToOtherCohort("COH-OTHER", "COH-TIMER") ] -> ()
+    | other -> failwithf "expected RecordsBoundToOtherCohort, got %A" other
+
+[<Fact>]
+let ``duplicate decision records are refused outright`` () =
+    let input = timerInput ()
+    let records = input.Records |> Option.get
+    let duplicate = records.Records |> List.head
+    let input = { input with Records = Some { records with Records = duplicate :: records.Records } }
+    match recognize BuiltIn.registry None input with
+    | Error [ DuplicateRecordNode nodeId ] -> Assert.Equal(duplicate.NodeId, nodeId)
+    | other -> failwithf "expected DuplicateRecordNode, got %A" other
 
 // ---------------------------------------------------------------------------
 // Recognition and the generator agree; one run, no retry.

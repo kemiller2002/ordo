@@ -278,7 +278,8 @@ let private recordsErrors (input: RecognitionInput) =
     | None -> []
     | Some r ->
         let blueprintDigest = ConstructionIrWire.blueprintDigest input.Blueprint
-        [ if r.SchemaVersion <> DecisionsSchemaVersion then UnsupportedRecordsSchema r.SchemaVersion
+        [ if not (List.contains r.SchemaVersion [ DecisionsSchemaVersion; DecisionsSchemaVersion2; DecisionsSchemaVersion3 ]) then
+              UnsupportedRecordsSchema r.SchemaVersion
           if r.BlueprintDigest <> blueprintDigest then RecordsBoundToOtherBlueprint(r.BlueprintDigest, blueprintDigest)
           if r.CohortId <> input.CohortId then RecordsBoundToOtherCohort(r.CohortId, input.CohortId)
           for id in r.Records |> List.countBy _.NodeId |> List.filter (snd >> (<) 1) |> List.map fst do
