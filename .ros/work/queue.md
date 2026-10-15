@@ -31,7 +31,7 @@
 | GH-93 | Make recognition compatible with all supported decision-record versions | complete | construction, recognition | high |
 | RELEASE-1-10-0 | Release Ordo 1.10.0 | complete |  | medium |
 | RELEASE-1-15-0 | Release Ordo 1.15.0 | complete |  | medium |
-| RELEASE-1-16-1 | Release Ordo 1.16.1 | ready |  | medium |
+| RELEASE-1-16-1 | Release Ordo 1.16.1 | complete |  | medium |
 | RELEASE-1-4-1 | Release Ordo 1.4.1 | complete |  | medium |
 | RELEASE-1-4-2 | Release Ordo 1.4.2 | complete |  | medium |
 | RELEASE-1-5-0 | Release Ordo 1.5.0 | complete |  | medium |
