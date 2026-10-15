@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-14T21:02:35.000Z",
+  "updatedAt": "2026-10-15T12:35:26.041Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2179,6 +2179,17 @@
       },
       "completedAt": "2026-10-14T21:02:35.000Z",
       "conclusion": "Recognition accepts only the /1, /2 and /3 decision-record schemas supported by the reader while preserving exact blueprint/cohort binding, duplicate, authorization and unknown-version refusal. Local Ordo.Construction.Tests: 116 passed, 0 failed, 0 skipped. Final cross-platform and distribution validation remains the PR check gate."
+    },
+    {
+      "id": "RELEASE-1-16-1",
+      "type": "mechanical",
+      "state": "active",
+      "semanticState": "active",
+      "evidence": [],
+      "updatedAt": "2026-10-15T12:35:26.041Z",
+      "telemetryExecutionIds": [
+        "EXE-20261015T123526366Z-07644482"
+      ]
     }
   ]
 }
