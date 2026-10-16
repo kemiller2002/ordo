@@ -117,3 +117,9 @@ dispatches `publish.yml`, the npm compatibility channel gated by
 `NPM_PUBLISH_ENABLED`. Released versions are immutable: an existing tag is
 never reused, and different assets are never uploaded over a published
 version.
+
+## License
+
+Source available under PolyForm Noncommercial 1.0.0 for permitted noncommercial uses. Commercial use requires a separate license from Echelon Foundry. Previously distributed versions remain subject to the licenses under which they were released.
+
+Commercial licensing information is forthcoming.

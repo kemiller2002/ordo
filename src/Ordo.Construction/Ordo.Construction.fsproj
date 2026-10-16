@@ -15,7 +15,7 @@
     <PackageId>EchelonFoundry.Ordo.Construction</PackageId>
     <Authors>Echelon Foundry</Authors>
     <Description>Ordo's deterministic construction engine: a pure projection from a validated construction plan to immutable artifact descriptions, ownership-checked write plans and extension obligations. It writes no file and starts no process.</Description>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageLicenseExpression>PolyForm-Noncommercial-1.0.0</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/kemiller2002/ordo</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Deterministic>true</Deterministic>

@@ -15,7 +15,7 @@
     <PackageId>EchelonFoundry.Ordo.Core</PackageId>
     <Authors>Echelon Foundry</Authors>
     <Description>Ordo's pure semantic core: execution roles and capabilities, mutation boundaries, evaluator identity, receipts, legal transitions and the ordo.execution-contract/1 reader.</Description>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageLicenseExpression>PolyForm-Noncommercial-1.0.0</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/kemiller2002/ordo</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Deterministic>true</Deterministic>

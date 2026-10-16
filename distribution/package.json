@@ -2,7 +2,7 @@
   "name": "@echelon-foundry/sde",
   "version": "1.16.1",
   "description": "Echelon Foundry State-Directed Engineering repository initialization, verification, diagnostics, and upgrade tooling.",
-  "license": "UNLICENSED",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kemiller2002/ordo.git",
