@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-18T13:03:46.707Z",
+  "updatedAt": "2026-10-18T18:19:23.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2295,6 +2295,17 @@
       },
       "completedAt": "2026-10-18T13:03:46.707Z",
       "conclusion": "Praxis-managed .ros/executions state is excluded from product attribution; pinned and current validator behavior was checked."
+    },
+    {
+      "id": "ORDO-REL-001",
+      "type": "feature",
+      "state": "active",
+      "semanticState": "active",
+      "evidence": [],
+      "updatedAt": "2026-10-18T18:19:23.000Z",
+      "telemetryExecutionIds": [
+        "EXE-20261018T181926238Z-8b2fd10d"
+      ]
     }
   ]
 }

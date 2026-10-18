@@ -58,6 +58,7 @@
     <Compile Include="ConstructionIr.fs" />
     <Compile Include="StrictJson.fs" />
     <Compile Include="ConstructionIrWire.fs" />
+    <Compile Include="ConstructibilityContract.fs" />
     <Compile Include="ConstructionPlan.fs" />
     <Compile Include="ConstructionPlanWire.fs" />
     <Compile Include="ConstructionClassification.fs" />

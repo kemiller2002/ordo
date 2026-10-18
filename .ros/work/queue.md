@@ -31,7 +31,7 @@
 | GH-93 | Make recognition compatible with all supported decision-record versions | complete | construction, recognition | high |
 | INGEST-REQS-20261018 | Ingest outstanding Praxis requirement sources | complete | requirements, ingestion | high |
 | ORDO-DBC-001 | Preserve Design by Construction contracts in Ordo | captured | requirements, implementation | high |
-| ORDO-REL-001 | Implement versioned constructibility contracts | captured | requirements, implementation | high |
+| ORDO-REL-001 | Implement versioned constructibility contracts | ready | requirements, implementation | high |
 | PRAXIS-EXECUTIONS-COMPAT-20261018 | Exclude Praxis-managed execution state from attribution | complete | governance, compatibility | high |
 | RELEASE-1-10-0 | Release Ordo 1.10.0 | complete |  | medium |
 | RELEASE-1-15-0 | Release Ordo 1.15.0 | complete |  | medium |
