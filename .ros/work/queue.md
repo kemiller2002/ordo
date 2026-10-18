@@ -29,7 +29,7 @@
 | GH-65 | GH-65 | complete |  |  |
 | GH-69 | GH-69 | complete |  |  |
 | GH-93 | Make recognition compatible with all supported decision-record versions | complete | construction, recognition | high |
-| INGEST-REQS-20261018 | Ingest outstanding Praxis requirement sources | active | requirements, ingestion | high |
+| INGEST-REQS-20261018 | Ingest outstanding Praxis requirement sources | complete | requirements, ingestion | high |
 | ORDO-DBC-001 | Preserve Design by Construction contracts in Ordo | captured | requirements, implementation | high |
 | ORDO-REL-001 | Implement versioned constructibility contracts | captured | requirements, implementation | high |
 | RELEASE-1-10-0 | Release Ordo 1.10.0 | complete |  | medium |
