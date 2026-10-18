@@ -1,0 +1,42 @@
+{
+  "schema": "praxis.inbox-claim/1",
+  "claimId": "INPUT-a385c22ff220f848",
+  "state": "completed",
+  "source": {
+    "path": ".praxis/inbox/documents/design-by-construction-2026-10-15.md",
+    "fileName": "design-by-construction-2026-10-15.md",
+    "sha256": "9e0d3680f839557376f7bd28d78d37f25238ca5c108c283eddcbb88df8daa96e",
+    "size": 5244
+  },
+  "claimedAt": "2026-10-18T12:55:05.122Z",
+  "claimant": {
+    "kind": "agent",
+    "id": "openai/codex",
+    "provider": "openai",
+    "model": "unknown",
+    "runtime": "codex"
+  },
+  "executionId": "EXE-20261018T124842421Z-f3f0c468",
+  "derivations": [
+    {
+      "kind": "requirement",
+      "targetKind": "path",
+      "target": "research/requirements/RQ-SDE-2026-0003--design-by-construction.md",
+      "summary": "Design by Construction contract preservation requirements",
+      "locator": "research/requirements/RQ-SDE-2026-0003--design-by-construction.md",
+      "recordedAt": "2026-10-18T12:55:05.275Z",
+      "actor": {
+        "kind": "agent",
+        "id": "openai/codex",
+        "provider": "openai",
+        "model": "unknown",
+        "runtime": "codex"
+      },
+      "executionId": "EXE-20261018T124842421Z-f3f0c468"
+    }
+  ],
+  "noDerivationReason": null,
+  "closedAt": "2026-10-18T12:55:51.855Z",
+  "releaseReason": null,
+  "rejectionReason": null
+}
