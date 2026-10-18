@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-18T13:01:41.256Z",
+  "updatedAt": "2026-10-18T13:03:46.707Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2266,13 +2266,35 @@
     {
       "id": "PRAXIS-EXECUTIONS-COMPAT-20261018",
       "type": "mechanical",
-      "state": "active",
-      "semanticState": "active",
+      "state": "complete",
+      "semanticState": "complete",
       "evidence": [],
-      "updatedAt": "2026-10-18T13:01:41.256Z",
+      "updatedAt": "2026-10-18T13:03:46.707Z",
       "telemetryExecutionIds": [
         "EXE-20261018T130141712Z-23e5ad77"
-      ]
+      ],
+      "latestCheckpoint": {
+        "id": "c645a6c63e8bd251832076ae",
+        "recordedAt": "2026-10-18T13:03:27.682Z",
+        "executionId": "EXE-20261018T130141712Z-23e5ad77",
+        "repository": "ordo",
+        "branch": "codex/ingest-outstanding-requirements-20261018",
+        "commit": "0d15c0f9b7674f2716b4ef0f13901c02b5d68898",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo.git"
+        },
+        "remoteBranch": "codex/ingest-outstanding-requirements-20261018",
+        "remoteCommit": "0d15c0f9b7674f2716b4ef0f13901c02b5d68898",
+        "summary": "Aligned attribution policy with Praxis-managed execution state and verified pinned/current validators",
+        "nextAction": "Complete compatibility work and verify PR checks",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-18T13:03:46.707Z",
+      "conclusion": "Praxis-managed .ros/executions state is excluded from product attribution; pinned and current validator behavior was checked."
     }
   ]
 }

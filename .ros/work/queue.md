@@ -32,7 +32,7 @@
 | INGEST-REQS-20261018 | Ingest outstanding Praxis requirement sources | complete | requirements, ingestion | high |
 | ORDO-DBC-001 | Preserve Design by Construction contracts in Ordo | captured | requirements, implementation | high |
 | ORDO-REL-001 | Implement versioned constructibility contracts | captured | requirements, implementation | high |
-| PRAXIS-EXECUTIONS-COMPAT-20261018 | Exclude Praxis-managed execution state from attribution | ready | governance, compatibility | high |
+| PRAXIS-EXECUTIONS-COMPAT-20261018 | Exclude Praxis-managed execution state from attribution | complete | governance, compatibility | high |
 | RELEASE-1-10-0 | Release Ordo 1.10.0 | complete |  | medium |
 | RELEASE-1-15-0 | Release Ordo 1.15.0 | complete |  | medium |
 | RELEASE-1-16-1 | Release Ordo 1.16.1 | complete |  | medium |
