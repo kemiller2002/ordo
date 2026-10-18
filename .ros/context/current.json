@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-18T18:19:23.000Z",
+  "updatedAt": "2026-10-18T18:31:43.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2299,13 +2299,48 @@
     {
       "id": "ORDO-REL-001",
       "type": "feature",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-10-18T18:19:23.000Z",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ConstructibilityContract.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ConstructionIrWireTests.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ConstructionIrFixtureTests.fs"
+        }
+      ],
+      "updatedAt": "2026-10-18T18:31:43.000Z",
       "telemetryExecutionIds": [
         "EXE-20261018T181926238Z-8b2fd10d"
-      ]
+      ],
+      "latestCheckpoint": {
+        "id": "7302bc8e0b793d2ca341a1da",
+        "recordedAt": "2026-10-18T18:31:18.000Z",
+        "executionId": "EXE-20261018T181926238Z-8b2fd10d",
+        "stepId": "STEP-20261018T182038000Z-f30c9f3e",
+        "repository": "ordo",
+        "branch": "codex/implement-constructibility-contracts-20261018",
+        "commit": "d190cdd086e35aa950048c5fccddf152aea4ab6b",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo.git"
+        },
+        "remoteBranch": "codex/implement-constructibility-contracts-20261018",
+        "remoteCommit": "d190cdd086e35aa950048c5fccddf152aea4ab6b",
+        "summary": "Strict versioned constructibility contract, scoped authorization validation, fixtures, docs, and tests implemented and pushed",
+        "nextAction": "Open the pull request and verify hosted Praxis, F#, distribution, and native-release checks",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-18T18:31:43.000Z"
     }
   ]
 }
