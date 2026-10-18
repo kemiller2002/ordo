@@ -75,6 +75,15 @@ let ``negative example blueprints are JSON-valid but fail Ordo semantic validati
     Assert.Contains(NonReciprocalLink("requirements/domain.md#R-001", "VERIFY-CONFIRM"), validate manifest reversed)
 
 [<Fact>]
+let ``compatibility and cross-version fixtures negotiate explicitly`` () =
+    let manifest = parseManifest ()
+    let current = parseBlueprint "valid-blueprint.json"
+    let compatible = parseBlueprint "compatible-v1-reordered-blueprint.json"
+    Assert.Equal(blueprintDigest current, blueprintDigest compatible)
+    Assert.True(validatePinned manifest compatible |> Result.isOk)
+    Assert.True(readBlueprint (read "unsupported-version-blueprint.json") |> Result.isError)
+
+[<Fact>]
 let ``scaffolding the checked-in manifest conserves all source IDs without authorizing execution`` () =
     let manifest = parseManifest ()
     match scaffold manifest with

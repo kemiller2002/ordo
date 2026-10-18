@@ -7,9 +7,15 @@ The files provide a **minimal synthetic test corpus**, not a production authoriz
 - `requirements/domain.md` and `requirements/operations.md`: the exact original source text, with independently checked document revision, heading position and section-content digests. Their local IDs deliberately collide.
 - `source-manifest.json`: independent pinned intake with **two distinct requirements that share the original local ID `R-001`**. Their qualified keys identify different documents.
 - `valid-blueprint.json`: preserves both; one modeled and one explicitly deferred. The modeled requirement has a decision, a proposed (not yet authorized) execution cohort and verification obligation. A separate verified authorization still must approve the decision before cohort execution.
+- `compatible-v1-reordered-blueprint.json`: the same v1 contract with members and set-like arrays reordered. It produces the same canonical digest and demonstrates byte-format compatibility without changing semantics.
+- `unsupported-version-blueprint.json`: a structurally recognizable future `ecir/2` envelope. Ordo refuses it because no explicit migration from v2 to v1 exists; it is never silently interpreted as v1.
 - `invalid-omitted-requirement.json`: shape-valid JSON, but it silently drops one imported requirement. **Ordo semantic validation MUST reject it** against `source-manifest.json`.
 - `invalid-nonreciprocal-link.json`: shape-valid JSON, but its verification node drops the reverse requirement link. **Ordo semantic validation MUST reject it**.
 
 JSON Schema cannot prove intake equality, reciprocal links, model authorization or independent test quality. The typed Ordo validator and independent intake are essential.
+
+Consumers negotiate against the explicit supported set (`ecir/1`). Ordo
+currently publishes no automatic migrations. A new schema remains unsupported
+until a reviewed migration is added to the contract API and this fixture corpus.
 
 The checked-in Ordo F# tests execute these artifacts directly, recompute their cryptographic hashes from the original fixture text, and assert that the intentionally invalid examples fail closed. The independent source authority and decision authorizer remain separate from the blueprint.

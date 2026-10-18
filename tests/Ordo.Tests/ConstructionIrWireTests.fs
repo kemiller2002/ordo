@@ -3,6 +3,7 @@ module Ordo.Tests.ConstructionIrWireTests
 open Xunit
 open Ordo.Core.ConstructionIr
 open Ordo.Core.ConstructionIrWire
+open Ordo.Core.ConstructibilityContract
 
 let private source id doc =
     { Key = doc + "#" + id
@@ -187,3 +188,79 @@ let ``unknown node kinds, unknown dispositions, wrong types and blank strings ar
           text.Replace("\"id\": \"DEFERRAL\"", "\"id\": 7") ] do
         Assert.NotEqual<string>(text, mutated)
         Assert.True(readBlueprint mutated |> Result.isError, mutated)
+
+[<Fact>]
+let ``constructibility contract publishes exact version negotiation and no implicit migrations`` () =
+    Assert.Equal(Supported SchemaVersion, negotiateVersion SchemaVersion)
+    Assert.Equal(Unsupported("ecir/2", [ SchemaVersion ]), negotiateVersion "ecir/2")
+    Assert.Empty automaticMigrations
+
+    let future = encodeBlueprint blueprint |> fun json -> json.Replace("\"ecir/1\"", "\"ecir/2\"")
+    match readAndPrepare (encodeManifest manifest) future (blueprintDigest blueprint) "COHORT" (Set.singleton "DECISION") with
+    | Ok _ -> failwith "an unsupported schema was accepted"
+    | Error failure ->
+        Assert.Equal<string list>([ "ORDO.CONTRACT.UNSUPPORTED_SCHEMA" ], failure.Diagnostics |> List.map _.Code)
+
+[<Fact>]
+let ``constructibility intake binds every authorization to a real in-scope authorizable node`` () =
+    let pinned = blueprintDigest blueprint
+    let codes result =
+        match result with
+        | Ok _ -> failwith "invalid authorization was accepted"
+        | Error failure -> failure.Diagnostics |> List.map _.Code
+
+    Assert.Contains("ORDO.CONTRACT.UNKNOWN_AUTHORIZATION",
+                    prepare manifest blueprint pinned "COHORT" (Set.ofList [ "DECISION"; "UNKNOWN" ]) |> codes)
+    Assert.Contains("ORDO.CONTRACT.AUTHORIZATION_KIND_MISMATCH",
+                    prepare manifest blueprint pinned "COHORT" (Set.ofList [ "DECISION"; "VERIFY" ]) |> codes)
+
+    let outsideDecision = node "DEC-OUT" Decision [ r2.Key ] []
+    let outside =
+        { blueprint with
+            Requirements =
+                blueprint.Requirements
+                |> List.map (fun row ->
+                    if row.Source.Key = r2.Key then { row with NodeIds = row.NodeIds @ [ outsideDecision.Id ] }
+                    else row)
+            Nodes = blueprint.Nodes @ [ outsideDecision ] }
+    Assert.Empty(validate manifest outside)
+    Assert.Contains("ORDO.CONTRACT.AUTHORIZATION_OUTSIDE_COHORT",
+                    prepare manifest outside (blueprintDigest outside) "COHORT" (Set.ofList [ "DECISION"; "DEC-OUT" ]) |> codes)
+
+[<Fact>]
+let ``constructibility view is deterministic and links requirements to ownership decisions and verification`` () =
+    let prepared = prepare manifest blueprint (blueprintDigest blueprint) "COHORT" (Set.singleton "DECISION") |> expectOk
+    let view = contractView prepared
+    Assert.Equal(blueprintDigest blueprint, view.ContractDigest)
+    Assert.Equal(encodeContractView view, encodeContractView (contractView prepared))
+
+    let modeledContract = view.Requirements |> List.find (fun requirement -> requirement.RequirementKey = r1.Key)
+    Assert.Equal("modeled", modeledContract.Disposition)
+    Assert.Equal<string list>([ "COHORT"; "DECISION"; "VERIFY" ], modeledContract.NodeIds)
+
+    let verification = view.Nodes |> List.find (fun node -> node.NodeId = "VERIFY")
+    Assert.Equal("verificationObligation", verification.Kind)
+    Assert.Equal<string list>([ "DECISION" ], verification.DependsOn)
+
+    let modeledTrace = view.Traceability |> List.find (fun trace -> trace.RequirementKey = r1.Key)
+    Assert.True(modeledTrace.RequiredByCohort)
+    Assert.Equal<string list>([ "COHORT" ], modeledTrace.OwnerCohortIds)
+    Assert.Equal<string list>([ "DECISION" ], modeledTrace.DecisionIds)
+    Assert.Equal<string list>([ "VERIFY" ], modeledTrace.VerificationObligationIds)
+
+    let deferredTrace = view.Traceability |> List.find (fun trace -> trace.RequirementKey = r2.Key)
+    Assert.False(deferredTrace.RequiredByCohort)
+    Assert.Empty(deferredTrace.VerificationObligationIds)
+
+[<Fact>]
+let ``constructibility diagnostics have a stable machine-readable envelope`` () =
+    let result = readAndPrepare (encodeManifest manifest) (encodeBlueprint blueprint)
+                                (blueprintDigest blueprint) "COHORT" Set.empty
+    match result with
+    | Ok _ -> failwith "missing decision authorization was accepted"
+    | Error failure ->
+        Assert.Equal(DiagnosticsSchemaVersion, failure.SchemaVersion)
+        Assert.Contains(failure.Diagnostics, fun item -> item.Code = "ORDO.CONTRACT.MISSING_DECISION_AUTHORIZATION")
+        let first = encodeDiagnostics failure
+        Assert.Equal(first, encodeDiagnostics failure)
+        Assert.Contains("ordo.constructibility-diagnostics/1", first)

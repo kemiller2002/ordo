@@ -90,6 +90,14 @@ type ReadinessViolation =
     | MissingCohort of cohortId: string
     | NotACohort of nodeId: string
     | BlockedRequirement of key: string
+    /// An authorization receipt names no node in the exact blueprint.
+    | UnknownAuthorization of nodeId: string
+    /// Only a Decision or a standalone EngineeringRationale can consume the
+    /// external authorization set used by cohort preparation.
+    | AuthorizationKindMismatch of nodeId: string * actual: NodeKind
+    /// A real authorizable node is not in the selected cohort's dependency
+    /// closure. Global receipts cannot silently widen one cohort's scope.
+    | AuthorizationOutsideCohort of nodeId: string
     | MissingDecisionAuthorization of nodeId: string
     /// An engineering rationale with no originating requirement is model-
     /// authored architecture. It can enter required scope only with the same
@@ -349,6 +357,7 @@ let validateCohort
         | Some node when node.Kind <> Cohort -> [ NotACohort cohortId ]
         | Some node ->
             let scope = cohortScope blueprint node
+            let nodeIndex = blueprint.Nodes |> List.map (fun candidate -> candidate.Id, candidate) |> Map.ofList
             let requiredKeys =
                 blueprint.Nodes |> List.filter (fun n -> Set.contains n.Id scope)
                 |> List.collect _.RequirementKeys |> Set.ofList
@@ -371,7 +380,18 @@ let validateCohort
                     elif isStandaloneRationale n then Some(MissingRationaleAuthorization n.Id)
                     else None)
 
-            blocked @ unauthorized
+            let invalidAuthorizations =
+                authorizedDecisionIds
+                |> Seq.choose (fun id ->
+                    match Map.tryFind id nodeIndex with
+                    | None -> Some(UnknownAuthorization id)
+                    | Some candidate when candidate.Kind <> Decision && not (isStandaloneRationale candidate) ->
+                        Some(AuthorizationKindMismatch(id, candidate.Kind))
+                    | Some _ when not (Set.contains id scope) -> Some(AuthorizationOutsideCohort id)
+                    | Some _ -> None)
+                |> Seq.toList
+
+            blocked @ invalidAuthorizations @ unauthorized
             |> List.distinct
             |> List.sortBy (sprintf "%A")
 

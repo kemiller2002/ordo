@@ -63,6 +63,10 @@ A standalone `engineeringRationale` (one with no originating requirement) that i
 reached in required scope is model-authored architecture: it refuses readiness
 with `MissingRationaleAuthorization` unless the externally supplied authorization
 set names it, exactly like a decision. Its own justification text is not approval.
+Every supplied authorization ID must name an authorizable node in the selected
+cohort's dependency closure. Unknown IDs, non-decision nodes, and otherwise
+valid decisions outside that closure fail closed; a global receipt cannot widen
+the cohort by accident.
 
 `ConstructionIr.prepareCohort` returns a private-constructor `PreparedCohort`
 only after whole-artifact validation and scoped readiness succeed. Its view
@@ -73,6 +77,19 @@ this cohort. This pure snapshot is not authenticated authority,
 proof of source trust, completed dependency work or a transferable permission.
 Hosts must independently pin inputs, verify approvals and recheck before effects.
 It has no new wire representation or enabled Praxis runtime route.
+
+`ConstructibilityContract.prepare` is the stable consumer-facing boundary. It
+adds an independently pinned blueprint digest, exact schema-version negotiation,
+and deterministic `ordo.constructibility-diagnostics/1` failures around the
+same semantic validator. Success exposes an
+`ordo.constructibility-contract/1` view containing every requirement
+disposition, node kind, dependency edge, cohort owner, decision, conflict, and
+verification obligation, plus the canonical blueprint digest. The underlying
+`PreparedCohort` remains sealed so this view cannot become an alternate way to
+mint construction authority. `readAndPrepare` refuses unsupported versions with
+`ORDO.CONTRACT.UNSUPPORTED_SCHEMA` before interpreting their fields. The
+supported set is currently exactly `ecir/1`, and the automatic migration table
+is deliberately empty.
 
 A failed gate is an explicit refusal with actionable IDs. An agent may revise a new blueprint version; it must never silently rewrite history or override an approved decision.
 
@@ -127,6 +144,11 @@ member to nothing.
 
 **Construction by design:** prepared cohorts feed typed construction plans ([construction-plan-v1](construction-plan-v1.md), #64) and the deterministic workflow constructor ([construction-engine-v1](construction-engine-v1.md), #65).
 
-**First increment (this PR):** versioned contract, source-set semantic validator, adversarial unit tests, schema and fixture. Keep package and dependencies unchanged. **Next:** strict JSON decoding/encoding and canonical artifact hashing; Conditor import bridge; Praxis execution gate and cohort dispatch; independent Dokimos verification; controlled trial versus natural-language and batch-only execution.
+Implemented Ordo increments now include the versioned contract, strict JSON
+decoding/encoding, canonical artifact hashing, source-set semantic validation,
+scoped construction readiness, stable consumer diagnostics, and compatibility
+fixtures. The contract remains pure and adds no dependency. Cross-system work
+still belongs in its owning repositories: Conditor import, Praxis execution
+gating and dispatch, Dokimos independent verification, and controlled trials.
 
 These are proposals until a CI run and approved decision/evidence records confirm implementation. No pass/fail claim should be based on this document alone.
