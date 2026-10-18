@@ -1,0 +1,42 @@
+{
+  "schema": "praxis.inbox-claim/1",
+  "claimId": "INPUT-d68ba75aa37d75df",
+  "state": "claimed",
+  "source": {
+    "path": ".praxis/inbox/documents/2026-10-14-ORDO-VIS-001.md",
+    "fileName": "2026-10-14-ORDO-VIS-001.md",
+    "sha256": "974073faa6760cc29921c754d064c9c8b806fce9e3a71391a54387e6138c4d9e",
+    "size": 3953
+  },
+  "claimedAt": "2026-10-18T12:55:04.436Z",
+  "claimant": {
+    "kind": "agent",
+    "id": "openai/codex",
+    "provider": "openai",
+    "model": "unknown",
+    "runtime": "codex"
+  },
+  "executionId": "EXE-20261018T124842421Z-f3f0c468",
+  "derivations": [
+    {
+      "kind": "requirement",
+      "targetKind": "path",
+      "target": "research/requirements/RQ-SDE-2026-0001--visual-intent-decisions.md",
+      "summary": "Typed visual-intent decisions in Construction IR",
+      "locator": "research/requirements/RQ-SDE-2026-0001--visual-intent-decisions.md",
+      "recordedAt": "2026-10-18T12:55:04.588Z",
+      "actor": {
+        "kind": "agent",
+        "id": "openai/codex",
+        "provider": "openai",
+        "model": "unknown",
+        "runtime": "codex"
+      },
+      "executionId": "EXE-20261018T124842421Z-f3f0c468"
+    }
+  ],
+  "noDerivationReason": null,
+  "closedAt": null,
+  "releaseReason": null,
+  "rejectionReason": null
+}

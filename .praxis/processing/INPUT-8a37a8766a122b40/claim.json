@@ -1,0 +1,42 @@
+{
+  "schema": "praxis.inbox-claim/1",
+  "claimId": "INPUT-8a37a8766a122b40",
+  "state": "claimed",
+  "source": {
+    "path": ".praxis/inbox/documents/2026-10-16-ENGINEERING-RELIABILITY-001.md",
+    "fileName": "2026-10-16-ENGINEERING-RELIABILITY-001.md",
+    "sha256": "6446594e23b6ec20df8b21b9b97c6bd454a9283b9ee642bef2099fa2e6ad371f",
+    "size": 1379
+  },
+  "claimedAt": "2026-10-18T12:55:04.766Z",
+  "claimant": {
+    "kind": "agent",
+    "id": "openai/codex",
+    "provider": "openai",
+    "model": "unknown",
+    "runtime": "codex"
+  },
+  "executionId": "EXE-20261018T124842421Z-f3f0c468",
+  "derivations": [
+    {
+      "kind": "requirement",
+      "targetKind": "path",
+      "target": "research/requirements/RQ-SDE-2026-0002--versioned-constructibility-contracts.md",
+      "summary": "Versioned constructibility and decision contracts",
+      "locator": "research/requirements/RQ-SDE-2026-0002--versioned-constructibility-contracts.md",
+      "recordedAt": "2026-10-18T12:55:04.945Z",
+      "actor": {
+        "kind": "agent",
+        "id": "openai/codex",
+        "provider": "openai",
+        "model": "unknown",
+        "runtime": "codex"
+      },
+      "executionId": "EXE-20261018T124842421Z-f3f0c468"
+    }
+  ],
+  "noDerivationReason": null,
+  "closedAt": null,
+  "releaseReason": null,
+  "rejectionReason": null
+}
