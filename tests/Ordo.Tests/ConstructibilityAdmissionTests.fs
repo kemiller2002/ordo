@@ -159,3 +159,11 @@ let ``a pinned reference detects that the contract it names has changed`` () =
         match checkReference malformed current with
         | Error failure -> Assert.Equal(InvalidReferenceDigestCode, failure.Diagnostics.Head.Code)
         | Ok _ -> failwithf "malformed pin %s accepted" malformed
+
+[<Fact>]
+let ``undecodable escaped surrogates refuse with a diagnostic instead of throwing`` () =
+    for text in [ "{\"a\":\"\\ud800\"}"; "{\"\\udc00\":\"x\"}" ] do
+        Assert.True(parse text |> Result.isError, text)
+    match admitContract (read "lone-surrogate-contract.json") with
+    | Ok _ -> failwith "an undecodable contract was accepted"
+    | Error failure -> Assert.Equal("ORDO.CONTRACT.INVALID_BLUEPRINT_JSON", failure.Diagnostics.Head.Code)

@@ -10,7 +10,8 @@ proves Ordo itself still does.
   automatic migrations. Any other `schemaVersion` is refused with
   `ORDO.CONTRACT.UNSUPPORTED_SCHEMA` before other fields are read.
 - Decoding is strict: unknown members, duplicate members, blank names and
-  malformed JSON are `ORDO.CONTRACT.INVALID_BLUEPRINT_JSON`.
+  malformed JSON, and escaped lone surrogates that cannot be decoded to text
+  are `ORDO.CONTRACT.INVALID_BLUEPRINT_JSON`.
 - Digest = `sha256:` + lowercase hex SHA-256 of the UTF-8 bytes of the
   canonical rendering (`valid-contract.canonical.json`): requirements sorted by
   `source.key`, nodes by `id`, `nodeIds`/`requirementKeys`/`dependsOn` sorted,

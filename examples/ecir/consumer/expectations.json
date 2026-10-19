@@ -244,6 +244,71 @@
           "subject": "VERIFY-CONFIRM"
         }
       ]
+    },
+    {
+      "name": "self-dependency",
+      "contract": "self-dependency-contract.json",
+      "outcome": "rejected",
+      "diagnostics": [
+        {
+          "code": "ORDO.CONTRACT.DEPENDENCY_CYCLE",
+          "subject": "COHORT-CONFIRM"
+        },
+        {
+          "code": "ORDO.CONTRACT.DEPENDENCY_CYCLE",
+          "subject": "DEC-CONFIRM"
+        },
+        {
+          "code": "ORDO.CONTRACT.DEPENDENCY_CYCLE",
+          "subject": "VERIFY-CONFIRM"
+        },
+        {
+          "code": "ORDO.CONTRACT.SELF_DEPENDENCY",
+          "subject": "DEC-CONFIRM"
+        }
+      ]
+    },
+    {
+      "name": "missing-disposition-node",
+      "contract": "missing-disposition-node-contract.json",
+      "outcome": "rejected",
+      "diagnostics": [
+        {
+          "code": "ORDO.CONTRACT.MISSING_DISPOSITION_NODE",
+          "subject": "requirements/operations.md#R-001->Conflict"
+        }
+      ]
+    },
+    {
+      "name": "invalid-supersession",
+      "contract": "invalid-supersession-contract.json",
+      "outcome": "rejected",
+      "diagnostics": [
+        {
+          "code": "ORDO.CONTRACT.INVALID_SUPERSESSION",
+          "subject": "requirements/operations.md#R-001->requirements/missing.md#R-404"
+        }
+      ]
+    },
+    {
+      "name": "empty-intake",
+      "contract": "empty-contract.json",
+      "outcome": "rejected",
+      "diagnostics": [
+        {
+          "code": "ORDO.CONTRACT.EMPTY_INTAKE"
+        }
+      ]
+    },
+    {
+      "name": "lone-surrogate",
+      "contract": "lone-surrogate-contract.json",
+      "outcome": "rejected",
+      "diagnostics": [
+        {
+          "code": "ORDO.CONTRACT.INVALID_BLUEPRINT_JSON"
+        }
+      ]
     }
   ]
 }
