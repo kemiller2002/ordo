@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-18T18:31:43.000Z",
+  "updatedAt": "2026-10-19T14:13:04.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2341,6 +2341,28 @@
         }
       },
       "completedAt": "2026-10-18T18:31:43.000Z"
+    },
+    {
+      "id": "ORDO-REL-002",
+      "type": "task",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ConstructibilityContract.fs"
+        },
+        {
+          "type": "tests",
+          "path": "examples/ecir/consumer/expectations.json"
+        }
+      ],
+      "updatedAt": "2026-10-19T14:13:04.000Z",
+      "telemetryExecutionIds": [
+        "EXE-20261019T141304392Z-129c0ae8"
+      ],
+      "completedAt": "2026-10-19T14:13:04.000Z",
+      "conclusion": "Orchestrator re-ran dotnet test tests/Ordo.Tests on f50b63e: 536 passed, 1 skipped (baseline 529/1). Praxis consumer reproduces digests (8/8 ordo contract tests)."
     }
   ]
 }

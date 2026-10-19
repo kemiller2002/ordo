@@ -1122,6 +1122,30 @@
       },
       "source": "CI validation",
       "sourceReference": "percepta/actions/runs/39129621742"
+    },
+    {
+      "id": "ORDO-REL-002",
+      "title": "Close REL-ORDO-001 consumer gaps: manifest-free admission, stale-reference detection, consumer oracle",
+      "description": null,
+      "tags": [
+        "requirements",
+        "implementation"
+      ],
+      "priority": "high",
+      "status": "complete",
+      "attachments": [],
+      "createdAt": "2026-10-19T14:13:02.000Z",
+      "updatedAt": "2026-10-19T14:13:04.000Z",
+      "createdBy": "unknown",
+      "createdByActor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
+      },
+      "source": "Praxis inbox",
+      "sourceReference": "INPUT-8a37a8766a122b40"
     }
   ]
 }
