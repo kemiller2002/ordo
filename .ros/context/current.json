@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-19T22:02:41Z",
+  "updatedAt": "2026-10-19T23:02:26Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2367,13 +2367,52 @@
     {
       "id": "ORDO-REL-003",
       "type": "task",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-10-19T22:02:41Z",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ConstructibilityContract.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/ConstructionIr.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/ConstructibilityAdmissionTests.fs"
+        },
+        {
+          "type": "tests",
+          "path": "examples/ecir/consumer/expectations.json"
+        }
+      ],
+      "updatedAt": "2026-10-19T23:02:26Z",
       "telemetryExecutionIds": [
         "EXE-20261019T220242362Z-224aead7"
-      ]
+      ],
+      "latestCheckpoint": {
+        "id": "fb7ea3068a070c1e87dc63b9",
+        "recordedAt": "2026-10-19T22:16:18Z",
+        "executionId": "EXE-20261019T220242362Z-224aead7",
+        "repository": "ordo",
+        "branch": "claude/echelon-reliability-integration-g8x7vn",
+        "commit": "1f39ff027109a6cc356607b9936f7473ee6773d5",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "claude/echelon-reliability-integration-g8x7vn",
+        "remoteCommit": "1f39ff027109a6cc356607b9936f7473ee6773d5",
+        "summary": "UNRESOLVED_CONFLICT admission rule, requirement-scoped readiness (assessReadiness, validateRequirementScope), sde ecir check --requirement/--authorized-decision, corpus +2 admission +10 readiness cases; Ordo.Tests 541 passed 1 skipped, Sde.Core.Tests 154 passed",
+        "nextAction": "Complete ORDO-REL-003 after Praxis PRAXIS-REL-008 consumes the corpus",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-19T23:02:26Z",
+      "conclusion": "Admission refuses a modeled requirement linking an unresolved conflict (ORDO.CONTRACT.UNRESOLVED_CONFLICT); manifest-free requirement-scoped readiness (assessReadiness, sde ecir check --requirement/--authorized-decision); corpus extended; Ordo.Tests 536->541 passed (1 skipped), Sde.Core.Tests 153->154; consumed by Praxis PRAXIS-REL-008"
     }
   ]
 }
