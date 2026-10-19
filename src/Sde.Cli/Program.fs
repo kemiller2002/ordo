@@ -140,6 +140,10 @@ let private runCommand (invocation: Args.Invocation) (projectRoot: string) : Emi
         let code, stdout, stderr = Ecir.run globals.Json options.Manifest options.Blueprint options.Cohort
         { ExitCode = code; Stdout = stdout; Stderr = stderr }
 
+    | Args.EcirCheck options ->
+        let code, stdout, stderr = Ecir.checkContract globals.Json options.Blueprint options.ExpectedDigest
+        { ExitCode = code; Stdout = stdout; Stderr = stderr }
+
     | Args.EcirScaffold options ->
         let code, stdout, stderr = Ecir.scaffoldFile globals.Json options.Manifest options.Output
         { ExitCode = code; Stdout = stdout; Stderr = stderr }
@@ -170,6 +174,7 @@ let private runCommand (invocation: Args.Invocation) (projectRoot: string) : Emi
             | Args.Upgrade _ -> "upgrade"
             | Args.Doctor _ -> "doctor"
             | Args.EcirValidate _
+            | Args.EcirCheck _
             | Args.EcirScaffold _
             | Args.EcirRecognize _
             | Args.BoundaryAssess _
@@ -222,6 +227,7 @@ let private runCommand (invocation: Args.Invocation) (projectRoot: string) : Emi
                 (fun () -> Render.change globals.Verbose options.Check options.DryRun report)
 
         | Args.EcirValidate _
+        | Args.EcirCheck _
         | Args.EcirScaffold _
         | Args.EcirRecognize _
         | Args.BoundaryAssess _

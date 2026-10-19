@@ -181,8 +181,11 @@ let parse (text: string) : Result<JsonValue, JsonError> =
         try
             use document = JsonDocument.Parse(text, JsonDocumentOptions(AllowTrailingCommas = false))
             fromElement document.RootElement
-        with :? JsonException as ex ->
-            Error(MalformedJson ex.Message)
+        with
+        | :? JsonException as ex -> Error(MalformedJson ex.Message)
+        // An escaped lone surrogate is syntactically valid JSON that cannot
+        // be decoded to text; untrusted input must refuse, not throw.
+        | :? InvalidOperationException as ex -> Error(MalformedJson ex.Message)
 
 /// Looks up a member of an object. Returns `None` for an absent member and
 /// an error for a value that is not an object at all, because "this record
