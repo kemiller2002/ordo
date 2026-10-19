@@ -141,7 +141,7 @@ let private runCommand (invocation: Args.Invocation) (projectRoot: string) : Emi
         { ExitCode = code; Stdout = stdout; Stderr = stderr }
 
     | Args.EcirCheck options ->
-        let code, stdout, stderr = Ecir.checkContract globals.Json options.Blueprint options.ExpectedDigest
+        let code, stdout, stderr = Ecir.checkContract globals.Json options.Blueprint options.ExpectedDigest options.RequirementKeys options.AuthorizedDecisionIds
         { ExitCode = code; Stdout = stdout; Stderr = stderr }
 
     | Args.EcirScaffold options ->

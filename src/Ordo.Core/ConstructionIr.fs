@@ -84,6 +84,14 @@ type Violation =
     | MissingDependency of nodeId: string * target: string
     | SelfDependency of nodeId: string
     | DependencyCycle of nodeId: string
+    /// A `modeled` requirement links a `conflict` node. ecir/1 has no
+    /// in-contract resolution mechanism (a settling decision lives in a
+    /// separately approved `ordo.construction-decisions` record, DF-SDE-2026-0025),
+    /// so a self-contained contract that declares such a requirement modeled
+    /// declares an open conflict constructible. Emitted by `unresolvedConflicts`
+    /// (consumer admission), never by `validate`, whose analysis-stage callers
+    /// settle conflicts with those records.
+    | UnresolvedConflict of requirementKey: string * conflictId: string
 
 type ReadinessViolation =
     | InvalidBlueprint of Violation
@@ -103,6 +111,15 @@ type ReadinessViolation =
     /// authored architecture. It can enter required scope only with the same
     /// external authorization as a decision; its own justification is not one.
     | MissingRationaleAuthorization of nodeId: string
+    /// A requirement-scoped readiness request named no requirement.
+    | EmptyScope
+    /// A requirement-scoped readiness request named a key the blueprint lacks.
+    | UnknownScopeRequirement of key: string
+    /// A `conflict` node is reached in required scope. ecir/1 carries no
+    /// resolution, so any reached conflict is open and blocks readiness.
+    | UnresolvedConflictInScope of requirementKey: string * conflictId: string
+    /// As `AuthorizationOutsideCohort`, for a requirement scope.
+    | AuthorizationOutsideScope of nodeId: string
 
 /// Semantic readiness snapshot, not authenticated execution authority.
 /// It retains exact inputs and required scope; no caller can construct success.
@@ -301,10 +318,11 @@ let validate (manifest: SourceManifest) (blueprint: Blueprint) : Violation list 
 let private isStandaloneRationale (node: ConstructionNode) =
     node.Kind = EngineeringRationale && List.isEmpty node.RequirementKeys
 
-/// Explicit dependencies plus the selected/dependent cohort's own construction
-/// obligations and required decisions. Other delivery cohorts are not included
-/// merely because they implement the same requirement. Used only after validate.
-let private cohortScope (blueprint: Blueprint) (cohort: ConstructionNode) =
+/// Explicit dependencies plus each reached cohort's own construction
+/// obligations and the decisions of every reached requirement. Other delivery
+/// cohorts are not included merely because they implement the same
+/// requirement. Used only after validate.
+let private scopeClosure (blueprint: Blueprint) (startIds: string list) =
     let index = blueprint.Nodes |> List.map (fun n -> n.Id, n) |> Map.ofList
     let rec visit seen pending =
         match pending with
@@ -322,7 +340,36 @@ let private cohortScope (blueprint: Blueprint) (cohort: ConstructionNode) =
                     blueprint.Requirements |> List.filter (fun r -> List.contains r.Source.Key current.RequirementKeys)
                     |> List.collect _.NodeIds |> List.filter (fun id -> index[id].Kind <> Cohort)
             visit (Set.add id seen) (current.DependsOn @ requiredDecisions @ obligations @ rest)
-    visit Set.empty [ cohort.Id ]
+    visit Set.empty startIds
+
+let private cohortScope (blueprint: Blueprint) (cohort: ConstructionNode) = scopeClosure blueprint [ cohort.Id ]
+
+/// The nodes a set of requirements needs: each requirement's own linked
+/// nodes and, from them, the same closure a cohort's scope follows.
+let private requirementScope (blueprint: Blueprint) (keys: Set<string>) =
+    blueprint.Requirements
+    |> List.filter (fun r -> Set.contains r.Source.Key keys)
+    |> List.collect _.NodeIds
+    |> List.distinct
+    |> scopeClosure blueprint
+
+/// Every `conflict` node linked from a `modeled` requirement, as
+/// `UnresolvedConflict`, sorted. A contract is self-contained at the consumer
+/// boundary and ecir/1 has no resolution field, so every such link is open.
+/// Call only on a blueprint whose links are otherwise valid; unknown ids are
+/// skipped (validate reports them).
+let unresolvedConflicts (blueprint: Blueprint) : Violation list =
+    let index = blueprint.Nodes |> List.fold (fun map n -> if Map.containsKey n.Id map then map else Map.add n.Id n map) Map.empty
+    blueprint.Requirements
+    |> List.filter (fun r -> r.Disposition = Modeled)
+    |> List.collect (fun r ->
+        r.NodeIds
+        |> List.choose (fun id ->
+            match Map.tryFind id index with
+            | Some node when node.Kind = Conflict -> Some(UnresolvedConflict(r.Source.Key, id))
+            | _ -> None))
+    |> List.distinct
+    |> List.sortBy (sprintf "%A")
 
 /// The node ids in a cohort's required scope, by the same rule `prepareCohort`
 /// uses, without the readiness gate. Pattern recognition needs the scope of a
@@ -336,6 +383,54 @@ let requiredScope (manifest: SourceManifest) (blueprint: Blueprint) (cohortId: s
         |> List.tryFind (fun n -> n.Id = cohortId && n.Kind = Cohort)
         |> Option.map (cohortScope blueprint)
     | _ -> None
+
+/// The readiness rules shared by a cohort scope and a requirement scope:
+/// every requirement reached in scope is modeled, every decision and
+/// standalone rationale reached in scope is externally authorized, and every
+/// authorization names an authorizable node inside the scope.
+let private scopedReadiness
+    (blueprint: Blueprint)
+    (scope: Set<string>)
+    (authorizedDecisionIds: Set<string>)
+    (outside: string -> ReadinessViolation)
+    : ReadinessViolation list =
+    let nodeIndex = blueprint.Nodes |> List.map (fun candidate -> candidate.Id, candidate) |> Map.ofList
+    let requiredKeys =
+        blueprint.Nodes |> List.filter (fun n -> Set.contains n.Id scope)
+        |> List.collect _.RequirementKeys |> Set.ofList
+    let requirements =
+        blueprint.Requirements
+        |> List.filter (fun r -> Set.contains r.Source.Key requiredKeys)
+
+    let blocked =
+        requirements
+        |> List.choose (fun r ->
+            match r.Disposition with
+            | Modeled -> None
+            | _ -> Some (BlockedRequirement r.Source.Key))
+
+    let unauthorized =
+        blueprint.Nodes
+        |> List.filter (fun n -> Set.contains n.Id scope && not (Set.contains n.Id authorizedDecisionIds))
+        |> List.choose (fun n ->
+            if n.Kind = Decision then Some(MissingDecisionAuthorization n.Id)
+            elif isStandaloneRationale n then Some(MissingRationaleAuthorization n.Id)
+            else None)
+
+    let invalidAuthorizations =
+        authorizedDecisionIds
+        |> Seq.choose (fun id ->
+            match Map.tryFind id nodeIndex with
+            | None -> Some(UnknownAuthorization id)
+            | Some candidate when candidate.Kind <> Decision && not (isStandaloneRationale candidate) ->
+                Some(AuthorizationKindMismatch(id, candidate.Kind))
+            | Some _ when not (Set.contains id scope) -> Some(outside id)
+            | Some _ -> None)
+        |> Seq.toList
+
+    blocked @ invalidAuthorizations @ unauthorized
+    |> List.distinct
+    |> List.sortBy (sprintf "%A")
 
 /// Execution readiness checks one cohort and its required dependency scope after whole-artifact semantic
 /// validation. The caller must obtain authorizedDecisionIds from an external,
@@ -356,44 +451,7 @@ let validateCohort
         | None -> [ MissingCohort cohortId ]
         | Some node when node.Kind <> Cohort -> [ NotACohort cohortId ]
         | Some node ->
-            let scope = cohortScope blueprint node
-            let nodeIndex = blueprint.Nodes |> List.map (fun candidate -> candidate.Id, candidate) |> Map.ofList
-            let requiredKeys =
-                blueprint.Nodes |> List.filter (fun n -> Set.contains n.Id scope)
-                |> List.collect _.RequirementKeys |> Set.ofList
-            let requirements =
-                blueprint.Requirements
-                |> List.filter (fun r -> Set.contains r.Source.Key requiredKeys)
-
-            let blocked =
-                requirements
-                |> List.choose (fun r ->
-                    match r.Disposition with
-                    | Modeled -> None
-                    | _ -> Some (BlockedRequirement r.Source.Key))
-
-            let unauthorized =
-                blueprint.Nodes
-                |> List.filter (fun n -> Set.contains n.Id scope && not (Set.contains n.Id authorizedDecisionIds))
-                |> List.choose (fun n ->
-                    if n.Kind = Decision then Some(MissingDecisionAuthorization n.Id)
-                    elif isStandaloneRationale n then Some(MissingRationaleAuthorization n.Id)
-                    else None)
-
-            let invalidAuthorizations =
-                authorizedDecisionIds
-                |> Seq.choose (fun id ->
-                    match Map.tryFind id nodeIndex with
-                    | None -> Some(UnknownAuthorization id)
-                    | Some candidate when candidate.Kind <> Decision && not (isStandaloneRationale candidate) ->
-                        Some(AuthorizationKindMismatch(id, candidate.Kind))
-                    | Some _ when not (Set.contains id scope) -> Some(AuthorizationOutsideCohort id)
-                    | Some _ -> None)
-                |> Seq.toList
-
-            blocked @ invalidAuthorizations @ unauthorized
-            |> List.distinct
-            |> List.sortBy (sprintf "%A")
+            scopedReadiness blueprint (cohortScope blueprint node) authorizedDecisionIds AuthorizationOutsideCohort
 
 /// Pure preparation records established semantic facts, never signer or host
 /// authenticity. Authorization changes still require fresh host validation.
@@ -413,3 +471,68 @@ let prepareCohort manifest blueprint cohortId authorizedDecisionIds =
               RequiredRationaleIds = nodes |> List.filter isStandaloneRationale |> List.map _.Id |> Set.ofList })
 
 let preparedCohortView (PreparedCohort view) = view
+
+/// The semantic facts of a ready requirement scope. Like `PreparedCohortView`
+/// it is a pure snapshot, not authenticated authority.
+type ReadyRequirementScopeView =
+    { Blueprint: Blueprint
+      RequirementKeys: Set<string>
+      RequiredRequirementKeys: Set<string>
+      RequiredNodeIds: Set<string>
+      RequiredDecisionIds: Set<string>
+      RequiredRationaleIds: Set<string>
+      AuthorizedDecisionIds: Set<string> }
+
+type ReadyRequirementScope = private ReadyRequirementScope of ReadyRequirementScopeView
+
+/// Execution readiness of the work that completes `requirementKeys`, for a
+/// consumer that tracks requirements rather than delivery cohorts. After
+/// whole-artifact validation it applies the cohort readiness rules to the
+/// requirements' required scope (their linked nodes and that closure):
+/// a non-modeled requirement reached in scope is `BlockedRequirement`, a
+/// reached `conflict` node is `UnresolvedConflictInScope`, and decisions and
+/// standalone rationales reached in scope need external authorization
+/// (`MissingDecisionAuthorization` / `MissingRationaleAuthorization`). As for
+/// `validateCohort`, authorizedDecisionIds must come from a verified host
+/// authority, never from an agent-authored field.
+let validateRequirementScope
+    (manifest: SourceManifest)
+    (blueprint: Blueprint)
+    (requirementKeys: Set<string>)
+    (authorizedDecisionIds: Set<string>)
+    : ReadinessViolation list =
+    match validate manifest blueprint with
+    | structural when not (List.isEmpty structural) -> structural |> List.map InvalidBlueprint
+    | _ when Set.isEmpty requirementKeys -> [ EmptyScope ]
+    | _ ->
+        let known = blueprint.Requirements |> List.map _.Source.Key |> Set.ofList
+        match Set.difference requirementKeys known |> Set.toList with
+        | unknown when not (List.isEmpty unknown) -> unknown |> List.map UnknownScopeRequirement
+        | _ ->
+            let scope = requirementScope blueprint requirementKeys
+            let conflicts =
+                blueprint.Nodes
+                |> List.filter (fun n -> n.Kind = Conflict && Set.contains n.Id scope)
+                |> List.collect (fun n -> n.RequirementKeys |> List.map (fun key -> UnresolvedConflictInScope(key, n.Id)))
+            scopedReadiness blueprint scope authorizedDecisionIds AuthorizationOutsideScope @ conflicts
+            |> List.distinct
+            |> List.sortBy (sprintf "%A")
+
+/// A `ReadyRequirementScope` exists only after `validateRequirementScope`
+/// found nothing to refuse.
+let prepareRequirementScope manifest blueprint requirementKeys authorizedDecisionIds =
+    match validateRequirementScope manifest blueprint requirementKeys authorizedDecisionIds with
+    | errors when not errors.IsEmpty -> Error errors
+    | _ ->
+        let scope = requirementScope blueprint requirementKeys
+        let nodes = blueprint.Nodes |> List.filter (fun n -> Set.contains n.Id scope)
+        Ok(ReadyRequirementScope
+            { Blueprint = blueprint
+              RequirementKeys = requirementKeys
+              RequiredRequirementKeys = nodes |> List.collect _.RequirementKeys |> Set.ofList |> Set.union requirementKeys
+              RequiredNodeIds = scope
+              RequiredDecisionIds = nodes |> List.filter (fun n -> n.Kind = Decision) |> List.map _.Id |> Set.ofList
+              RequiredRationaleIds = nodes |> List.filter isStandaloneRationale |> List.map _.Id |> Set.ofList
+              AuthorizedDecisionIds = authorizedDecisionIds })
+
+let readyRequirementScopeView (ReadyRequirementScope view) = view

@@ -133,3 +133,32 @@ let ``ECIR check refuses unsupported versions and dangling references with stabl
     Assert.Contains("ORDO.CONTRACT.MISSING_FILE", List.exactlyOne errors)
     let usage, _, _ = Program.run [ "ecir"; "check"; "--manifest"; "m.json"; "--blueprint"; "b.json" ] repositoryRoot
     Assert.Equal(2, usage)
+
+[<Fact>]
+let ``ECIR check refuses contradictory decisions and reports requirement readiness`` () =
+    let domain = "requirements/domain.md#R-001"
+    let run args = Program.run ([ "ecir"; "check"; "--json" ] @ args) repositoryRoot
+    let refused, refusedOut, _ = run [ "--blueprint"; consumerFixture "contradictory-decisions-contract.json" ]
+    Assert.Equal(1, refused)
+    Assert.Contains("ORDO.CONTRACT.UNRESOLVED_CONFLICT", List.exactlyOne refusedOut)
+
+    let unresolved = consumerFixture "unresolved-requirement-contract.json"
+    let admitted, _, _ = run [ "--blueprint"; unresolved ]
+    Assert.Equal(0, admitted)
+    let blocked, blockedOut, _ = run [ "--blueprint"; unresolved; "--requirement"; domain ]
+    Assert.Equal(1, blocked)
+    Assert.Contains("ORDO.CONTRACT.BLOCKED_REQUIREMENT", List.exactlyOne blockedOut)
+
+    let valid = consumerFixture "valid-contract.json"
+    let unauthorized, unauthorizedOut, _ = run [ "--blueprint"; valid; "--requirement"; domain ]
+    Assert.Equal(1, unauthorized)
+    Assert.Contains("ORDO.CONTRACT.MISSING_DECISION_AUTHORIZATION", List.exactlyOne unauthorizedOut)
+    let ready, readyOut, _ = run [ "--blueprint"; valid; "--requirement"; domain; "--authorized-decision"; "DEC-CONFIRM" ]
+    Assert.Equal(0, ready)
+    Assert.Contains("ordo.constructibility-readiness/1", List.exactlyOne readyOut)
+
+    // An authorization without a scope, or readiness flags on another subcommand, is a usage error.
+    let usage, _, _ = run [ "--blueprint"; valid; "--authorized-decision"; "DEC-CONFIRM" ]
+    Assert.Equal(2, usage)
+    let other, _, _ = Program.run [ "ecir"; "validate"; "--manifest"; "m.json"; "--blueprint"; valid; "--requirement"; domain ] repositoryRoot
+    Assert.Equal(2, other)

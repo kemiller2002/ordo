@@ -167,3 +167,89 @@ let ``undecodable escaped surrogates refuse with a diagnostic instead of throwin
     match admitContract (read "lone-surrogate-contract.json") with
     | Ok _ -> failwith "an undecodable contract was accepted"
     | Error failure -> Assert.Equal("ORDO.CONTRACT.INVALID_BLUEPRINT_JSON", failure.Diagnostics.Head.Code)
+
+// ---------------------------------------------------------------------------
+// REL-GATE-002: unresolved conflicts and requirement-scoped readiness.
+// ---------------------------------------------------------------------------
+
+let private readinessCases () =
+    match parse (read "expectations.json") |> Result.toOption |> Option.bind (member' "readinessCases") with
+    | Some(JArray items) -> items
+    | _ -> failwith "expectations.json has no readinessCases"
+
+let private diagnosticPairs (failure: DiagnosticSet) = failure.Diagnostics |> List.map (fun d -> d.Code, d.Subject)
+
+[<Fact>]
+let ``every golden readiness case is reproduced exactly by the producer`` () =
+    let all = readinessCases ()
+    Assert.True(List.length all >= 10)
+    for case in all do
+        let name = text "name" case |> Option.defaultValue "?"
+        let contract = text "contract" case |> Option.get |> read
+        let keys = stringList (member' "requirementKeys" case) |> Set.ofList
+        let authorized = stringList (member' "authorizedDecisionIds" case) |> Set.ofList
+        match text "outcome" case, assessPinnedReadiness (text "expectedDigest" case) contract keys authorized with
+        | Some "ready", Ok ready ->
+            let expected = member' "scope" case |> Option.get
+            let view = readyScopeView ready
+            Assert.True(Some view.Identity.ContractDigest = text "contractDigest" expected, name)
+            Assert.True(Some view.Identity.ContractSchemaVersion = text "contractSchemaVersion" expected, name)
+            Assert.Equal<string list>(stringList (member' "requirementKeys" expected), view.RequirementKeys)
+            Assert.Equal<string list>(stringList (member' "requiredRequirementKeys" expected), view.RequiredRequirementKeys)
+            Assert.Equal<string list>(stringList (member' "requiredNodeIds" expected), view.RequiredNodeIds)
+            Assert.Equal<string list>(stringList (member' "requiredDecisionIds" expected), view.RequiredDecisionIds)
+            Assert.Equal<string list>(stringList (member' "requiredRationaleIds" expected), view.RequiredRationaleIds)
+            Assert.Equal<string list>(stringList (member' "authorizedDecisionIds" expected), view.AuthorizedDecisionIds)
+        | Some "refused", Error failure ->
+            let expected =
+                match member' "diagnostics" case with
+                | Some(JArray items) -> items |> List.map (fun item -> text "code" item |> Option.get, text "subject" item)
+                | _ -> failwith name
+            Assert.Equal(DiagnosticsSchemaVersion, failure.SchemaVersion)
+            Assert.Equal<(string * string option) list>(expected, diagnosticPairs failure)
+        | expected, actual -> failwithf "%s: expected %A but got %A" name expected actual
+
+[<Fact>]
+let ``contradictory decisions joined by an open conflict on a modeled requirement are refused at admission`` () =
+    match admitContract (read "contradictory-decisions-contract.json") with
+    | Ok _ -> failwith "a modeled requirement with an unresolved conflict was admitted"
+    | Error failure ->
+        Assert.Equal<(string * string option) list>(
+            [ UnresolvedConflictCode, Some "requirements/domain.md#R-001->CONFLICT-REOPEN" ], diagnosticPairs failure)
+    // Authorizing both contradictory decisions does not resolve the conflict.
+    match assessReadiness (read "contradictory-decisions-contract.json")
+              (Set.singleton "requirements/domain.md#R-001") (Set.ofList [ "DEC-ALLOW-REOPEN"; "DEC-FORBID-REOPEN" ]) with
+    | Ok _ -> failwith "readiness accepted an unresolved conflict"
+    | Error failure -> Assert.Equal(UnresolvedConflictCode, failure.Diagnostics.Head.Code)
+
+[<Fact>]
+let ``an unresolved requirement is a well-formed contract whose completion is never ready`` () =
+    let contract = read "unresolved-requirement-contract.json"
+    Assert.True(admitContract contract |> Result.isOk)
+    match assessReadiness contract (Set.singleton "requirements/domain.md#R-001") Set.empty with
+    | Ok _ -> failwith "an unresolved requirement was ready"
+    | Error failure ->
+        Assert.Equal<(string * string option) list>(
+            [ "ORDO.CONTRACT.BLOCKED_REQUIREMENT", Some "requirements/domain.md#R-001"
+              UnresolvedConflictCode, Some "requirements/domain.md#R-001->CONFLICT-CONFIRM" ],
+            diagnosticPairs failure)
+
+[<Fact>]
+let ``readiness requires external authorization of every decision in scope and nothing else`` () =
+    let contract = read "valid-contract.json"
+    let domain = Set.singleton "requirements/domain.md#R-001"
+    match assessReadiness contract domain Set.empty with
+    | Ok _ -> failwith "an unauthorized decision was ready"
+    | Error failure ->
+        Assert.Equal<(string * string option) list>(
+            [ "ORDO.CONTRACT.MISSING_DECISION_AUTHORIZATION", Some "DEC-CONFIRM" ], diagnosticPairs failure)
+    match assessReadiness contract domain (Set.singleton "DEC-CONFIRM") with
+    | Error failure -> failwithf "%A" failure
+    | Ok ready ->
+        let view = readyScopeView ready
+        Assert.Equal<string list>([ "DEC-CONFIRM" ], view.RequiredDecisionIds)
+        Assert.Equal<string list>([ "COHORT-CONFIRM"; "DEC-CONFIRM"; "VERIFY-CONFIRM" ], view.RequiredNodeIds)
+        Assert.Contains(ReadinessSchemaVersion, encodeReadyScope ready)
+    // The reordered contract yields byte-identical readiness.
+    let encode json = assessReadiness json domain (Set.singleton "DEC-CONFIRM") |> Result.map encodeReadyScope
+    Assert.Equal(encode contract, encode (read "reordered-contract.json"))

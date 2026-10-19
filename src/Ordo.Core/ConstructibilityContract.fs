@@ -71,6 +71,20 @@ type PreparedContract = private PreparedContract of ContractView * PreparedCohor
 
 let contractView (PreparedContract(view, _)) = view
 
+/// A conflict linked from a modeled requirement (admission) or reached in a
+/// readiness scope. ecir/1 has no in-contract resolution, so either is open.
+[<Literal>]
+let UnresolvedConflictCode = "ORDO.CONTRACT.UNRESOLVED_CONFLICT"
+
+[<Literal>]
+let EmptyScopeCode = "ORDO.CONTRACT.EMPTY_SCOPE"
+
+[<Literal>]
+let UnknownScopeRequirementCode = "ORDO.CONTRACT.UNKNOWN_SCOPE_REQUIREMENT"
+
+[<Literal>]
+let AuthorizationOutsideScopeCode = "ORDO.CONTRACT.AUTHORIZATION_OUTSIDE_SCOPE"
+
 let private diag code subject message =
     { Code = code; Subject = subject; Message = message }
 
@@ -101,6 +115,7 @@ let private violationDiagnostic violation =
         | MissingDependency(id, target) -> "ORDO.CONTRACT.MISSING_DEPENDENCY", Some(id + "->" + target)
         | SelfDependency id -> "ORDO.CONTRACT.SELF_DEPENDENCY", Some id
         | DependencyCycle id -> "ORDO.CONTRACT.DEPENDENCY_CYCLE", Some id
+        | UnresolvedConflict(key, id) -> UnresolvedConflictCode, Some(key + "->" + id)
 
     diag code subject (sprintf "%A" violation)
 
@@ -119,6 +134,10 @@ let private readinessDiagnostic violation =
         diag "ORDO.CONTRACT.MISSING_DECISION_AUTHORIZATION" (Some id) (sprintf "%A" violation)
     | MissingRationaleAuthorization id ->
         diag "ORDO.CONTRACT.MISSING_RATIONALE_AUTHORIZATION" (Some id) (sprintf "%A" violation)
+    | EmptyScope -> diag EmptyScopeCode None (sprintf "%A" violation)
+    | UnknownScopeRequirement key -> diag UnknownScopeRequirementCode (Some key) (sprintf "%A" violation)
+    | UnresolvedConflictInScope(key, id) -> diag UnresolvedConflictCode (Some(key + "->" + id)) (sprintf "%A" violation)
+    | AuthorizationOutsideScope id -> diag AuthorizationOutsideScopeCode (Some id) (sprintf "%A" violation)
 
 let private failure diagnostics =
     { SchemaVersion = DiagnosticsSchemaVersion
@@ -343,16 +362,30 @@ let private identityOf (blueprint: Blueprint) =
 /// Strict, deterministic, side-effect-free admission of published contract
 /// bytes. Diagnostics are the same stable `ORDO.CONTRACT.*` codes `prepare`
 /// emits, sorted, in the `ordo.constructibility-diagnostics/1` envelope.
-let admitContract (blueprintJson: string) : Result<ContractIdentity, DiagnosticSet> =
+/// Admission adds one rule `validate` does not apply: a `modeled` requirement
+/// must not link a `conflict` node (`ORDO.CONTRACT.UNRESOLVED_CONFLICT`,
+/// subject `requirementKey->conflictId`). The contract alone carries no
+/// resolution, so a consumer holding only these bytes must treat every such
+/// conflict as open (ecir-v1 negative test 5).
+///
+/// The admission rules over one decoded blueprint: every manifest-independent
+/// rule of `validate`, plus `unresolvedConflicts` (REL-GATE-002).
+let private admissionViolations (blueprint: Blueprint) =
+    validate (selfManifest blueprint) blueprint @ unresolvedConflicts blueprint |> List.distinct
+
+let private decodeForAdmission (blueprintJson: string) : Result<Blueprint, DiagnosticSet> =
     match requestedVersion blueprintJson |> Option.map negotiateVersion with
     | Some(Unsupported(requested, supported)) -> Error(unsupportedSchema requested supported)
     | _ ->
         match readBlueprint blueprintJson with
         | Error message -> Error(failure [ diag "ORDO.CONTRACT.INVALID_BLUEPRINT_JSON" None message ])
         | Ok blueprint ->
-            match validate (selfManifest blueprint) blueprint with
-            | [] -> Ok(identityOf blueprint)
+            match admissionViolations blueprint with
+            | [] -> Ok blueprint
             | violations -> Error(failure (violations |> List.map violationDiagnostic))
+
+let admitContract (blueprintJson: string) : Result<ContractIdentity, DiagnosticSet> =
+    decodeForAdmission blueprintJson |> Result.map identityOf
 
 let private isSha256Digest (value: string) =
     value.Length = 71
@@ -386,4 +419,85 @@ let encodeContractIdentity (identity: ContractIdentity) =
         "requirementKeys", strings identity.RequirementKeys
         "decisionIds", strings identity.DecisionIds
         "conflictIds", strings identity.ConflictIds ]
+    |> renderCanonical
+
+// ---------------------------------------------------------------------------
+// Manifest-free execution readiness for a requirement scope (REL-GATE-002).
+//
+// Admission says the contract is well formed; it does not say the work that
+// completes some of its requirements may run. `assessReadiness` admits the
+// bytes and then applies `ConstructionIr.validateRequirementScope`: every
+// requirement reached in scope is modeled (BLOCKED_REQUIREMENT), no conflict
+// is reached (UNRESOLVED_CONFLICT), and every decision or standalone rationale
+// reached is in the externally authorized set (MISSING_DECISION_AUTHORIZATION,
+// MISSING_RATIONALE_AUTHORIZATION), which itself names only authorizable
+// nodes inside the scope. The authorized set must come from a host authority,
+// never from the agent being judged. Readiness is not authority either.
+// ---------------------------------------------------------------------------
+
+[<Literal>]
+let ReadinessSchemaVersion = "ordo.constructibility-readiness/1"
+
+/// The stable, sorted record of one ready scope.
+type ReadyScopeView =
+    { Identity: ContractIdentity
+      RequirementKeys: string list
+      RequiredRequirementKeys: string list
+      RequiredNodeIds: string list
+      RequiredDecisionIds: string list
+      RequiredRationaleIds: string list
+      AuthorizedDecisionIds: string list }
+
+/// Only `assessReadiness` constructs one.
+type ReadyScope = private ReadyScope of ReadyScopeView
+
+let readyScopeView (ReadyScope view) = view
+
+let private sortedList (values: Set<string>) = values |> Set.toList |> List.sortWith (fun a b -> System.String.CompareOrdinal(a, b))
+
+let private readyFrom (identity: ContractIdentity) (blueprint: Blueprint) requirementKeys authorizedDecisionIds =
+    match prepareRequirementScope (selfManifest blueprint) blueprint requirementKeys authorizedDecisionIds with
+    | Error violations -> Error(failure (violations |> List.map readinessDiagnostic))
+    | Ok ready ->
+        let view = readyRequirementScopeView ready
+        Ok(ReadyScope
+            { Identity = identity
+              RequirementKeys = sortedList view.RequirementKeys
+              RequiredRequirementKeys = sortedList view.RequiredRequirementKeys
+              RequiredNodeIds = sortedList view.RequiredNodeIds
+              RequiredDecisionIds = sortedList view.RequiredDecisionIds
+              RequiredRationaleIds = sortedList view.RequiredRationaleIds
+              AuthorizedDecisionIds = sortedList view.AuthorizedDecisionIds })
+
+/// Admission (with stale-reference detection when a pin is held), then
+/// readiness of `requirementKeys` under `authorizedDecisionIds`.
+let assessPinnedReadiness
+    (expectedDigest: string option)
+    (blueprintJson: string)
+    (requirementKeys: Set<string>)
+    (authorizedDecisionIds: Set<string>)
+    : Result<ReadyScope, DiagnosticSet> =
+    decodeForAdmission blueprintJson
+    |> Result.bind (fun blueprint ->
+        let identity = identityOf blueprint
+        match expectedDigest with
+        | Some expected -> checkReference expected identity |> Result.map (fun _ -> blueprint, identity)
+        | None -> Ok(blueprint, identity))
+    |> Result.bind (fun (blueprint, identity) -> readyFrom identity blueprint requirementKeys authorizedDecisionIds)
+
+let assessReadiness (blueprintJson: string) (requirementKeys: Set<string>) (authorizedDecisionIds: Set<string>) =
+    assessPinnedReadiness None blueprintJson requirementKeys authorizedDecisionIds
+
+let encodeReadyScope (ReadyScope view) =
+    let strings values = JArray(values |> List.map JString)
+    JObject [
+        "schemaVersion", JString ReadinessSchemaVersion
+        "contractSchemaVersion", JString view.Identity.ContractSchemaVersion
+        "contractDigest", JString view.Identity.ContractDigest
+        "requirementKeys", strings view.RequirementKeys
+        "requiredRequirementKeys", strings view.RequiredRequirementKeys
+        "requiredNodeIds", strings view.RequiredNodeIds
+        "requiredDecisionIds", strings view.RequiredDecisionIds
+        "requiredRationaleIds", strings view.RequiredRationaleIds
+        "authorizedDecisionIds", strings view.AuthorizedDecisionIds ]
     |> renderCanonical
