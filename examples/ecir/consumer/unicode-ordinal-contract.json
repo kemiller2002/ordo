@@ -46,7 +46,7 @@
         "requirements/domain.md#R-001"
       ],
       "dependsOn": [],
-      "justification": "domäne \"übergang\"\t\u0001 ✓ 𝄞 \\ end"
+      "justification": "domäne \"übergang\"\t\u0001 ✓ 𝄞 \\ end \u001f\u000b   "
     },
     {
       "id": "VERIFY-CONFIRM",

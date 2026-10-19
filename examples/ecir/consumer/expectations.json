@@ -63,7 +63,7 @@
       "outcome": "admitted",
       "identity": {
         "contractSchemaVersion": "ecir/1",
-        "contractDigest": "sha256:d57cdc3a0e2bdb2f6829f7b7350544ac11b202771d7578d93577f19708072311",
+        "contractDigest": "sha256:28b3b30ffa2232085c94a0ca8e9d0331e88458d0dabe8354de40015594243dd6",
         "requirementKeys": [
           "requirements/domain.md#R-001",
           "requirements/operations.md#R-001"
