@@ -32,6 +32,7 @@
     <Compile Include="ConstructionIrTests.fs" />
     <Compile Include="ConstructionIrWireTests.fs" />
     <Compile Include="ConstructionIrFixtureTests.fs" />
+    <Compile Include="ConstructibilityAdmissionTests.fs" />
     <Compile Include="FsiProbe.fs" />
     <Compile Include="ConstructionPlanTests.fs" />
     <Compile Include="ConstructionPlanAdversarialTests.fs" />

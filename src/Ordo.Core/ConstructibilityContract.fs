@@ -220,24 +220,28 @@ let prepare
                           Traceability = traceability view },
                         cohort))
 
+/// The schema version a document claims, read before any other field is
+/// interpreted so a future version is refused rather than misparsed.
+let private requestedVersion json =
+    match Ordo.Core.Json.parse json with
+    | Ok(JObject members) ->
+        match members |> List.choose (fun (name, value) -> if name = "schemaVersion" then Some value else None) with
+        | [ JString version ] -> Some version
+        | _ -> None
+    | _ -> None
+
+let private unsupportedSchema requested supported =
+    failure [ diag "ORDO.CONTRACT.UNSUPPORTED_SCHEMA" (Some requested)
+                  ("supported schema versions: " + String.concat ", " supported) ]
+
 /// Strict JSON intake with stable diagnostic codes. Parsing and semantic
 /// diagnostics share one machine-readable envelope.
 let readAndPrepare manifestJson blueprintJson pinnedBlueprintDigest cohortId authorizedNodeIds =
     match readManifest manifestJson with
     | Error message -> Error(failure [ diag "ORDO.CONTRACT.INVALID_MANIFEST_JSON" None message ])
     | Ok manifest ->
-        let requestedVersion =
-            match Ordo.Core.Json.parse blueprintJson with
-            | Ok(JObject members) ->
-                match members |> List.choose (fun (name, value) -> if name = "schemaVersion" then Some value else None) with
-                | [ JString version ] -> Some version
-                | _ -> None
-            | _ -> None
-
-        match requestedVersion |> Option.map negotiateVersion with
-        | Some(Unsupported(requested, supported)) ->
-            Error(failure [ diag "ORDO.CONTRACT.UNSUPPORTED_SCHEMA" (Some requested)
-                                ("supported schema versions: " + String.concat ", " supported) ])
+        match requestedVersion blueprintJson |> Option.map negotiateVersion with
+        | Some(Unsupported(requested, supported)) -> Error(unsupportedSchema requested supported)
         | _ ->
             match readBlueprint blueprintJson with
             | Error message -> Error(failure [ diag "ORDO.CONTRACT.INVALID_BLUEPRINT_JSON" None message ])
@@ -286,4 +290,100 @@ let encodeContractView (view: ContractView) =
                     "decisionIds", JArray(item.DecisionIds |> List.map JString)
                     "conflictIds", JArray(item.ConflictIds |> List.map JString)
                     "verificationObligationIds", JArray(item.VerificationObligationIds |> List.map JString) ] ] ]
+    |> renderCanonical
+
+// ---------------------------------------------------------------------------
+// Manifest-free consumer admission (REL-ORDO-001 / ORD-REL-003, -005, -006).
+//
+// A downstream consumer (Praxis work admission, Dokimos authority) often holds
+// only the published blueprint bytes and a digest it pinned earlier, not the
+// trusted source manifest. `admitContract` applies every rule of `validate`
+// that the blueprint can establish about itself: strict decoding, exact
+// version negotiation, unique requirement keys and node IDs, resolvable and
+// reciprocal requirement/decision/node references, resolvable acyclic
+// dependencies and disposition evidence. Intake equality against the real
+// source manifest still requires `prepare`; admission is not authority.
+// ---------------------------------------------------------------------------
+
+[<Literal>]
+let ContractIdentitySchemaVersion = "ordo.constructibility-identity/1"
+
+[<Literal>]
+let StaleReferenceCode = "ORDO.CONTRACT.STALE_REFERENCE"
+
+[<Literal>]
+let InvalidReferenceDigestCode = "ORDO.CONTRACT.INVALID_REFERENCE_DIGEST"
+
+/// The stable identity of one admitted contract. Every list is ordinal-sorted
+/// and duplicate-free, so equal contracts yield byte-identical encodings.
+type ContractIdentity =
+    { ContractSchemaVersion: string
+      ContractDigest: string
+      RequirementKeys: string list
+      DecisionIds: string list
+      ConflictIds: string list }
+
+/// The blueprint's own requirement sources stand in for the manifest, so only
+/// manifest-independent rules can fire. The first occurrence of a repeated key
+/// is kept, matching `validate`'s own indexing, so a duplicate is reported once
+/// as DUPLICATE_BLUEPRINT_REQUIREMENT rather than as a changed requirement.
+let private selfManifest (blueprint: Blueprint) : SourceManifest =
+    { Digest = blueprint.SourceManifestDigest
+      Requirements = blueprint.Requirements |> List.map _.Source |> List.distinctBy _.Key }
+
+let private identityOf (blueprint: Blueprint) =
+    let idsOf kind =
+        blueprint.Nodes |> List.filter (fun node -> node.Kind = kind) |> List.map _.Id |> List.distinct |> List.sort
+    { ContractSchemaVersion = blueprint.SchemaVersion
+      ContractDigest = blueprintDigest blueprint
+      RequirementKeys = blueprint.Requirements |> List.map _.Source.Key |> List.distinct |> List.sort
+      DecisionIds = idsOf Decision
+      ConflictIds = idsOf Conflict }
+
+/// Strict, deterministic, side-effect-free admission of published contract
+/// bytes. Diagnostics are the same stable `ORDO.CONTRACT.*` codes `prepare`
+/// emits, sorted, in the `ordo.constructibility-diagnostics/1` envelope.
+let admitContract (blueprintJson: string) : Result<ContractIdentity, DiagnosticSet> =
+    match requestedVersion blueprintJson |> Option.map negotiateVersion with
+    | Some(Unsupported(requested, supported)) -> Error(unsupportedSchema requested supported)
+    | _ ->
+        match readBlueprint blueprintJson with
+        | Error message -> Error(failure [ diag "ORDO.CONTRACT.INVALID_BLUEPRINT_JSON" None message ])
+        | Ok blueprint ->
+            match validate (selfManifest blueprint) blueprint with
+            | [] -> Ok(identityOf blueprint)
+            | violations -> Error(failure (violations |> List.map violationDiagnostic))
+
+let private isSha256Digest (value: string) =
+    value.Length = 71
+    && value.StartsWith("sha256:", System.StringComparison.Ordinal)
+    && value.Substring 7 |> Seq.forall (fun ch -> (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f'))
+
+/// Stale-reference detection: a consumer that pinned `expectedDigest` learns
+/// that the contract it now reads has a different canonical digest. The
+/// subject is `expected->actual` so both sides of the drift are actionable.
+let checkReference (expectedDigest: string) (identity: ContractIdentity) : Result<ContractIdentity, DiagnosticSet> =
+    if not (isSha256Digest expectedDigest) then
+        Error(failure [ diag InvalidReferenceDigestCode (Some expectedDigest)
+                            "the expected contract digest must be a lowercase 64-hex SHA-256 value" ])
+    elif not (System.String.Equals(expectedDigest, identity.ContractDigest, System.StringComparison.Ordinal)) then
+        Error(failure [ diag StaleReferenceCode (Some(expectedDigest + "->" + identity.ContractDigest))
+                            "the contract changed since this reference was pinned" ])
+    else Ok identity
+
+/// Admission followed, when a pin is held, by stale-reference detection.
+let admitPinnedContract (expectedDigest: string option) (blueprintJson: string) =
+    match admitContract blueprintJson, expectedDigest with
+    | Ok identity, Some expected -> checkReference expected identity
+    | outcome, _ -> outcome
+
+let encodeContractIdentity (identity: ContractIdentity) =
+    let strings values = JArray(values |> List.map JString)
+    JObject [
+        "schemaVersion", JString ContractIdentitySchemaVersion
+        "contractSchemaVersion", JString identity.ContractSchemaVersion
+        "contractDigest", JString identity.ContractDigest
+        "requirementKeys", strings identity.RequirementKeys
+        "decisionIds", strings identity.DecisionIds
+        "conflictIds", strings identity.ConflictIds ]
     |> renderCanonical

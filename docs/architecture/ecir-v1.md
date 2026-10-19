@@ -91,6 +91,16 @@ mint construction authority. `readAndPrepare` refuses unsupported versions with
 supported set is currently exactly `ecir/1`, and the automatic migration table
 is deliberately empty.
 
+`ConstructibilityContract.admitContract` is the manifest-free consumer intake
+for parties that hold only the published blueprint bytes. It applies strict
+decoding, exact version negotiation and every manifest-independent rule of
+`validate`, then returns an `ordo.constructibility-identity/1` record (version,
+canonical digest, sorted requirement keys, decision IDs and conflict IDs).
+`checkReference` / `admitPinnedContract` detect a stale pinned digest with
+`ORDO.CONTRACT.STALE_REFERENCE`; `sde ecir check` exposes the same path. The
+golden corpus in `examples/ecir/consumer/` is the producer/consumer
+compatibility oracle. Admission is not intake equality and not authority.
+
 A failed gate is an explicit refusal with actionable IDs. An agent may revise a new blueprint version; it must never silently rewrite history or override an approved decision.
 
 ## Start with a lossless, deliberately unresolved scaffold

@@ -90,3 +90,46 @@ let ``ECIR scaffold CLI rejects falsified input before writing anything`` () =
 let ``ECIR scaffold requires both source and output paths`` () =
     let code, _, _ = Program.run [ "ecir"; "scaffold"; "--manifest"; "input.json" ] repositoryRoot
     Assert.Equal(2, code)
+
+let private consumerFixture name =
+    Path.Combine(repositoryRoot, "examples", "ecir", "consumer", name)
+
+[<Fact>]
+let ``ECIR check admits a published contract and detects a stale pinned digest`` () =
+    let contract = consumerFixture "valid-contract.json"
+    let code, stdout, stderr = Program.run [ "ecir"; "check"; "--blueprint"; contract; "--json" ] repositoryRoot
+    Assert.Equal(0, code)
+    Assert.Empty stderr
+    let identity = List.exactlyOne stdout
+    Assert.Contains("\"schemaVersion\": \"ordo.constructibility-identity/1\"", identity)
+    let digest =
+        match Ordo.Core.ConstructibilityContract.admitContract (File.ReadAllText contract) with
+        | Ok admitted -> admitted.ContractDigest
+        | Error failure -> failwithf "%A" failure
+    Assert.Contains(digest, identity)
+
+    let pinned, _, _ = Program.run [ "ecir"; "check"; "--blueprint"; contract; "--expected-digest"; digest; "--json" ] repositoryRoot
+    Assert.Equal(0, pinned)
+
+    let stale = "sha256:" + String('0', 64)
+    let staleCode, staleOut, _ =
+        Program.run [ "ecir"; "check"; "--blueprint"; contract; "--expected-digest"; stale; "--json" ] repositoryRoot
+    Assert.Equal(1, staleCode)
+    Assert.Contains("ORDO.CONTRACT.STALE_REFERENCE", List.exactlyOne staleOut)
+    Assert.Contains(stale + "->" + digest, List.exactlyOne staleOut)
+
+[<Fact>]
+let ``ECIR check refuses unsupported versions and dangling references with stable codes`` () =
+    for fixture, code in [ "unsupported-version-contract.json", "ORDO.CONTRACT.UNSUPPORTED_SCHEMA"
+                           "dangling-dependency-contract.json", "ORDO.CONTRACT.MISSING_DEPENDENCY"
+                           "dangling-decision-contract.json", "ORDO.CONTRACT.MISSING_NODE" ] do
+        let exit, stdout, stderr = Program.run [ "ecir"; "check"; "--blueprint"; consumerFixture fixture; "--json" ] repositoryRoot
+        Assert.Equal(1, exit)
+        Assert.Empty stderr
+        Assert.Contains(code, List.exactlyOne stdout)
+        Assert.Contains("ordo.constructibility-diagnostics/1", List.exactlyOne stdout)
+    let missing, _, errors = Program.run [ "ecir"; "check"; "--blueprint"; consumerFixture "absent.json" ] repositoryRoot
+    Assert.Equal(1, missing)
+    Assert.Contains("ORDO.CONTRACT.MISSING_FILE", List.exactlyOne errors)
+    let usage, _, _ = Program.run [ "ecir"; "check"; "--manifest"; "m.json"; "--blueprint"; "b.json" ] repositoryRoot
+    Assert.Equal(2, usage)

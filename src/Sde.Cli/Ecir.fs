@@ -7,6 +7,8 @@ open System.IO
 open Ordo.Core.ConstructionIr
 open Ordo.Core.ConstructionIrWire
 
+module Contract = Ordo.Core.ConstructibilityContract
+
 let run (asJson: bool) (manifestPath: string) (blueprintPath: string) (cohort: string option) =
     let readFile label path =
         try
@@ -64,6 +66,36 @@ let run (asJson: bool) (manifestPath: string) (blueprintPath: string) (cohort: s
             if asJson then sprintf "{\"schemaVersion\":\"ecir.validate/1\",\"status\":\"rejected\",\"reason\":%s}" (escaped issue)
             else "ECIR refused: " + issue
         1, (if asJson then [ message ] else []), (if asJson then [] else [ message ])
+
+/// Manifest-free admission of a published contract (`ordo.constructibility-
+/// identity/1` on success, `ordo.constructibility-diagnostics/1` on refusal).
+/// With an expected digest it also detects a stale pinned reference. Exit 0
+/// admitted, 1 refused. Admission is never execution authority.
+let checkContract (asJson: bool) (blueprintPath: string) (expectedDigest: string option) =
+    let refusal code message : string =
+        Contract.encodeDiagnostics
+            { Contract.DiagnosticSet.SchemaVersion = Contract.DiagnosticsSchemaVersion
+              Contract.DiagnosticSet.Diagnostics =
+                [ { Contract.Diagnostic.Code = code; Contract.Diagnostic.Subject = Some blueprintPath; Contract.Diagnostic.Message = message } ] }
+    let outcome =
+        try
+            if not (File.Exists blueprintPath) then
+                Error(refusal "ORDO.CONTRACT.MISSING_FILE" "contract file missing")
+            else
+                File.ReadAllText blueprintPath
+                |> Contract.admitPinnedContract expectedDigest
+                |> Result.mapError Contract.encodeDiagnostics
+        with :? IOException as ex ->
+            Error(refusal "ORDO.CONTRACT.UNREADABLE_FILE" ex.Message)
+
+    match outcome with
+    | Ok identity when asJson -> 0, [ Contract.encodeContractIdentity identity ], []
+    | Ok identity ->
+        0, [ sprintf "Contract admitted: %s %s; %d requirements, %d decisions, %d conflicts. Execution authorization not granted."
+                 identity.ContractSchemaVersion identity.ContractDigest identity.RequirementKeys.Length
+                 identity.DecisionIds.Length identity.ConflictIds.Length ], []
+    | Error diagnostics when asJson -> 1, [ diagnostics ], []
+    | Error diagnostics -> 1, [], [ "Contract refused:\n" + diagnostics ]
 
 /// Construct a source-complete, intentionally non-executable starter
 /// blueprint. An already existing output is NEVER modified: revisions must

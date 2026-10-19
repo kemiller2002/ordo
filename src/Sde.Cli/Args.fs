@@ -40,6 +40,12 @@ type EcirValidateOptions =
       Blueprint: string
       Cohort: string option }
 
+/// Manifest-free consumer admission of one published contract, optionally
+/// against a digest the caller pinned earlier (stale-reference detection).
+type EcirCheckOptions =
+    { Blueprint: string
+      ExpectedDigest: string option }
+
 type EcirScaffoldOptions =
     { Manifest: string
       Output: string }
@@ -57,6 +63,7 @@ type EcirRecognizeOptions =
 
 type Command =
     | EcirValidate of EcirValidateOptions
+    | EcirCheck of EcirCheckOptions
     | EcirScaffold of EcirScaffoldOptions
     | EcirRecognize of EcirRecognizeOptions
     | Init of InitOptions
@@ -148,13 +155,13 @@ let private parseBoundary (globals: GlobalOptions) (argv: string list) : ParseRe
         | _ -> ParseFailed boundaryUsage
 
 let ecirUsage =
-    "Usage: sde ecir validate --manifest FILE --blueprint FILE [--cohort ID] [--json] | sde ecir scaffold --manifest FILE --output FILE [--json] | sde ecir recognize --manifest FILE --blueprint FILE --cohort ID [--decisions FILE] [--approvals FILE] [--pin FILE] [--allow GLOB]... [--escalate-open-questions] [--packets DIR] [--json]"
+    "Usage: sde ecir validate --manifest FILE --blueprint FILE [--cohort ID] [--json] | sde ecir check --blueprint FILE [--expected-digest sha256:HEX] [--json] | sde ecir scaffold --manifest FILE --output FILE [--json] | sde ecir recognize --manifest FILE --blueprint FILE --cohort ID [--decisions FILE] [--approvals FILE] [--pin FILE] [--allow GLOB]... [--escalate-open-questions] [--packets DIR] [--json]"
 
 /// Only structural/semantic validation can be authorized by this CLI.
 //// Cohort-level execution also needs externally verified decision approvals;
 /// passing a string on the command line is deliberately not authorization.
 let private parseEcir (globals: GlobalOptions) (argv: string list) : ParseResult =
-    let valued = [ "--manifest"; "--blueprint"; "--cohort"; "--output"; "--decisions"; "--approvals"; "--pin"; "--packets" ]
+    let valued = [ "--manifest"; "--blueprint"; "--expected-digest"; "--cohort"; "--output"; "--decisions"; "--approvals"; "--pin"; "--packets" ]
     let switches = [ "--json"; "--verbose"; "-v"; "--help"; "-h"; "--escalate-open-questions" ]
     let allowed =
         argv |> List.pairwise |> List.choose (fun (flag, value) -> if flag = "--allow" then Some value else None)
@@ -179,6 +186,11 @@ let private parseEcir (globals: GlobalOptions) (argv: string list) : ParseResult
         match Map.tryFind "--manifest" values, Map.tryFind "--blueprint" values with
         | Some manifest, Some blueprint when not (Map.containsKey "--output" values) ->
             Parsed { Command = EcirValidate { Manifest = manifest; Blueprint = blueprint; Cohort = Map.tryFind "--cohort" values }; Global = globals }
+        | _ -> ParseFailed ecirUsage
+    | Ok(values, [ "ecir"; "check" ]) ->
+        match Map.tryFind "--blueprint" values with
+        | Some blueprint when [ "--manifest"; "--cohort"; "--output" ] |> List.forall (fun flag -> not (Map.containsKey flag values)) ->
+            Parsed { Command = EcirCheck { Blueprint = blueprint; ExpectedDigest = Map.tryFind "--expected-digest" values }; Global = globals }
         | _ -> ParseFailed ecirUsage
     | Ok(values, [ "ecir"; "scaffold" ]) ->
         match Map.tryFind "--manifest" values, Map.tryFind "--output" values with
