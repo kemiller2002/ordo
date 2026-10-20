@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-19T23:02:26Z",
+  "updatedAt": "2026-10-20T01:03:01.145Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2413,6 +2413,17 @@
       },
       "completedAt": "2026-10-19T23:02:26Z",
       "conclusion": "Admission refuses a modeled requirement linking an unresolved conflict (ORDO.CONTRACT.UNRESOLVED_CONFLICT); manifest-free requirement-scoped readiness (assessReadiness, sde ecir check --requirement/--authorized-decision); corpus extended; Ordo.Tests 536->541 passed (1 skipped), Sde.Core.Tests 153->154; consumed by Praxis PRAXIS-REL-008"
+    },
+    {
+      "id": "RELEASE-1-17-0",
+      "type": "mechanical",
+      "state": "active",
+      "semanticState": "active",
+      "evidence": [],
+      "updatedAt": "2026-10-20T01:03:01.145Z",
+      "telemetryExecutionIds": [
+        "EXE-20261020T010301473Z-48261664"
+      ]
     }
   ]
 }
