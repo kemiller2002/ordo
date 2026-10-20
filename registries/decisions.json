@@ -796,5 +796,49 @@
     "title": "Link approved decisions to the blueprint conflicts they settle",
     "type": "decision-record",
     "updated": "2026-10-13"
+  },
+  {
+    "created": "2026-10-13",
+    "id": "DF-SDE-2026-0026",
+    "path": "research/decisions/DF-SDE-2026-0026--state-effect-outcome-policies.md",
+    "provenance": {
+      "contributions": {
+        "EXE-20261013T223426040Z-917561db": {
+          "actor": {
+            "id": "anthropic/claude-code",
+            "kind": "agent",
+            "model": "unknown",
+            "provider": "anthropic",
+            "runtime": "claude-code"
+          },
+          "at": "2026-10-13T22:35:02.000Z",
+          "operations": [
+            "created"
+          ],
+          "reason": "Record CONSTRUCT-010 phase 2 increment 2 effect outcome policies"
+        }
+      }
+    },
+    "related_documents": [
+      "docs/architecture/effect-outcome-policies.md",
+      "schemas/ordo-construction-plan.vocabulary-5.schema.json",
+      "src/Ordo.Core/ConstructionPlan.fs",
+      "src/Ordo.Construction/Emit.fs",
+      "tests/Ordo.Tests/ConstructionVocabulary5Tests.fs",
+      "tests/Ordo.Construction.Tests/EffectPolicyTests.fs"
+    ],
+    "status": "draft",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "construction",
+      "vocabulary",
+      "effects",
+      "reconciliation",
+      "construct-010"
+    ],
+    "title": "State what failed and unknown effect outcomes mean, separately, in plan vocabulary 5",
+    "type": "decision-record",
+    "updated": "2026-10-13"
   }
 ]

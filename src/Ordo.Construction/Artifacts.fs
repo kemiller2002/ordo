@@ -25,10 +25,18 @@ let GeneratorVersion3 = "ordo.construction/3"
 [<Literal>]
 let GeneratorVersion4 = "ordo.construction/4"
 
+/// The generator for vocabulary 5 plans: version 4 plus effect outcome
+/// policies in Tier 3. A definitely failed effect is retried up to the plan's
+/// count, then remains, proceeds, is compensated by host code or escalated;
+/// an unknown outcome is reconciled by host code or escalated, never retried.
+[<Literal>]
+let GeneratorVersion5 = "ordo.construction/5"
+
 /// The generator version a plan's vocabulary selects. The plan cannot choose
 /// it any other way.
 let generatorVersionFor (vocabularyVersion: string) =
-    if vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion4 then GeneratorVersion4
+    if vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion5 then GeneratorVersion5
+    elif vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion4 then GeneratorVersion4
     elif vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion3 then GeneratorVersion3
     elif vocabularyVersion = Ordo.Core.ConstructionPlan.VocabularyVersion2 then GeneratorVersion2
     else GeneratorVersion
@@ -70,6 +78,10 @@ type ExtensionKind =
     | EffectPort
     /// Vocabulary 4: picks one target of a branching transition from a closed union.
     | SelectionFunction
+    /// Vocabulary 5: asks whether an effect whose outcome was unknown landed.
+    | ReconcilePort
+    /// Vocabulary 5: undoes a definitely failed effect, on approved authority.
+    | CompensatePort
 
 /// A handwritten implementation the generated code requires and cannot
 /// supply. Missing ones fail compilation; there is no permissive default.

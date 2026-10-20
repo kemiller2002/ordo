@@ -157,7 +157,16 @@ let classify (plan: ValidatedPlan) : Classification =
             match p.Kind with
             | CurrentTimePort -> [ choice "port:currentTime" ChoiceKind.Port p.Trace.RequirementKeys (basisOf p.Trace) ]
             | TransitionEffectPort(command, disposition) ->
+                let policy = w.EffectPolicies |> List.tryFind (fun p -> p.Effect.Key = command.Key)
                 let failure =
+                    match policy, disposition with
+                    // Vocabulary 5: the effect policy decides, or leaves open.
+                    | Some p, _ when p.OnFailed = FailedEffectAction.Unresolved || p.OnUnknown = UnknownEffectAction.Unresolved ->
+                        ChoiceClass.Unresolved(
+                            effectQuestion command
+                            |> Option.defaultValue (sprintf "The outcome policy of the %s effect is not decided." command.Key))
+                    | Some p, _ -> basisOf p.Trace
+                    | None, _ ->
                     match disposition with
                     | Some(EffectFailureDisposition.Remain | EffectFailureDisposition.Proceed) -> basisOf p.Trace
                     | Some EffectFailureDisposition.Unresolved ->

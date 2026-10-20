@@ -73,6 +73,17 @@ let gate =
     { Name = "gate-synthetic-v4"; Source = "gate-synthetic"; Plan = "plan.v4.json"; Blueprint = "blueprint.json"
       Cohort = "COH-GATE"; Approved = Set.singleton "DEC-GATE" }
 
+/// Vocabulary 5 (CONSTRUCT-010 phase 2, increment 2): the open timer with an
+/// effect policy for Stop. `timerPolicy` retries twice, compensates on the
+/// test-approved DEC-TIMER-STOP-FAILURE and reconciles unknown outcomes;
+/// `timerEscalate` escalates failures and leaves unknown outcomes unresolved.
+let timerPolicy =
+    { timer with
+        Name = "time-entry-timer-v5-policy"; Plan = "plan.v5-policy.json"; Blueprint = "blueprint.v2-remain.json"
+        Approved = Set.ofList [ "DEC-TIMER-STATES"; "DEC-TIMER-STOP-FAILURE" ] }
+
+let timerEscalate = { timer with Name = "time-entry-timer-v5-escalate"; Plan = "plan.v5-escalate.json" }
+
 let private read (fixture: Fixture) name =
     File.ReadAllText(Path.Combine(repositoryRoot, "tests", "fixtures", "construction", fixture.Source, name))
 
