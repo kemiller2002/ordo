@@ -373,3 +373,31 @@ let ``prepared snapshots record the authorized rationale scope separately from d
         let view = preparedCohortView prepared
         Assert.Equal<Set<string>>(Set.singleton "DEC", view.RequiredDecisionIds)
         Assert.Equal<Set<string>>(Set.singleton "WHY", view.RequiredRationaleIds)
+
+// REL-GATE-002: the conflict rule is a consumer-admission rule. `validate`
+// keeps admitting a modeled requirement that links a conflict (analysis-stage
+// planning settles it with approved decision records), `unresolvedConflicts`
+// reports it, and cohort readiness is unchanged.
+[<Fact>]
+let ``unresolvedConflicts reports each conflict a modeled requirement links and validate does not`` () =
+    let key = "requirements/domain.md#R-001"
+    let source =
+        { Key = key; OriginalId = "R-001"; Document = "requirements/domain.md"; Location = "L1"
+          Revision = "sha256:" + System.String('a', 64); ContentDigest = "sha256:" + System.String('b', 64) }
+    let node id kind deps =
+        { Id = id; Kind = kind; RequirementKeys = [ key ]; DependsOn = deps; Justification = Some "j" }
+    let blueprint =
+        { SchemaVersion = SchemaVersion
+          SourceManifestDigest = "sha256:" + System.String('c', 64)
+          Requirements = [ { Source = source; Disposition = Modeled; NodeIds = [ "VERIFY"; "COHORT"; "CONFLICT-B"; "CONFLICT-A" ] } ]
+          Nodes = [ node "VERIFY" VerificationObligation []; node "COHORT" Cohort []
+                    node "CONFLICT-B" Conflict []; node "CONFLICT-A" Conflict [] ] }
+    let manifest = { Digest = blueprint.SourceManifestDigest; Requirements = [ source ] }
+    Assert.Empty(validate manifest blueprint)
+    Assert.Equal<Violation list>(
+        [ UnresolvedConflict(key, "CONFLICT-A"); UnresolvedConflict(key, "CONFLICT-B") ], unresolvedConflicts blueprint)
+    Assert.Empty(validateCohort manifest blueprint "COHORT" Set.empty)
+    let unresolved = { blueprint with Requirements = [ { blueprint.Requirements.Head with Disposition = Unresolved "open" } ] }
+    Assert.Empty(unresolvedConflicts unresolved)
+    Assert.Contains(UnresolvedConflictInScope(key, "CONFLICT-A"), validateRequirementScope manifest blueprint (Set.singleton key) Set.empty)
+    Assert.Equal<ReadinessViolation list>([ EmptyScope ], validateRequirementScope manifest blueprint Set.empty Set.empty)

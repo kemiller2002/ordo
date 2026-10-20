@@ -69,31 +69,52 @@ let run (asJson: bool) (manifestPath: string) (blueprintPath: string) (cohort: s
 
 /// Manifest-free admission of a published contract (`ordo.constructibility-
 /// identity/1` on success, `ordo.constructibility-diagnostics/1` on refusal).
-/// With an expected digest it also detects a stale pinned reference. Exit 0
-/// admitted, 1 refused. Admission is never execution authority.
-let checkContract (asJson: bool) (blueprintPath: string) (expectedDigest: string option) =
+/// With an expected digest it also detects a stale pinned reference. With one
+/// or more requirement keys it is readiness mode (REL-GATE-002): the work that
+/// completes those requirements must be ready under the authorized decision
+/// IDs (`ordo.constructibility-readiness/1` on success). The IDs state what the
+/// caller's own authority approved; the CLI grants nothing. Exit 0 admitted
+/// (or ready), 1 refused. Neither is execution authority.
+let checkContract
+    (asJson: bool)
+    (blueprintPath: string)
+    (expectedDigest: string option)
+    (requirementKeys: string list)
+    (authorizedDecisionIds: string list)
+    =
     let refusal code message : string =
         Contract.encodeDiagnostics
             { Contract.DiagnosticSet.SchemaVersion = Contract.DiagnosticsSchemaVersion
               Contract.DiagnosticSet.Diagnostics =
                 [ { Contract.Diagnostic.Code = code; Contract.Diagnostic.Subject = Some blueprintPath; Contract.Diagnostic.Message = message } ] }
+    let assess (json: string) =
+        if List.isEmpty requirementKeys then
+            Contract.admitPinnedContract expectedDigest json
+            |> Result.map (fun identity ->
+                Contract.encodeContractIdentity identity,
+                sprintf "Contract admitted: %s %s; %d requirements, %d decisions, %d conflicts. Execution authorization not granted."
+                    identity.ContractSchemaVersion identity.ContractDigest identity.RequirementKeys.Length
+                    identity.DecisionIds.Length identity.ConflictIds.Length)
+        else
+            Contract.assessPinnedReadiness expectedDigest json (Set.ofList requirementKeys) (Set.ofList authorizedDecisionIds)
+            |> Result.map (fun ready ->
+                let view = Contract.readyScopeView ready
+                Contract.encodeReadyScope ready,
+                sprintf "Contract ready: %s %s; %d requirements in scope, %d required decisions authorized. Execution authorization not granted."
+                    view.Identity.ContractSchemaVersion view.Identity.ContractDigest view.RequirementKeys.Length
+                    view.RequiredDecisionIds.Length)
     let outcome =
         try
             if not (File.Exists blueprintPath) then
                 Error(refusal "ORDO.CONTRACT.MISSING_FILE" "contract file missing")
             else
-                File.ReadAllText blueprintPath
-                |> Contract.admitPinnedContract expectedDigest
-                |> Result.mapError Contract.encodeDiagnostics
+                File.ReadAllText blueprintPath |> assess |> Result.mapError Contract.encodeDiagnostics
         with :? IOException as ex ->
             Error(refusal "ORDO.CONTRACT.UNREADABLE_FILE" ex.Message)
 
     match outcome with
-    | Ok identity when asJson -> 0, [ Contract.encodeContractIdentity identity ], []
-    | Ok identity ->
-        0, [ sprintf "Contract admitted: %s %s; %d requirements, %d decisions, %d conflicts. Execution authorization not granted."
-                 identity.ContractSchemaVersion identity.ContractDigest identity.RequirementKeys.Length
-                 identity.DecisionIds.Length identity.ConflictIds.Length ], []
+    | Ok(json, _) when asJson -> 0, [ json ], []
+    | Ok(_, text) -> 0, [ text ], []
     | Error diagnostics when asJson -> 1, [ diagnostics ], []
     | Error diagnostics -> 1, [], [ "Contract refused:\n" + diagnostics ]
 

@@ -101,6 +101,34 @@ canonical digest, sorted requirement keys, decision IDs and conflict IDs).
 golden corpus in `examples/ecir/consumer/` is the producer/consumer
 compatibility oracle. Admission is not intake equality and not authority.
 
+Admission also applies one rule `validate` does not (REL-GATE-002, negative
+test 5): a `modeled` requirement must not link a `conflict` node
+(`ORDO.CONTRACT.UNRESOLVED_CONFLICT`, subject `requirementKey->conflictId`).
+ecir/1 has no in-contract resolution mechanism; a settling decision lives in a
+separately approved `ordo.construction-decisions` `conflictResolution` record
+([DF-SDE-2026-0025](../../research/decisions/DF-SDE-2026-0025--link-decisions-to-the-conflicts-they-settle.md)).
+A consumer holding only the contract bytes therefore treats every conflict as
+open, and a contract that calls such a requirement modeled is refused. Two
+contradictory decisions are detectable only through the conflict node that
+records the contradiction. `validate`, `validateCohort` and the default plan
+keep their analysis-stage behavior, where approved records settle conflicts.
+
+`ConstructibilityContract.assessReadiness` (and `assessPinnedReadiness`) is the
+manifest-free execution-readiness check for a **requirement scope**: admission,
+then `ConstructionIr.validateRequirementScope` over the requirements' linked
+nodes and the same closure a cohort scope follows. It refuses a non-modeled
+requirement reached in scope (`BLOCKED_REQUIREMENT`), a reached conflict
+(`UNRESOLVED_CONFLICT`), a decision or standalone rationale reached in scope
+that is not in the externally authorized set (`MISSING_DECISION_AUTHORIZATION`,
+`MISSING_RATIONALE_AUTHORIZATION`), an authorization that is unknown, not
+authorizable or outside the scope (`UNKNOWN_AUTHORIZATION`,
+`AUTHORIZATION_KIND_MISMATCH`, `AUTHORIZATION_OUTSIDE_SCOPE`), an unknown key
+(`UNKNOWN_SCOPE_REQUIREMENT`) and an empty scope (`EMPTY_SCOPE`). Success is a
+private-constructor `ReadyScope` (`ordo.constructibility-readiness/1`). The
+authorized set must come from the host's authority, never from the agent;
+`sde ecir check --requirement KEY... --authorized-decision ID...` evaluates
+readiness against a set the caller states and grants nothing.
+
 A failed gate is an explicit refusal with actionable IDs. An agent may revise a new blueprint version; it must never silently rewrite history or override an approved decision.
 
 ## Start with a lossless, deliberately unresolved scaffold

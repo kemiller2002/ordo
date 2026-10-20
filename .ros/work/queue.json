@@ -1146,6 +1146,30 @@
       },
       "source": "Praxis inbox",
       "sourceReference": "INPUT-8a37a8766a122b40"
+    },
+    {
+      "id": "ORDO-REL-003",
+      "title": "Refuse unresolved conflicts and add requirement-scoped readiness to constructibility contracts (REL-GATE-002)",
+      "description": "REL-GATE-002: admitContract admitted a modeled requirement linking an unresolved conflict (contradictory decisions), and there was no manifest-free readiness check for the requirements a consumer completes. Add ORDO.CONTRACT.UNRESOLVED_CONFLICT to admission, ConstructibilityContract.assessReadiness (BLOCKED_REQUIREMENT, UNRESOLVED_CONFLICT, MISSING_DECISION_AUTHORIZATION...), sde ecir check --requirement/--authorized-decision, and extend the consumer oracle corpus.",
+      "tags": [
+        "reliability",
+        "rel-gate-002"
+      ],
+      "priority": "high",
+      "status": "complete",
+      "attachments": [],
+      "createdAt": "2026-10-19T22:02:41Z",
+      "updatedAt": "2026-10-19T23:02:26Z",
+      "createdBy": "unknown",
+      "createdByActor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
+      },
+      "source": "REL-GATE-002",
+      "sourceReference": null
     }
   ]
 }

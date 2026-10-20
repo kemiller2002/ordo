@@ -33,6 +33,7 @@
 | ORDO-DBC-001 | Preserve Design by Construction contracts in Ordo | captured | requirements, implementation | high |
 | ORDO-REL-001 | Implement versioned constructibility contracts | complete | requirements, implementation | high |
 | ORDO-REL-002 | Close REL-ORDO-001 consumer gaps: manifest-free admission, stale-reference detection, consumer oracle | complete | requirements, implementation | high |
+| ORDO-REL-003 | Refuse unresolved conflicts and add requirement-scoped readiness to constructibility contracts (REL-GATE-002) | complete | reliability, rel-gate-002 | high |
 | PRAXIS-EXECUTIONS-COMPAT-20261018 | Exclude Praxis-managed execution state from attribution | complete | governance, compatibility | high |
 | RELEASE-1-10-0 | Release Ordo 1.10.0 | complete |  | medium |
 | RELEASE-1-15-0 | Release Ordo 1.15.0 | complete |  | medium |
