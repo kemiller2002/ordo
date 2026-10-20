@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-20T01:03:01.145Z",
+  "updatedAt": "2026-10-20T01:03:03.914Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2417,13 +2417,34 @@
     {
       "id": "RELEASE-1-17-0",
       "type": "mechanical",
-      "state": "active",
-      "semanticState": "active",
+      "state": "complete",
+      "semanticState": "complete",
       "evidence": [],
-      "updatedAt": "2026-10-20T01:03:01.145Z",
+      "updatedAt": "2026-10-20T01:03:03.914Z",
       "telemetryExecutionIds": [
         "EXE-20261020T010301473Z-48261664"
-      ]
+      ],
+      "latestCheckpoint": {
+        "id": "e79f19c2a3898300a250866d",
+        "recordedAt": "2026-10-20T01:03:03.010Z",
+        "executionId": "EXE-20261020T010301473Z-48261664",
+        "repository": "ordo",
+        "branch": "main",
+        "commit": "bbecb5e0d47009c85d9f294a166690a6d45dfdb3",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "main",
+        "remoteCommit": "bbecb5e0d47009c85d9f294a166690a6d45dfdb3",
+        "summary": "Bumped the Ordo version and its toolchain pin from 1.16.1 to 1.17.0",
+        "nextAction": "Run final completion transition",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-20T01:03:03.914Z"
     }
   ]
 }
