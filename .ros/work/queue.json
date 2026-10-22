@@ -1191,6 +1191,31 @@
       },
       "source": "manual",
       "sourceReference": null
+    },
+    {
+      "id": "ORDO-VAC-001",
+      "title": "Decision check coverage and authorization: coveredBy, computed verified, self-acceptance, scope-extension (VAC-ORDO-001)",
+      "description": "Implement VAC-ORDO-001 R1-R4: decision records carry coveredBy; verified is computed from a covering check with a passing result at the decision's revision (else unchecked); a record accepted only by its implementing actor enters as proposed and is reported; ecir check reports scope-extension warnings for decisions outside every referenced requirement key.",
+      "tags": [
+        "requirements",
+        "implementation",
+        "vac-ordo-001"
+      ],
+      "priority": "medium",
+      "status": "ready",
+      "attachments": [],
+      "createdAt": "2026-10-22T20:13:33.000Z",
+      "updatedAt": "2026-10-22T20:13:37.000Z",
+      "createdBy": "unknown",
+      "createdByActor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
+      },
+      "source": "Praxis inbox",
+      "sourceReference": "VAC-ORDO-001"
     }
   ]
 }

@@ -1,0 +1,25 @@
+{
+  "schema": "praxis.inbox-claim/1",
+  "claimId": "INPUT-da11682255be9272",
+  "state": "claimed",
+  "source": {
+    "path": ".praxis/inbox/documents/2026-10-21-VAC-ORDO-001-decision-check-coverage-and-authorization.md",
+    "fileName": "2026-10-21-VAC-ORDO-001-decision-check-coverage-and-authorization.md",
+    "sha256": "0a342e54edb59201137c1529d0bdd3b23c8acbe34c352151db30ff424a8e27c0",
+    "size": 3649
+  },
+  "claimedAt": "2026-10-22T20:14:03.272Z",
+  "claimant": {
+    "kind": "agent",
+    "id": "anthropic/claude-code",
+    "provider": "anthropic",
+    "model": "unknown",
+    "runtime": "claude-code"
+  },
+  "executionId": "EXE-20261022T201338695Z-0978072d",
+  "derivations": [],
+  "noDerivationReason": null,
+  "closedAt": null,
+  "releaseReason": null,
+  "rejectionReason": null
+}
