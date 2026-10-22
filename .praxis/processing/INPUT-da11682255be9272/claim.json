@@ -17,7 +17,24 @@
     "runtime": "claude-code"
   },
   "executionId": "EXE-20261022T201338695Z-0978072d",
-  "derivations": [],
+  "derivations": [
+    {
+      "kind": "requirement",
+      "targetKind": "artifact",
+      "target": "RQ-SDE-2026-0004",
+      "summary": "Decision check coverage and authorization (VAC-ORDO-001 R1-R4 as ORD-VAC-001..004)",
+      "locator": "## Requirements",
+      "recordedAt": "2026-10-22T20:14:39.714Z",
+      "actor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
+      },
+      "executionId": "EXE-20261022T201338695Z-0978072d"
+    }
+  ],
   "noDerivationReason": null,
   "closedAt": null,
   "releaseReason": null,
