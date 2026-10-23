@@ -1,0 +1,280 @@
+{
+  "schemaVersion": "ordo.choice-classification/1",
+  "planDigest": "sha256:91461dc40506a3d07991e9d080de9a3827814c8497dd0737e0dfb1a55a24237c",
+  "vocabularyVersion": "ordo.construction-vocabulary/4",
+  "complete": false,
+  "summary": {
+    "required": 21,
+    "approved": 0,
+    "implied": 9,
+    "unresolved": 1,
+    "unsupported": 0
+  },
+  "choices": [
+    {
+      "subject": "extension:selection/Issued/RecordPayment",
+      "kind": "extensionBehavior",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-002"
+      ]
+    },
+    {
+      "subject": "extension:selection/Issued/RecordPayment/point:BalanceReachesZero",
+      "kind": "extensionDecision",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-002"
+      ]
+    },
+    {
+      "subject": "extension:selection/PartiallyPaid/RecordPayment",
+      "kind": "extensionBehavior",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-002"
+      ]
+    },
+    {
+      "subject": "extension:selection/PartiallyPaid/RecordPayment/point:BalanceReachesZero",
+      "kind": "extensionDecision",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-002"
+      ]
+    },
+    {
+      "subject": "pair:Draft/Issue",
+      "kind": "pair",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ]
+    },
+    {
+      "subject": "pair:Draft/RecordPayment",
+      "kind": "pair",
+      "class": "implied",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ],
+      "rule": "pairRule refused"
+    },
+    {
+      "subject": "pair:Draft/Void",
+      "kind": "pair",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ]
+    },
+    {
+      "subject": "pair:Issued/Issue",
+      "kind": "pair",
+      "class": "implied",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ],
+      "rule": "pairRule refused"
+    },
+    {
+      "subject": "pair:Issued/RecordPayment",
+      "kind": "pair",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001",
+        "sources/invoicing-requirements.md#REQ-INV-002"
+      ]
+    },
+    {
+      "subject": "pair:Issued/Void",
+      "kind": "pair",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ]
+    },
+    {
+      "subject": "pair:Paid/Issue",
+      "kind": "pair",
+      "class": "implied",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001",
+        "sources/invoicing-requirements.md#REQ-INV-002"
+      ],
+      "rule": "terminal state Paid"
+    },
+    {
+      "subject": "pair:Paid/RecordPayment",
+      "kind": "pair",
+      "class": "implied",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001",
+        "sources/invoicing-requirements.md#REQ-INV-002"
+      ],
+      "rule": "terminal state Paid"
+    },
+    {
+      "subject": "pair:Paid/Void",
+      "kind": "pair",
+      "class": "implied",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001",
+        "sources/invoicing-requirements.md#REQ-INV-002"
+      ],
+      "rule": "terminal state Paid"
+    },
+    {
+      "subject": "pair:PartiallyPaid/Issue",
+      "kind": "pair",
+      "class": "implied",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ],
+      "rule": "pairRule refused"
+    },
+    {
+      "subject": "pair:PartiallyPaid/RecordPayment",
+      "kind": "pair",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001",
+        "sources/invoicing-requirements.md#REQ-INV-002"
+      ]
+    },
+    {
+      "subject": "pair:PartiallyPaid/Void",
+      "kind": "pair",
+      "class": "unresolved",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ],
+      "question": "May an invoice that has received a partial payment be voided, and if so what happens to the payment received?"
+    },
+    {
+      "subject": "pair:Voided/Issue",
+      "kind": "pair",
+      "class": "implied",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ],
+      "rule": "terminal state Voided"
+    },
+    {
+      "subject": "pair:Voided/RecordPayment",
+      "kind": "pair",
+      "class": "implied",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ],
+      "rule": "terminal state Voided"
+    },
+    {
+      "subject": "pair:Voided/Void",
+      "kind": "pair",
+      "class": "implied",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ],
+      "rule": "terminal state Voided"
+    },
+    {
+      "subject": "refusalCode:pair/Paid/Issue",
+      "kind": "refusalCode",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ]
+    },
+    {
+      "subject": "refusalCode:pair/Paid/RecordPayment",
+      "kind": "refusalCode",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ]
+    },
+    {
+      "subject": "refusalCode:pair/Paid/Void",
+      "kind": "refusalCode",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ]
+    },
+    {
+      "subject": "refusalCode:pair/Voided/Issue",
+      "kind": "refusalCode",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ]
+    },
+    {
+      "subject": "refusalCode:pair/Voided/RecordPayment",
+      "kind": "refusalCode",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ]
+    },
+    {
+      "subject": "refusalCode:pair/Voided/Void",
+      "kind": "refusalCode",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ]
+    },
+    {
+      "subject": "refusalCode:unlisted",
+      "kind": "refusalCode",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ]
+    },
+    {
+      "subject": "state:Draft",
+      "kind": "state",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ]
+    },
+    {
+      "subject": "state:Issued",
+      "kind": "state",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ]
+    },
+    {
+      "subject": "state:Paid",
+      "kind": "state",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001",
+        "sources/invoicing-requirements.md#REQ-INV-002"
+      ]
+    },
+    {
+      "subject": "state:PartiallyPaid",
+      "kind": "state",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001",
+        "sources/invoicing-requirements.md#REQ-INV-002"
+      ]
+    },
+    {
+      "subject": "state:Voided",
+      "kind": "state",
+      "class": "required",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ]
+    }
+  ]
+}

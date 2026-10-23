@@ -1,0 +1,461 @@
+{
+  "binding": {
+    "blueprintDigest": "sha256:dd58912a5631b913e4efd881e4426870812be02c765dff3f10bcab7a33faa46c",
+    "cohortId": "COH-INVOICE-WORKFLOW",
+    "decisionIds": [
+      "DEC-FIN-001"
+    ],
+    "sourceManifestDigest": "sha256:a1c87f241b569d9d9d1e054dc69aa61a09263003e0ea030a9112d910735dbfec"
+  },
+  "operations": [
+    {
+      "name": "Invoice",
+      "op": "defineWorkflow",
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001"
+        ]
+      }
+    },
+    {
+      "name": "Draft",
+      "op": "defineState",
+      "role": "initial",
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001"
+        ]
+      }
+    },
+    {
+      "name": "Issued",
+      "op": "defineState",
+      "role": "ordinary",
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001"
+        ]
+      }
+    },
+    {
+      "name": "Paid",
+      "op": "defineState",
+      "role": "terminal",
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001",
+          "sources/invoicing-requirements.md#REQ-INV-002"
+        ]
+      }
+    },
+    {
+      "name": "PartiallyPaid",
+      "op": "defineState",
+      "role": "ordinary",
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001",
+          "sources/invoicing-requirements.md#REQ-INV-002"
+        ]
+      }
+    },
+    {
+      "name": "Voided",
+      "op": "defineState",
+      "role": "terminal",
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001"
+        ]
+      }
+    },
+    {
+      "command": "Issue",
+      "from": "Draft",
+      "guards": [],
+      "op": "defineTransition",
+      "to": "Issued",
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001"
+        ]
+      }
+    },
+    {
+      "command": "Void",
+      "from": "Draft",
+      "guards": [],
+      "op": "defineTransition",
+      "to": "Voided",
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001"
+        ]
+      }
+    },
+    {
+      "command": "Void",
+      "from": "Issued",
+      "guards": [],
+      "op": "defineTransition",
+      "to": "Voided",
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001"
+        ]
+      }
+    },
+    {
+      "op": "declarePairRule",
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001"
+        ]
+      },
+      "unlisted": "refused"
+    },
+    {
+      "command": "Void",
+      "from": "PartiallyPaid",
+      "op": "declareUndecidedTransition",
+      "question": "May an invoice that has received a partial payment be voided, and if so what happens to the payment received?",
+      "trace": {
+        "nodeIds": [
+          "Q-FIN-001"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001"
+        ]
+      }
+    },
+    {
+      "decisionPoints": [
+        {
+          "decided": true,
+          "point": "BalanceReachesZero",
+          "trace": {
+            "nodeIds": [
+              "CON-INVOICE-WORKFLOW"
+            ],
+            "requirementKeys": [
+              "sources/invoicing-requirements.md#REQ-INV-002"
+            ]
+          }
+        }
+      ],
+      "extension": {
+        "command": "RecordPayment",
+        "from": "Issued",
+        "kind": "selection"
+      },
+      "op": "declareExtensionInventory",
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-002"
+        ]
+      }
+    },
+    {
+      "decisionPoints": [
+        {
+          "decided": true,
+          "point": "BalanceReachesZero",
+          "trace": {
+            "nodeIds": [
+              "CON-INVOICE-WORKFLOW"
+            ],
+            "requirementKeys": [
+              "sources/invoicing-requirements.md#REQ-INV-002"
+            ]
+          }
+        }
+      ],
+      "extension": {
+        "command": "RecordPayment",
+        "from": "PartiallyPaid",
+        "kind": "selection"
+      },
+      "op": "declareExtensionInventory",
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-002"
+        ]
+      }
+    },
+    {
+      "code": "CommandNotAllowedInState",
+      "op": "defineRefusalCode",
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001"
+        ]
+      }
+    },
+    {
+      "code": "CurrencyMismatch",
+      "op": "defineRefusalCode",
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-002"
+        ]
+      }
+    },
+    {
+      "code": "ExceedsOutstandingBalance",
+      "op": "defineRefusalCode",
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-002"
+        ]
+      }
+    },
+    {
+      "code": "InvoiceClosed",
+      "op": "defineRefusalCode",
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001"
+        ]
+      }
+    },
+    {
+      "code": "NonPositiveAmount",
+      "op": "defineRefusalCode",
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-002"
+        ]
+      }
+    },
+    {
+      "code": "PaymentLimitExceeded",
+      "op": "defineRefusalCode",
+      "trace": {
+        "nodeIds": [
+          "DEC-FIN-001"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-002"
+        ]
+      }
+    },
+    {
+      "code": "PolicyUnresolvedQFIN001",
+      "op": "defineRefusalCode",
+      "trace": {
+        "nodeIds": [
+          "Q-FIN-001"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001"
+        ]
+      }
+    },
+    {
+      "code": "InvoiceClosed",
+      "op": "assignRefusalCode",
+      "target": {
+        "command": "Issue",
+        "from": "Paid",
+        "kind": "pair"
+      },
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001"
+        ]
+      }
+    },
+    {
+      "code": "InvoiceClosed",
+      "op": "assignRefusalCode",
+      "target": {
+        "command": "RecordPayment",
+        "from": "Paid",
+        "kind": "pair"
+      },
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001"
+        ]
+      }
+    },
+    {
+      "code": "InvoiceClosed",
+      "op": "assignRefusalCode",
+      "target": {
+        "command": "Void",
+        "from": "Paid",
+        "kind": "pair"
+      },
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001"
+        ]
+      }
+    },
+    {
+      "code": "InvoiceClosed",
+      "op": "assignRefusalCode",
+      "target": {
+        "command": "Issue",
+        "from": "Voided",
+        "kind": "pair"
+      },
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001"
+        ]
+      }
+    },
+    {
+      "code": "InvoiceClosed",
+      "op": "assignRefusalCode",
+      "target": {
+        "command": "RecordPayment",
+        "from": "Voided",
+        "kind": "pair"
+      },
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001"
+        ]
+      }
+    },
+    {
+      "code": "InvoiceClosed",
+      "op": "assignRefusalCode",
+      "target": {
+        "command": "Void",
+        "from": "Voided",
+        "kind": "pair"
+      },
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001"
+        ]
+      }
+    },
+    {
+      "code": "CommandNotAllowedInState",
+      "op": "assignRefusalCode",
+      "target": {
+        "kind": "unlisted"
+      },
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001"
+        ]
+      }
+    },
+    {
+      "command": "RecordPayment",
+      "from": "Issued",
+      "op": "defineBranchingTransition",
+      "targets": [
+        "Paid",
+        "PartiallyPaid"
+      ],
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001",
+          "sources/invoicing-requirements.md#REQ-INV-002"
+        ]
+      }
+    },
+    {
+      "command": "RecordPayment",
+      "from": "PartiallyPaid",
+      "op": "defineBranchingTransition",
+      "targets": [
+        "Paid",
+        "PartiallyPaid"
+      ],
+      "trace": {
+        "nodeIds": [
+          "CON-INVOICE-WORKFLOW"
+        ],
+        "requirementKeys": [
+          "sources/invoicing-requirements.md#REQ-INV-001",
+          "sources/invoicing-requirements.md#REQ-INV-002"
+        ]
+      }
+    }
+  ],
+  "schemaVersion": "ordo.construction-plan/1",
+  "vocabularyVersion": "ordo.construction-vocabulary/4"
+}

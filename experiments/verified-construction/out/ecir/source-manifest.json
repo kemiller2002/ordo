@@ -1,0 +1,29 @@
+{
+  "digest": "sha256:a1c87f241b569d9d9d1e054dc69aa61a09263003e0ea030a9112d910735dbfec",
+  "requirements": [
+    {
+      "key": "sources/invoicing-requirements.md#REQ-INV-001",
+      "originalId": "REQ-INV-001",
+      "document": "sources/invoicing-requirements.md",
+      "location": "## REQ-INV-001",
+      "revision": "fixture-v1",
+      "contentDigest": "sha256:6634f7ea37d47d59b7e7ce4b7b4385d64988cb270bdcac7c500c505aaa423970"
+    },
+    {
+      "key": "sources/invoicing-requirements.md#REQ-INV-002",
+      "originalId": "REQ-INV-002",
+      "document": "sources/invoicing-requirements.md",
+      "location": "## REQ-INV-002",
+      "revision": "fixture-v1",
+      "contentDigest": "sha256:6634f7ea37d47d59b7e7ce4b7b4385d64988cb270bdcac7c500c505aaa423970"
+    },
+    {
+      "key": "sources/invoicing-requirements.md#REQ-INV-003",
+      "originalId": "REQ-INV-003",
+      "document": "sources/invoicing-requirements.md",
+      "location": "## REQ-INV-003",
+      "revision": "fixture-v1",
+      "contentDigest": "sha256:6634f7ea37d47d59b7e7ce4b7b4385d64988cb270bdcac7c500c505aaa423970"
+    }
+  ]
+}
