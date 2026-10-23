@@ -151,10 +151,16 @@ let generatedConstructs (admitted: AdmittedHandoff) (ir: Ecir) (validated: Valid
                 | CodeSubject.Unlisted -> "unlisted"
                 | CodeSubject.Guard g -> "guard/" + g.Key
             make (sprintf "%s.%sTransition.pairCode:%s" ns wf subject) ConstructKind.Refusal files.Transition (ids a.Trace))
-    let pairRule =
-        w.PairRule
-        |> Option.toList
-        |> List.map (fun (_, trace) -> make (sprintf "%s.%sTransition.pairRule:unlisted" ns wf) ConstructKind.Refusal files.Transition (ids trace))
+    // The unlisted-pair rule has no symbol of its own: `target` realizes it
+    // (an unlisted pair has no target), so `target` carries its authority.
+    let pairRuleAuthority = w.PairRule |> Option.toList |> List.collect (snd >> ids)
+    let tables =
+        [ make (sprintf "%s.%sTransition.target" ns wf) ConstructKind.Transition files.Transition
+              ((w.Transitions |> List.collect (fun t -> ids t.Trace)) @ pairRuleAuthority |> List.distinct)
+          make (sprintf "%s.%sTransition.next" ns wf) ConstructKind.Transition files.Transition
+              ((w.Transitions |> List.collect (fun t -> ids t.Trace)) @ (w.BranchingTransitions |> List.collect (fun b -> ids b.Trace)) @ pairRuleAuthority |> List.distinct)
+          make (sprintf "%s.%sTransition.refusalCode" ns wf) ConstructKind.Refusal files.Transition
+              (w.CodeAssignments |> List.collect (fun a -> ids a.Trace) |> List.distinct) ]
     let undecided =
         w.UndecidedTransitions
         |> List.map (fun u ->
@@ -162,11 +168,11 @@ let generatedConstructs (admitted: AdmittedHandoff) (ir: Ecir) (validated: Valid
     // VAC-002-P3-03-R2: `decide` reuses every transition, refusal and open
     // pair of the plan, so it carries all of their authority.
     let decideAuthority =
-        (transitions @ branches @ assignments @ pairRule @ undecided) |> List.collect _.Authority |> List.distinct
+        (transitions @ branches @ assignments @ tables @ undecided) |> List.collect _.Authority |> List.distinct
     let decide : Construct =
         { Symbol = sprintf "%s.%sTransition.decide" ns wf; Kind = ConstructKind.Transition; File = files.Transition
           Disposition = Disposition.Authorized; Authority = decideAuthority }
-    states @ commands @ transitions @ branches @ codes @ assignments @ pairRule @ undecided @ [ decide ]
+    states @ commands @ transitions @ branches @ codes @ assignments @ tables @ undecided @ [ decide ]
 
 // ---------------------------------------------------------------------------
 // Excluded observations.

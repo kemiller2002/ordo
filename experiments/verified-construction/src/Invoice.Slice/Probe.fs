@@ -34,7 +34,9 @@ let step (ProbeState invoice) (command: ProbeCommand) : Result<ProbeState, strin
     |> Result.map ProbeState
     |> Result.mapError refusalCode
 
-/// "Draft" | "Issued" | "PartiallyPaid" | "Paid" | "Voided".
+/// "Draft" | "Issued" | "PartiallyPaid" | "Paid" | "Voided". Presentation of
+/// the REQ-INV-001 states.
+[<Authority("REQ-INV-001")>]
 let stateName (ProbeState invoice) : string =
     match state invoice with
     | Generated.Invoice.InvoiceState.Draft -> "Draft"

@@ -182,11 +182,13 @@ val paymentsApplied : ProbeState -> decimal list           // oldest first
 
 ### Trace conventions
 
-Symbols are fully qualified F# names. Three exceptions use a pseudo-symbol, because the construct is an entry in a
+Symbols are fully qualified F# names. The generated functions `InvoiceTransition.target`, `next`, `refusalCode`
+and `decide` are traced as symbols; `target` carries the unlisted-pair rule's authority, because it is the function
+that realizes that rule. Three exceptions use a pseudo-symbol, because the construct is an entry in a
 generated table rather than a symbol of its own:
 
 - `Generated.Invoice.InvoiceTransition.legal:From/Command`;
-- `pairCode:From/Command`, `pairCode:unlisted` and `pairRule:unlisted`;
+- `pairCode:From/Command` and `pairCode:unlisted`;
 - `undecided:From/Command`.
 
 Dispositions:
@@ -195,7 +197,7 @@ Dispositions:
 |---|---|
 | `deferred-pending-question` | the construct rests on a policy question. Here, four constructs: the undecided pair, its code, the Q-FIN-001 constant and `Invoicing.pendingQuestion`. |
 | `authorized` | built from accepted requirements and decisions. Every other construct here. |
-| `technical` | defined by the schema; no construct in this slice uses it. |
+| `technical` | a mechanical check or presentation mapping with no policy content of its own. Here: `Money.currency` (the three-letter shape check, serving REQ-INV-002) and `Probe.stateName` (state names, presenting REQ-INV-001). Each cites the requirement it serves. |
 
 `excluded` lists OBS-LEGACY-001 (the STR- exemption) and OBS-LEGACY-002 (the 25,000.00 limit). Both are routed to
 `finance-controller`, the owner of DEC-FIN-001. The legacy file is not modified.

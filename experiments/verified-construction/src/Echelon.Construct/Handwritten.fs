@@ -58,6 +58,7 @@ let constructs : Construct list =
       // Values.
       authorized "Invoice.Slice.Money.PositiveAmount" ConstructKind.ValueType moneyFile [ "REQ-INV-002" ]
       authorized "Invoice.Slice.Money.positiveAmount" ConstructKind.ValidatedConstructor moneyFile [ "REQ-INV-002" ]
+      row "Invoice.Slice.Money.currency" ConstructKind.ValidatedConstructor moneyFile Disposition.Technical [ "REQ-INV-002" ]
       authorized "Invoice.Slice.Payment.PaymentLimit" ConstructKind.ValueType paymentFile [ "DEC-FIN-001"; "REQ-INV-002" ]
       authorized "Invoice.Slice.Payment.decFin001" ConstructKind.Constant paymentFile [ "DEC-FIN-001" ]
       authorized "Invoice.Slice.Payment.ValidatedPayment" ConstructKind.ValueType paymentFile [ "REQ-INV-002"; "DEC-FIN-001" ]
@@ -68,8 +69,11 @@ let constructs : Construct list =
       authorized "Invoice.Slice.Invoicing.Invoice" ConstructKind.ValueType invoicingFile [ "REQ-INV-001"; "REQ-INV-002"; "INV-INV-001"; "INV-INV-002" ]
       authorized "Invoice.Slice.Invoicing.Refusal" ConstructKind.Refusal invoicingFile [ "REQ-INV-001"; "REQ-INV-002"; "Q-FIN-001" ]
       authorized "Invoice.Slice.Invoicing.wireCode" ConstructKind.Refusal invoicingFile [ "REQ-INV-001"; "REQ-INV-002"; "DEC-FIN-001"; "Q-FIN-001" ]
+      authorized "Invoice.Slice.Invoicing.refusalCode" ConstructKind.Refusal invoicingFile [ "REQ-INV-001"; "REQ-INV-002"; "DEC-FIN-001"; "Q-FIN-001" ]
       authorized "Invoice.Slice.Invoicing.create" ConstructKind.Transition invoicingFile [ "REQ-INV-001" ]
       row "Invoice.Slice.Invoicing.pendingQuestion" ConstructKind.Refusal invoicingFile Disposition.DeferredPendingQuestion [ "Q-FIN-001" ]
+      authorized "Invoice.Slice.Invoicing.ofGenerated" ConstructKind.Refusal invoicingFile [ "REQ-INV-001"; "Q-FIN-001" ]
+      authorized "Invoice.Slice.Invoicing.ofPaymentRefusal" ConstructKind.Refusal invoicingFile [ "REQ-INV-002"; "DEC-FIN-001" ]
       authorized "Invoice.Slice.Invoicing.settledWhen" ConstructKind.Transition invoicingFile [ "REQ-INV-002"; "INV-INV-002" ]
       authorized "Invoice.Slice.Invoicing.issue" ConstructKind.Transition invoicingFile [ "REQ-INV-001" ]
       authorized "Invoice.Slice.Invoicing.voidInvoice" ConstructKind.Transition invoicingFile [ "REQ-INV-001"; "Q-FIN-001" ]
@@ -85,7 +89,8 @@ let constructs : Construct list =
           [ "REQ-INV-001"; "REQ-INV-002"; "REQ-INV-003"; "DEC-FIN-001"; "DEC-FIN-002" ]
       // Probe facade (reuses the rules above).
       authorized "Invoice.Slice.Probe.start" ConstructKind.Transition probeFile [ "REQ-INV-001"; "REQ-INV-002" ]
-      authorized "Invoice.Slice.Probe.step" ConstructKind.Transition probeFile [ "REQ-INV-001"; "REQ-INV-002"; "DEC-FIN-001"; "Q-FIN-001" ] ]
+      authorized "Invoice.Slice.Probe.step" ConstructKind.Transition probeFile [ "REQ-INV-001"; "REQ-INV-002"; "DEC-FIN-001"; "Q-FIN-001" ]
+      row "Invoice.Slice.Probe.stateName" ConstructKind.State probeFile Disposition.Technical [ "REQ-INV-001" ] ]
 
 /// Reuse edges (user -> reused) between rule-bearing constructs, for the
 /// R2 closure check: a user's authority must include every reused construct's
@@ -96,6 +101,11 @@ let reuses : (string * string) list =
       "Invoice.Slice.Payment.validate", "Invoice.Slice.Payment.exceedsLimit"
       "Invoice.Slice.Invoicing.wireCode", "Invoice.Slice.Authority.decFin001RefusalCode"
       "Invoice.Slice.Invoicing.voidInvoice", "Invoice.Slice.Invoicing.pendingQuestion"
+      "Invoice.Slice.Invoicing.refusalCode", "Invoice.Slice.Invoicing.wireCode"
+      "Invoice.Slice.Invoicing.ofGenerated", "Invoice.Slice.Invoicing.pendingQuestion"
+      "Invoice.Slice.Invoicing.voidInvoice", "Invoice.Slice.Invoicing.ofGenerated"
+      "Invoice.Slice.Invoicing.pay", "Invoice.Slice.Invoicing.ofPaymentRefusal"
+      "Invoice.Slice.Probe.step", "Invoice.Slice.Invoicing.refusalCode"
       "Invoice.Slice.Invoicing.recordPayment", "Invoice.Slice.Invoicing.settledWhen"
       "Invoice.Slice.Invoicing.pay", "Invoice.Slice.Payment.validate"
       "Invoice.Slice.Invoicing.pay", "Invoice.Slice.Invoicing.recordPayment"

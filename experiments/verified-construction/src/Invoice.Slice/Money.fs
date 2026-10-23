@@ -29,6 +29,9 @@ type MoneyError =
     | NonPositiveAmount of amount: decimal
     | InvalidCurrencyCode of code: string
 
+/// A technical shape check serving REQ-INV-002 ("in the invoice's currency");
+/// it decides no policy about which currencies are allowed.
+[<Authority("REQ-INV-002")>]
 let currency (code: string) : Result<Currency, MoneyError> =
     if code.Length = 3 && code |> Seq.forall (fun c -> c >= 'A' && c <= 'Z') then Ok(Currency code)
     else Error(InvalidCurrencyCode code)

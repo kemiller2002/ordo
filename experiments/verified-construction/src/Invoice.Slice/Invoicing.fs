@@ -65,6 +65,9 @@ let wireCode (code: InvoiceRefusalCode) : string =
     | InvoiceRefusalCode.InvoiceClosed -> "INVOICE_CLOSED"
     | InvoiceRefusalCode.CommandNotAllowedInState -> "COMMAND_NOT_ALLOWED_IN_STATE"
 
+/// Presents a refusal as its wire code. A presentation mapping: it cites the
+/// requirements, decision and question whose refusals it presents.
+[<Authority("REQ-INV-001", "REQ-INV-002", "DEC-FIN-001", "Q-FIN-001")>]
 let refusalCode (refusal: Refusal) : string =
     match refusal with
     | Refused code -> wireCode code
@@ -92,6 +95,9 @@ let private pendingQuestion (s: InvoiceState) (c: InvoiceCommand) : (string * In
     if s = InvoiceState.PartiallyPaid && c = InvoiceCommand.Void then Some(Authority.qFin001, InvoiceRefusalCode.PolicyUnresolvedQFIN001)
     else None
 
+/// Maps the generated refusals: a refused pair to its plan code (REQ-INV-001),
+/// the open pair to a deferral that names Q-FIN-001.
+[<Authority("REQ-INV-001", "Q-FIN-001")>]
 let private ofGenerated (refusal: InvoiceRefusal) : Refusal =
     match refusal with
     | InvoiceRefusal.Undecided(s, c) ->
@@ -121,6 +127,8 @@ let private decide (invoice: Invoice) (command: InvoiceCommand) (balanceAfter: d
     |> Result.map _.Next
     |> Result.mapError ofGenerated
 
+/// Presents a payment refusal (REQ-INV-002, DEC-FIN-001) with its plan code.
+[<Authority("REQ-INV-002", "DEC-FIN-001")>]
 let private ofPaymentRefusal (refusal: PaymentRefusal) : Refusal =
     match refusal with
     | PaymentRefusal.NonPositiveAmount _ -> Refused InvoiceRefusalCode.NonPositiveAmount

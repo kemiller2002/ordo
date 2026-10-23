@@ -29,8 +29,17 @@ of this construction.
   against the `[<Authority>]` markers in source and against the attributes in the built DLLs. Those checks make the
   table *consistent*. They do not make it *true*: a marker can cite a plausible ID for code that does something else.
   Judging that is Dokimos's job.
+- **Q-FIN-001 is not lexically reachable from the generated `undecided` function.** Dokimos reports this as an
+  uncertain (non-blocking) finding on `InvoiceTransition.undecided:PartiallyPaid/Void`. The generated tier cannot
+  reach the handwritten mapping: tiers depend only downward. Ordo's emitter also never renders a question's text or
+  ID into generated code, by design, and the generated `refusalCode` maps `Undecided` to `None`. The Q-FIN-001
+  deferral is produced in handwritten code: `Invoicing.ofGenerated` turns the undecided pair into
+  `DeferredPendingQuestion` through `Invoicing.pendingQuestion`, which names `Authority.qFin001` and the
+  `PolicyUnresolvedQFIN001` code. Both are traced, and `pendingQuestion` is traced as `deferred-pending-question`.
+  Closing this lexically would need an Ordo vocabulary change, a code on an undecided pair, which was out of scope.
 - **The R2 reuse closure is partial.** It is checked only for the reuse edges declared in `Handwritten.reuses`, and
-  only for requirement, decision and question IDs. Invariant IDs are not part of the closure. Reuse of generated code
+  only for requirement, decision and question IDs. `issue` and `recordPayment` also call `ofGenerated`, but no edge
+  is declared for them, because its Q-FIN-001 branch is unreachable for those commands. Invariant IDs are not part of the closure. Reuse of generated code
   is recorded by giving the generated `decide` the authority of every transition and refusal. Each handwritten
   command function cites only the rules it implements, not everything `decide` carries.
 
