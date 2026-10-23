@@ -1,0 +1,106 @@
+{
+  "schema": "praxis.inbox-claim/1",
+  "claimId": "INPUT-0122669e7b0a6793",
+  "state": "completed",
+  "source": {
+    "path": ".praxis/inbox/documents/2026-10-23-VC-002-provenance-backed-typed-construction.md",
+    "fileName": "2026-10-23-VC-002-provenance-backed-typed-construction.md",
+    "sha256": "664007a1102a5d594b68d63cb58e550f02cb9eb37d2da2ae7bbcb0e8eb00798a",
+    "size": 1982
+  },
+  "claimedAt": "2026-10-23T22:51:05.670Z",
+  "claimant": {
+    "kind": "agent",
+    "id": "anthropic/claude-code",
+    "provider": "anthropic",
+    "model": "unknown",
+    "runtime": "claude-code"
+  },
+  "executionId": null,
+  "derivations": [
+    {
+      "kind": "requirement",
+      "targetKind": "path",
+      "target": "experiments/verified-construction/README.md",
+      "summary": "VC-002 R1-R7 mapped item by item to the experimental slice with evidence (merged via #105, d31290c); status EXPERIMENTAL pending VC-001",
+      "locator": "VC-002 requirements",
+      "recordedAt": "2026-10-23T22:51:05.670Z",
+      "actor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
+      },
+      "executionId": null
+    },
+    {
+      "kind": "evidence",
+      "targetKind": "path",
+      "target": "experiments/verified-construction/tests/VerifiedConstruction.Tests/CompileNegativeTests.fs",
+      "summary": "Acceptance: negative compile tests for invalid constructions (13 probes, 4 positive controls)",
+      "locator": "## Acceptance",
+      "recordedAt": "2026-10-23T22:51:05.670Z",
+      "actor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
+      },
+      "executionId": null
+    },
+    {
+      "kind": "evidence",
+      "targetKind": "path",
+      "target": "experiments/verified-construction/tests/VerifiedConstruction.Tests/BehaviourTests.fs",
+      "summary": "Acceptance: positive tests for valid deferral (Q-FIN-001) and behaviour",
+      "locator": "## Acceptance",
+      "recordedAt": "2026-10-23T22:51:05.670Z",
+      "actor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
+      },
+      "executionId": null
+    },
+    {
+      "kind": "evidence",
+      "targetKind": "path",
+      "target": "experiments/verified-construction/out/construction-trace.json",
+      "summary": "R6: provenance manifest echelon.construction-trace/0.1, deterministic",
+      "locator": "R6",
+      "recordedAt": "2026-10-23T22:51:05.670Z",
+      "actor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
+      },
+      "executionId": null
+    },
+    {
+      "kind": "constraint",
+      "targetKind": "path",
+      "target": "experiments/verified-construction/LIMITATIONS.md",
+      "summary": "Acceptance: measured limitations; no prevention claim from compile tests",
+      "locator": "## Acceptance",
+      "recordedAt": "2026-10-23T22:51:05.670Z",
+      "actor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
+      },
+      "executionId": null
+    }
+  ],
+  "noDerivationReason": null,
+  "closedAt": "2026-10-23T22:51:05.670Z",
+  "releaseReason": null,
+  "rejectionReason": null
+}

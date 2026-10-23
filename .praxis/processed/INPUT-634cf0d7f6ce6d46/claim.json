@@ -1,0 +1,58 @@
+{
+  "schema": "praxis.inbox-claim/1",
+  "claimId": "INPUT-634cf0d7f6ce6d46",
+  "state": "completed",
+  "source": {
+    "path": ".praxis/inbox/documents/2026-10-23-VAC-002-P3-02-authorization-admission-defects.md",
+    "fileName": "2026-10-23-VAC-002-P3-02-authorization-admission-defects.md",
+    "sha256": "2cc5817073a985e9fce3897fe54d1a967a5db4b43daa2cd8eb9a415af9ad1ede",
+    "size": 1685
+  },
+  "claimedAt": "2026-10-23T22:51:05.671Z",
+  "claimant": {
+    "kind": "agent",
+    "id": "anthropic/claude-code",
+    "provider": "anthropic",
+    "model": "unknown",
+    "runtime": "claude-code"
+  },
+  "executionId": null,
+  "derivations": [
+    {
+      "kind": "constraint",
+      "targetKind": "path",
+      "target": "experiments/verified-construction/src/Echelon.Construct/Admission.fs",
+      "summary": "R-ADM-1..3 applied to the only Ordo admission that exists (the experimental handoff admission): recorded questions, refusals citing the agent's own question, and presentation choices are admitted. Ordo has no executable-authorization checker; the P3 checker lives in the cohort-based-engineering harness (P2/DECISION-AUTHORITY.md), so no production code changes. Executable authorization stays off every default path",
+      "locator": "R-ADM-1, R-ADM-2, R-ADM-3",
+      "recordedAt": "2026-10-23T22:51:05.671Z",
+      "actor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
+      },
+      "executionId": null
+    },
+    {
+      "kind": "evidence",
+      "targetKind": "path",
+      "target": "experiments/verified-construction/tests/VerifiedConstruction.Tests/AdmissionTests.fs",
+      "summary": "Regression tests for R-ADM-1..3 written as failing-first cases and mutant M6",
+      "locator": "## Release and acceptance",
+      "recordedAt": "2026-10-23T22:51:05.671Z",
+      "actor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
+      },
+      "executionId": null
+    }
+  ],
+  "noDerivationReason": null,
+  "closedAt": "2026-10-23T22:51:05.671Z",
+  "releaseReason": null,
+  "rejectionReason": null
+}
