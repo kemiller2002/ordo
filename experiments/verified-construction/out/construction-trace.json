@@ -1,0 +1,1068 @@
+{
+  "schema": "echelon.construction-trace",
+  "schemaVersion": "0.1",
+  "handoff": {
+    "handoffId": "HND-INVOICE-SLICE-001",
+    "sha256": "sha256:ec5d0e6a4343b1774d40760c04af200a9b71147940305d1ddbabbc5c6db68bcd"
+  },
+  "generator": {
+    "name": "echelon.verified-construction",
+    "version": "0.1.0+ordo.construction/4"
+  },
+  "constructs": [
+    {
+      "symbol": "Invoice.Slice.PaymentsService.CompositionRoot.capability",
+      "kind": "capability",
+      "file": "src/Invoice.Slice.PaymentsService/CompositionRoot.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.PaymentsService.CompositionRoot.recordAndPersist",
+      "kind": "port",
+      "file": "src/Invoice.Slice.PaymentsService/CompositionRoot.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        },
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        },
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-003"
+        },
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-001"
+        },
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Invoicing.AppliedPayment",
+      "kind": "value-type",
+      "file": "src/Invoice.Slice/Invoicing.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        },
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-003"
+        },
+        {
+          "kind": "invariant",
+          "id": "INV-INV-003"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Invoicing.Invoice",
+      "kind": "value-type",
+      "file": "src/Invoice.Slice/Invoicing.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        },
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        },
+        {
+          "kind": "invariant",
+          "id": "INV-INV-001"
+        },
+        {
+          "kind": "invariant",
+          "id": "INV-INV-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Invoicing.Refusal",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/Invoicing.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        },
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        },
+        {
+          "kind": "question",
+          "id": "Q-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Invoicing.create",
+      "kind": "transition",
+      "file": "src/Invoice.Slice/Invoicing.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Invoicing.issue",
+      "kind": "transition",
+      "file": "src/Invoice.Slice/Invoicing.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Invoicing.ofGenerated",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/Invoicing.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        },
+        {
+          "kind": "question",
+          "id": "Q-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Invoicing.ofPaymentRefusal",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/Invoicing.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        },
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Invoicing.pay",
+      "kind": "transition",
+      "file": "src/Invoice.Slice/Invoicing.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        },
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        },
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Invoicing.pendingQuestion",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/Invoicing.fs",
+      "disposition": "deferred-pending-question",
+      "authority": [
+        {
+          "kind": "question",
+          "id": "Q-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Invoicing.recordPayment",
+      "kind": "transition",
+      "file": "src/Invoice.Slice/Invoicing.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        },
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        },
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-001"
+        },
+        {
+          "kind": "invariant",
+          "id": "INV-INV-001"
+        },
+        {
+          "kind": "invariant",
+          "id": "INV-INV-002"
+        },
+        {
+          "kind": "invariant",
+          "id": "INV-INV-003"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Invoicing.refusalCode",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/Invoicing.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        },
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        },
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-001"
+        },
+        {
+          "kind": "question",
+          "id": "Q-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Invoicing.settledWhen",
+      "kind": "transition",
+      "file": "src/Invoice.Slice/Invoicing.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        },
+        {
+          "kind": "invariant",
+          "id": "INV-INV-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Invoicing.voidInvoice",
+      "kind": "transition",
+      "file": "src/Invoice.Slice/Invoicing.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        },
+        {
+          "kind": "question",
+          "id": "Q-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Invoicing.wireCode",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/Invoicing.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        },
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        },
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-001"
+        },
+        {
+          "kind": "question",
+          "id": "Q-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Money.PositiveAmount",
+      "kind": "value-type",
+      "file": "src/Invoice.Slice/Money.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Money.currency",
+      "kind": "validated-constructor",
+      "file": "src/Invoice.Slice/Money.fs",
+      "disposition": "technical",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Money.positiveAmount",
+      "kind": "validated-constructor",
+      "file": "src/Invoice.Slice/Money.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Payment.PaymentLimit",
+      "kind": "value-type",
+      "file": "src/Invoice.Slice/Payment.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        },
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Payment.ValidatedPayment",
+      "kind": "value-type",
+      "file": "src/Invoice.Slice/Payment.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        },
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Payment.decFin001",
+      "kind": "constant",
+      "file": "src/Invoice.Slice/Payment.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Payment.exceedsLimit",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/Payment.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Payment.validate",
+      "kind": "validated-constructor",
+      "file": "src/Invoice.Slice/Payment.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        },
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Persistence.PaymentStore",
+      "kind": "port",
+      "file": "src/Invoice.Slice/Persistence.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-003"
+        },
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Persistence.PaymentsServiceCapability",
+      "kind": "capability",
+      "file": "src/Invoice.Slice/Persistence.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-003"
+        },
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Persistence.persist",
+      "kind": "port",
+      "file": "src/Invoice.Slice/Persistence.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-003"
+        },
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Probe.start",
+      "kind": "transition",
+      "file": "src/Invoice.Slice/Probe.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        },
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Probe.stateName",
+      "kind": "state",
+      "file": "src/Invoice.Slice/Probe.fs",
+      "disposition": "technical",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Probe.step",
+      "kind": "transition",
+      "file": "src/Invoice.Slice/Probe.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        },
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        },
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-001"
+        },
+        {
+          "kind": "question",
+          "id": "Q-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Authority",
+      "kind": "constant",
+      "file": "src/Invoice.Slice/generated/Invoice.Authority.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-001"
+        },
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-002"
+        },
+        {
+          "kind": "question",
+          "id": "Q-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Authority.decFin001Limit",
+      "kind": "constant",
+      "file": "src/Invoice.Slice/generated/Invoice.Authority.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Authority.decFin001RefusalCode",
+      "kind": "constant",
+      "file": "src/Invoice.Slice/generated/Invoice.Authority.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Authority.decFin002Role",
+      "kind": "constant",
+      "file": "src/Invoice.Slice/generated/Invoice.Authority.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Invoice.Slice.Authority.qFin001",
+      "kind": "constant",
+      "file": "src/Invoice.Slice/generated/Invoice.Authority.g.fs",
+      "disposition": "deferred-pending-question",
+      "authority": [
+        {
+          "kind": "question",
+          "id": "Q-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceBranch_Issued_RecordPayment",
+      "kind": "transition",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Model.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        },
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceBranch_PartiallyPaid_RecordPayment",
+      "kind": "transition",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Model.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        },
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceCommand.Issue",
+      "kind": "command",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Model.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceCommand.RecordPayment",
+      "kind": "command",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Model.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        },
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceCommand.Void",
+      "kind": "command",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Model.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceRefusalCode.CommandNotAllowedInState",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Model.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceRefusalCode.CurrencyMismatch",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Model.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceRefusalCode.ExceedsOutstandingBalance",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Model.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceRefusalCode.InvoiceClosed",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Model.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceRefusalCode.NonPositiveAmount",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Model.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceRefusalCode.PaymentLimitExceeded",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Model.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        },
+        {
+          "kind": "decision",
+          "id": "DEC-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceRefusalCode.PolicyUnresolvedQFIN001",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Model.g.fs",
+      "disposition": "deferred-pending-question",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        },
+        {
+          "kind": "question",
+          "id": "Q-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceState.Draft",
+      "kind": "state",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Model.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceState.Issued",
+      "kind": "state",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Model.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceState.Paid",
+      "kind": "state",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Model.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        },
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceState.PartiallyPaid",
+      "kind": "state",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Model.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        },
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceState.Voided",
+      "kind": "state",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Model.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceTransition.decide",
+      "kind": "transition",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Transition.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        },
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        },
+        {
+          "kind": "question",
+          "id": "Q-FIN-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceTransition.legal:Draft/Issue",
+      "kind": "transition",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Transition.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceTransition.legal:Draft/Void",
+      "kind": "transition",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Transition.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceTransition.legal:Issued/Void",
+      "kind": "transition",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Transition.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceTransition.next",
+      "kind": "transition",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Transition.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        },
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-002"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceTransition.pairCode:Paid/Issue",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Transition.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceTransition.pairCode:Paid/RecordPayment",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Transition.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceTransition.pairCode:Paid/Void",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Transition.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceTransition.pairCode:Voided/Issue",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Transition.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceTransition.pairCode:Voided/RecordPayment",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Transition.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceTransition.pairCode:Voided/Void",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Transition.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceTransition.pairCode:unlisted",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Transition.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceTransition.refusalCode",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Transition.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceTransition.target",
+      "kind": "transition",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Transition.g.fs",
+      "disposition": "authorized",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        }
+      ]
+    },
+    {
+      "symbol": "Generated.Invoice.InvoiceTransition.undecided:PartiallyPaid/Void",
+      "kind": "refusal",
+      "file": "src/Invoice.Slice/generated/Invoice/Invoice.Transition.g.fs",
+      "disposition": "deferred-pending-question",
+      "authority": [
+        {
+          "kind": "requirement",
+          "id": "REQ-INV-001"
+        },
+        {
+          "kind": "question",
+          "id": "Q-FIN-001"
+        }
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "observationId": "OBS-LEGACY-001",
+      "reason": "Observed exemption (Legacy.PaymentRules.exceedsLimit) has authority 'unverified': no requirement or accepted decision supports it, and DEC-FIN-001 states no customer category is exempt. Not constructed; no customer-category parameter exists in the constructed model. The legacy code is left unchanged for its owner.",
+      "routedTo": "finance-controller"
+    },
+    {
+      "observationId": "OBS-LEGACY-002",
+      "reason": "Observed rule (Legacy.PaymentRules.singlePaymentLimit) carries the value of a superseded decision (DEC-FIN-000, superseded by DEC-FIN-001). Not constructed; the limit is taken only from DEC-FIN-001 parameters. The legacy code is left unchanged for its owner.",
+      "routedTo": "finance-controller"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "out/classification.json",
+      "sha256": "sha256:0ec136a75f2c18604ff3d20b60255beef940b9187db4242e255ab543e101c73a"
+    },
+    {
+      "path": "out/ecir/blueprint.json",
+      "sha256": "sha256:8e44086e18deca3b3bc6c27ff58723832edab762bbd9368b0f4424992c73fe46"
+    },
+    {
+      "path": "out/ecir/source-manifest.json",
+      "sha256": "sha256:f7ecdcd8e3959922f2535413c28d22f82769631b952bf5110c32250bc704dd22"
+    },
+    {
+      "path": "out/plan.v4.json",
+      "sha256": "sha256:127152fe604ed250dd0440f49bf9bd486e847a4af5650833652e01e7e67e23d0"
+    },
+    {
+      "path": "src/Invoice.Slice/generated/Invoice.Authority.g.fs",
+      "sha256": "sha256:654e22dc6dc98dc48d74a9f6ddf656975dc18b818bfc856b50ff3418fe69d22a"
+    },
+    {
+      "path": "src/Invoice.Slice/generated/Invoice/Invoice.Model.g.fs",
+      "sha256": "sha256:e2f2b950fcd0f7883949032d40782bbac3120192a208a8fc84ded81e8f57e229"
+    },
+    {
+      "path": "src/Invoice.Slice/generated/Invoice/Invoice.Transition.g.fs",
+      "sha256": "sha256:0d39fb8e4c1793a9d42675a0f9735ff0f553aa45af8ecc76e51090fea8ef1431"
+    },
+    {
+      "path": "src/Invoice.Slice/generated/Invoice/construction-manifest.json",
+      "sha256": "sha256:eb248ddb1acc5111cc4de91e2fcbe7fe7a11675428de45afffe03b4fa059c300"
+    }
+  ]
+}

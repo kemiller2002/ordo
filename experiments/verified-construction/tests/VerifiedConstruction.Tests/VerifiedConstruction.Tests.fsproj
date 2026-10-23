@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    EXPERIMENTAL (VC-002). Admission, translation, behaviour, compile-negative,
+    determinism and trace tests for the verified-construction slice. Run with
+    `dotnet test` from this directory (or ../../run.sh). Not part of any Ordo
+    solution or CI workflow.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>VerifiedConstruction.Tests</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <GenerateProgramFile>true</GenerateProgramFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Ordo's compile-negative harness, reused unchanged. -->
+    <Compile Include="../../../../tests/Ordo.Tests/FsiProbe.fs" Link="FsiProbe.fs" />
+    <Compile Include="Fixtures.fs" />
+    <Compile Include="FixturePinTests.fs" />
+    <Compile Include="AdmissionTests.fs" />
+    <Compile Include="TranslationTests.fs" />
+    <Compile Include="BehaviourTests.fs" />
+    <Compile Include="PersistenceTests.fs" />
+    <Compile Include="CompileNegativeTests.fs" />
+    <Compile Include="TraceTests.fs" />
+    <Compile Include="DeterminismTests.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Echelon.Construct/Echelon.Construct.fsproj" />
+    <ProjectReference Include="../../src/Invoice.Slice/Invoice.Slice.fsproj" />
+    <ProjectReference Include="../../src/Invoice.Slice.PaymentsService/Invoice.Slice.PaymentsService.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+</Project>

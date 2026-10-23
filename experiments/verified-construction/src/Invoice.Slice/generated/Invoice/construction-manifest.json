@@ -1,0 +1,238 @@
+{
+  "generatorVersion": "ordo.construction/4",
+  "planDigest": "sha256:91461dc40506a3d07991e9d080de9a3827814c8497dd0737e0dfb1a55a24237c",
+  "binding": {
+    "sourceManifestDigest": "sha256:a1c87f241b569d9d9d1e054dc69aa61a09263003e0ea030a9112d910735dbfec",
+    "blueprintDigest": "sha256:dd58912a5631b913e4efd881e4426870812be02c765dff3f10bcab7a33faa46c",
+    "cohortId": "COH-INVOICE-WORKFLOW",
+    "decisionIds": [
+      "DEC-FIN-001"
+    ]
+  },
+  "notice": "Generated structure only. Not authorization to apply, not evidence of behavioral verification.",
+  "ownershipRoot": "generated/Invoice/",
+  "artifacts": [
+    {
+      "path": "generated/Invoice/Invoice.Model.g.fs",
+      "tier": "semantic-model",
+      "ownership": "generated",
+      "sha256": "sha256:e2f2b950fcd0f7883949032d40782bbac3120192a208a8fc84ded81e8f57e229",
+      "operations": [
+        "branching:Issued/RecordPayment",
+        "branching:PartiallyPaid/RecordPayment",
+        "code:CommandNotAllowedInState",
+        "code:CurrencyMismatch",
+        "code:ExceedsOutstandingBalance",
+        "code:InvoiceClosed",
+        "code:NonPositiveAmount",
+        "code:PaymentLimitExceeded",
+        "code:PolicyUnresolvedQFIN001",
+        "state:Draft",
+        "state:Issued",
+        "state:Paid",
+        "state:PartiallyPaid",
+        "state:Voided",
+        "transition:Draft/Issue",
+        "transition:Draft/Void",
+        "transition:Issued/Void",
+        "workflow:Invoice"
+      ],
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001",
+        "sources/invoicing-requirements.md#REQ-INV-002"
+      ]
+    },
+    {
+      "path": "generated/Invoice/Invoice.Transition.g.fs",
+      "tier": "transition",
+      "ownership": "generated",
+      "sha256": "sha256:0d39fb8e4c1793a9d42675a0f9735ff0f553aa45af8ecc76e51090fea8ef1431",
+      "operations": [
+        "branching:Issued/RecordPayment",
+        "branching:PartiallyPaid/RecordPayment",
+        "code:CommandNotAllowedInState",
+        "code:CurrencyMismatch",
+        "code:ExceedsOutstandingBalance",
+        "code:InvoiceClosed",
+        "code:NonPositiveAmount",
+        "code:PaymentLimitExceeded",
+        "code:PolicyUnresolvedQFIN001",
+        "codeFor:pair/Paid/Issue",
+        "codeFor:pair/Paid/RecordPayment",
+        "codeFor:pair/Paid/Void",
+        "codeFor:pair/Voided/Issue",
+        "codeFor:pair/Voided/RecordPayment",
+        "codeFor:pair/Voided/Void",
+        "codeFor:unlisted",
+        "pairRule",
+        "transition:Draft/Issue",
+        "transition:Draft/Void",
+        "transition:Issued/Void",
+        "undecided:PartiallyPaid/Void",
+        "workflow:Invoice"
+      ],
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001",
+        "sources/invoicing-requirements.md#REQ-INV-002"
+      ]
+    }
+  ],
+  "extensionContracts": [
+    {
+      "name": "InvoiceRules.Select/Issued/RecordPayment",
+      "kind": "selection-function",
+      "ownership": "handwritten",
+      "operations": [
+        "branching:Issued/RecordPayment"
+      ],
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001",
+        "sources/invoicing-requirements.md#REQ-INV-002"
+      ]
+    },
+    {
+      "name": "InvoiceRules.Select/PartiallyPaid/RecordPayment",
+      "kind": "selection-function",
+      "ownership": "handwritten",
+      "operations": [
+        "branching:PartiallyPaid/RecordPayment"
+      ],
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001",
+        "sources/invoicing-requirements.md#REQ-INV-002"
+      ]
+    }
+  ],
+  "obligations": [
+    {
+      "id": "IMPLEMENT:InvoiceRules.Select/Issued/RecordPayment",
+      "kind": "implement",
+      "contract": "InvoiceRules.Select/Issued/RecordPayment",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001",
+        "sources/invoicing-requirements.md#REQ-INV-002"
+      ]
+    },
+    {
+      "id": "IMPLEMENT:InvoiceRules.Select/PartiallyPaid/RecordPayment",
+      "kind": "implement",
+      "contract": "InvoiceRules.Select/PartiallyPaid/RecordPayment",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001",
+        "sources/invoicing-requirements.md#REQ-INV-002"
+      ]
+    },
+    {
+      "id": "RESOLVE-PAIR:PartiallyPaid/Void",
+      "kind": "resolve-transition",
+      "state": "PartiallyPaid",
+      "command": "Void",
+      "question": "May an invoice that has received a partial payment be voided, and if so what happens to the payment received?",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001"
+      ]
+    },
+    {
+      "id": "VERIFY:Invoice",
+      "kind": "verify-independently",
+      "what": "Behavior against the original requirements. Generated structure and its derived checks are not independent acceptance evidence.",
+      "requirementKeys": [
+        "sources/invoicing-requirements.md#REQ-INV-001",
+        "sources/invoicing-requirements.md#REQ-INV-002"
+      ]
+    }
+  ],
+  "structuralChecks": {
+    "independence": "derived-from-plan",
+    "pairs": [
+      {
+        "state": "Draft",
+        "command": "Issue",
+        "expected": "Issued"
+      },
+      {
+        "state": "Draft",
+        "command": "RecordPayment",
+        "expected": "invalid-transition"
+      },
+      {
+        "state": "Draft",
+        "command": "Void",
+        "expected": "Voided"
+      },
+      {
+        "state": "Issued",
+        "command": "Issue",
+        "expected": "invalid-transition"
+      },
+      {
+        "state": "Issued",
+        "command": "RecordPayment",
+        "expected": "branching",
+        "targets": [
+          "Paid",
+          "PartiallyPaid"
+        ]
+      },
+      {
+        "state": "Issued",
+        "command": "Void",
+        "expected": "Voided"
+      },
+      {
+        "state": "Paid",
+        "command": "Issue",
+        "expected": "invalid-transition"
+      },
+      {
+        "state": "Paid",
+        "command": "RecordPayment",
+        "expected": "invalid-transition"
+      },
+      {
+        "state": "Paid",
+        "command": "Void",
+        "expected": "invalid-transition"
+      },
+      {
+        "state": "PartiallyPaid",
+        "command": "Issue",
+        "expected": "invalid-transition"
+      },
+      {
+        "state": "PartiallyPaid",
+        "command": "RecordPayment",
+        "expected": "branching",
+        "targets": [
+          "Paid",
+          "PartiallyPaid"
+        ]
+      },
+      {
+        "state": "PartiallyPaid",
+        "command": "Void",
+        "expected": "undecided"
+      },
+      {
+        "state": "Voided",
+        "command": "Issue",
+        "expected": "invalid-transition"
+      },
+      {
+        "state": "Voided",
+        "command": "RecordPayment",
+        "expected": "invalid-transition"
+      },
+      {
+        "state": "Voided",
+        "command": "Void",
+        "expected": "invalid-transition"
+      }
+    ]
+  },
+  "coverage": {
+    "sources/invoicing-requirements.md#REQ-INV-001": "constructed",
+    "sources/invoicing-requirements.md#REQ-INV-002": "constructed"
+  },
+  "effectFailure": []
+}

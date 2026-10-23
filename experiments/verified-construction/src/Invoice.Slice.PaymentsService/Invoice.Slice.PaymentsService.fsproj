@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    EXPERIMENTAL (VC-002). The payments service (DEC-FIN-002): the only
+    assembly granted InternalsVisibleTo by Invoice.Slice, hence the only code
+    that can construct a PaymentsServiceCapability.
+  -->
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Invoice.Slice.PaymentsService</AssemblyName>
+    <RootNamespace>Invoice.Slice.PaymentsService</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <Deterministic>true</Deterministic>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="CompositionRoot.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Invoice.Slice/Invoice.Slice.fsproj" />
+  </ItemGroup>
+
+</Project>
