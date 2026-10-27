@@ -29,6 +29,7 @@ let overview (version: string) =
       "  upgrade     Move an existing installation to this release's version."
       "  doctor      Diagnose problems and explain how to fix them. Read-only."
       "  boundary    `boundary assess`: report boundary amplification for one work item. Read-only."
+      "  verification `verification schedule`: deterministic schedule over an admitted verification plan. Read-only."
       ""
       "Options:" ]
     @ commonOptions
@@ -225,6 +226,28 @@ let private boundaryHelp =
       "  git diff --name-only origin/main...HEAD > changed.txt"
       "  sde boundary assess --map .ordo/boundaries.json --expected expectation.json --changed changed.txt --json" ]
 
+let private verificationHelp =
+    [ "sde verification schedule"
+      ""
+      "Orders the work an admitted indy-init.verification-plan/1 implies and emits one"
+      "ordo.verification-schedule/1 document (canonical JSON, no timestamp: the same"
+      "inputs always give the same bytes). Praxis admits the plan; this command"
+      "schedules it and grants nothing."
+      ""
+      Args.verificationUsage
+      ""
+      "  --plan FILE               the admitted plan"
+      "  --expected-digest HEX     refuse a plan whose planIdentity.digest differs"
+      "  --evidence-manifest FILE  causa.acceptance-evidence-manifest/1; each entry's"
+      "                            bytes are checked against its sha256"
+      "  --source-sha SHA          candidate source commit evidence must be bound to"
+      "  --run-id ID               run evidence must belong to"
+      "  --output FILE             also write the schedule to FILE"
+      ""
+      "Ranking: most mandatory (P0) acceptance unblocked first, then most transitive"
+      "dependents, then requirement id. Ranking never removes a requirement;"
+      "dependency cycles are reported. Exit 0 scheduled, 1 refused, 2 usage." ]
+
 let forCommand (name: string) (version: string) =
     match name with
     | "init" -> initHelp
@@ -234,4 +257,5 @@ let forCommand (name: string) (version: string) =
     | "update" -> upgradeHelp
     | "doctor" -> doctorHelp
     | "boundary" -> boundaryHelp
+    | "verification" -> verificationHelp
     | _ -> overview version

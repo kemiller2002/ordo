@@ -135,6 +135,11 @@ let private runCommand (invocation: Args.Invocation) (projectRoot: string) : Emi
     | Args.Help None -> ok (Help.overview releaseVersion)
     | Args.Help(Some topic) -> ok (Help.forCommand topic releaseVersion)
 
+    // Read-only scheduling of an admitted verification plan; no installation required.
+    | Args.VerificationSchedule options ->
+        let code, stdout, stderr = Verification.schedule globals.Json options
+        { ExitCode = code; Stdout = stdout; Stderr = stderr }
+
     // Read-only ECIR check using Ordo.Core; no installation or model SDK required.
     | Args.EcirValidate options ->
         let code, stdout, stderr = Ecir.run globals.Json options.Manifest options.Blueprint options.Cohort
@@ -173,6 +178,7 @@ let private runCommand (invocation: Args.Invocation) (projectRoot: string) : Emi
             | Args.Verify _ -> "verify"
             | Args.Upgrade _ -> "upgrade"
             | Args.Doctor _ -> "doctor"
+            | Args.VerificationSchedule _
             | Args.EcirValidate _
             | Args.EcirCheck _
             | Args.EcirScaffold _
@@ -226,6 +232,7 @@ let private runCommand (invocation: Args.Invocation) (projectRoot: string) : Emi
                 (fun () -> Output.changeReportToJson options.Check options.DryRun report)
                 (fun () -> Render.change globals.Verbose options.Check options.DryRun report)
 
+        | Args.VerificationSchedule _
         | Args.EcirValidate _
         | Args.EcirCheck _
         | Args.EcirScaffold _

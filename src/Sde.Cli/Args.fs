@@ -67,7 +67,19 @@ type EcirRecognizeOptions =
       AllowedPaths: string list
       EscalateOpenQuestions: bool }
 
+/// `verification schedule`: order the work an admitted verification plan
+/// implies. Every value is a path or identity the caller supplied; the
+/// command reads, never writes, except `Output` when given.
+type VerificationScheduleOptions =
+    { Plan: string
+      ExpectedDigest: string option
+      EvidenceManifest: string option
+      SourceSha: string option
+      RunId: string option
+      Output: string option }
+
 type Command =
+    | VerificationSchedule of VerificationScheduleOptions
     | EcirValidate of EcirValidateOptions
     | EcirCheck of EcirCheckOptions
     | EcirScaffold of EcirScaffoldOptions
@@ -98,13 +110,13 @@ type ParseResult =
 /// Command names understood by the parser. `update` is retained as an alias
 /// for `upgrade`: it was the released name through 1.1.1 and scripts in
 /// consumers' repositories still call it.
-let private canonicalCommandNames = [ "init"; "status"; "verify"; "upgrade"; "doctor"; "boundary"; "ecir" ]
+let private canonicalCommandNames = [ "init"; "status"; "verify"; "upgrade"; "doctor"; "boundary"; "ecir"; "verification" ]
 let private legacyUpgradeAlias = "update"
 
 let allCommandNames = canonicalCommandNames @ [ legacyUpgradeAlias ]
 
 let private usageLine =
-    "Usage: sde <init|status|verify|upgrade|doctor|boundary|ecir> [options]"
+    "Usage: sde <init|status|verify|upgrade|doctor|boundary|ecir|verification> [options]"
 
 let usage = usageLine
 
@@ -237,6 +249,47 @@ let private parseEcir (globals: GlobalOptions) (argv: string list) : ParseResult
         | _ -> ParseFailed ecirUsage
     | _ -> ParseFailed ecirUsage
 
+let verificationUsage =
+    "Usage: sde verification schedule --plan FILE [--expected-digest HEX] [--evidence-manifest FILE --source-sha SHA --run-id ID] [--output FILE] [--json]"
+
+let private parseVerification (globals: GlobalOptions) (argv: string list) : ParseResult =
+    let valued = [ "--plan"; "--expected-digest"; "--evidence-manifest"; "--source-sha"; "--run-id"; "--output" ]
+    let switches = [ "--json"; "--verbose"; "-v"; "--help"; "-h" ]
+
+    let rec walk args (values: Map<string, string>) positionals =
+        match args with
+        | [] -> Ok(values, List.rev positionals)
+        | flag :: value :: rest when List.contains flag valued && not (value.StartsWith "--") ->
+            if values.ContainsKey flag then Error(sprintf "Option given twice: %s" flag)
+            else walk rest (values.Add(flag, value)) positionals
+        | flag :: _ when List.contains flag valued -> Error(sprintf "Option %s requires a value" flag)
+        | flag :: rest when List.contains flag switches -> walk rest values positionals
+        | flag :: _ when flag.StartsWith "-" -> Error(sprintf "Unknown option: %s" flag)
+        | item :: rest -> walk rest values (item :: positionals)
+
+    match walk argv Map.empty [] with
+    | Error message -> ParseFailed(message + "\n" + verificationUsage)
+    | Ok _ when List.contains "--help" argv || List.contains "-h" argv -> Parsed { Command = Help(Some "verification"); Global = globals }
+    | Ok(values, [ "verification"; "schedule" ]) ->
+        let evidence = [ "--evidence-manifest"; "--source-sha"; "--run-id" ] |> List.filter values.ContainsKey
+
+        match values.TryFind "--plan" with
+        | None -> ParseFailed("Missing required option: --plan\n" + verificationUsage)
+        | Some _ when not evidence.IsEmpty && evidence.Length <> 3 ->
+            ParseFailed("--evidence-manifest, --source-sha and --run-id are given together: evidence is judged only against a named subject\n" + verificationUsage)
+        | Some plan ->
+            Parsed
+                { Command =
+                    VerificationSchedule
+                        { Plan = plan
+                          ExpectedDigest = values.TryFind "--expected-digest"
+                          EvidenceManifest = values.TryFind "--evidence-manifest"
+                          SourceSha = values.TryFind "--source-sha"
+                          RunId = values.TryFind "--run-id"
+                          Output = values.TryFind "--output" }
+                  Global = globals }
+    | _ -> ParseFailed verificationUsage
+
 let parse (argv: string list) : ParseResult =
     let globalsOf (args: string list) =
         { Json = List.contains "--json" args
@@ -245,6 +298,7 @@ let parse (argv: string list) : ParseResult =
     match argv |> List.tryFind (fun arg -> not (arg.StartsWith "-")) with
     | Some "boundary" -> parseBoundary (globalsOf argv) argv
     | Some "ecir" -> parseEcir (globalsOf argv) argv
+    | Some "verification" -> parseVerification (globalsOf argv) argv
     | _ ->
 
     // Flags are recognised anywhere, before or after the command name, so
