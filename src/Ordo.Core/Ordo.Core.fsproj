@@ -72,6 +72,9 @@
     <Compile Include="PatternRecognition.fs" />
     <Compile Include="PatternRecognitionWire.fs" />
     <Compile Include="ConstructionCoverage.fs" />
+    <Compile Include="VerificationSchedule.fs" />
+    <Compile Include="VerificationScheduleWire.fs" />
+    <Compile Include="VerificationPlanWire.fs" />
   </ItemGroup>
 
 </Project>

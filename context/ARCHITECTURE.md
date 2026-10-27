@@ -16,6 +16,7 @@ root README links here rather than creating a competing `SDE-MAP.md`.
 | Public website | the Ordo site: content, evidence manifest, generator, validator | `site/`, `src/Ordo.Site/`, `tests/Ordo.Site.Tests/` | `site/README.md` |
 | Executable Ordo | runtime primitives for resolution modes, evidence, capabilities, obligations, bounded decisions, transitions and observation | `src/Ordo.Core/`, `src/Ordo.Decisions/`, `src/Ordo.Providers.Anthropic/`, `tests/Ordo.Tests/` | `docs/architecture/executable-ordo.md` |
 | Construction by design | ECIR, typed construction plans and the deterministic Four-Tier workflow constructor | `src/Ordo.Core/Construction*.fs`, `src/Ordo.Construction/`, `tests/Ordo.Construction.Tests/`, `tests/fixtures/construction/` | `docs/architecture/ecir-v1.md`, `docs/architecture/construction-plan-v1.md`, `docs/architecture/construction-plan-consensus.md`, `docs/architecture/construction-default-plan.md`, `docs/architecture/construction-engine-v1.md` |
+| Verification scheduling | deterministic schedule over an admitted compiled verification plan: blockers, dependencies, cycles, stale evidence, parallel waves | `src/Ordo.Core/VerificationSchedule*.fs`, `src/Ordo.Core/VerificationPlanWire.fs`, `src/Sde.Cli/Verification.fs`, `tests/Ordo.Tests/VerificationScheduleTests.fs`, `tests/fixtures/verification-plan/` | `docs/architecture/verification-schedule.md` |
 
 This repository contains methodology domains rather than application
 features. Separate feature manifests would duplicate the indexes above and are
@@ -118,6 +119,14 @@ belongs to whichever ROS work item executes the validation.
   implemented outside a supplied plan or without independent acceptance, and
   no open domain decision is closed without a program-level approved
   decision. Asserted in `tests/Ordo.Tests/ConstructionLedgerTests.fs`.
+- The verification schedule (`VerificationSchedule.schedule`,
+  `ordo.verification-schedule/1`) is a pure function of the admitted plan and
+  the caller-supplied subject: same inputs, same bytes. It keeps every plan
+  requirement (the priority heuristic orders, never excludes), reports
+  dependency cycles and dependencies outside the plan instead of dropping
+  them, and never counts stale evidence as satisfying an obligation. Plan
+  admission (identity, digest, provenance) stays with Praxis. Asserted in
+  `tests/Ordo.Tests/VerificationScheduleTests.fs`.
 - Executable Ordo must not depend on ROS, and `Ordo.Core` must not depend on
   any model-provider SDK. Both are asserted against the loaded assemblies in
   `tests/Ordo.Tests/ArchitectureTests.fs` rather than by review.

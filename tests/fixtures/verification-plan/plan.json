@@ -1,0 +1,346 @@
+{
+  "schema": "indy-init.verification-plan/1",
+  "planIdentity": {
+    "planId": "VP-aaaaaaaaaaaa",
+    "algorithm": "sha256",
+    "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "covers": "fixture: digest not recomputed by Ordo"
+  },
+  "source": {
+    "repository": "kemiller2002/indy-init",
+    "commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "baselineId": "BL-TEST",
+    "baselineSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "approvals": {
+      "repository": "indy-init",
+      "commit": "dddddddddddddddddddddddddddddddddddddddd",
+      "path": "approvals.json",
+      "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "trustedOperators": [
+        "op"
+      ]
+    }
+  },
+  "scope": {
+    "priority": "P0",
+    "origin": "baseline",
+    "requirements": 4,
+    "obligations": 5,
+    "boundObligations": 3,
+    "missingTestObligations": 2,
+    "excludedRequirements": 1
+  },
+  "statusVocabulary": {
+    "testIdentity": [
+      "bound",
+      "partial",
+      "missing"
+    ],
+    "verification": [
+      "PASS",
+      "FAIL"
+    ]
+  },
+  "freshnessPolicies": [],
+  "evidenceContract": {
+    "evidenceSchema": "causa.acceptance-evidence/1",
+    "manifestSchema": "causa.acceptance-evidence-manifest/1",
+    "mustMatch": [],
+    "digest": "",
+    "reuse": ""
+  },
+  "exclusionPolicy": {
+    "rule": "",
+    "approvalSchema": "causa.requirements-approvals/1"
+  },
+  "requirements": [
+    {
+      "requirement": "AR-001",
+      "priority": "P0",
+      "title": "AR-001 title",
+      "document": "REQUIREMENTS.md",
+      "sectionSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "obligations": [
+        {
+          "id": "VPO-0000000000000001",
+          "sourceObligation": "AR-001#1",
+          "index": 1,
+          "kind": "acceptance",
+          "text": "text",
+          "textSha256": "1111111111111111111111111111111111111111111111111111111111111111",
+          "testIdentity": {
+            "status": "bound",
+            "tests": [
+              {
+                "id": "tests/ar.spec::core",
+                "kind": "deterministic"
+              }
+            ]
+          }
+        },
+        {
+          "id": "VPO-0000000000000002",
+          "sourceObligation": "AR-001#2",
+          "index": 2,
+          "kind": "acceptance",
+          "text": "text",
+          "textSha256": "1111111111111111111111111111111111111111111111111111111111111111",
+          "testIdentity": {
+            "status": "missing",
+            "tests": []
+          }
+        }
+      ],
+      "acceptance": {
+        "criteria": [],
+        "linkedSections": []
+      },
+      "verificationMethod": {
+        "gates": [
+          "G3"
+        ],
+        "rules": [
+          {
+            "id": "VR-LEDGER",
+            "gate": "G0",
+            "owner": "x",
+            "method": "m",
+            "tooling": "t"
+          }
+        ]
+      },
+      "testIdentity": {
+        "status": "bound",
+        "boundObligations": 0,
+        "missingObligations": 0
+      },
+      "evidenceContract": {
+        "subjectType": "requirement",
+        "subjectId": "AR-001",
+        "requiredEvidence": []
+      },
+      "dependencies": {
+        "requirements": [],
+        "contracts": []
+      },
+      "freshness": {
+        "policy": "FP-DETERMINISTIC-INPUT-DIGEST",
+        "boundTo": [
+          "source commit"
+        ],
+        "invalidatedBy": []
+      },
+      "exclusion": {
+        "status": "in-scope",
+        "approval": null
+      }
+    },
+    {
+      "requirement": "AR-002",
+      "priority": "P0",
+      "title": "AR-002 title",
+      "document": "REQUIREMENTS.md",
+      "sectionSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "obligations": [
+        {
+          "id": "VPO-0000000000000003",
+          "sourceObligation": "AR-002#1",
+          "index": 1,
+          "kind": "acceptance",
+          "text": "text",
+          "textSha256": "1111111111111111111111111111111111111111111111111111111111111111",
+          "testIdentity": {
+            "status": "bound",
+            "tests": [
+              {
+                "id": "tests/ar.spec::api",
+                "kind": "deterministic"
+              }
+            ]
+          }
+        }
+      ],
+      "acceptance": {
+        "criteria": [],
+        "linkedSections": []
+      },
+      "verificationMethod": {
+        "gates": [
+          "G3"
+        ],
+        "rules": [
+          {
+            "id": "VR-LEDGER",
+            "gate": "G0",
+            "owner": "x",
+            "method": "m",
+            "tooling": "t"
+          }
+        ]
+      },
+      "testIdentity": {
+        "status": "bound",
+        "boundObligations": 0,
+        "missingObligations": 0
+      },
+      "evidenceContract": {
+        "subjectType": "requirement",
+        "subjectId": "AR-002",
+        "requiredEvidence": []
+      },
+      "dependencies": {
+        "requirements": [
+          "AR-001"
+        ],
+        "contracts": []
+      },
+      "freshness": {
+        "policy": "FP-DETERMINISTIC-INPUT-DIGEST",
+        "boundTo": [
+          "source commit"
+        ],
+        "invalidatedBy": []
+      },
+      "exclusion": {
+        "status": "in-scope",
+        "approval": null
+      }
+    },
+    {
+      "requirement": "AR-003",
+      "priority": "P0",
+      "title": "AR-003 title",
+      "document": "REQUIREMENTS.md",
+      "sectionSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "obligations": [
+        {
+          "id": "VPO-0000000000000004",
+          "sourceObligation": "AR-003#1",
+          "index": 1,
+          "kind": "acceptance",
+          "text": "text",
+          "textSha256": "1111111111111111111111111111111111111111111111111111111111111111",
+          "testIdentity": {
+            "status": "missing",
+            "tests": []
+          }
+        }
+      ],
+      "acceptance": {
+        "criteria": [],
+        "linkedSections": []
+      },
+      "verificationMethod": {
+        "gates": [
+          "G3"
+        ],
+        "rules": [
+          {
+            "id": "VR-LEDGER",
+            "gate": "G0",
+            "owner": "x",
+            "method": "m",
+            "tooling": "t"
+          }
+        ]
+      },
+      "testIdentity": {
+        "status": "bound",
+        "boundObligations": 0,
+        "missingObligations": 0
+      },
+      "evidenceContract": {
+        "subjectType": "requirement",
+        "subjectId": "AR-003",
+        "requiredEvidence": []
+      },
+      "dependencies": {
+        "requirements": [
+          "AR-002",
+          "NOT-IN-PLAN"
+        ],
+        "contracts": []
+      },
+      "freshness": {
+        "policy": "FP-DETERMINISTIC-INPUT-DIGEST",
+        "boundTo": [
+          "source commit"
+        ],
+        "invalidatedBy": []
+      },
+      "exclusion": {
+        "status": "in-scope",
+        "approval": null
+      }
+    },
+    {
+      "requirement": "AR-004",
+      "priority": "P0",
+      "title": "AR-004 title",
+      "document": "REQUIREMENTS.md",
+      "sectionSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "obligations": [
+        {
+          "id": "VPO-0000000000000005",
+          "sourceObligation": "AR-004#1",
+          "index": 1,
+          "kind": "acceptance",
+          "text": "text",
+          "textSha256": "1111111111111111111111111111111111111111111111111111111111111111",
+          "testIdentity": {
+            "status": "bound",
+            "tests": [
+              {
+                "id": "tests/ar.spec::x",
+                "kind": "deterministic"
+              }
+            ]
+          }
+        }
+      ],
+      "acceptance": {
+        "criteria": [],
+        "linkedSections": []
+      },
+      "verificationMethod": {
+        "gates": [
+          "G3"
+        ],
+        "rules": [
+          {
+            "id": "VR-LEDGER",
+            "gate": "G0",
+            "owner": "x",
+            "method": "m",
+            "tooling": "t"
+          }
+        ]
+      },
+      "testIdentity": {
+        "status": "bound",
+        "boundObligations": 0,
+        "missingObligations": 0
+      },
+      "evidenceContract": {
+        "subjectType": "requirement",
+        "subjectId": "AR-004",
+        "requiredEvidence": []
+      },
+      "dependencies": {
+        "requirements": [],
+        "contracts": []
+      },
+      "freshness": {
+        "policy": "FP-DETERMINISTIC-INPUT-DIGEST",
+        "boundTo": [
+          "source commit"
+        ],
+        "invalidatedBy": []
+      },
+      "exclusion": {
+        "status": "excluded",
+        "approval": "APR-1"
+      }
+    }
+  ]
+}
