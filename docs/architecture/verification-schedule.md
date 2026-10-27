@@ -68,6 +68,17 @@ the CLI therefore requires `--source-sha` and `--run-id` together with
   dependency on each other and may run in parallel.
 - `requirements`: one row per plan requirement with `rank` and `score`.
 
+## Interpretation of plan dependencies (open question)
+
+The plan's consumer contract (Indy-init `docs/VERIFICATION-PLAN-CONTRACT.md`,
+item 8) defines `dependencies.requirements` as the requirements whose change
+invalidates a requirement's evidence. Ordo orders by them: settling the
+prerequisite first means its dependents' evidence is produced once and does
+not go stale. The plan does not claim these are build prerequisites; the
+genuine task edges live in `dependency-graph.json`, which this schedule does
+not read. Whether Ordo should also order by those task edges is an
+unresolved question for the plan owner, not decided here.
+
 ## Priority heuristic
 
 1. `mandatoryUnblocked` descending: P0 obligations of the requirement plus
