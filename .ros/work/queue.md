@@ -91,3 +91,4 @@
 | WI-0044 | Deterministic construction-plan consensus over N independent drafts (research-documents#6, #7) | complete | construction,consensus | high |
 | WI-0045 | Pattern registry and deterministic recognition with early delegation (ORDO-PATTERN-001) | active |  | medium |
 | WI-0046 | x | abandoned |  | medium |
+| WI-0047 | EII-G: policy-aware freshness bindings for the verification schedule | complete | verification, freshness, eii | high |

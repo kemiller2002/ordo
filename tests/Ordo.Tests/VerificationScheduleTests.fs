@@ -18,7 +18,7 @@ open Ordo.Core.VerificationScheduleWire
 // R-CORE unblocks R-API, R-UI and R-AUDIT; R-SOLO unblocks nothing.
 // ---------------------------------------------------------------------------
 
-let private current = { Current = Map.ofList [ "sourceCommit", "abc123"; "baselineSha256", "b1" ] }
+let private current = currentOnly (Map.ofList [ "sourceCommit", "abc123"; "baselineSha256", "b1" ])
 let private fresh = Map.ofList [ "sourceCommit", "abc123"; "baselineSha256", "b1" ]
 let private oldCommit = Map.ofList [ "sourceCommit", "old999"; "baselineSha256", "b1" ]
 
@@ -26,7 +26,7 @@ let private obligation id mandatory test evidence =
     { Id = id; Mandatory = mandatory; Method = "test"; Test = test; Evidence = evidence }
 
 let private requirement id dependsOn obligations =
-    { Id = id; Priority = "P0"; Obligations = obligations; DependsOn = dependsOn; FreshnessBindings = [ "sourceCommit"; "baselineSha256" ] }
+    { Id = id; Priority = "P0"; Obligations = obligations; DependsOn = dependsOn; FreshnessBindings = [ "sourceCommit"; "baselineSha256" ]; ReuseBindings = [] }
 
 let private passed bindings = [ { Outcome = EvidenceOutcome.Pass; Bindings = bindings } ]
 
@@ -192,7 +192,7 @@ let ``evidence bound to another commit is stale, never satisfied`` () =
 
 [<Fact>]
 let ``a binding without a current value is not judged stale`` () =
-    let partial = { Current = Map.ofList [ "baselineSha256", "b1" ] }
+    let partial = currentOnly (Map.ofList [ "baselineSha256", "b1" ])
     Assert.Equal(ObligationState.Satisfied, classifyObligation partial [ "sourceCommit"; "baselineSha256" ] (obligation "O" true (Identified "t") (passed oldCommit)))
 
 [<Fact>]
@@ -304,3 +304,171 @@ let ``evidence from another run, commit or with altered bytes is stale`` () =
     Assert.Equal<string list>([ "AR-002"; "AR-004" ], result.StaleEvidence |> List.map (fun s -> s.RequirementId) |> List.sort)
     // Same inputs, same bytes.
     Assert.Equal(render result, render (run (context (Some "src1") (Some "run1")) (attachEvidence results plan)))
+
+// ---------------------------------------------------------------------------
+// Policy-aware freshness (DF-SDE-2026-0026): negative controls.
+// ---------------------------------------------------------------------------
+
+let private planDigestHex = String('a', 64)
+
+/// The fixture plan with its four `freshness.policy` values replaced in order
+/// and `freshnessPolicies` declaring which policies are reusable.
+let private planWith (policies: string list) (reusable: (string * bool) list) =
+    let declared =
+        reusable
+        |> List.map (fun (id, flag) -> sprintf """{"id":"%s","reusable":%s}""" id (if flag then "true" else "false"))
+        |> String.concat ","
+
+    let marker = "\"policy\": \"FP-DETERMINISTIC-INPUT-DIGEST\""
+    let parts = (planText ()).Replace("\"freshnessPolicies\": []", sprintf "\"freshnessPolicies\": [%s]" declared).Split(marker)
+    Assert.Equal(policies.Length + 1, parts.Length)
+    let replaced = List.zip (List.ofArray parts |> List.take policies.Length) policies |> List.map (fun (part, policy) -> part + sprintf "\"policy\": \"%s\"" policy) |> String.concat ""
+    replaced + parts[parts.Length - 1]
+
+let private deterministic = "FP-DETERMINISTIC-INPUT-DIGEST"
+let private live = "FP-LIVE-PER-COMMIT"
+let private review = "FP-REVIEW-PER-COMMIT"
+let private declaredReusable = [ live, false; review, false; deterministic, true ]
+
+let private readPlanOk text =
+    match readPlan None text with
+    | Ok(_, plan) -> plan
+    | Error message -> failwith message
+
+/// Evidence for AR-002 (obligation VPO-0000000000000003, a bound test) with
+/// optional content-identity members.
+let private evidenceWith run sha (inputDigest: string option) (planDigest: string option) (rehearsal: string option) =
+    let optional name value = value |> Option.map (sprintf ",\"%s\":\"%s\"" name) |> Option.defaultValue ""
+    sprintf
+        """{"schema":"causa.acceptance-evidence/1","run_id":"%s","source_sha":"%s","subject_type":"requirement","subject_id":"AR-002","status":"PASS","exit_code":0%s%s%s}"""
+        run
+        sha
+        (optional "input_digest" inputDigest)
+        (optional "plan_digest" planDigest)
+        (optional "rehearsal_id" rehearsal)
+
+let private reuseFor digest = Some { RehearsalId = "rehearsal-005"; InputDigests = Map.ofList [ "AR-002", digest ] }
+
+/// State of AR-002's bound obligation when judged for run1 at src1.
+let private judge (plan: VerificationPlan) (reuse: ReuseContext option) (verified: bool) (json: string) =
+    let evidence =
+        match readEvidence verified json with
+        | Ok e -> e
+        | Error m -> failwith m
+
+    let result = run (planContext plan (Some "src1") (Some "run1") reuse) (attachEvidence [ evidence ] plan)
+    result.Requirements |> List.find (fun r -> r.Id = "AR-002") |> fun r -> r.Obligations |> List.find (fst >> (=) "VPO-0000000000000003") |> snd
+
+let private allDeterministic () = readPlanOk (planWith [ deterministic; deterministic; deterministic; deterministic ] declaredReusable)
+let private matching run = evidenceWith run "src0" (Some "sha256:in1") (Some planDigestHex) (Some "rehearsal-005")
+
+[<Fact>]
+let ``bindings per policy: live and review per run, deterministic adds content reuse`` () =
+    Assert.Equal(Ok { Bindings = [ "integrity"; "runId"; "sourceSha" ]; Reuse = [] }, bindingsForPolicy true live)
+    Assert.Equal(Ok { Bindings = [ "integrity"; "runId"; "sourceSha" ]; Reuse = [] }, bindingsForPolicy true review)
+    Assert.Equal(Ok { Bindings = [ "integrity"; "runId"; "sourceSha" ]; Reuse = [ "integrity"; "inputDigest"; "planDigest"; "rehearsalId" ] }, bindingsForPolicy true deterministic)
+    // A deterministic policy the plan does not declare reusable is never reused.
+    Assert.Equal(Ok { Bindings = [ "integrity"; "runId"; "sourceSha" ]; Reuse = [] }, bindingsForPolicy false deterministic)
+
+[<Fact>]
+let ``deterministic evidence of an earlier run with matching input digest, plan and rehearsal is fresh`` () =
+    Assert.Equal(ObligationState.Satisfied, judge (allDeterministic ()) (reuseFor "sha256:in1") true (matching "run0"))
+    // The plan digest may be written with or without its sha256: prefix.
+    let prefixed = evidenceWith "run0" "src0" (Some "sha256:in1") (Some("sha256:" + planDigestHex)) (Some "rehearsal-005")
+    Assert.Equal(ObligationState.Satisfied, judge (allDeterministic ()) (reuseFor "sha256:in1") true prefixed)
+
+[<Fact>]
+let ``deterministic evidence with a different input digest is stale`` () =
+    Assert.Equal(ObligationState.Stale [ "inputDigest"; "runId"; "sourceSha" ], judge (allDeterministic ()) (reuseFor "sha256:in2") true (matching "run0"))
+    // Even from the current run: evidence that contradicts its subject is never fresh.
+    let sameRun = evidenceWith "run1" "src1" (Some "sha256:in1") (Some planDigestHex) (Some "rehearsal-005")
+    Assert.Equal(ObligationState.Stale [ "inputDigest" ], judge (allDeterministic ()) (reuseFor "sha256:in2") true sameRun)
+
+[<Fact>]
+let ``deterministic evidence from another plan or another rehearsal is stale`` () =
+    let otherPlan = evidenceWith "run0" "src0" (Some "sha256:in1") (Some(String('f', 64))) (Some "rehearsal-005")
+    Assert.Equal(ObligationState.Stale [ "planDigest"; "runId"; "sourceSha" ], judge (allDeterministic ()) (reuseFor "sha256:in1") true otherPlan)
+    let otherRehearsal = evidenceWith "run0" "src0" (Some "sha256:in1") (Some planDigestHex) (Some "rehearsal-004")
+    Assert.Equal(ObligationState.Stale [ "rehearsalId"; "runId"; "sourceSha" ], judge (allDeterministic ()) (reuseFor "sha256:in1") true otherRehearsal)
+
+[<Fact>]
+let ``deterministic evidence whose bytes fail integrity is stale even when everything else matches`` () =
+    Assert.Equal(ObligationState.Stale [ "integrity"; "runId"; "sourceSha" ], judge (allDeterministic ()) (reuseFor "sha256:in1") false (matching "run0"))
+    Assert.Equal(ObligationState.Stale [ "integrity" ], judge (allDeterministic ()) (reuseFor "sha256:in1") false (evidenceWith "run1" "src1" None None None))
+
+[<Fact>]
+let ``live evidence of an earlier run is stale whatever content identity it carries`` () =
+    let plan = readPlanOk (planWith [ deterministic; live; deterministic; deterministic ] [ live, true; deterministic, true ])
+    Assert.Equal(ObligationState.Stale [ "runId"; "sourceSha" ], judge plan (reuseFor "sha256:in1") true (matching "run0"))
+    Assert.Equal(ObligationState.Stale [ "runId" ], judge plan (reuseFor "sha256:in1") true (evidenceWith "run0" "src1" (Some "sha256:in1") (Some planDigestHex) (Some "rehearsal-005")))
+    Assert.Equal(ObligationState.Satisfied, judge plan (reuseFor "sha256:in1") true (evidenceWith "run1" "src1" None None None))
+
+[<Fact>]
+let ``review evidence for another source commit is stale`` () =
+    let plan = readPlanOk (planWith [ deterministic; review; deterministic; deterministic ] [ review, true; deterministic, true ])
+    Assert.Equal(ObligationState.Stale [ "sourceSha" ], judge plan (reuseFor "sha256:in1") true (evidenceWith "run1" "src0" (Some "sha256:in1") (Some planDigestHex) (Some "rehearsal-005")))
+    Assert.Equal(ObligationState.Satisfied, judge plan (reuseFor "sha256:in1") true (evidenceWith "run1" "src1" None None None))
+
+[<Fact>]
+let ``deterministic evidence without an input digest is not reusable and falls back to the run`` () =
+    let noDigest run sha = evidenceWith run sha None (Some planDigestHex) (Some "rehearsal-005")
+    Assert.Equal(ObligationState.Stale [ "runId"; "sourceSha" ], judge (allDeterministic ()) (reuseFor "sha256:in1") true (noDigest "run0" "src0"))
+    Assert.Equal(ObligationState.Stale [ "runId" ], judge (allDeterministic ()) (reuseFor "sha256:in1") true (noDigest "run0" "src1"))
+    Assert.Equal(ObligationState.Satisfied, judge (allDeterministic ()) (reuseFor "sha256:in1") true (noDigest "run1" "src1"))
+    // Missing plan or rehearsal identity is equally not reusable.
+    Assert.Equal(ObligationState.Stale [ "runId"; "sourceSha" ], judge (allDeterministic ()) (reuseFor "sha256:in1") true (evidenceWith "run0" "src0" (Some "sha256:in1") None (Some "rehearsal-005")))
+    Assert.Equal(ObligationState.Stale [ "runId"; "sourceSha" ], judge (allDeterministic ()) (reuseFor "sha256:in1") true (evidenceWith "run0" "src0" (Some "sha256:in1") (Some planDigestHex) None))
+
+[<Fact>]
+let ``no reuse without a reuse context, a current input digest, or a plan that declares the policy reusable`` () =
+    Assert.Equal(ObligationState.Stale [ "runId"; "sourceSha" ], judge (allDeterministic ()) None true (matching "run0"))
+    let otherSubject = Some { RehearsalId = "rehearsal-005"; InputDigests = Map.ofList [ "AR-001", "sha256:in1" ] }
+    Assert.Equal(ObligationState.Stale [ "runId"; "sourceSha" ], judge (allDeterministic ()) otherSubject true (matching "run0"))
+    let undeclared = readPlanOk (planWith [ deterministic; deterministic; deterministic; deterministic ] [ deterministic, false ])
+    Assert.Equal(ObligationState.Stale [ "runId"; "sourceSha" ], judge undeclared (reuseFor "sha256:in1") true (matching "run0"))
+    // The fixture as committed declares no policy at all.
+    let _, fixture = readOk None
+    Assert.Equal(ObligationState.Stale [ "runId"; "sourceSha" ], judge fixture (reuseFor "sha256:in1") true (matching "run0"))
+
+[<Fact>]
+let ``an unknown freshness policy fails safe: the plan is refused`` () =
+    match readPlan None (planWith [ deterministic; "FP-SOMETHING-NEW"; deterministic; deterministic ] declaredReusable) with
+    | Ok _ -> failwith "an unknown freshness policy must be refused"
+    | Error message -> Assert.Equal("$.requirements[1].freshness.policy: unsupported freshness policy FP-SOMETHING-NEW", message)
+
+    match readPlan None ((planText ()).Replace("\"freshnessPolicies\": []", "\"freshnessPolicies\": [{\"id\":\"FP-LIVE-PER-COMMIT\",\"reusable\":\"yes\"}]")) with
+    | Ok _ -> failwith "a mistyped reusable flag must be refused"
+    | Error message -> Assert.Equal("$.freshnessPolicies[0].reusable: expected boolean", message)
+
+[<Fact>]
+let ``optional content identity members are read strictly and evidence without them reads as before`` () =
+    match readEvidence true (evidenceWith "run1" "src1" None None None) with
+    | Ok e -> Assert.Equal((None, None, None), (e.InputDigest, e.PlanDigest, e.RehearsalId))
+    | Error m -> failwith m
+
+    match readEvidence true (evidenceWith "run1" "src1" (Some "d") (Some "e") (Some "r")) with
+    | Ok e -> Assert.Equal((Some "d", Some "sha256:e", Some "r"), (e.InputDigest, e.PlanDigest, e.RehearsalId))
+    | Error m -> failwith m
+
+    let mistyped = (evidenceWith "run1" "src1" None None None).Replace("\"exit_code\":0", "\"exit_code\":0,\"input_digest\":7")
+    Assert.Equal(Error "$.input_digest: expected nonblank string", readEvidence true mistyped |> Result.map ignore)
+
+[<Fact>]
+let ``reuse context reader refuses anything but ordo.verification-reuse-context/1`` () =
+    let ok = """{"schema":"ordo.verification-reuse-context/1","rehearsalId":"rehearsal-005","inputDigests":{"AR-002":"sha256:in1"}}"""
+    Assert.Equal(Ok { RehearsalId = "rehearsal-005"; InputDigests = Map.ofList [ "AR-002", "sha256:in1" ] }, readReuseContext ok)
+    Assert.True(readReuseContext (ok.Replace("context/1", "context/2")) |> Result.isError)
+    Assert.True(readReuseContext (ok.Replace("\"sha256:in1\"", "\"\"")) |> Result.isError)
+    Assert.True(readReuseContext (ok.Replace("\"rehearsal-005\"", "\"\"")) |> Result.isError)
+    Assert.True(readReuseContext """{"schema":"ordo.verification-reuse-context/1","rehearsalId":"r","inputDigests":{"A":"x","A":"y"}}""" |> Result.isError)
+
+[<Fact>]
+let ``existing evidence schedules byte-identically under the plan context and the old context`` () =
+    let _, plan = readOk None
+    let read verified json = match readEvidence verified json with Ok e -> e | Error m -> failwith m
+    let results =
+        [ read true (evidenceJson "AR-001" "PASS" "run1" "src1")
+          read true (evidenceJson "AR-002" "PASS" "run0" "src1")
+          read false (evidenceJson "AR-004" "PASS" "run1" "src1") ]
+    let attached = attachEvidence results plan
+    Assert.Equal(render (run (context (Some "src1") (Some "run1")) attached), render (run (planContext plan (Some "src1") (Some "run1") None) attached))

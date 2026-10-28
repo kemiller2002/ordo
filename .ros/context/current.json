@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-27T18:01:20.365Z",
+  "updatedAt": "2026-10-28T01:11:19.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2477,6 +2477,64 @@
         }
       },
       "completedAt": "2026-10-27T18:01:20.365Z"
+    },
+    {
+      "id": "WI-0047",
+      "type": "feature",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/VerificationPlanWire.fs"
+        },
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/VerificationSchedule.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Tests/VerificationScheduleTests.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Sde.Core.Tests/VerificationCommandTests.fs"
+        },
+        {
+          "type": "decision",
+          "path": "research/decisions/DF-SDE-2026-0026--bind-evidence-freshness-per-policy.md"
+        },
+        {
+          "type": "documentation",
+          "path": "docs/architecture/verification-schedule.md"
+        }
+      ],
+      "updatedAt": "2026-10-28T01:11:19.000Z",
+      "telemetryExecutionIds": [
+        "EXE-20261028T005653390Z-07e5a75a"
+      ],
+      "latestCheckpoint": {
+        "id": "ab6e118f9991fcc74299ae81",
+        "recordedAt": "2026-10-28T01:11:13.000Z",
+        "executionId": "EXE-20261028T005653390Z-07e5a75a",
+        "repository": "ordo",
+        "branch": "claude/eii-g-policy-aware-freshness",
+        "commit": "7177c63440db9f8ff7a3f9dd30180b380775744a",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo.git"
+        },
+        "remoteBranch": "claude/eii-g-policy-aware-freshness",
+        "remoteCommit": "7177c63440db9f8ff7a3f9dd30180b380775744a",
+        "summary": "Policy-aware freshness implemented (DF-SDE-2026-0026), 16 new tests, docs updated; full suite 947 passed/1 skipped",
+        "nextAction": "Complete WI-0047, rebuild registry, validate, push Praxis state",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-10-28T01:11:19.000Z",
+      "conclusion": "Policy-aware freshness bindings implemented per DF-SDE-2026-0026; negative controls pass; R5 replay: 0 reusable / 0 stale under old and new (plan binds no tests; evidence carries no input digest)"
     }
   ]
 }

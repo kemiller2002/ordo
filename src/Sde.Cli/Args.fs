@@ -76,6 +76,9 @@ type VerificationScheduleOptions =
       EvidenceManifest: string option
       SourceSha: string option
       RunId: string option
+      /// `ordo.verification-reuse-context/1`: the only way deterministic
+      /// evidence from another run can be reused (DF-SDE-2026-0026).
+      ReuseContext: string option
       Output: string option }
 
 type Command =
@@ -250,10 +253,10 @@ let private parseEcir (globals: GlobalOptions) (argv: string list) : ParseResult
     | _ -> ParseFailed ecirUsage
 
 let verificationUsage =
-    "Usage: sde verification schedule --plan FILE [--expected-digest HEX] [--evidence-manifest FILE --source-sha SHA --run-id ID] [--output FILE] [--json]"
+    "Usage: sde verification schedule --plan FILE [--expected-digest HEX] [--evidence-manifest FILE --source-sha SHA --run-id ID [--reuse-context FILE]] [--output FILE] [--json]"
 
 let private parseVerification (globals: GlobalOptions) (argv: string list) : ParseResult =
-    let valued = [ "--plan"; "--expected-digest"; "--evidence-manifest"; "--source-sha"; "--run-id"; "--output" ]
+    let valued = [ "--plan"; "--expected-digest"; "--evidence-manifest"; "--source-sha"; "--run-id"; "--reuse-context"; "--output" ]
     let switches = [ "--json"; "--verbose"; "-v"; "--help"; "-h" ]
 
     let rec walk args (values: Map<string, string>) positionals =
@@ -277,6 +280,8 @@ let private parseVerification (globals: GlobalOptions) (argv: string list) : Par
         | None -> ParseFailed("Missing required option: --plan\n" + verificationUsage)
         | Some _ when not evidence.IsEmpty && evidence.Length <> 3 ->
             ParseFailed("--evidence-manifest, --source-sha and --run-id are given together: evidence is judged only against a named subject\n" + verificationUsage)
+        | Some _ when values.ContainsKey "--reuse-context" && evidence.IsEmpty ->
+            ParseFailed("--reuse-context judges evidence: give it with --evidence-manifest, --source-sha and --run-id\n" + verificationUsage)
         | Some plan ->
             Parsed
                 { Command =
@@ -286,6 +291,7 @@ let private parseVerification (globals: GlobalOptions) (argv: string list) : Par
                           EvidenceManifest = values.TryFind "--evidence-manifest"
                           SourceSha = values.TryFind "--source-sha"
                           RunId = values.TryFind "--run-id"
+                          ReuseContext = values.TryFind "--reuse-context"
                           Output = values.TryFind "--output" }
                   Global = globals }
     | _ -> ParseFailed verificationUsage

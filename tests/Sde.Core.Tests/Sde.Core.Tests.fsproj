@@ -18,6 +18,7 @@
     <Compile Include="EcirScaffoldTests.fs" />
     <Compile Include="ToolchainPinTests.fs" />
     <Compile Include="VerifyGateTests.fs" />
+    <Compile Include="VerificationCommandTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

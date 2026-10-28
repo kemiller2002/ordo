@@ -16,7 +16,9 @@
 /// - a dependency on a requirement the plan does not contain is reported,
 ///   never dropped;
 /// - evidence whose bindings differ from the current subject is stale and is
-///   never counted as satisfying an obligation.
+///   never counted as satisfying an obligation; evidence is reused across
+///   runs only through a requirement's explicit `ReuseBindings`, all of
+///   which it must carry and match exactly (DF-SDE-2026-0026).
 module Ordo.Core.VerificationSchedule
 
 open System
@@ -64,7 +66,15 @@ type PlanRequirement =
       Obligations: PlanObligation list
       DependsOn: string list
       /// Binding keys whose current value evidence must match to be fresh.
-      FreshnessBindings: string list }
+      FreshnessBindings: string list
+      /// Content-addressed alternative to `FreshnessBindings` (empty: none).
+      /// Evidence that carries a value for every one of these keys, each
+      /// equal to a current value the caller supplied, is fresh without
+      /// matching the other `FreshnessBindings` keys. A key absent on either
+      /// side makes the evidence not reusable, so it falls back to
+      /// `FreshnessBindings`; a key present on both sides with different
+      /// values makes it stale. See DF-SDE-2026-0026.
+      ReuseBindings: string list }
 
 type VerificationPlan =
     { Schema: string
@@ -74,7 +84,21 @@ type VerificationPlan =
 /// The subject the schedule is computed for: the current value of every
 /// binding key (for example `sourceCommit`). Supplied by the caller, never
 /// read from the environment, so the schedule stays a pure function.
-type ScheduleContext = { Current: Map<string, string> }
+type ScheduleContext =
+    { Current: Map<string, string>
+      /// Current values that hold for one requirement only (for example the
+      /// digest of the declared inputs of the tests that verify it), keyed
+      /// by requirement id. They add to, and override, `Current`.
+      BySubject: Map<string, Map<string, string>> }
+
+/// A context with no requirement-scoped values.
+let currentOnly (current: Map<string, string>) = { Current = current; BySubject = Map.empty }
+
+/// The context one requirement's evidence is judged against.
+let forSubject (context: ScheduleContext) (requirementId: string) =
+    match Map.tryFind requirementId context.BySubject with
+    | None -> context
+    | Some scoped -> { context with Current = Map.fold (fun acc key value -> Map.add key value acc) context.Current scoped }
 
 // ---------------------------------------------------------------------------
 // Output.
@@ -178,13 +202,45 @@ let mismatchedBindings (context: ScheduleContext) (freshness: string list) (evid
         | None -> false
         | Some current -> Map.tryFind key evidence.Bindings <> Some current)
 
-let classifyObligation (context: ScheduleContext) (freshness: string list) (obligation: PlanObligation) : ObligationState =
+/// Content-addressed reuse: every reuse key is carried by the evidence and
+/// has a current value, and they are equal. Strict by construction: a key
+/// missing on either side never grants reuse (unlike `mismatchedBindings`,
+/// which leaves an unsupplied current value unjudged).
+let reusable (context: ScheduleContext) (reuse: string list) (evidence: RecordedEvidence) =
+    not reuse.IsEmpty
+    && reuse
+       |> List.forall (fun key ->
+           match Map.tryFind key context.Current, Map.tryFind key evidence.Bindings with
+           | Some current, Some recorded -> not (String.IsNullOrEmpty current) && String.Equals(current, recorded, StringComparison.Ordinal)
+           | _ -> false)
+
+/// Bindings that make one result stale under a requirement's freshness
+/// policy: none when the evidence is reusable; otherwise every
+/// `freshness` mismatch plus every reuse key the evidence and the subject
+/// both carry with different values (evidence that contradicts its subject
+/// is never fresh, whatever run it came from).
+let staleBindings (context: ScheduleContext) (freshness: string list) (reuse: string list) (evidence: RecordedEvidence) =
+    if reusable context reuse evidence then
+        []
+    else
+        let contradicted =
+            reuse
+            |> List.filter (fun key ->
+                match Map.tryFind key context.Current, Map.tryFind key evidence.Bindings with
+                | Some current, Some recorded -> current <> recorded
+                | _ -> false)
+
+        ordinal (mismatchedBindings context freshness evidence @ contradicted)
+
+/// Classifies an obligation under a freshness policy with a content-addressed
+/// reuse alternative (`reuse`, empty for none).
+let classifyObligationWithReuse (context: ScheduleContext) (freshness: string list) (reuse: string list) (obligation: PlanObligation) : ObligationState =
     match obligation.Test, obligation.Evidence with
     | MissingTest reason, _ -> ObligationState.TestMissing reason
     | Identified _, [] -> ObligationState.NotRun
     | Identified _, results ->
         let judged = results |> List.filter (fun e -> e.Outcome <> EvidenceOutcome.NotRun)
-        let mismatched = judged |> List.collect (mismatchedBindings context freshness) |> ordinal
+        let mismatched = judged |> List.collect (staleBindings context freshness reuse) |> ordinal
         let has outcome = judged |> List.exists (fun e -> e.Outcome = outcome)
 
         if not mismatched.IsEmpty then ObligationState.Stale mismatched
@@ -192,6 +248,10 @@ let classifyObligation (context: ScheduleContext) (freshness: string list) (obli
         elif has EvidenceOutcome.Blocked then ObligationState.BlockedRun
         elif judged.Length < results.Length || judged.IsEmpty then ObligationState.NotRun
         else ObligationState.Satisfied
+
+/// Classifies an obligation under a freshness policy with no reuse path.
+let classifyObligation (context: ScheduleContext) (freshness: string list) (obligation: PlanObligation) : ObligationState =
+    classifyObligationWithReuse context freshness [] obligation
 
 let private workFor (requirement: PlanRequirement) (obligation: PlanObligation) state =
     let item kind detail =
@@ -343,7 +403,7 @@ let schedule (context: ScheduleContext) (plan: VerificationPlan) : Result<Verifi
 
         let states =
             requirements
-            |> List.map (fun r -> r.Id, r.Obligations |> List.map (fun o -> o, classifyObligation context r.FreshnessBindings o))
+            |> List.map (fun r -> r.Id, r.Obligations |> List.map (fun o -> o, classifyObligationWithReuse (forSubject context r.Id) r.FreshnessBindings r.ReuseBindings o))
             |> Map.ofList
 
         let score id =
