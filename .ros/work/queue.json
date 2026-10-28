@@ -1244,10 +1244,10 @@
       "description": "Bump distribution/package.json and the self-hosting .echelon/toolchain.json ordo pin from 1.18.0 to 1.19.0 so native-release.yml releases it.",
       "tags": [],
       "priority": "medium",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-10-28T12:35:46.703Z",
-      "updatedAt": "2026-10-28T12:35:46.887Z",
+      "updatedAt": "2026-10-28T12:35:49.811Z",
       "createdBy": "unknown",
       "createdByActor": {
         "kind": "automation",
