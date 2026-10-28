@@ -100,6 +100,31 @@ in Ordo 1.18.0. The output schema is unchanged
 `rehearsalId`. A plan naming a policy outside the three is now refused,
 where 1.18.0 scheduled it with the per-run binding.
 
+### Per-obligation acceptance contract (plan revision 2)
+
+Revision 2 of `indy-init.verification-plan/1` gives every obligation an
+`acceptanceContract` whose `freshness.policy` is the strictest of the
+requirement policy and the obligation's evidence-category policies
+(Indy-init `docs/VERIFICATION-PLAN-CONTRACT.md`, item 10). Ordo reads it
+(Echelon development speed optimization, Priority Four):
+
+- An obligation whose contract policy permits no reuse (`FP-LIVE-PER-COMMIT`,
+  `FP-REVIEW-PER-COMMIT`, or `FP-DETERMINISTIC-INPUT-DIGEST` not declared
+  `reusable`) is judged on the per-run binding only, even when its
+  requirement allows content-addressed reuse.
+- A contract can only narrow its requirement's reuse, never widen it: a
+  deterministic contract under a live requirement stays per run.
+- An obligation without `acceptanceContract` (revision 1) inherits its
+  requirement, as before.
+- A present contract with no `freshness.policy`, or an unknown policy, refuses
+  the plan with its JSON path
+  (`$.requirements[i].obligations[j].acceptanceContract.freshness.policy: …`).
+
+In the Indy-init v2 plan as committed every obligation's contract policy
+equals its requirement's (177 deterministic, 97 live, 52 review), so the
+schedule of that plan is unchanged; the rule matters as soon as a category
+policy is stricter than its requirement's.
+
 ## Output
 
 - `acceptanceBlockers`: requirements with a mandatory obligation not

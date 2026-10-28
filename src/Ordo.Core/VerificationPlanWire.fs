@@ -159,7 +159,27 @@ let private traverse f items =
     |> List.fold (fun acc next -> Result.bind (fun xs -> Result.map (fun x -> x :: xs) next) acc) (Ok [])
     |> Result.map List.rev
 
-let private readObligation mandatory method' path (value: JsonValue) =
+/// Whether an obligation's own acceptance contract (plan revision 2,
+/// `acceptanceContract.freshness.policy`, the strictest of the requirement
+/// policy and the obligation's evidence-category policies) permits
+/// content-addressed reuse. No `acceptanceContract` (revision 1): inherit the
+/// requirement. A present contract must name a known policy; an unknown or
+/// mistyped one refuses the plan, so it can never grant reuse.
+let private obligationReuseAllowed (reusable: Set<string>) path (value: JsonValue) =
+    match tryMember "acceptanceContract" value with
+    | Ok None -> Ok true
+    | Ok(Some contract) ->
+        let cpath = path + ".acceptanceContract"
+
+        member' cpath "freshness" contract
+        |> Result.bind (text (cpath + ".freshness") "policy")
+        |> Result.bind (fun policy ->
+            bindingsForPolicy (Set.contains policy reusable) policy
+            |> Result.map (fun bindings -> not bindings.Reuse.IsEmpty)
+            |> Result.mapError (sprintf "%s.freshness.policy: %s" cpath))
+    | Error _ -> Error(sprintf "%s: expected object" path)
+
+let private readObligation (reusable: Set<string>) mandatory method' path (value: JsonValue) =
     text path "id" value
     |> Result.bind (fun id ->
         member' path "testIdentity" value
@@ -176,7 +196,10 @@ let private readObligation mandatory method' path (value: JsonValue) =
                     | "bound", [] -> Error(sprintf "%s: status bound with no tests" ipath)
                     | "missing", _ -> Ok(MissingTest "no test identity bound in the verification plan")
                     | other, _ -> Error(sprintf "%s.status: unsupported %s" ipath other))))
-        |> Result.map (fun test -> { Id = id; Mandatory = mandatory; Method = method'; Test = test; Evidence = [] }))
+        |> Result.bind (fun test ->
+            obligationReuseAllowed reusable path value
+            |> Result.map (fun reuseAllowed ->
+                { Id = id; Mandatory = mandatory; Method = method'; Test = test; Evidence = []; ReuseAllowed = reuseAllowed })))
 
 /// Policy ids the plan's optional `freshnessPolicies` declares
 /// `"reusable": true`. An absent array, an entry without `reusable`, or
@@ -226,7 +249,7 @@ let private readRequirement (reusable: Set<string>) (index: int) (value: JsonVal
                             sprintf "gates: %s; rules: %s" (String.concat ", " gates) (String.concat ", " rules))))
                 |> Result.bind (fun method' ->
                     array path "obligations" value
-                    |> Result.bind (traverse (fun i o -> readObligation (priority = "P0" && mandatory) method' (sprintf "%s.obligations[%d]" path i) o)))
+                    |> Result.bind (traverse (fun i o -> readObligation reusable (priority = "P0" && mandatory) method' (sprintf "%s.obligations[%d]" path i) o)))
                 |> Result.bind (fun obligations ->
                     member' path "dependencies" value
                     |> Result.bind (texts (path + ".dependencies") "requirements")
