@@ -252,8 +252,9 @@ let private verificationHelp =
       "dependents, then requirement id. Ranking never removes a requirement;"
       "dependency cycles are reported. Exit 0 scheduled, 1 refused, 2 usage."
       ""
-      "Freshness (DF-SDE-2026-0026): FP-LIVE-PER-COMMIT and FP-REVIEW-PER-COMMIT"
-      "evidence binds to integrity, runId and sourceSha. FP-DETERMINISTIC-INPUT-DIGEST"
+      "Freshness (DF-SDE-2026-0026): FP-LIVE-PER-COMMIT, FP-REVIEW-PER-COMMIT and"
+      "FP-PROCESS-THIS-RUN evidence binds to integrity, runId and sourceSha and is never"
+      "reused. FP-DETERMINISTIC-INPUT-DIGEST"
       "evidence binds to the same, or is reused when the plan declares the policy"
       "reusable and the evidence carries input_digest, plan_digest and rehearsal_id"
       "matching the reuse context and plan. An unknown policy refuses the plan." ]

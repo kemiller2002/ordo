@@ -328,6 +328,7 @@ let private planWith (policies: string list) (reusable: (string * bool) list) =
 let private deterministic = "FP-DETERMINISTIC-INPUT-DIGEST"
 let private live = "FP-LIVE-PER-COMMIT"
 let private review = "FP-REVIEW-PER-COMMIT"
+let private processRun = "FP-PROCESS-THIS-RUN"
 let private declaredReusable = [ live, false; review, false; deterministic, true ]
 
 let private readPlanOk text =
@@ -527,3 +528,14 @@ let ``an unknown or missing acceptance contract freshness policy fails safe: the
     // Revision-1 obligations (no acceptance contract) inherit the requirement policy.
     let _, fixture = readOk None
     Assert.True(fixture.Requirements |> List.forall (fun r -> r.Obligations |> List.forall (fun o -> o.ReuseAllowed)))
+
+[<Fact>]
+let ``process and owner evidence (FP-PROCESS-THIS-RUN) is read, bound to the run and the candidate, and never reused`` () =
+    // Even a plan that declares the policy reusable cannot make it reusable.
+    let plan = readPlanOk (planWith [ deterministic; processRun; deterministic; deterministic ] [ processRun, true; deterministic, true ])
+    Assert.Equal(ObligationState.Stale [ "runId"; "sourceSha" ], judge plan (reuseFor "sha256:in1") true (matching "run0"))
+    Assert.Equal(ObligationState.Stale [ "sourceSha" ], judge plan (reuseFor "sha256:in1") true (evidenceWith "run1" "src0" (Some "sha256:in1") (Some planDigestHex) (Some "rehearsal-005")))
+    Assert.Equal(ObligationState.Satisfied, judge plan (reuseFor "sha256:in1") true (evidenceWith "run1" "src1" None None None))
+    // As an obligation's acceptance contract under a deterministic requirement, it removes reuse.
+    let contract = readPlanOk (withObligationPolicy (deterministicText ()) processRun)
+    Assert.Equal(ObligationState.Stale [ "runId"; "sourceSha" ], judge contract (reuseFor "sha256:in1") true (matching "run0"))
