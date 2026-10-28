@@ -796,5 +796,50 @@
     "title": "Link approved decisions to the blueprint conflicts they settle",
     "type": "decision-record",
     "updated": "2026-10-13"
+  },
+  {
+    "created": "2026-10-28",
+    "id": "DF-SDE-2026-0026",
+    "path": "research/decisions/DF-SDE-2026-0026--bind-evidence-freshness-per-policy.md",
+    "provenance": {
+      "contributions": {
+        "EXE-20261028T005653390Z-07e5a75a": {
+          "actor": {
+            "id": "anthropic/claude-code",
+            "kind": "agent",
+            "model": "unknown",
+            "provider": "anthropic",
+            "runtime": "claude-code"
+          },
+          "at": "2026-10-28T01:08:21.000Z",
+          "operations": [
+            "created"
+          ],
+          "reason": "Record owner-approved policy-aware freshness binding (EII Workstream G)"
+        }
+      }
+    },
+    "related_documents": [
+      "docs/architecture/verification-schedule.md",
+      "src/Ordo.Core/VerificationPlanWire.fs",
+      "src/Ordo.Core/VerificationSchedule.fs",
+      "src/Sde.Cli/Verification.fs",
+      "tests/Ordo.Tests/VerificationScheduleTests.fs",
+      "tests/Sde.Core.Tests/VerificationCommandTests.fs",
+      ".praxis/inbox/documents/2026-10-28-EII-G-policy-aware-freshness.md"
+    ],
+    "status": "accepted",
+    "superseded_by": [],
+    "supersedes": [],
+    "tags": [
+      "verification",
+      "freshness",
+      "evidence-reuse",
+      "incremental-verification",
+      "eii-g"
+    ],
+    "title": "Bind verification evidence freshness per policy, reusing deterministic evidence only by content identity",
+    "type": "decision-record",
+    "updated": "2026-10-28"
   }
 ]

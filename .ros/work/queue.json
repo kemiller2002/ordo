@@ -1223,10 +1223,10 @@
         "eii"
       ],
       "priority": "high",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-10-28T00:56:40.000Z",
-      "updatedAt": "2026-10-28T00:56:51.000Z",
+      "updatedAt": "2026-10-28T01:11:19.000Z",
       "createdBy": "unknown",
       "createdByActor": {
         "kind": "agent",
