@@ -58,7 +58,13 @@ type PlanObligation =
       /// it was never run). Several results combine: any stale result makes
       /// the obligation stale, then any failure, block or missing run wins
       /// over a pass.
-      Evidence: RecordedEvidence list }
+      Evidence: RecordedEvidence list
+      /// False when the obligation's own acceptance contract
+      /// (`acceptanceContract.freshness.policy`) forbids reuse: its evidence
+      /// is then judged on the requirement's `FreshnessBindings` only. True
+      /// inherits the requirement's `ReuseBindings`; an obligation can only
+      /// narrow its requirement's reuse, never widen it.
+      ReuseAllowed: bool }
 
 type PlanRequirement =
     { Id: string
@@ -403,7 +409,12 @@ let schedule (context: ScheduleContext) (plan: VerificationPlan) : Result<Verifi
 
         let states =
             requirements
-            |> List.map (fun r -> r.Id, r.Obligations |> List.map (fun o -> o, classifyObligationWithReuse (forSubject context r.Id) r.FreshnessBindings r.ReuseBindings o))
+            |> List.map (fun r ->
+                r.Id,
+                r.Obligations
+                |> List.map (fun o ->
+                    let reuse = if o.ReuseAllowed then r.ReuseBindings else []
+                    o, classifyObligationWithReuse (forSubject context r.Id) r.FreshnessBindings reuse o))
             |> Map.ofList
 
         let score id =

@@ -23,7 +23,7 @@ let private fresh = Map.ofList [ "sourceCommit", "abc123"; "baselineSha256", "b1
 let private oldCommit = Map.ofList [ "sourceCommit", "old999"; "baselineSha256", "b1" ]
 
 let private obligation id mandatory test evidence =
-    { Id = id; Mandatory = mandatory; Method = "test"; Test = test; Evidence = evidence }
+    { Id = id; Mandatory = mandatory; Method = "test"; Test = test; Evidence = evidence; ReuseAllowed = true }
 
 let private requirement id dependsOn obligations =
     { Id = id; Priority = "P0"; Obligations = obligations; DependsOn = dependsOn; FreshnessBindings = [ "sourceCommit"; "baselineSha256" ]; ReuseBindings = [] }
@@ -472,3 +472,58 @@ let ``existing evidence schedules byte-identically under the plan context and th
           read false (evidenceJson "AR-004" "PASS" "run1" "src1") ]
     let attached = attachEvidence results plan
     Assert.Equal(render (run (context (Some "src1") (Some "run1")) attached), render (run (planContext plan (Some "src1") (Some "run1") None) attached))
+
+// ---------------------------------------------------------------------------
+// Per-obligation acceptance contract freshness (plan revision 2,
+// `acceptanceContract.freshness.policy`; Echelon development speed
+// optimization, Priority Four): negative controls.
+// ---------------------------------------------------------------------------
+
+/// The all-deterministic plan with an acceptance contract on AR-002's bound
+/// obligation (VPO-0000000000000003) naming `policy`.
+let private withObligationPolicy (planJson: string) (policy: string) =
+    let marker = "\"id\": \"VPO-0000000000000003\","
+    Assert.Contains(marker, planJson)
+    planJson.Replace(marker, marker + sprintf " \"acceptanceContract\": { \"freshness\": { \"policy\": \"%s\" } }," policy)
+
+let private deterministicText () = planWith [ deterministic; deterministic; deterministic; deterministic ] declaredReusable
+
+[<Fact>]
+let ``an obligation whose acceptance contract is live or review is never reused under a deterministic requirement`` () =
+    // Control: the requirement policy alone allows content-addressed reuse.
+    Assert.Equal(ObligationState.Satisfied, judge (allDeterministic ()) (reuseFor "sha256:in1") true (matching "run0"))
+    for policy in [ live; review ] do
+        let plan = readPlanOk (withObligationPolicy (deterministicText ()) policy)
+        Assert.Equal(ObligationState.Stale [ "runId"; "sourceSha" ], judge plan (reuseFor "sha256:in1") true (matching "run0"))
+        // Evidence from the candidate run itself is still fresh.
+        Assert.Equal(ObligationState.Satisfied, judge plan (reuseFor "sha256:in1") true (evidenceWith "run1" "src1" None None None))
+
+[<Fact>]
+let ``a deterministic acceptance contract keeps the requirement's reuse and can never widen it`` () =
+    let same = readPlanOk (withObligationPolicy (deterministicText ()) deterministic)
+    Assert.Equal(ObligationState.Satisfied, judge same (reuseFor "sha256:in1") true (matching "run0"))
+    // Requirement live, obligation contract deterministic: still per run.
+    let liveRequirement = planWith [ deterministic; live; deterministic; deterministic ] declaredReusable
+    let plan = readPlanOk (withObligationPolicy liveRequirement deterministic)
+    Assert.Equal(ObligationState.Stale [ "runId"; "sourceSha" ], judge plan (reuseFor "sha256:in1") true (matching "run0"))
+    // A deterministic contract the plan does not declare reusable is not reused either.
+    let undeclared = planWith [ deterministic; deterministic; deterministic; deterministic ] [ deterministic, false ]
+    let undeclaredPlan = readPlanOk (withObligationPolicy undeclared deterministic)
+    Assert.Equal(ObligationState.Stale [ "runId"; "sourceSha" ], judge undeclaredPlan (reuseFor "sha256:in1") true (matching "run0"))
+
+[<Fact>]
+let ``an unknown or missing acceptance contract freshness policy fails safe: the plan is refused`` () =
+    match readPlan None (withObligationPolicy (deterministicText ()) "FP-SOMETHING-NEW") with
+    | Ok _ -> failwith "an unknown obligation freshness policy must be refused"
+    | Error message ->
+        Assert.Equal("$.requirements[1].obligations[0].acceptanceContract.freshness.policy: unsupported freshness policy FP-SOMETHING-NEW", message)
+
+    let marker = "\"id\": \"VPO-0000000000000003\","
+    let noFreshness = (deterministicText ()).Replace(marker, marker + " \"acceptanceContract\": { \"verificationStatus\": \"unverified\" },")
+    match readPlan None noFreshness with
+    | Ok _ -> failwith "an acceptance contract without freshness must be refused"
+    | Error message -> Assert.Equal("$.requirements[1].obligations[0].acceptanceContract: missing member freshness", message)
+
+    // Revision-1 obligations (no acceptance contract) inherit the requirement policy.
+    let _, fixture = readOk None
+    Assert.True(fixture.Requirements |> List.forall (fun r -> r.Obligations |> List.forall (fun o -> o.ReuseAllowed)))
