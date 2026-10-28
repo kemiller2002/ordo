@@ -60,12 +60,21 @@ let schedule (asJson: bool) (options: Args.VerificationScheduleOptions) : int * 
         | None -> Ok []
         | Some manifest -> readManifest (Environment.CurrentDirectory) manifest
 
+    let reuse =
+        match options.ReuseContext with
+        | None -> Ok None
+        | Some path ->
+            readFile "reuse context" path
+            |> Result.bind (text >> readReuseContext >> Result.mapError (sprintf "reuse context: %s"))
+            |> Result.map Some
+
     let outcome =
         readFile "verification plan" options.Plan
         |> Result.bind (text >> readPlan options.ExpectedDigest)
         |> Result.bind (fun (header, plan) -> evidence |> Result.map (fun results -> header, attachEvidence results plan))
-        |> Result.bind (fun (header, plan) ->
-            match Ordo.Core.VerificationSchedule.schedule (context options.SourceSha options.RunId) plan with
+        |> Result.bind (fun (header, plan) -> reuse |> Result.map (fun reuse -> header, plan, planContext plan options.SourceSha options.RunId reuse))
+        |> Result.bind (fun (header, plan, scheduleContext) ->
+            match Ordo.Core.VerificationSchedule.schedule scheduleContext plan with
             | Ok result -> Ok(header, result)
             | Error errors -> Error(errors |> List.map (sprintf "%A") |> String.concat "; "))
 

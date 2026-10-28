@@ -38,18 +38,67 @@ Each obligation is classified:
 | `failing` | fresh evidence records FAIL | `fixImplementation` (implementation) |
 | `notRun` | test bound, no current result | `runVerification` |
 | `blocked` | fresh evidence records BLOCKED | `unblockVerification` |
-| `stale` | evidence bound to a different run, source commit, or with bytes not matching the pinned evidence manifest | `refreshEvidence` |
+| `stale` | evidence bound to a different run or source commit and not reusable under its policy; evidence contradicting its subject (input digest, plan, rehearsal); or bytes not matching the pinned evidence manifest | `refreshEvidence` |
 | `satisfied` | fresh PASS | none |
 
 Several results for one requirement combine: any stale result makes the
 obligation stale, then failure, block or missing run wins over a pass. Stale
 evidence never satisfies an obligation.
 
-Every policy in `indy-init.verification-plan/1` binds evidence to the run and
-the candidate source commit, so the binding keys are `runId`, `sourceSha` and
-`integrity`. A key the caller supplies no current value for is not judged;
-the CLI therefore requires `--source-sha` and `--run-id` together with
-`--evidence-manifest`.
+A key of the per-run binding the caller supplies no current value for is not
+judged; the CLI therefore requires `--source-sha` and `--run-id` together
+with `--evidence-manifest`.
+
+### Freshness bindings per policy (DF-SDE-2026-0026)
+
+Bindings are chosen per `freshness.policy`
+([DF-SDE-2026-0026](../../research/decisions/DF-SDE-2026-0026--bind-evidence-freshness-per-policy.md)).
+Through Ordo 1.18.0 every policy used the per-run binding.
+
+| Policy | Per-run binding (always) | Content-addressed reuse binding |
+|---|---|---|
+| `FP-LIVE-PER-COMMIT` | `integrity`, `runId`, `sourceSha` | none: never reused |
+| `FP-REVIEW-PER-COMMIT` | `integrity`, `runId`, `sourceSha` | none: never reused |
+| `FP-DETERMINISTIC-INPUT-DIGEST` | `integrity`, `runId`, `sourceSha` | `integrity`, `inputDigest`, `planDigest`, `rehearsalId`, only when the plan's `freshnessPolicies[]` declares the policy `"reusable": true` |
+| any other id | the plan is refused: `$.requirements[i].freshness.policy: unsupported freshness policy …` | n/a |
+
+A result is fresh when it matches the per-run binding, or when it is
+reusable: it carries a value for every reuse key, each equal to a current
+value. Reuse is strict where the per-run binding is lenient. A reuse key
+absent from the evidence, or without a current value, never grants reuse;
+the evidence then falls back to the per-run binding. A reuse key that the
+evidence and the subject both carry with different values makes the result
+stale even within its own run, because it contradicts its subject.
+
+Where the values come from:
+
+- `integrity`, `runId`, `sourceSha`: as before (pinned manifest digest,
+  `run_id`, `source_sha`; current values from `--run-id`, `--source-sha`).
+- `planDigest`: evidence `plan_digest` (optional, with or without `sha256:`);
+  the current value is the plan's own `planIdentity.digest`.
+- `inputDigest`: evidence `input_digest` (optional); the current value per
+  requirement comes from `--reuse-context`.
+- `rehearsalId`: evidence `rehearsal_id` (optional); the current value comes
+  from `--reuse-context`.
+
+`--reuse-context FILE` (`ordo.verification-reuse-context/1`) is the only way
+to grant reuse:
+
+```json
+{ "schema": "ordo.verification-reuse-context/1",
+  "rehearsalId": "rehearsal-005",
+  "inputDigests": { "VER-008": "sha256:…" } }
+```
+
+**Compatibility.** `causa.acceptance-evidence/1` results written in
+Rehearsal 5 carry none of `input_digest`, `plan_digest` or `rehearsal_id`,
+so they are never reused and schedule exactly as before. Without
+`--reuse-context`, a plan with known policies schedules to the same bytes as
+in Ordo 1.18.0. The output schema is unchanged
+(`ordo.verification-schedule/1`). The one additive change is that
+`mismatchedBindings` may now also name `inputDigest`, `planDigest` or
+`rehearsalId`. A plan naming a policy outside the three is now refused,
+where 1.18.0 scheduled it with the per-run binding.
 
 ## Output
 
@@ -96,9 +145,11 @@ cycles and unknown dependencies).
 
 ```bash
 sde verification schedule --plan verification-plans/VP-….verification-plan.json \
-    --expected-digest <hex> [--evidence-manifest FILE --source-sha SHA --run-id ID] \
-    [--output schedule.json] [--json]
+    --expected-digest <hex> [--evidence-manifest FILE --source-sha SHA --run-id ID \
+    [--reuse-context FILE]] [--output schedule.json] [--json]
 ```
 
-Exit 0 scheduled, 1 refused (unreadable plan, digest mismatch, duplicate
-ids), 2 usage. Tests: `tests/Ordo.Tests/VerificationScheduleTests.fs`.
+Exit 0 scheduled; 1 refused (unreadable plan, digest mismatch, duplicate ids,
+unknown freshness policy, unreadable reuse context); 2 usage. Tests:
+`tests/Ordo.Tests/VerificationScheduleTests.fs` (including the freshness
+negative controls) and `tests/Sde.Core.Tests/VerificationCommandTests.fs`.

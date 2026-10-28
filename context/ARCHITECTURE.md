@@ -124,7 +124,11 @@ belongs to whichever ROS work item executes the validation.
   the caller-supplied subject: same inputs, same bytes. It keeps every plan
   requirement (the priority heuristic orders, never excludes), reports
   dependency cycles and dependencies outside the plan instead of dropping
-  them, and never counts stale evidence as satisfying an obligation. Plan
+  them, and never counts stale evidence as satisfying an obligation.
+  Freshness is bound per policy (`DF-SDE-2026-0026`): only
+  FP-DETERMINISTIC-INPUT-DIGEST evidence may be reused across runs, and only
+  when its input digest, plan digest and rehearsal id all match supplied
+  current values; an unknown policy refuses the plan. Plan
   admission (identity, digest, provenance) stays with Praxis. Asserted in
   `tests/Ordo.Tests/VerificationScheduleTests.fs`.
 - Executable Ordo must not depend on ROS, and `Ordo.Core` must not depend on

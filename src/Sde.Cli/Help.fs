@@ -242,11 +242,21 @@ let private verificationHelp =
       "                            bytes are checked against its sha256"
       "  --source-sha SHA          candidate source commit evidence must be bound to"
       "  --run-id ID               run evidence must belong to"
+      "  --reuse-context FILE      ordo.verification-reuse-context/1 (rehearsalId and"
+      "                            per-requirement inputDigests): lets deterministic"
+      "                            evidence of another run count when its input"
+      "                            digest, plan digest and rehearsal id all match"
       "  --output FILE             also write the schedule to FILE"
       ""
       "Ranking: most mandatory (P0) acceptance unblocked first, then most transitive"
       "dependents, then requirement id. Ranking never removes a requirement;"
-      "dependency cycles are reported. Exit 0 scheduled, 1 refused, 2 usage." ]
+      "dependency cycles are reported. Exit 0 scheduled, 1 refused, 2 usage."
+      ""
+      "Freshness (DF-SDE-2026-0026): FP-LIVE-PER-COMMIT and FP-REVIEW-PER-COMMIT"
+      "evidence binds to integrity, runId and sourceSha. FP-DETERMINISTIC-INPUT-DIGEST"
+      "evidence binds to the same, or is reused when the plan declares the policy"
+      "reusable and the evidence carries input_digest, plan_digest and rehearsal_id"
+      "matching the reuse context and plan. An unknown policy refuses the plan." ]
 
 let forCommand (name: string) (version: string) =
     match name with

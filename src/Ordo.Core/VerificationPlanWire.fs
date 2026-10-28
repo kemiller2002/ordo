@@ -21,14 +21,60 @@ let PlanSchema = "indy-init.verification-plan/1"
 [<Literal>]
 let EvidenceSchema = "causa.acceptance-evidence/1"
 
-/// Binding keys every policy in `indy-init.verification-plan/1` requires
-/// evidence to match. All three policies (FP-LIVE-PER-COMMIT,
-/// FP-REVIEW-PER-COMMIT, FP-DETERMINISTIC-INPUT-DIGEST) bind evidence to the
-/// candidate source commit and to the run ("never reused from an earlier
-/// rehearsal"); the plan's `boundTo` entries are prose and are carried, not
-/// interpreted. `integrity` is the evidence bytes matching the pinned
-/// evidence manifest.
-let bindingsForPolicy (_policy: string) = [ "integrity"; "runId"; "sourceSha" ]
+/// The freshness policies of `indy-init.verification-plan/1`. Any other
+/// policy id is refused when the plan is read (DF-SDE-2026-0026): the plan
+/// reader already refuses unsupported enumeration values with their JSON
+/// path, and a refusal can never grant reuse. The plan's `boundTo` entries
+/// are prose and are carried, not interpreted.
+[<RequireQualifiedAccess>]
+type FreshnessPolicy =
+    /// Live provider or deployed-site run of the exact candidate commit.
+    | LivePerCommit
+    /// Independent review naming the reviewed commit.
+    | ReviewPerCommit
+    /// Deterministic test whose result depends only on its declared inputs.
+    | DeterministicInputDigest
+
+let parsePolicy (policy: string) =
+    match policy with
+    | "FP-LIVE-PER-COMMIT" -> Some FreshnessPolicy.LivePerCommit
+    | "FP-REVIEW-PER-COMMIT" -> Some FreshnessPolicy.ReviewPerCommit
+    | "FP-DETERMINISTIC-INPUT-DIGEST" -> Some FreshnessPolicy.DeterministicInputDigest
+    | _ -> None
+
+/// Per-run binding: the evidence bytes match the pinned manifest
+/// (`integrity`) and the evidence belongs to the run and the candidate
+/// commit being judged. Every policy has it.
+let PerRunBindings = [ "integrity"; "runId"; "sourceSha" ]
+
+/// Content-addressed reuse binding of FP-DETERMINISTIC-INPUT-DIGEST:
+/// integrity, the digest of the declared inputs of the requirement's tests,
+/// and the plan and rehearsal identity, so evidence is never reused from
+/// another plan or an earlier rehearsal. Not `runId`, and not `sourceSha`:
+/// the input digest covers the tested source paths.
+let ContentBindings = [ "integrity"; "inputDigest"; "planDigest"; "rehearsalId" ]
+
+/// The binding keys a requirement's evidence is judged on: `Bindings` always,
+/// `Reuse` as the content-addressed alternative (empty: never reused).
+type PolicyBindings = { Bindings: string list; Reuse: string list }
+
+/// Bindings for a known policy. `reuseDeclared` is the plan's own
+/// `freshnessPolicies[].reusable` for that policy: a deterministic policy the
+/// plan does not declare reusable keeps the per-run binding only. Live and
+/// review evidence are never reused, whatever the plan declares.
+let bindingsFor (reuseDeclared: bool) (policy: FreshnessPolicy) =
+    match policy with
+    | FreshnessPolicy.LivePerCommit
+    | FreshnessPolicy.ReviewPerCommit -> { Bindings = PerRunBindings; Reuse = [] }
+    | FreshnessPolicy.DeterministicInputDigest ->
+        { Bindings = PerRunBindings
+          Reuse = (if reuseDeclared then ContentBindings else []) }
+
+/// Bindings for a policy id as the plan names it; an unknown id is refused.
+let bindingsForPolicy (reuseDeclared: bool) (policy: string) : Result<PolicyBindings, string> =
+    match parsePolicy policy with
+    | Some known -> Ok(bindingsFor reuseDeclared known)
+    | None -> Error(sprintf "unsupported freshness policy %s" policy)
 
 type PlanHeader =
     { PlanId: string
@@ -39,13 +85,33 @@ type PlanHeader =
 
 /// One `causa.acceptance-evidence/1` result as the caller read it, with
 /// whether its bytes matched the pinned evidence manifest entry.
+/// `InputDigest`, `PlanDigest` and `RehearsalId` are the optional members
+/// `input_digest`, `plan_digest` and `rehearsal_id`; evidence without all
+/// three is never reused across runs (DF-SDE-2026-0026).
 type EvidenceResult =
     { SubjectType: string
       SubjectId: string
       Status: string
       RunId: string
       SourceSha: string
-      IntegrityVerified: bool }
+      IntegrityVerified: bool
+      InputDigest: string option
+      PlanDigest: string option
+      RehearsalId: string option }
+
+/// Current values that only a caller can supply for content-addressed reuse:
+/// the rehearsal being judged and, per requirement id, the digest of the
+/// declared inputs of the tests that verify it (`ordo.verification-reuse-context/1`).
+type ReuseContext =
+    { RehearsalId: string
+      InputDigests: Map<string, string> }
+
+[<Literal>]
+let ReuseContextSchema = "ordo.verification-reuse-context/1"
+
+/// Plan digests compare in their `sha256:`-prefixed form.
+let normalizePlanDigest (digest: string) =
+    if digest.StartsWith("sha256:", StringComparison.Ordinal) then digest else "sha256:" + digest
 
 let private member' path name value =
     match value with
@@ -67,6 +133,14 @@ let private array path name value =
     |> Result.bind (function
         | JArray items -> Ok items
         | _ -> Error(sprintf "%s.%s: expected array" path name))
+
+/// An optional member: absent is `None`; present must be a nonblank string.
+let private optionalText path name value =
+    match tryMember name value with
+    | Ok None -> Ok None
+    | Ok(Some(JString s)) when not (String.IsNullOrWhiteSpace s) -> Ok(Some s)
+    | Ok(Some _) -> Error(sprintf "%s.%s: expected nonblank string" path name)
+    | Error _ -> Error(sprintf "%s: expected object" path)
 
 let private texts path name value =
     array path name value
@@ -104,7 +178,28 @@ let private readObligation mandatory method' path (value: JsonValue) =
                     | other, _ -> Error(sprintf "%s.status: unsupported %s" ipath other))))
         |> Result.map (fun test -> { Id = id; Mandatory = mandatory; Method = method'; Test = test; Evidence = [] }))
 
-let private readRequirement (index: int) (value: JsonValue) =
+/// Policy ids the plan's optional `freshnessPolicies` declares
+/// `"reusable": true`. An absent array, an entry without `reusable`, or
+/// `reusable: false` declares nothing reusable; a mistyped array or entry is
+/// refused with its path.
+let private declaredReusable (root: JsonValue) : Result<Set<string>, string> =
+    match tryMember "freshnessPolicies" root with
+    | Ok None -> Ok Set.empty
+    | Ok(Some(JArray entries)) ->
+        entries
+        |> traverse (fun i entry ->
+            let path = sprintf "$.freshnessPolicies[%d]" i
+
+            text path "id" entry
+            |> Result.bind (fun id ->
+                match tryMember "reusable" entry with
+                | Ok None -> Ok(id, false)
+                | Ok(Some(JBool flag)) -> Ok(id, flag)
+                | _ -> Error(sprintf "%s.reusable: expected boolean" path)))
+        |> Result.map (List.filter snd >> List.map fst >> Set.ofList)
+    | _ -> Error "$.freshnessPolicies: expected array"
+
+let private readRequirement (reusable: Set<string>) (index: int) (value: JsonValue) =
     let path = sprintf "$.requirements[%d]" index
 
     text path "requirement" value
@@ -138,12 +233,16 @@ let private readRequirement (index: int) (value: JsonValue) =
                     |> Result.bind (fun dependsOn ->
                         member' path "freshness" value
                         |> Result.bind (text (path + ".freshness") "policy")
+                        |> Result.bind (fun policy ->
+                            bindingsForPolicy (Set.contains policy reusable) policy
+                            |> Result.mapError (sprintf "%s.freshness.policy: %s" path))
                         |> Result.map (fun policy ->
                             { Id = id
                               Priority = (if mandatory then priority else priority + " (excluded)")
                               Obligations = obligations
                               DependsOn = dependsOn
-                              FreshnessBindings = bindingsForPolicy policy }))))))
+                              FreshnessBindings = policy.Bindings
+                              ReuseBindings = policy.Reuse }))))))
 
 /// Reads an admitted plan. With `expectedDigest`, refuses a plan whose
 /// declared `planIdentity.digest` differs (a stale pinned reference).
@@ -179,8 +278,8 @@ let readPlan (expectedDigest: string option) (json: string) : Result<PlanHeader 
                                   SourceCommit = commit
                                   BaselineSha256 = baseline })))))
             |> Result.bind (fun header ->
-                array "$" "requirements" root
-                |> Result.bind (traverse readRequirement)
+                declaredReusable root
+                |> Result.bind (fun reusable -> array "$" "requirements" root |> Result.bind (traverse (readRequirement reusable)))
                 |> Result.map (fun requirements ->
                     header, { Schema = schema; PlanDigest = "sha256:" + header.Digest; Requirements = requirements })))
 
@@ -195,18 +294,52 @@ let readEvidence (integrityVerified: bool) (json: string) : Result<EvidenceResul
             else
                 match text "$" "subject_type" root, text "$" "subject_id" root, text "$" "status" root, text "$" "run_id" root, text "$" "source_sha" root with
                 | Ok subjectType, Ok subjectId, Ok status, Ok runId, Ok sourceSha ->
-                    Ok
-                        { SubjectType = subjectType
-                          SubjectId = subjectId
-                          Status = status
-                          RunId = runId
-                          SourceSha = sourceSha
-                          IntegrityVerified = integrityVerified }
+                    optionalText "$" "input_digest" root
+                    |> Result.bind (fun inputDigest ->
+                        optionalText "$" "plan_digest" root
+                        |> Result.bind (fun planDigest ->
+                            optionalText "$" "rehearsal_id" root
+                            |> Result.map (fun rehearsalId ->
+                                { SubjectType = subjectType
+                                  SubjectId = subjectId
+                                  Status = status
+                                  RunId = runId
+                                  SourceSha = sourceSha
+                                  IntegrityVerified = integrityVerified
+                                  InputDigest = inputDigest
+                                  PlanDigest = planDigest |> Option.map normalizePlanDigest
+                                  RehearsalId = rehearsalId })))
                 | Error e, _, _, _, _
                 | _, Error e, _, _, _
                 | _, _, Error e, _, _
                 | _, _, _, Error e, _
                 | _, _, _, _, Error e -> Error e)
+
+/// Reads an `ordo.verification-reuse-context/1` document:
+/// `{ "schema", "rehearsalId", "inputDigests": { requirementId: digest } }`.
+let readReuseContext (json: string) : Result<ReuseContext, string> =
+    match parse json with
+    | Error error -> Error(sprintf "reuse context is not JSON: %A" error)
+    | Ok root ->
+        text "$" "schema" root
+        |> Result.bind (fun schema ->
+            if schema <> ReuseContextSchema then Error(sprintf "$.schema: expected %s, found %s" ReuseContextSchema schema)
+            else text "$" "rehearsalId" root)
+        |> Result.bind (fun rehearsalId ->
+            member' "$" "inputDigests" root
+            |> Result.bind (function
+                | JObject members ->
+                    members
+                    |> traverse (fun _ (requirement, value) ->
+                        match value with
+                        | JString digest when not (String.IsNullOrWhiteSpace digest) -> Ok(requirement, digest)
+                        | _ -> Error(sprintf "$.inputDigests.%s: expected nonblank string" requirement))
+                    |> Result.bind (fun pairs ->
+                        match pairs |> List.countBy fst |> List.tryFind (fun (_, n) -> n > 1) with
+                        | Some(duplicate, _) -> Error(sprintf "$.inputDigests: duplicate member %s" duplicate)
+                        | None -> Ok(Map.ofList pairs))
+                | _ -> Error "$.inputDigests: expected object")
+            |> Result.map (fun digests -> { RehearsalId = rehearsalId; InputDigests = digests }))
 
 let private outcomeOf status =
     match status with
@@ -229,9 +362,19 @@ let attachEvidence (results: EvidenceResult list) (plan: VerificationPlan) : Ver
         { Outcome = outcomeOf r.Status
           Bindings =
             Map.ofList
-                [ "integrity", (if r.IntegrityVerified then "verified" else "mismatch")
-                  "runId", r.RunId
-                  "sourceSha", r.SourceSha ] }
+                [ yield "integrity", (if r.IntegrityVerified then "verified" else "mismatch")
+                  yield "runId", r.RunId
+                  yield "sourceSha", r.SourceSha
+                  // Content identity, only when the evidence carries it.
+                  match r.InputDigest with
+                  | Some digest -> yield "inputDigest", digest
+                  | None -> ()
+                  match r.PlanDigest with
+                  | Some digest -> yield "planDigest", digest
+                  | None -> ()
+                  match r.RehearsalId with
+                  | Some rehearsal -> yield "rehearsalId", rehearsal
+                  | None -> () ] }
 
     { plan with
         Requirements =
@@ -243,15 +386,30 @@ let attachEvidence (results: EvidenceResult list) (plan: VerificationPlan) : Ver
                     let evidence = found |> List.map recorded
                     { requirement with Obligations = requirement.Obligations |> List.map (fun o -> { o with Evidence = o.Evidence @ evidence }) }) }
 
+let private runValues (sourceSha: string option) (runId: string option) =
+    Map.ofList
+        [ yield "integrity", "verified"
+          match sourceSha with
+          | Some sha -> yield "sourceSha", sha
+          | None -> ()
+          match runId with
+          | Some run -> yield "runId", run
+          | None -> () ]
+
 /// The subject the schedule is computed for. A value left `None` is not
-/// judged; callers that supply evidence should supply both.
-let context (sourceSha: string option) (runId: string option) =
-    { Current =
-        Map.ofList
-            [ yield "integrity", "verified"
-              match sourceSha with
-              | Some sha -> yield "sourceSha", sha
-              | None -> ()
-              match runId with
-              | Some run -> yield "runId", run
-              | None -> () ] }
+/// judged; callers that supply evidence should supply both. Grants no reuse.
+let context (sourceSha: string option) (runId: string option) = currentOnly (runValues sourceSha runId)
+
+/// The subject the schedule is computed for, for one plan: `context` plus
+/// the plan's own digest (`planDigest`, always known) and, with a reuse
+/// context, the rehearsal id and each requirement's current input digest.
+/// Without a reuse context no evidence can be reused, because the
+/// `rehearsalId` and `inputDigest` reuse keys have no current value.
+let planContext (plan: VerificationPlan) (sourceSha: string option) (runId: string option) (reuse: ReuseContext option) =
+    let current = runValues sourceSha runId |> Map.add "planDigest" (normalizePlanDigest plan.PlanDigest)
+
+    match reuse with
+    | None -> currentOnly current
+    | Some reuse ->
+        { Current = current |> Map.add "rehearsalId" reuse.RehearsalId
+          BySubject = reuse.InputDigests |> Map.map (fun _ digest -> Map.ofList [ "inputDigest", digest ]) }

@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "repository": "state-directed-engineering",
-  "nextSeq": 47,
+  "nextSeq": 48,
   "items": [
     {
       "id": "WI-0001",
@@ -1212,6 +1212,31 @@
       },
       "source": "manual",
       "sourceReference": null
+    },
+    {
+      "id": "WI-0047",
+      "title": "EII-G: policy-aware freshness bindings for the verification schedule",
+      "description": "Workstream G (Incremental verification), Ordo half. Source: .praxis/inbox/documents/2026-10-28-EII-G-policy-aware-freshness.md. Owner approval 2026-10-28.",
+      "tags": [
+        "verification",
+        "freshness",
+        "eii"
+      ],
+      "priority": "high",
+      "status": "ready",
+      "attachments": [],
+      "createdAt": "2026-10-28T00:56:40.000Z",
+      "updatedAt": "2026-10-28T00:56:51.000Z",
+      "createdBy": "unknown",
+      "createdByActor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
+      },
+      "source": "inbox",
+      "sourceReference": ".praxis/inbox/documents/2026-10-28-EII-G-policy-aware-freshness.md"
     }
   ]
 }
