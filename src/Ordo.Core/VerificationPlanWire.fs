@@ -34,12 +34,16 @@ type FreshnessPolicy =
     | ReviewPerCommit
     /// Deterministic test whose result depends only on its declared inputs.
     | DeterministicInputDigest
+    /// Process or owner record written to the run's own Praxis event log for
+    /// the exact candidate commit (Indy-init plan revision 2). Never reused.
+    | ProcessThisRun
 
 let parsePolicy (policy: string) =
     match policy with
     | "FP-LIVE-PER-COMMIT" -> Some FreshnessPolicy.LivePerCommit
     | "FP-REVIEW-PER-COMMIT" -> Some FreshnessPolicy.ReviewPerCommit
     | "FP-DETERMINISTIC-INPUT-DIGEST" -> Some FreshnessPolicy.DeterministicInputDigest
+    | "FP-PROCESS-THIS-RUN" -> Some FreshnessPolicy.ProcessThisRun
     | _ -> None
 
 /// Per-run binding: the evidence bytes match the pinned manifest
@@ -65,7 +69,8 @@ type PolicyBindings = { Bindings: string list; Reuse: string list }
 let bindingsFor (reuseDeclared: bool) (policy: FreshnessPolicy) =
     match policy with
     | FreshnessPolicy.LivePerCommit
-    | FreshnessPolicy.ReviewPerCommit -> { Bindings = PerRunBindings; Reuse = [] }
+    | FreshnessPolicy.ReviewPerCommit
+    | FreshnessPolicy.ProcessThisRun -> { Bindings = PerRunBindings; Reuse = [] }
     | FreshnessPolicy.DeterministicInputDigest ->
         { Bindings = PerRunBindings
           Reuse = (if reuseDeclared then ContentBindings else []) }

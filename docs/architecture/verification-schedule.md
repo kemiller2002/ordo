@@ -59,6 +59,7 @@ Through Ordo 1.18.0 every policy used the per-run binding.
 |---|---|---|
 | `FP-LIVE-PER-COMMIT` | `integrity`, `runId`, `sourceSha` | none: never reused |
 | `FP-REVIEW-PER-COMMIT` | `integrity`, `runId`, `sourceSha` | none: never reused |
+| `FP-PROCESS-THIS-RUN` | `integrity`, `runId`, `sourceSha` | none: never reused, even when the plan declares it reusable (process and owner records of Indy-init plan revision 2) |
 | `FP-DETERMINISTIC-INPUT-DIGEST` | `integrity`, `runId`, `sourceSha` | `integrity`, `inputDigest`, `planDigest`, `rehearsalId`, only when the plan's `freshnessPolicies[]` declares the policy `"reusable": true` |
 | any other id | the plan is refused: `$.requirements[i].freshness.policy: unsupported freshness policy …` | n/a |
 
