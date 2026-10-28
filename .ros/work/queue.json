@@ -1237,6 +1237,27 @@
       },
       "source": "inbox",
       "sourceReference": ".praxis/inbox/documents/2026-10-28-EII-G-policy-aware-freshness.md"
+    },
+    {
+      "id": "RELEASE-1-19-0",
+      "title": "Release Ordo 1.19.0",
+      "description": "Bump distribution/package.json and the self-hosting .echelon/toolchain.json ordo pin from 1.18.0 to 1.19.0 so native-release.yml releases it.",
+      "tags": [],
+      "priority": "medium",
+      "status": "ready",
+      "attachments": [],
+      "createdAt": "2026-10-28T12:35:46.703Z",
+      "updatedAt": "2026-10-28T12:35:46.887Z",
+      "createdBy": "unknown",
+      "createdByActor": {
+        "kind": "automation",
+        "id": "github/github-actions",
+        "provider": "github",
+        "model": "unknown",
+        "runtime": "github-actions"
+      },
+      "source": "manual",
+      "sourceReference": null
     }
   ]
 }
