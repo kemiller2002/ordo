@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-11-02T13:49:22.281Z",
+  "updatedAt": "2026-11-02T13:56:00.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2624,6 +2624,28 @@
         }
       },
       "completedAt": "2026-11-02T13:49:22.281Z"
+    },
+    {
+      "id": "WI-0049",
+      "type": "task",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "docs/architecture/ordo-decision-events.md"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Sde.Core.Tests/DecisionEventCommandTests.fs"
+        }
+      ],
+      "updatedAt": "2026-11-02T13:56:00.000Z",
+      "telemetryExecutionIds": [
+        "EXE-20261102T135538316Z-8e39fe67"
+      ],
+      "completedAt": "2026-11-02T13:56:00.000Z",
+      "conclusion": "Documentation-only status change. The documented behaviour's tests ran green in the Ordo 1.20.0 release workflow (run 41455666284), which produced tag v1.20.0; no code changed here."
     }
   ]
 }

@@ -1,6 +1,6 @@
 # Ordo decision events (ORDO-OBS-001)
 
-Status: implemented, unreleased. Work item WI-0048.
+Status: released in Ordo 1.20.0 (tag `v1.20.0`). Work item WI-0048.
 Code: `src/Ordo.Core/DecisionEvents.fs` (pure), `src/Sde.Cli/DecisionLog.fs`
 (append-only writer), `src/Sde.Cli/Events.fs` (`sde events`).
 Tests: `tests/Ordo.Construction.Tests/DecisionEventsTests.fs`,
