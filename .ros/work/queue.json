@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "repository": "state-directed-engineering",
-  "nextSeq": 49,
+  "nextSeq": 50,
   "items": [
     {
       "id": "WI-0001",
@@ -1297,6 +1297,27 @@
         "provider": "github",
         "model": "unknown",
         "runtime": "github-actions"
+      },
+      "source": "manual",
+      "sourceReference": null
+    },
+    {
+      "id": "WI-0049",
+      "title": "Mark Ordo decision events as released in 1.20.0",
+      "description": null,
+      "tags": [],
+      "priority": "medium",
+      "status": "complete",
+      "attachments": [],
+      "createdAt": "2026-11-02T13:55:37.259Z",
+      "updatedAt": "2026-11-02T13:56:00.000Z",
+      "createdBy": "unknown",
+      "createdByActor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
       },
       "source": "manual",
       "sourceReference": null
