@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-11-02T12:05:23.000Z",
+  "updatedAt": "2026-11-02T13:49:19.500Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2592,6 +2592,17 @@
         "EXE-20261102T113626516Z-0e0b6917"
       ],
       "completedAt": "2026-11-02T12:05:23.000Z"
+    },
+    {
+      "id": "RELEASE-1-20-0",
+      "type": "mechanical",
+      "state": "active",
+      "semanticState": "active",
+      "evidence": [],
+      "updatedAt": "2026-11-02T13:49:19.500Z",
+      "telemetryExecutionIds": [
+        "EXE-20261102T134919855Z-0410ff75"
+      ]
     }
   ]
 }
