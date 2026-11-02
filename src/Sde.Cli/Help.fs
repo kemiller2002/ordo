@@ -259,6 +259,31 @@ let private verificationHelp =
       "reusable and the evidence carries input_digest, plan_digest and rehearsal_id"
       "matching the reuse context and plan. An unknown policy refuses the plan." ]
 
+let private eventsHelp =
+    [ "sde events"
+      ""
+      "Ordo decision events (ordo.decision-event/1): an append-only JSONL log of"
+      "pattern evaluation, selection, agent execution and independent verification,"
+      "each a separate event. `sde ecir recognize --events FILE` (or the"
+      "ORDO_DECISION_EVENTS environment variable) records evaluation and selection;"
+      "nothing else is ever recorded on anyone's behalf. A selection is not an"
+      "execution, and an execution is not a verification."
+      ""
+      Args.eventsUsage
+      ""
+      "  record-execution     what an executor reports it did with a decision or packet"
+      "  record-verification  an independent verdict, typed or read from a Dokimos"
+      "                       receipt (dokimos.completion-verification or"
+      "                       dokimos.recognition-audit/1)"
+      "  summarize            ordo.decision-summary/1: counts, match rate, fallback,"
+      "                       and what is unknown (unexecuted, unverified, corrupt)"
+      ""
+      "Only identifiers, enumerations, digests, counts and durations are written:"
+      "never requirement text, prompts or source content. Identifiers that look like"
+      "credentials are refused. Correlation comes from ORDO_RUN_ID/PRAXIS_TELEMETRY_RUN_ID,"
+      "ORDO_SESSION_ID/CLAUDE_CODE_SESSION_ID and ORDO_WORK_ITEM/PRAXIS_WORK_ITEM."
+      "A recognition never fails because its events could not be written; it warns." ]
+
 let forCommand (name: string) (version: string) =
     match name with
     | "init" -> initHelp
@@ -269,4 +294,5 @@ let forCommand (name: string) (version: string) =
     | "doctor" -> doctorHelp
     | "boundary" -> boundaryHelp
     | "verification" -> verificationHelp
+    | "events" -> eventsHelp
     | _ -> overview version

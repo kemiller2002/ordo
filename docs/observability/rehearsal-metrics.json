@@ -1,0 +1,1116 @@
+{
+ "generated": "2026-11-02",
+ "note": "Values extracted verbatim from the cited files; null means not recorded, with the reason given.",
+ "rehearsals": {
+  "R2": {
+   "repo": "kemiller2002/indy-init-rehearsal-002",
+   "head": "b053d1da4ef533fba7d6728c369c58a29a1e2440",
+   "commits_all_refs": 52,
+   "first_commit_authored": "2026-10-23T12:24:27+00:00",
+   "last_commit_authored": "2026-10-23T20:26:30-04:00",
+   "praxis_executions": {
+    "source": ".ros/telemetry/executions/*.json",
+    "count": 6,
+    "items": [
+     {
+      "executionId": "EXE-20261023T135022272Z-00da006d",
+      "workItem": "R002-STACK",
+      "status": "finalized",
+      "startedAt": "2026-10-23T13:50:22.272Z",
+      "finalizedAt": "2026-10-23T14:37:45.084Z",
+      "wall_ms": 2842812,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261023T143749017Z-127640a1",
+      "workItem": "R002-BOOT",
+      "status": "finalized",
+      "startedAt": "2026-10-23T14:37:49.017Z",
+      "finalizedAt": "2026-10-23T14:37:51.585Z",
+      "wall_ms": 2568,
+      "commits_created": 0,
+      "lines_added": 0,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261023T143752285Z-607a62b4",
+      "workItem": "R002-DOMAIN",
+      "status": "finalized",
+      "startedAt": "2026-10-23T14:37:52.285Z",
+      "finalizedAt": "2026-10-23T14:37:54.951Z",
+      "wall_ms": 2666,
+      "commits_created": 0,
+      "lines_added": 0,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261023T143755625Z-c7b0bc6e",
+      "workItem": "R002-UI",
+      "status": "finalized",
+      "startedAt": "2026-10-23T14:37:55.625Z",
+      "finalizedAt": "2026-10-23T14:37:57.967Z",
+      "wall_ms": 2342,
+      "commits_created": 0,
+      "lines_added": 0,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261023T143758594Z-4c8a6d9a",
+      "workItem": "R002-WASM",
+      "status": "finalized",
+      "startedAt": "2026-10-23T14:37:58.594Z",
+      "finalizedAt": "2026-10-23T14:38:01.095Z",
+      "wall_ms": 2501,
+      "commits_created": 0,
+      "lines_added": 0,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261023T152024798Z-8dfef099",
+      "workItem": "R002-RELEASE",
+      "status": "active",
+      "startedAt": "2026-10-23T15:20:24.798Z",
+      "finalizedAt": null,
+      "wall_ms": null,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     }
+    ]
+   },
+   "claude_tokens": null,
+   "claude_tokens_reason": "docs/REHEARSAL-002-REPORT.md: \"token usage is not exposed to the session\"; Praxis tokens.* supported-unavailable",
+   "timing": {
+    "source": "docs/REHEARSAL-002-REPORT.md (Metrics from evidence/acceptance/run.json)",
+    "start": "2026-10-23T12:14:13Z",
+    "first_build_min": 12.3,
+    "first_green_ci_min": 104.3,
+    "first_verified_remote_write_min": [
+     176.3,
+     177.5
+    ],
+    "first_candidate_min": 183.2,
+    "first_deployed_verified_min": 296.8,
+    "accepted_min": 721.2,
+    "accepted": true
+   },
+   "defects": {
+    "source": "docs/REHEARSAL-002-REPORT.md; docs/decisions/DC-00N.md",
+    "defect_classes": 6,
+    "recurred_after_fix": 5,
+    "review_rounds": 12,
+    "candidates_on_main": 7,
+    "live_github_runs": 17
+   },
+   "ordo": {
+    "pinned": "1.17.0",
+    "pattern_recognition": "UNKNOWN",
+    "any_cli": "CONFIRMED_USE (conditor-driven ordo init / ordo verify --integrity-only)",
+    "evidence": "evidence/stack/logs/conditor-init.log"
+   },
+   "actions_runs_total": null,
+   "actions_reason": "not retrieved (no API access)"
+  },
+  "R3": {
+   "repo": "kemiller2002/indy-init-rehearsal-003",
+   "head": "59cf4d215688eca52a0c6b41d791a33cdb89e35b",
+   "commits_all_refs": 143,
+   "first_commit_authored": "2026-10-24T07:24:17+00:00",
+   "last_commit_authored": "2026-10-27T15:13:45+00:00",
+   "praxis_executions": {
+    "source": ".ros/telemetry/executions/*.json",
+    "count": 14,
+    "items": [
+     {
+      "executionId": "EXE-20261024T072747754Z-a9afd8e7",
+      "workItem": "WI-0001",
+      "status": "finalized",
+      "startedAt": "2026-10-24T07:27:47.754Z",
+      "finalizedAt": "2026-10-24T07:29:06.285Z",
+      "wall_ms": 78531,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261024T073024063Z-864b38c1",
+      "workItem": "WI-0002",
+      "status": "finalized",
+      "startedAt": "2026-10-24T07:30:24.063Z",
+      "finalizedAt": "2026-10-24T07:31:57.137Z",
+      "wall_ms": 93074,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261024T073406534Z-d1fc7388",
+      "workItem": "WI-0003",
+      "status": "finalized",
+      "startedAt": "2026-10-24T07:34:06.534Z",
+      "finalizedAt": "2026-10-24T08:31:31.219Z",
+      "wall_ms": 3444685,
+      "commits_created": 3,
+      "lines_added": 12648,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261024T081025162Z-20609a99",
+      "workItem": "WI-0004",
+      "status": "finalized",
+      "startedAt": "2026-10-24T08:10:25.162Z",
+      "finalizedAt": "2026-10-24T09:34:27.764Z",
+      "wall_ms": 5042602,
+      "commits_created": 7,
+      "lines_added": 3099,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261024T085527691Z-718c12a6",
+      "workItem": "WI-0005",
+      "status": "finalized",
+      "startedAt": "2026-10-24T08:55:27.691Z",
+      "finalizedAt": "2026-10-24T09:34:32.646Z",
+      "wall_ms": 2344955,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261024T093414921Z-f7e8b28e",
+      "workItem": "WI-0006",
+      "status": "finalized",
+      "startedAt": "2026-10-24T09:34:14.921Z",
+      "finalizedAt": "2026-10-24T09:48:56.208Z",
+      "wall_ms": 881287,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261024T123355134Z-d569add0",
+      "workItem": "WI-0007",
+      "status": "finalized",
+      "startedAt": "2026-10-24T12:33:55.134Z",
+      "finalizedAt": "2026-10-24T13:27:25.704Z",
+      "wall_ms": 3210570,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261024T132744050Z-13f8f843",
+      "workItem": "WI-0008",
+      "status": "finalized",
+      "startedAt": "2026-10-24T13:27:44.050Z",
+      "finalizedAt": "2026-10-24T18:03:49.176Z",
+      "wall_ms": 16565126,
+      "commits_created": 36,
+      "lines_added": 136447,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261024T135942611Z-0549f97e",
+      "workItem": "WI-0009",
+      "status": "finalized",
+      "startedAt": "2026-10-24T13:59:42.611Z",
+      "finalizedAt": "2026-10-24T18:03:55.259Z",
+      "wall_ms": 14652648,
+      "commits_created": 36,
+      "lines_added": 135797,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261024T145250011Z-97803952",
+      "workItem": "WI-0010",
+      "status": "finalized",
+      "startedAt": "2026-10-24T14:52:50.011Z",
+      "finalizedAt": "2026-10-24T20:20:24.111Z",
+      "wall_ms": 19654100,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261024T202055584Z-f650095c",
+      "workItem": "WI-0011",
+      "status": "finalized",
+      "startedAt": "2026-10-24T20:20:55.584Z",
+      "finalizedAt": "2026-10-24T20:21:12.676Z",
+      "wall_ms": 17092,
+      "commits_created": 1,
+      "lines_added": 12,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261025T054825649Z-8c2069c2",
+      "workItem": "WI-0012",
+      "status": "finalized",
+      "startedAt": "2026-10-25T05:48:25.649Z",
+      "finalizedAt": "2026-10-25T05:48:52.046Z",
+      "wall_ms": 26397,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261026T072500751Z-d28912bd",
+      "workItem": "WI-0013",
+      "status": "finalized",
+      "startedAt": "2026-10-26T07:25:00.751Z",
+      "finalizedAt": "2026-10-26T07:25:34.098Z",
+      "wall_ms": 33347,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261026T073210807Z-57d48fab",
+      "workItem": "WI-0014",
+      "status": "finalized",
+      "startedAt": "2026-10-26T07:32:10.807Z",
+      "finalizedAt": "2026-10-26T07:33:48.396Z",
+      "wall_ms": 97589,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     }
+    ]
+   },
+   "claude_tokens": {
+    "source": "evidence/telemetry/tokens-final.json",
+    "method": "transcript-derived, deduplicated by message id (tools/telemetry/tokens.py)",
+    "coverage": "preflight + timed to experiment end 2026-10-24T09:39:09Z; excludes later remediation WI-0007..0014",
+    "tool_calls": null,
+    "tool_calls_reason": "not computed by tokens.py",
+    "data": {
+     "preflight": {
+      "all": {
+       "all_input_tokens": 32810468,
+       "cache_creation_input_tokens": 659235,
+       "cache_read_input_tokens": 32150789,
+       "input_tokens": 444,
+       "messages": 222,
+       "output_tokens": 130613,
+       "total_tokens": 32941081
+      },
+      "lead": {
+       "all_input_tokens": 20493626,
+       "cache_creation_input_tokens": 255444,
+       "cache_read_input_tokens": 20237980,
+       "input_tokens": 202,
+       "messages": 101,
+       "output_tokens": 75563,
+       "total_tokens": 20569189
+      },
+      "models": [
+       "claude-opus-5-5"
+      ],
+      "subagents": {
+       "all_input_tokens": 12316842,
+       "cache_creation_input_tokens": 403791,
+       "cache_read_input_tokens": 11912809,
+       "input_tokens": 242,
+       "messages": 121,
+       "output_tokens": 55050,
+       "total_tokens": 12371892
+      }
+     },
+     "session": {
+      "all": {
+       "all_input_tokens": 149263632,
+       "cache_creation_input_tokens": 1842662,
+       "cache_read_input_tokens": 147419986,
+       "input_tokens": 984,
+       "messages": 488,
+       "output_tokens": 482274,
+       "total_tokens": 149745906
+      },
+      "lead": {
+       "all_input_tokens": 123008996,
+       "cache_creation_input_tokens": 728654,
+       "cache_read_input_tokens": 122279748,
+       "input_tokens": 594,
+       "messages": 295,
+       "output_tokens": 371409,
+       "total_tokens": 123380405
+      },
+      "models": [
+       "claude-opus-5-5"
+      ],
+      "subagents": {
+       "all_input_tokens": 26254636,
+       "cache_creation_input_tokens": 1114008,
+       "cache_read_input_tokens": 25140238,
+       "input_tokens": 390,
+       "messages": 193,
+       "output_tokens": 110865,
+       "total_tokens": 26365501
+      }
+     },
+     "timed": {
+      "all": {
+       "all_input_tokens": 116453164,
+       "cache_creation_input_tokens": 1183427,
+       "cache_read_input_tokens": 115269197,
+       "input_tokens": 540,
+       "messages": 266,
+       "output_tokens": 351661,
+       "total_tokens": 116804825
+      },
+      "lead": {
+       "all_input_tokens": 102515370,
+       "cache_creation_input_tokens": 473210,
+       "cache_read_input_tokens": 102041768,
+       "input_tokens": 392,
+       "messages": 194,
+       "output_tokens": 295846,
+       "total_tokens": 102811216
+      },
+      "models": [
+       "claude-opus-5-5"
+      ],
+      "subagents": {
+       "all_input_tokens": 13937794,
+       "cache_creation_input_tokens": 710217,
+       "cache_read_input_tokens": 13227429,
+       "input_tokens": 148,
+       "messages": 72,
+       "output_tokens": 55815,
+       "total_tokens": 13993609
+      }
+     }
+    }
+   },
+   "cost_estimate_usd": {
+    "timed": 36.01,
+    "session": 48.35,
+    "source": "docs/REHEARSAL-003-REPORT.md section 7 (list-price estimate by the agent)"
+   },
+   "timing": {
+    "source": "docs/REHEARSAL-003-REPORT.md",
+    "preflight_min": 21.6,
+    "timed_start": "2026-10-24T07:32:22Z",
+    "experiment_end": "2026-10-24T09:39:09Z",
+    "timed_elapsed_min": 127,
+    "accepted": false
+   },
+   "defects": {
+    "source": "docs/REHEARSAL-003-REPORT.md row 14; research/rehearsal-003-defect-analysis.md",
+    "mandatory_defects_closed": 22,
+    "ids": "D-01..D-07, H1, M1-M5, L1-L8, N1",
+    "independent_review_findings": 14
+   },
+   "ordo": {
+    "pinned": "1.17.0",
+    "pattern_recognition": "UNKNOWN",
+    "any_cli": "CONFIRMED_USE (ordo init / ordo verify 1.17.0 passed, 19 managed files)",
+    "evidence": "evidence/preflight/conditor-init.log; research/rehearsal-003-stack-preflight.md"
+   },
+   "actions_runs_total": 345,
+   "github_issues": 0
+  },
+  "R4": {
+   "repo": "kemiller2002/indy-init-rehearsal-004",
+   "head": "78a1b15aade0b882e39d5f985b6719d3493f3c09",
+   "commits_all_refs": 184,
+   "first_commit_authored": "2026-10-26T20:44:12-04:00",
+   "last_commit_authored": "2026-10-27T16:35:32-04:00",
+   "praxis_executions": {
+    "source": ".ros/telemetry/executions/*.json",
+    "count": 4,
+    "items": [
+     {
+      "executionId": "EXE-20261027T062656522Z-a4c22312",
+      "workItem": "COND-MISSION-001",
+      "status": "active",
+      "startedAt": "2026-10-27T06:26:56.522Z",
+      "finalizedAt": null,
+      "wall_ms": null,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261027T195125303Z-7d99e0bd",
+      "workItem": "WI-0001",
+      "status": "active",
+      "startedAt": "2026-10-27T19:51:25.303Z",
+      "finalizedAt": null,
+      "wall_ms": null,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "unknown",
+      "tool_calls_status": "unknown"
+     },
+     {
+      "executionId": "EXE-20261027T195125395Z-f1ec861b",
+      "workItem": "WI-0004",
+      "status": "active",
+      "startedAt": "2026-10-27T19:51:25.395Z",
+      "finalizedAt": null,
+      "wall_ms": null,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "unknown",
+      "tool_calls_status": "unknown"
+     },
+     {
+      "executionId": "EXE-20261027T195125459Z-5ca6d0ed",
+      "workItem": "WI-0005",
+      "status": "finalized",
+      "startedAt": "2026-10-27T19:51:25.459Z",
+      "finalizedAt": "2026-10-27T20:08:12.301Z",
+      "wall_ms": 1006842,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "unknown",
+      "tool_calls_status": "unknown"
+     }
+    ]
+   },
+   "claude_tokens": null,
+   "claude_tokens_reason": "REHEARSAL-004-REPORT.md: \"Not measured\"; evidence/remediation/measurements.json@711c0d9: \"Token usage is not measurable\"",
+   "timing": {
+    "source": "docs/rehearsal/REHEARSAL-004-REPORT.md",
+    "start": "2026-10-27T06:04:39Z",
+    "end": "2026-10-27T11:00:31Z",
+    "elapsed_min": 296,
+    "deadline_min": 420,
+    "accepted": false,
+    "verdict": "FAILED",
+    "remediation_measurements": "evidence/remediation/measurements.json @711c0d991cdf06f0c3cf40bbbc2d564d91de7db0"
+   },
+   "defects": {
+    "source": "docs/rehearsal/REHEARSAL-004-REPORT.md",
+    "T30_findings": 17,
+    "T33_findings": 14,
+    "other": [
+     "PF-015 token exposure",
+     "D-HIST-WASM"
+    ],
+    "build_and_test_runs": {
+     "total": 38,
+     "success": 6,
+     "failure": 25,
+     "cancelled": 7
+    },
+    "workflow_runs_in_window": 152
+   },
+   "ordo": {
+    "pinned": "1.17.0",
+    "pattern_recognition": "UNKNOWN",
+    "any_cli": "CONFIRMED_USE (install only; .sde install + commit e0cc043 text; no log)",
+    "evidence": ".conditor/lock.json; .sde/MANIFEST.json"
+   },
+   "actions_runs_total": 421,
+   "github_issues": 0
+  },
+  "R5": {
+   "repo": "kemiller2002/indy-init-rehearsal-005",
+   "head": "b972cb446de543018a65d8726cae6f8283821791",
+   "commits_all_refs": 285,
+   "first_commit_authored": "2026-10-27T10:50:02-04:00",
+   "last_commit_authored": "2026-10-28T06:16:28+00:00",
+   "praxis_executions": {
+    "source": ".ros/telemetry/executions/*.json",
+    "count": 8,
+    "items": [
+     {
+      "executionId": "EXE-20261027T201410340Z-c35e9b80",
+      "workItem": "WI-0002",
+      "status": "finalized",
+      "startedAt": "2026-10-27T20:14:10.340Z",
+      "finalizedAt": "2026-10-27T20:20:45.945Z",
+      "wall_ms": 395605,
+      "commits_created": 1,
+      "lines_added": 21266,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261027T204348174Z-d263cd05",
+      "workItem": "WI-0003",
+      "status": "active",
+      "startedAt": "2026-10-27T20:43:48.174Z",
+      "finalizedAt": null,
+      "wall_ms": null,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261027T204349055Z-3a9b9ad4",
+      "workItem": "WI-0004",
+      "status": "active",
+      "startedAt": "2026-10-27T20:43:49.055Z",
+      "finalizedAt": null,
+      "wall_ms": null,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261027T204349986Z-9275bbe4",
+      "workItem": "WI-0005",
+      "status": "active",
+      "startedAt": "2026-10-27T20:43:49.986Z",
+      "finalizedAt": null,
+      "wall_ms": null,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261027T204350795Z-d44bb1b9",
+      "workItem": "WI-0006",
+      "status": "active",
+      "startedAt": "2026-10-27T20:43:50.795Z",
+      "finalizedAt": null,
+      "wall_ms": null,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261027T215056386Z-acc9aa8e",
+      "workItem": "WI-0007",
+      "status": "active",
+      "startedAt": "2026-10-27T21:50:56.386Z",
+      "finalizedAt": null,
+      "wall_ms": null,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261028T010656713Z-266c6281",
+      "workItem": "WI-0008",
+      "status": "active",
+      "startedAt": "2026-10-28T01:06:56.713Z",
+      "finalizedAt": null,
+      "wall_ms": null,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261028T061627372Z-794b2094",
+      "workItem": "WI-0009",
+      "status": "active",
+      "startedAt": "2026-10-28T06:16:27.372Z",
+      "finalizedAt": null,
+      "wall_ms": null,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     }
+    ]
+   },
+   "claude_tokens": null,
+   "claude_tokens_reason": "no token record found in repo history; Praxis tokens.* supported-unavailable",
+   "timing": {
+    "source": "evidence/rehearsal/final.json",
+    "start": "2026-10-27T20:08:38Z",
+    "final_verdict": "2026-10-28T02:41:07Z",
+    "elapsed_min": 392,
+    "deadline_min": 420,
+    "accepted": false,
+    "verdict": "INCOMPLETE",
+    "p0": {
+     "total": 108,
+     "pass": 77,
+     "notRun": 31,
+     "fail": 0
+    },
+    "obligations": {
+     "total": 326,
+     "pass": 277,
+     "notRun": 49,
+     "fail": 0
+    }
+   },
+   "defects": {
+    "source": "evidence/rehearsal/final.json",
+    "defect_classes_pass": [
+     "DC-001",
+     "DC-002",
+     "DC-003",
+     "DC-004",
+     "DC-005",
+     "DC-006",
+     "R3-LESSON-3"
+    ],
+    "count": null,
+    "count_reason": "no per-defect count recorded in repo; see Indy-init docs/REHEARSAL-005-RESULTS.md findings table"
+   },
+   "ordo": {
+    "pinned": "1.18.0",
+    "pattern_recognition": "UNKNOWN",
+    "any_cli": "CONFIRMED_USE (ordo verification schedule in CI, exit 0)",
+    "evidence": "evidence/acceptance/run-40620099844-1b9fb56/verification-schedule.json",
+    "verification_schedule": {
+     "schema": "ordo.verification-schedule/1",
+     "requirements": 108,
+     "dependencies": 72,
+     "unknownDependencies": 12,
+     "cycles": 0,
+     "implementationTasks": 326,
+     "independentWaves": 6,
+     "staleEvidence": 0
+    },
+    "recognition_outcomes": null
+   },
+   "actions_runs_total": null,
+   "actions_reason": "not retrieved (no API access)"
+  },
+  "R6": {
+   "repo": "kemiller2002/indy-init-rehearsal-006",
+   "head": "41fb6d62ee6bd09bb973d093282f7cd17b09d5cf",
+   "commits_all_refs": 148,
+   "first_commit_authored": "2026-10-27T20:21:42-04:00",
+   "last_commit_authored": "2026-10-29T02:02:36+00:00",
+   "praxis_executions": {
+    "source": ".ros/telemetry/executions/*.json",
+    "count": 15,
+    "items": [
+     {
+      "executionId": "EXE-20261028T202502304Z-cba221db",
+      "workItem": "WI-R6-A",
+      "status": "finalized",
+      "startedAt": "2026-10-28T20:25:02.304Z",
+      "finalizedAt": "2026-10-28T22:35:55.065Z",
+      "wall_ms": 7852761,
+      "commits_created": 85,
+      "lines_added": 97291,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261028T202503724Z-9a261484",
+      "workItem": "WI-R6-B",
+      "status": "finalized",
+      "startedAt": "2026-10-28T20:25:03.724Z",
+      "finalizedAt": "2026-10-29T00:47:40.005Z",
+      "wall_ms": 15756281,
+      "commits_created": 134,
+      "lines_added": 99076,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261028T202505107Z-850067a4",
+      "workItem": "WI-R6-C",
+      "status": "finalized",
+      "startedAt": "2026-10-28T20:25:05.107Z",
+      "finalizedAt": "2026-10-29T00:31:12.045Z",
+      "wall_ms": 14766938,
+      "commits_created": 131,
+      "lines_added": 98751,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261028T202841840Z-a1798be9",
+      "workItem": "WI-R6-COORD",
+      "status": "finalized",
+      "startedAt": "2026-10-28T20:28:41.840Z",
+      "finalizedAt": "2026-10-29T01:25:09.583Z",
+      "wall_ms": 17787743,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261028T222128888Z-73a01dec",
+      "workItem": "WI-R6-REVIEW-1",
+      "status": "finalized",
+      "startedAt": "2026-10-28T22:21:28.888Z",
+      "finalizedAt": "2026-10-28T22:41:07.136Z",
+      "wall_ms": 1178248,
+      "commits_created": 24,
+      "lines_added": 1413,
+      "tokens_input_status": "unknown",
+      "tool_calls_status": "unknown"
+     },
+     {
+      "executionId": "EXE-20261028T223454141Z-126df17b",
+      "workItem": "WI-R6-B",
+      "status": "finalized",
+      "startedAt": "2026-10-28T22:34:54.141Z",
+      "finalizedAt": "2026-10-29T00:47:40.308Z",
+      "wall_ms": 7966167,
+      "commits_created": 52,
+      "lines_added": 1921,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261028T223508278Z-f639ee64",
+      "workItem": "WI-R6-A",
+      "status": "finalized",
+      "startedAt": "2026-10-28T22:35:08.278Z",
+      "finalizedAt": "2026-10-28T22:35:55.416Z",
+      "wall_ms": 47138,
+      "commits_created": 3,
+      "lines_added": 0,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261028T223631961Z-29ede85b",
+      "workItem": "WI-R6-C",
+      "status": "finalized",
+      "startedAt": "2026-10-28T22:36:31.961Z",
+      "finalizedAt": "2026-10-29T00:31:12.282Z",
+      "wall_ms": 6880321,
+      "commits_created": 44,
+      "lines_added": 1555,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261028T225523736Z-febbc710",
+      "workItem": "WI-R6-A2",
+      "status": "finalized",
+      "startedAt": "2026-10-28T22:55:23.736Z",
+      "finalizedAt": "2026-10-28T22:55:55.698Z",
+      "wall_ms": 31962,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261028T232638904Z-25826b10",
+      "workItem": "WI-R6-A3",
+      "status": "finalized",
+      "startedAt": "2026-10-28T23:26:38.904Z",
+      "finalizedAt": "2026-10-28T23:27:11.789Z",
+      "wall_ms": 32885,
+      "commits_created": 2,
+      "lines_added": 2,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261028T232827309Z-fdba4e8f",
+      "workItem": "WI-R6-A4",
+      "status": "finalized",
+      "startedAt": "2026-10-28T23:28:27.309Z",
+      "finalizedAt": "2026-10-28T23:29:35.031Z",
+      "wall_ms": 67722,
+      "commits_created": 2,
+      "lines_added": 24,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261028T235154460Z-a2b947ab",
+      "workItem": "WI-R6-A5",
+      "status": "finalized",
+      "startedAt": "2026-10-28T23:51:54.460Z",
+      "finalizedAt": "2026-10-28T23:54:30.723Z",
+      "wall_ms": 156263,
+      "commits_created": 3,
+      "lines_added": 86,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261029T000911797Z-00d5723a",
+      "workItem": "WI-R6-A6",
+      "status": "finalized",
+      "startedAt": "2026-10-29T00:09:11.797Z",
+      "finalizedAt": "2026-10-29T00:12:09.775Z",
+      "wall_ms": 177978,
+      "commits_created": 2,
+      "lines_added": 304,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261029T010724921Z-71ac654a",
+      "workItem": "WI-R6-B2",
+      "status": "finalized",
+      "startedAt": "2026-10-29T01:07:24.921Z",
+      "finalizedAt": "2026-10-29T01:09:00.818Z",
+      "wall_ms": 95897,
+      "commits_created": 1,
+      "lines_added": 1,
+      "tokens_input_status": "supported-unavailable",
+      "tool_calls_status": "supported-unavailable"
+     },
+     {
+      "executionId": "EXE-20261029T011014856Z-e3bc621c",
+      "workItem": "WI-R6-REVIEW-FINAL",
+      "status": "finalized",
+      "startedAt": "2026-10-29T01:10:14.856Z",
+      "finalizedAt": "2026-10-29T01:25:18.654Z",
+      "wall_ms": 903798,
+      "commits_created": null,
+      "lines_added": null,
+      "tokens_input_status": "unknown",
+      "tool_calls_status": "unknown"
+     }
+    ]
+   },
+   "claude_tokens": null,
+   "claude_tokens_reason": "no token record found in repo history; Praxis tokens.* supported-unavailable/unknown",
+   "timing": {
+    "source": "Indy-init docs/REHEARSAL-006-RESULTS.md (kemiller2002/Indy-init@0f91a11, local clone)",
+    "start": "2026-10-28T20:02:19Z",
+    "first_deployed_slice_min": 128,
+    "first_candidate_min": 287,
+    "final_candidate_min": 307,
+    "verdict_min": 353,
+    "accepted": false,
+    "verdict": "FAILED",
+    "p0_ledger": {
+     "total": 115,
+     "pass": 70,
+     "fail": 19,
+     "notRun": 26
+    }
+   },
+   "defects": {
+    "source": "Indy-init docs/REHEARSAL-006-RESULTS.md",
+    "d_items_listed": 13,
+    "critical_open": [
+     "R6-D-002",
+     "R6-D-003"
+    ]
+   },
+   "ordo": {
+    "pinned": "1.19.0",
+    "pattern_recognition": "UNKNOWN",
+    "any_cli": "CONFIRMED_USE (ordo init/verify at kickoff; ordo --version/status; Ordo installed in final acceptance run 40803128103 step 14)",
+    "evidence": "evidence/kickoff/conditor-init.txt; acceptance/stack/release-freshness.json"
+   },
+   "actions_runs_total": 427,
+   "github_issues": 0
+  },
+  "R7": {
+   "repo": "kemiller2002/indy-init-rehearsal-007",
+   "head": "f61493fa04f896977bb099c15870912a6990194d",
+   "commits_all_refs": 73,
+   "first_commit_authored": "2026-10-28T15:42:19-04:00",
+   "last_commit_authored": "2026-10-30T10:42:32-04:00",
+   "praxis_executions": null,
+   "claude_tokens": {
+    "source": "evidence/telemetry/*.json + README.md",
+    "method": "transcript usage records, deduplicated, nothing estimated",
+    "coverage": "main agent preflight + from T0 (to 05:52Z, ~2 min past deadline) + 3 reviewer subagents",
+    "all_agents_from_T0_per_README": {
+     "messages": 656,
+     "input": 1377,
+     "output": 607478,
+     "cache_read": 258140455,
+     "cache_write": 2143747,
+     "tool_calls": 638
+    },
+    "files": {
+     "main-agent.json": {
+      "completeness": "partial: this session's main agent only; subagents and CI runners are not included; cost not computed (no authoritative pricing in this session)",
+      "preflight": {
+       "cacheReadTokens": 6983199,
+       "cacheWriteTokens": 147880,
+       "first": "2026-10-29T22:37:56.528Z",
+       "inputTokens": 92,
+       "last": "2026-10-29T22:49:54.088Z",
+       "messages": 46,
+       "models": [
+        "claude-opus-5-5"
+       ],
+       "outputTokens": 25303,
+       "phase": "preflight (before T0)",
+       "toolCalls": 55
+      },
+      "schema": "causa.telemetry/1",
+      "sessionId": "session_01G1iECdaTWsbm5P9ZJ1nuMG",
+      "source": "Claude Code session transcripts (provider usage records), read-only",
+      "timed": {
+       "cacheReadTokens": 238493928,
+       "cacheWriteTokens": 1571829,
+       "first": "2026-10-29T22:50:02.110Z",
+       "inputTokens": 1083,
+       "last": "2026-10-30T05:52:01.828Z",
+       "messages": 510,
+       "models": [
+        "claude-opus-5-5"
+       ],
+       "outputTokens": 490062,
+       "phase": "timed run (from T0)",
+       "toolCalls": 484
+      },
+      "transcripts": [
+       "-home-user/561357a2-aaad-5e4e-8d27-abaf2df906ca.jsonl",
+       "-home-user-Indy-init/561357a2-aaad-5e4e-8d27-abaf2df906ca.jsonl"
+      ]
+     },
+     "reviewer-a36088368a071b3fc.json": {
+      "completeness": "partial: this session's main agent only; subagents and CI runners are not included; cost not computed (no authoritative pricing in this session)",
+      "preflight": {
+       "cacheReadTokens": 0,
+       "cacheWriteTokens": 0,
+       "first": null,
+       "inputTokens": 0,
+       "last": null,
+       "messages": 0,
+       "models": [],
+       "outputTokens": 0,
+       "phase": "preflight (before T0)",
+       "toolCalls": 0
+      },
+      "schema": "causa.telemetry/1",
+      "sessionId": "session_01G1iECdaTWsbm5P9ZJ1nuMG",
+      "source": "Claude Code session transcripts (provider usage records), read-only",
+      "timed": {
+       "cacheReadTokens": 8118326,
+       "cacheWriteTokens": 201790,
+       "first": "2026-10-30T03:17:03.218Z",
+       "inputTokens": 116,
+       "last": "2026-10-30T03:30:38.644Z",
+       "messages": 58,
+       "models": [
+        "claude-opus-5-5"
+       ],
+       "outputTokens": 44992,
+       "phase": "timed run (from T0)",
+       "toolCalls": 60
+      },
+      "transcripts": [
+       "subagents/agent-a36088368a071b3fc.jsonl"
+      ]
+     },
+     "reviewer-aee691cbbedbe3073.json": {
+      "completeness": "partial: this session's main agent only; subagents and CI runners are not included; cost not computed (no authoritative pricing in this session)",
+      "preflight": {
+       "cacheReadTokens": 0,
+       "cacheWriteTokens": 0,
+       "first": null,
+       "inputTokens": 0,
+       "last": null,
+       "messages": 0,
+       "models": [],
+       "outputTokens": 0,
+       "phase": "preflight (before T0)",
+       "toolCalls": 0
+      },
+      "schema": "causa.telemetry/1",
+      "sessionId": "session_01G1iECdaTWsbm5P9ZJ1nuMG",
+      "source": "Claude Code session transcripts (provider usage records), read-only",
+      "timed": {
+       "cacheReadTokens": 4880894,
+       "cacheWriteTokens": 172331,
+       "first": "2026-10-30T02:44:17.025Z",
+       "inputTokens": 82,
+       "last": "2026-10-30T02:53:18.273Z",
+       "messages": 40,
+       "models": [
+        "claude-opus-5-5"
+       ],
+       "outputTokens": 32231,
+       "phase": "timed run (from T0)",
+       "toolCalls": 43
+      },
+      "transcripts": [
+       "subagents/agent-aee691cbbedbe3073.jsonl"
+      ]
+     },
+     "reviewer-a7514579a6e58ecb2.json": {
+      "completeness": "partial: this session's main agent only; subagents and CI runners are not included; cost not computed (no authoritative pricing in this session)",
+      "preflight": {
+       "cacheReadTokens": 0,
+       "cacheWriteTokens": 0,
+       "first": null,
+       "inputTokens": 0,
+       "last": null,
+       "messages": 0,
+       "models": [],
+       "outputTokens": 0,
+       "phase": "preflight (before T0)",
+       "toolCalls": 0
+      },
+      "schema": "causa.telemetry/1",
+      "sessionId": "session_01G1iECdaTWsbm5P9ZJ1nuMG",
+      "source": "Claude Code session transcripts (provider usage records), read-only",
+      "timed": {
+       "cacheReadTokens": 6647307,
+       "cacheWriteTokens": 197797,
+       "first": "2026-10-30T02:05:19.959Z",
+       "inputTokens": 96,
+       "last": "2026-10-30T02:16:11.639Z",
+       "messages": 48,
+       "models": [
+        "claude-opus-5-5"
+       ],
+       "outputTokens": 40193,
+       "phase": "timed run (from T0)",
+       "toolCalls": 51
+      },
+      "transcripts": [
+       "subagents/agent-a7514579a6e58ecb2.jsonl"
+      ]
+     }
+    },
+    "cost": null,
+    "cost_reason": "not computed (no authoritative price list)"
+   },
+   "timing": {
+    "source": "evidence/FINAL-REPORT.md",
+    "T0": "2026-10-29T22:49:55Z",
+    "deadline": "2026-10-30T05:49:55Z",
+    "deadline_min": 420,
+    "report_written": "2026-10-30T05:53Z",
+    "accepted": false
+   },
+   "defects": {
+    "source": "evidence/defects.md",
+    "build_defects": 7,
+    "review_findings_rows": 30,
+    "independent_reviews": 3,
+    "reviews_failed": 3
+   },
+   "ordo": {
+    "pinned": null,
+    "pattern_recognition": "UNKNOWN",
+    "any_cli": "UNKNOWN",
+    "evidence": "evidence/kickoff/preflight-report.json PF-ECH-01 PARTIAL: Ordo locally unavailable"
+   },
+   "actions_runs_total": 88,
+   "github_issues": 0
+  }
+ }
+}

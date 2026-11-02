@@ -172,7 +172,13 @@ let scaffoldFile (asJson: bool) (manifestPath: string) (outputPath: string) =
 /// `--packets`, one `ordo.delegation-contract/1` file per delegation packet.
 /// The approvals file only shapes this report: unapproved decisions show as
 /// DecisionRequired, and nothing here authorizes construction.
-let recognizeFiles (asJson: bool) (options: Sde.Cli.Args.EcirRecognizeOptions) =
+/// Observes a successful recognition (the report and its measured duration
+/// in milliseconds) and returns warnings for stderr. It never changes the
+/// exit code or stdout: telemetry is best-effort by contract.
+type RecognitionObserver = Ordo.Core.PatternRecognition.RecognitionReport -> int64 -> string list
+
+let recognizeFilesObserved (observe: RecognitionObserver) (asJson: bool) (options: Sde.Cli.Args.EcirRecognizeOptions) =
+    let stopwatch = Diagnostics.Stopwatch.StartNew()
     let readFile label path =
         try
             if not (File.Exists path) then Error(label + " missing: " + path) else Ok(File.ReadAllText path)
@@ -214,6 +220,10 @@ let recognizeFiles (asJson: bool) (options: Sde.Cli.Args.EcirRecognizeOptions) =
                                       EscalateOpenQuestions = options.EscalateOpenQuestions } }
                             Ordo.Core.PatternRecognitionWire.recognize Ordo.Core.PatternRegistry.BuiltIn.registry pin input
                             |> Result.mapError (List.map (sprintf "%A") >> String.concat "; "))))))
+    let elapsed = stopwatch.ElapsedMilliseconds
+    let warningsFor report =
+        try observe report elapsed
+        with e -> [ "warning: Ordo decision events not recorded: " + e.Message ]
     let write (report: Ordo.Core.PatternRecognition.RecognitionReport) =
         match options.PacketsDirectory with
         | None -> Ok []
@@ -241,9 +251,13 @@ let recognizeFiles (asJson: bool) (options: Sde.Cli.Args.EcirRecognizeOptions) =
                     m.DelegationPackets m.DelegationBytes
                     (match paths with [] -> "" | ps -> " written to " + String.concat ", " ps)
                     (if report.GenerationWorthwhile then "worthwhile" else "skipped (nothing constructible)")
-        0, [ message ], []
+        0, [ message ], warningsFor report
     | Error issue ->
         let message =
             if asJson then sprintf "{\"schemaVersion\":\"ordo.pattern-recognition/1\",\"status\":\"rejected\",\"reason\":%s}" (quoted issue)
             else "Recognition refused: " + issue
         1, (if asJson then [ message ] else []), (if asJson then [] else [ message ])
+
+/// The unobserved form, unchanged for existing callers.
+let recognizeFiles (asJson: bool) (options: Sde.Cli.Args.EcirRecognizeOptions) =
+    recognizeFilesObserved (fun _ _ -> []) asJson options

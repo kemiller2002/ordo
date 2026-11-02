@@ -1,0 +1,1 @@
+Recognized 6 requirements of COH-TIMER: 3 constructible, 1 awaiting a decision, 2 delegated, 0 blocked, 0 excluded; 2 packet(s), 3111 bytes. Generation worthwhile. Execution authorization not granted.

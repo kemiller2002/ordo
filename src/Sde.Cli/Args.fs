@@ -65,7 +65,10 @@ type EcirRecognizeOptions =
       Pin: string option
       PacketsDirectory: string option
       AllowedPaths: string list
-      EscalateOpenQuestions: bool }
+      EscalateOpenQuestions: bool
+      /// `ordo.decision-event/1` log to append to (ORDO-OBS-001). Optional;
+      /// recognition output is identical with or without it.
+      Events: string option }
 
 /// `verification schedule`: order the work an admitted verification plan
 /// implies. Every value is a path or identity the caller supplied; the
@@ -87,6 +90,9 @@ type Command =
     | EcirCheck of EcirCheckOptions
     | EcirScaffold of EcirScaffoldOptions
     | EcirRecognize of EcirRecognizeOptions
+    | EventsRecordExecution of Sde.Cli.Events.ExecutionOptions
+    | EventsRecordVerification of Sde.Cli.Events.VerificationOptions
+    | EventsSummarize of Sde.Cli.Events.SummarizeOptions
     | Init of InitOptions
     | Status of StatusOptions
     | Verify of VerifyOptions
@@ -176,13 +182,13 @@ let private parseBoundary (globals: GlobalOptions) (argv: string list) : ParseRe
         | _ -> ParseFailed boundaryUsage
 
 let ecirUsage =
-    "Usage: sde ecir validate --manifest FILE --blueprint FILE [--cohort ID] [--json] | sde ecir check --blueprint FILE [--expected-digest sha256:HEX] [--requirement KEY]... [--authorized-decision ID]... [--json] | sde ecir scaffold --manifest FILE --output FILE [--json] | sde ecir recognize --manifest FILE --blueprint FILE --cohort ID [--decisions FILE] [--approvals FILE] [--pin FILE] [--allow GLOB]... [--escalate-open-questions] [--packets DIR] [--json]"
+    "Usage: sde ecir validate --manifest FILE --blueprint FILE [--cohort ID] [--json] | sde ecir check --blueprint FILE [--expected-digest sha256:HEX] [--requirement KEY]... [--authorized-decision ID]... [--json] | sde ecir scaffold --manifest FILE --output FILE [--json] | sde ecir recognize --manifest FILE --blueprint FILE --cohort ID [--decisions FILE] [--approvals FILE] [--pin FILE] [--allow GLOB]... [--escalate-open-questions] [--packets DIR] [--events FILE] [--json]"
 
 /// Only structural/semantic validation can be authorized by this CLI.
 //// Cohort-level execution also needs externally verified decision approvals;
 /// passing a string on the command line is deliberately not authorization.
 let private parseEcir (globals: GlobalOptions) (argv: string list) : ParseResult =
-    let valued = [ "--manifest"; "--blueprint"; "--expected-digest"; "--cohort"; "--output"; "--decisions"; "--approvals"; "--pin"; "--packets" ]
+    let valued = [ "--manifest"; "--blueprint"; "--expected-digest"; "--cohort"; "--output"; "--decisions"; "--approvals"; "--pin"; "--packets"; "--events" ]
     let switches = [ "--json"; "--verbose"; "-v"; "--help"; "-h"; "--escalate-open-questions" ]
     let repeated = [ "--allow"; "--requirement"; "--authorized-decision" ]
     let valuesOf name =
@@ -247,7 +253,8 @@ let private parseEcir (globals: GlobalOptions) (argv: string list) : ParseResult
                           Pin = Map.tryFind "--pin" values
                           PacketsDirectory = Map.tryFind "--packets" values
                           AllowedPaths = allowed
-                          EscalateOpenQuestions = List.contains "--escalate-open-questions" argv }
+                          EscalateOpenQuestions = List.contains "--escalate-open-questions" argv
+                          Events = Map.tryFind "--events" values }
                   Global = globals }
         | _ -> ParseFailed ecirUsage
     | _ -> ParseFailed ecirUsage
@@ -296,6 +303,51 @@ let private parseVerification (globals: GlobalOptions) (argv: string list) : Par
                   Global = globals }
     | _ -> ParseFailed verificationUsage
 
+let eventsUsage =
+    "Usage: sde events record-execution [--events FILE] (--decision ID | --packet ID | --work-item ID) --status succeeded|failed|abandoned [--duration-ms N] [--executor ID] [--source ID] [--json] | sde events record-verification [--events FILE] (--decision ID | --packet ID | --work-item ID) (--dokimos-receipt FILE | --verdict passed|failed|indeterminate --verifier ID [--scope ID]) [--commit SHA] [--json] | sde events summarize [--events FILE] [--json]"
+
+let private parseEvents (globals: GlobalOptions) (argv: string list) : ParseResult =
+    let valued =
+        [ "--events"; "--decision"; "--packet"; "--work-item"; "--status"; "--duration-ms"; "--executor"; "--source"
+          "--dokimos-receipt"; "--verdict"; "--verifier"; "--scope"; "--commit" ]
+    let switches = [ "--json"; "--verbose"; "-v"; "--help"; "-h" ]
+    let rec walk args (values: Map<string, string>) positionals =
+        match args with
+        | [] -> Ok(values, List.rev positionals)
+        | flag :: value :: rest when List.contains flag valued && not (value.StartsWith "--") ->
+            if values.ContainsKey flag then Error(sprintf "Option given twice: %s" flag)
+            else walk rest (values.Add(flag, value)) positionals
+        | flag :: _ when List.contains flag valued -> Error(sprintf "Option %s requires a value" flag)
+        | flag :: rest when List.contains flag switches -> walk rest values positionals
+        | flag :: _ when flag.StartsWith "-" -> Error(sprintf "Unknown option: %s" flag)
+        | item :: rest -> walk rest values (item :: positionals)
+    let target (values: Map<string, string>) : Sde.Cli.Events.Target =
+        { DecisionId = values.TryFind "--decision"; PacketId = values.TryFind "--packet"; WorkItemId = values.TryFind "--work-item" }
+    let parsed command = Parsed { Command = command; Global = globals }
+    match walk argv Map.empty [] with
+    | Error message -> ParseFailed(message + "\n" + eventsUsage)
+    | Ok _ when List.contains "--help" argv || List.contains "-h" argv -> Parsed { Command = Help(Some "events"); Global = globals }
+    | Ok(values, [ "events"; "record-execution" ]) ->
+        match values.TryFind "--status" with
+        | None -> ParseFailed("Missing required option: --status\n" + eventsUsage)
+        | Some status ->
+            parsed (EventsRecordExecution
+                { Events = values.TryFind "--events"; Target = target values; Status = status
+                  DurationMs = values.TryFind "--duration-ms"; Executor = values.TryFind "--executor"; Source = values.TryFind "--source" })
+    | Ok(values, [ "events"; "record-verification" ]) ->
+        match values.TryFind "--dokimos-receipt", values.TryFind "--verdict", values.TryFind "--verifier" with
+        | Some receipt, None, None ->
+            parsed (EventsRecordVerification
+                { Events = values.TryFind "--events"; Target = target values
+                  Verdict = Sde.Cli.Events.DokimosReceipt receipt; Commit = values.TryFind "--commit" })
+        | None, Some verdict, Some verifier ->
+            parsed (EventsRecordVerification
+                { Events = values.TryFind "--events"; Target = target values
+                  Verdict = Sde.Cli.Events.Manual(verdict, verifier, values.TryFind "--scope"); Commit = values.TryFind "--commit" })
+        | _ -> ParseFailed("Give either --dokimos-receipt FILE, or --verdict with --verifier\n" + eventsUsage)
+    | Ok(values, [ "events"; "summarize" ]) -> parsed (EventsSummarize { Events = values.TryFind "--events" })
+    | _ -> ParseFailed eventsUsage
+
 let parse (argv: string list) : ParseResult =
     let globalsOf (args: string list) =
         { Json = List.contains "--json" args
@@ -305,6 +357,7 @@ let parse (argv: string list) : ParseResult =
     | Some "boundary" -> parseBoundary (globalsOf argv) argv
     | Some "ecir" -> parseEcir (globalsOf argv) argv
     | Some "verification" -> parseVerification (globalsOf argv) argv
+    | Some "events" -> parseEvents (globalsOf argv) argv
     | _ ->
 
     // Flags are recognised anywhere, before or after the command name, so

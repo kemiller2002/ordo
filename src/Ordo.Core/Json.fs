@@ -115,6 +115,35 @@ let render (value: JsonValue) : string =
     renderInto sb false value
     sb.ToString()
 
+/// Single-line rendering in the caller's field order, for line-delimited
+/// logs (one JSON value per line). Strings are escaped, so the result never
+/// contains a raw newline.
+let renderCompact (value: JsonValue) : string =
+    let sb = StringBuilder()
+    let rec go value =
+        match value with
+        | JNull -> sb.Append "null" |> ignore
+        | JBool true -> sb.Append "true" |> ignore
+        | JBool false -> sb.Append "false" |> ignore
+        | JInt n -> sb.Append(n.ToString(Globalization.CultureInfo.InvariantCulture)) |> ignore
+        | JFloat f -> sb.Append(renderFloat f) |> ignore
+        | JString s -> escapeInto sb s
+        | JArray items ->
+            sb.Append '[' |> ignore
+            items |> List.iteri (fun i item -> (if i > 0 then sb.Append ',' |> ignore); go item)
+            sb.Append ']' |> ignore
+        | JObject members ->
+            sb.Append '{' |> ignore
+            members
+            |> List.iteri (fun i (name, item) ->
+                if i > 0 then sb.Append ',' |> ignore
+                escapeInto sb name
+                sb.Append ':' |> ignore
+                go item)
+            sb.Append '}' |> ignore
+    go value
+    sb.ToString()
+
 /// Order-independent rendering. The only rendering a fingerprint is taken
 /// over, so that two records with the same meaning fingerprint the same
 /// regardless of construction order.
