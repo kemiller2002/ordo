@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-10-28T12:35:49.811Z",
+  "updatedAt": "2026-11-02T12:05:23.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2567,6 +2567,31 @@
         }
       },
       "completedAt": "2026-10-28T12:35:49.811Z"
+    },
+    {
+      "id": "WI-0048",
+      "type": "task",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": "src/Ordo.Core/DecisionEvents.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Ordo.Construction.Tests/DecisionEventsTests.fs"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Sde.Core.Tests/DecisionEventCommandTests.fs"
+        }
+      ],
+      "updatedAt": "2026-11-02T12:05:23.000Z",
+      "telemetryExecutionIds": [
+        "EXE-20261102T113626516Z-0e0b6917"
+      ],
+      "completedAt": "2026-11-02T12:05:23.000Z"
     }
   ]
 }
