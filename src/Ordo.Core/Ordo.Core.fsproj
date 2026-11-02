@@ -71,6 +71,7 @@
     <Compile Include="PatternRegistry.fs" />
     <Compile Include="PatternRecognition.fs" />
     <Compile Include="PatternRecognitionWire.fs" />
+    <Compile Include="DecisionEvents.fs" />
     <Compile Include="ConstructionCoverage.fs" />
     <Compile Include="VerificationSchedule.fs" />
     <Compile Include="VerificationScheduleWire.fs" />

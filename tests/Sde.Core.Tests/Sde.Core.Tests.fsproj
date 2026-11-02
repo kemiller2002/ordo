@@ -19,6 +19,7 @@
     <Compile Include="ToolchainPinTests.fs" />
     <Compile Include="VerifyGateTests.fs" />
     <Compile Include="VerificationCommandTests.fs" />
+    <Compile Include="DecisionEventCommandTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

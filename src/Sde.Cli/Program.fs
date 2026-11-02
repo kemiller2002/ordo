@@ -36,6 +36,13 @@ let releaseVersion =
         | null -> "0.0.0"
         | version -> sprintf "%d.%d.%d" version.Major version.Minor version.Build
 
+/// The real clock, nonce and environment for decision events.
+let eventHost () : Events.Host =
+    { Now = fun () -> DateTimeOffset.UtcNow
+      Nonce = fun () -> Guid.NewGuid().ToString("N")
+      OrdoVersion = releaseVersion
+      Env = DecisionLog.environment }
+
 /// Finds the execution package this CLI carries.
 ///
 /// In the published npm package the executable lives at
@@ -154,7 +161,35 @@ let private runCommand (invocation: Args.Invocation) (projectRoot: string) : Emi
         { ExitCode = code; Stdout = stdout; Stderr = stderr }
 
     | Args.EcirRecognize options ->
-        let code, stdout, stderr = Ecir.recognizeFiles globals.Json options
+        let host = eventHost ()
+        let observe report durationMs =
+            match DecisionLog.resolvePath host.Env options.Events with
+            | None -> []
+            | Some path ->
+                let ambient = DecisionLog.ambient host.Env
+                let context: Ordo.Core.DecisionEvents.RecognitionContext =
+                    { OccurredAt = host.Now()
+                      OrdoVersion = host.OrdoVersion
+                      Nonce = host.Nonce()
+                      RunId = ambient.RunId
+                      SessionId = ambient.SessionId
+                      WorkItemId = ambient.WorkItemId
+                      DurationMs = Some durationMs
+                      Families = Ordo.Core.DecisionEvents.familiesOf Ordo.Core.PatternRegistry.BuiltIn.registry }
+                Ordo.Core.DecisionEvents.fromReport context report |> DecisionLog.record (Some path)
+        let code, stdout, stderr = Ecir.recognizeFilesObserved observe globals.Json options
+        { ExitCode = code; Stdout = stdout; Stderr = stderr }
+
+    | Args.EventsRecordExecution options ->
+        let code, stdout, stderr = Events.recordExecution (eventHost ()) globals.Json options
+        { ExitCode = code; Stdout = stdout; Stderr = stderr }
+
+    | Args.EventsRecordVerification options ->
+        let code, stdout, stderr = Events.recordVerification (eventHost ()) globals.Json options
+        { ExitCode = code; Stdout = stdout; Stderr = stderr }
+
+    | Args.EventsSummarize options ->
+        let code, stdout, stderr = Events.summarizeFile (eventHost ()) globals.Json options
         { ExitCode = code; Stdout = stdout; Stderr = stderr }
 
     // Read-only and independent of any installation: it needs no payload.
@@ -183,6 +218,9 @@ let private runCommand (invocation: Args.Invocation) (projectRoot: string) : Emi
             | Args.EcirCheck _
             | Args.EcirScaffold _
             | Args.EcirRecognize _
+            | Args.EventsRecordExecution _
+            | Args.EventsRecordVerification _
+            | Args.EventsSummarize _
             | Args.BoundaryAssess _
             | Args.Help _
             | Args.Version -> "sde"
@@ -237,6 +275,9 @@ let private runCommand (invocation: Args.Invocation) (projectRoot: string) : Emi
         | Args.EcirCheck _
         | Args.EcirScaffold _
         | Args.EcirRecognize _
+        | Args.EventsRecordExecution _
+        | Args.EventsRecordVerification _
+        | Args.EventsSummarize _
         | Args.BoundaryAssess _
         | Args.Help _
         | Args.Version -> ok []

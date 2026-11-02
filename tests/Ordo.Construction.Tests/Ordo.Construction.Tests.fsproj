@@ -49,6 +49,7 @@
     <Compile Include="ClassifiedConstructionTests.fs" />
     <Compile Include="CodedBranchingConstructionTests.fs" />
     <Compile Include="PatternRecognitionTests.fs" />
+    <Compile Include="DecisionEventsTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

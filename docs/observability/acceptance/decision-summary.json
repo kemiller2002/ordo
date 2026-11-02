@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "ordo.decision-summary/1",
+  "runs": 2,
+  "incompleteRuns": 0,
+  "evaluated": 12,
+  "matchStatus": {
+    "matched": 3,
+    "partial": 2,
+    "unmatched": 7,
+    "ambiguous": 0,
+    "rejected": 0
+  },
+  "matchRate": 0.25,
+  "usageByFamily": {
+    "integration.external-adapter": 3,
+    "state.machine-guarded-transition": 3
+  },
+  "usageByPattern": {
+    "ordo.current-time-port@1": 2,
+    "ordo.state-machine@1": 3,
+    "ordo.transition-effect-port@1": 1
+  },
+  "selections": {
+    "escalated": 5,
+    "fallback-agent": 4,
+    "pattern-selected": 3
+  },
+  "fallbackToAgent": 4,
+  "executionsReported": {
+    "succeeded": 1
+  },
+  "executionUnknown": 6,
+  "verified": {
+    "failed": 1
+  },
+  "executedButUnverified": 0,
+  "uncorrelated": 0,
+  "corruptLines": 0,
+  "duplicateEvents": 0
+}
