@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-11-02T13:56:00.000Z",
+  "updatedAt": "2026-11-25T18:35:06.119Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2646,6 +2646,47 @@
       ],
       "completedAt": "2026-11-02T13:56:00.000Z",
       "conclusion": "Documentation-only status change. The documented behaviour's tests ran green in the Ordo 1.20.0 release workflow (run 41455666284), which produced tag v1.20.0; no code changed here."
+    },
+    {
+      "id": "WI-0050",
+      "type": "task",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": ".echelon/toolchain.json"
+        },
+        {
+          "type": "tests",
+          "path": ".github/workflows/praxis-validation.yml"
+        }
+      ],
+      "updatedAt": "2026-11-25T18:35:06.119Z",
+      "telemetryExecutionIds": [
+        "EXE-20261125T181432185Z-a8b9389f"
+      ],
+      "latestCheckpoint": {
+        "id": "dbe6557a9d8430a522e2a6a4",
+        "recordedAt": "2026-11-25T18:34:53Z",
+        "executionId": "EXE-20261125T181432185Z-a8b9389f",
+        "repository": "ordo",
+        "branch": "claude/vigila-implementation-jdeps1",
+        "commit": "4863438ab7368b60935b463da36ef5a992ff5a14",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "claude/vigila-implementation-jdeps1",
+        "remoteCommit": "4863438ab7368b60935b463da36ef5a992ff5a14",
+        "summary": "Ordo's Praxis toolchain moved to 3.25.0 via praxis upgrade; all F# suites, distribution build and package checks pass; release bump script rehearsed green against a local bare remote under Praxis 3.25.0",
+        "nextAction": "complete the work item and open a draft PR",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-11-25T18:35:06.119Z"
     }
   ]
 }
