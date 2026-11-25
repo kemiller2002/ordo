@@ -1328,10 +1328,10 @@
       "description": null,
       "tags": [],
       "priority": "medium",
-      "status": "ready",
+      "status": "complete",
       "attachments": [],
       "createdAt": "2026-11-25T18:14:29.845Z",
-      "updatedAt": "2026-11-25T18:14:30Z",
+      "updatedAt": "2026-11-25T18:35:06.119Z",
       "createdBy": "unknown",
       "createdByActor": {
         "kind": "agent",

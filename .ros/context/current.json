@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-11-25T18:14:31Z",
+  "updatedAt": "2026-11-25T18:35:06.119Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2650,10 +2650,19 @@
     {
       "id": "WI-0050",
       "type": "task",
-      "state": "active",
-      "semanticState": "active",
-      "evidence": [],
-      "updatedAt": "2026-11-25T18:14:31Z",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": ".echelon/toolchain.json"
+        },
+        {
+          "type": "tests",
+          "path": ".github/workflows/praxis-validation.yml"
+        }
+      ],
+      "updatedAt": "2026-11-25T18:35:06.119Z",
       "telemetryExecutionIds": [
         "EXE-20261125T181432185Z-a8b9389f"
       ],
@@ -2676,7 +2685,8 @@
           "status": "verified",
           "mechanism": "git-remote-observation"
         }
-      }
+      },
+      "completedAt": "2026-11-25T18:35:06.119Z"
     }
   ]
 }
