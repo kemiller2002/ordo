@@ -1,0 +1,12 @@
+{
+  "schema": "praxis.instance/1",
+  "instanceId": "pxi-e8310e8fe48b4a348f232eb7a77663b2",
+  "createdAt": "2026-11-25T18:14:46.628Z",
+  "createdWith": "3.25.0",
+  "repository": {
+    "provider": "github",
+    "repositoryId": null,
+    "repository": "kemiller2002/ordo"
+  },
+  "predecessors": []
+}
