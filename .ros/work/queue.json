@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0.0",
   "repository": "state-directed-engineering",
-  "nextSeq": 50,
+  "nextSeq": 51,
   "items": [
     {
       "id": "WI-0001",
@@ -1311,6 +1311,27 @@
       "attachments": [],
       "createdAt": "2026-11-02T13:55:37.259Z",
       "updatedAt": "2026-11-02T13:56:00.000Z",
+      "createdBy": "unknown",
+      "createdByActor": {
+        "kind": "agent",
+        "id": "anthropic/claude-code",
+        "provider": "anthropic",
+        "model": "unknown",
+        "runtime": "claude-code"
+      },
+      "source": "manual",
+      "sourceReference": null
+    },
+    {
+      "id": "WI-0050",
+      "title": "Move Ordo's own Praxis toolchain 3.7.2 -> 3.25.0 (echelon-current 1.42.0)",
+      "description": null,
+      "tags": [],
+      "priority": "medium",
+      "status": "ready",
+      "attachments": [],
+      "createdAt": "2026-11-25T18:14:29.845Z",
+      "updatedAt": "2026-11-25T18:14:30Z",
       "createdBy": "unknown",
       "createdByActor": {
         "kind": "agent",
