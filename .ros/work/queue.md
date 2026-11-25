@@ -96,4 +96,4 @@
 | WI-0047 | EII-G: policy-aware freshness bindings for the verification schedule | complete | verification, freshness, eii | high |
 | WI-0048 | Ordo decision events: append-only JSONL observability for pattern evaluation, selection, execution and verification | complete |  | medium |
 | WI-0049 | Mark Ordo decision events as released in 1.20.0 | complete |  | medium |
-| WI-0050 | Move Ordo's own Praxis toolchain 3.7.2 -> 3.25.0 (echelon-current 1.42.0) | ready |  | medium |
+| WI-0050 | Move Ordo's own Praxis toolchain 3.7.2 -> 3.25.0 (echelon-current 1.42.0) | active |  | medium |

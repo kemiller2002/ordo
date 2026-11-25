@@ -2656,7 +2656,27 @@
       "updatedAt": "2026-11-25T18:14:31Z",
       "telemetryExecutionIds": [
         "EXE-20261125T181432185Z-a8b9389f"
-      ]
+      ],
+      "latestCheckpoint": {
+        "id": "dbe6557a9d8430a522e2a6a4",
+        "recordedAt": "2026-11-25T18:34:53Z",
+        "executionId": "EXE-20261125T181432185Z-a8b9389f",
+        "repository": "ordo",
+        "branch": "claude/vigila-implementation-jdeps1",
+        "commit": "4863438ab7368b60935b463da36ef5a992ff5a14",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "claude/vigila-implementation-jdeps1",
+        "remoteCommit": "4863438ab7368b60935b463da36ef5a992ff5a14",
+        "summary": "Ordo's Praxis toolchain moved to 3.25.0 via praxis upgrade; all F# suites, distribution build and package checks pass; release bump script rehearsed green against a local bare remote under Praxis 3.25.0",
+        "nextAction": "complete the work item and open a draft PR",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      }
     }
   ]
 }
