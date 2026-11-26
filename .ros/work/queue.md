@@ -97,4 +97,4 @@
 | WI-0048 | Ordo decision events: append-only JSONL observability for pattern evaluation, selection, execution and verification | complete |  | medium |
 | WI-0049 | Mark Ordo decision events as released in 1.20.0 | complete |  | medium |
 | WI-0050 | Move Ordo's own Praxis toolchain 3.7.2 -> 3.25.0 (echelon-current 1.42.0) | complete |  | medium |
-| WI-0051 | Upgrade to echelon-current 1.43.0 (Praxis 3.25.0 -> 3.26.0) | ready |  | medium |
+| WI-0051 | Upgrade to echelon-current 1.43.0 (Praxis 3.25.0 -> 3.26.0) | complete |  | medium |
