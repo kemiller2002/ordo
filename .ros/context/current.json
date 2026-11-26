@@ -4,7 +4,7 @@
   "repository": "ordo",
   "actor": "anthropic/claude-code",
   "startedAt": "2026-09-02T05:49:57.408Z",
-  "updatedAt": "2026-11-25T18:35:06.119Z",
+  "updatedAt": "2026-11-26T00:35:37.000Z",
   "baselineDirtyPaths": [],
   "workItems": [
     {
@@ -2687,6 +2687,51 @@
         }
       },
       "completedAt": "2026-11-25T18:35:06.119Z"
+    },
+    {
+      "id": "WI-0051",
+      "type": "task",
+      "state": "complete",
+      "semanticState": "complete",
+      "evidence": [
+        {
+          "type": "implementation",
+          "path": ".echelon/toolchain.json"
+        },
+        {
+          "type": "implementation",
+          "path": ".echelon/ros.json"
+        },
+        {
+          "type": "tests",
+          "path": "tests/Sde.Core.Tests"
+        }
+      ],
+      "updatedAt": "2026-11-26T00:35:37.000Z",
+      "telemetryExecutionIds": [
+        "EXE-20261126T003055826Z-48195a9b"
+      ],
+      "latestCheckpoint": {
+        "id": "69165fde1a51391ffaaa8104",
+        "recordedAt": "2026-11-26T00:35:34.000Z",
+        "executionId": "EXE-20261126T003055826Z-48195a9b",
+        "repository": "ordo",
+        "branch": "claude/vigila-implementation-jdeps1",
+        "commit": "602daa968cd592fd602d2c6a2fc5dbc08c89ef37",
+        "remote": {
+          "name": "origin",
+          "url": "https://github.com/kemiller2002/ordo"
+        },
+        "remoteBranch": "claude/vigila-implementation-jdeps1",
+        "remoteCommit": "602daa968cd592fd602d2c6a2fc5dbc08c89ef37",
+        "summary": "Moved Ordo's own Praxis toolchain to 3.26.0 (echelon-current 1.43.0) via praxis upgrade; Sde.Core tests 165/165, praxis registry check and validate pass.",
+        "nextAction": "Open draft PR and watch CI",
+        "verification": {
+          "status": "verified",
+          "mechanism": "git-remote-observation"
+        }
+      },
+      "completedAt": "2026-11-26T00:35:37.000Z"
     }
   ]
 }
